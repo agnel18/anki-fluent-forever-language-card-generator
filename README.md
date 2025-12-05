@@ -1,6 +1,6 @@
-# Arabic Anki Card Generator
+# Fluent Forever Anki Language Card Generator
 
-Generate professional Arabic language learning cards for Anki with sentences, audio, images, and IPA transliterations using Google Gemini API.
+Generate professional language learning cards for Anki with sentences, audio, images, and IPA transliterations using Google Gemini API. **Arabic is used as an example target language** - easily adaptable to Spanish, French, Japanese, or any other language in 10-15 minutes.
 
 **Based on the [Fluent Forever method](https://fluent-forever.com/) by Gabriel Wyner** - A proven language learning system using spaced repetition, personalized sentences, and multi-sensory memory techniques.
 
