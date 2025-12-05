@@ -1,0 +1,86 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+# ========== CONFIG: File paths and settings ==========
+BASE_DIR = Path(__file__).resolve().parent
+EXCEL_FILE = BASE_DIR / "Arabic Frequency Word List.xlsx"  # Tracking file with Status
+OUTPUT_DIR = BASE_DIR / "FluentForever_Arabic_Perfect"  # All output directory
+WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Source data (with sentences, audio, images)
+ANKI_TSV = OUTPUT_DIR / "ANKI_IMPORT.tsv"  # Final output: Anki import file (tab-separated)
+
+# Create output directory if it doesn't exist
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure Status column exists in tracking spreadsheet."""
+    if "Status" not in df.columns:
+        df["Status"] = ""
+    df["Status"] = df["Status"].fillna("")
+    return df
+
+
+def main() -> None:
+    """
+    Main workflow:
+    1. Find all words with Status="images_done" (fully processed by scripts 1-3)
+    2. Load working_data.xlsx with all rows
+    3. Filter to rows with both Sound and Image populated
+    4. Export to TSV format for Anki import
+    5. Mark all processed words as "complete"
+    
+    TSV Format:
+    - Tab-separated values (not comma-separated)
+    - Header row with column names
+    - Data rows with sentence information
+    - Sound: [sound:filename.mp3] format
+    - Image: <img src="filename.jpg"> format
+    """
+    # Verify input files exist
+    if not EXCEL_FILE.exists():
+        print(f"Error: Excel file not found at {EXCEL_FILE}")
+        sys.exit(1)
+
+    if not WORKING_DATA.exists():
+        print(f"Error: {WORKING_DATA} not found. Run scripts 1-3 first.")
+        sys.exit(1)
+
+    # Load tracking spreadsheet to find completed words
+    df_tracking = ensure_columns(pd.read_excel(EXCEL_FILE))
+    todo = df_tracking[df_tracking["Status"] == "images_done"]
+    if todo.empty:
+        print("No rows with Status=images_done. Nothing to do.")
+        return
+
+    # Load all data rows from working_data.xlsx
+    df_work = pd.read_excel(WORKING_DATA)
+    
+    # Filter to rows that have BOTH Sound AND Image populated (fully complete)
+    # Only export rows where both columns are filled and non-empty
+    completed = df_work[(df_work["Sound"].notna()) & (df_work["Sound"] != "") & 
+                        (df_work["Image"].notna()) & (df_work["Image"] != "")]
+    
+    if completed.empty:
+        print("No completed rows in working_data.xlsx to export.")
+        return
+
+    # Export to TSV (tab-separated values) format that Anki can import
+    # Anki expects tab-separated values with headers
+    completed.to_csv(ANKI_TSV, sep="\t", index=False, encoding="utf-8")
+    print(f"Exported {len(completed)} rows to {ANKI_TSV}")
+
+    # Mark all processed words as complete in the tracking file
+    # This prevents scripts from re-processing them
+    for idx in todo.index:
+        df_tracking.at[idx, "Status"] = "complete"
+    
+    # Save updated tracking file
+    df_tracking.to_excel(EXCEL_FILE, index=False)
+    print(f"Marked {len(todo)} words as complete in {EXCEL_FILE.name}")
+
+
+if __name__ == "__main__":
+    main()
