@@ -115,8 +115,7 @@ def main() -> None:
         audio = df_tracking.at[idx, "Audio"]
         images = df_tracking.at[idx, "Images"]
         if sentences > 0 or audio > 0 or images > 0:
-            print(f"   Word #{idx+1}: Sentences={sentences}/10 | Audio={audio}/10 | Images={images}/10}")
-    print(f"Marked {len(todo)} words as complete in {EXCEL_FILE.name}")
+            print(f"   Word #{idx+1}: Sentences={sentences}/10 | Audio={audio}/10 | Images={images}/10")
 
 
 if __name__ == "__main__":
