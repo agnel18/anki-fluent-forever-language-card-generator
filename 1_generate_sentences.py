@@ -11,18 +11,53 @@ from dotenv import load_dotenv
 # Load environment variables from .env file (contains GOOGLE_API_KEY)
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-# ========== CONFIG: File paths and settings ==========
+# ========== LANGUAGE CONFIGURATION ==========
+def load_language_config() -> dict:
+    """Load language configuration from language_config.txt"""
+    config_file = Path(__file__).parent / "language_config.txt"
+    
+    if not config_file.exists():
+        print("\n❌ ERROR: language_config.txt not found!")
+        print("   Please run: python 0_select_language.py")
+        sys.exit(1)
+    
+    config = {}
+    with open(config_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line:
+                key, value = line.split("=", 1)
+                config[key.strip()] = value.strip()
+    
+    return config
+
+# Load configuration
+CONFIG = load_language_config()
+LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
+LANGUAGE_CODE = CONFIG.get("language_code", "XX")
+FREQUENCY_FILE = Path(CONFIG.get("frequency_file"))
+OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
+
+# ========== FILE PATHS ==========
 BASE_DIR = Path(__file__).resolve().parent
-EXCEL_FILE = BASE_DIR / "Arabic Frequency Word List.xlsx"  # Input: words to process
-OUTPUT_DIR = BASE_DIR / "FluentForever_Arabic_Perfect"  # Output: all generated data
+EXCEL_FILE = FREQUENCY_FILE  # Input: words to process
+OUTPUT_DIR = BASE_DIR / OUTPUT_BASE  # Output: all generated data
 AUDIO_DIR = OUTPUT_DIR / "audio"  # MP3 audio files
 IMAGE_DIR = OUTPUT_DIR / "images"  # JPG images
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Review file with all columns
 MODEL = "gemini-2.0-flash"  # Google Gemini model for sentence generation
+SENTENCES_PER_WORD = 10  # Maximum benefit per token!
 
 # Create directories if they don't exist
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+print(f"\n{'='*60}")
+print(f"🌍 GENERATING {SENTENCES_PER_WORD} SENTENCES FOR: {LANGUAGE_NAME}")
+print(f"{'='*60}")
+print(f"Language Code: {LANGUAGE_CODE}")
+print(f"Output Directory: {OUTPUT_DIR}")
+print(f"{'='*60}\n")
 
 
 def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -54,29 +89,59 @@ def safe_word(word: str) -> str:
 
 def generate_sentences(word: str) -> list[dict] | None:
     """
-    Use Google Gemini API to generate 5 natural Arabic sentences for a word.
+    Use Google Gemini API to generate 10 natural sentences for a word.
     
-    Each sentence includes:
-    - Arabic: The Arabic sentence (with progressive harakat/vowels)
-    - English: Natural English translation
-    - IPA: International Phonetic Alphabet pronunciation
+    Covers all use cases:
+    - Different grammatical contexts (subject, object, predicate, etc.)
+    - Different tenses/moods (present, past, future, conditional, subjunctive)
+    - Different formality levels (formal, informal, colloquial)
+    - Different contexts (daily life, business, academic, idioms)
+    - Collocations and natural phrasing
     
-    Returns: List of 5 sentence dicts, or None if failed
+    This maximizes token efficiency: 10 sentences = maximum benefit per API call!
+    
+    Returns: List of 10 sentence dicts, or None if failed
     """
-    # Crafted prompt to get natural sentences in JSON format
-    prompt = f"""You are the best Arabic teacher.\nWord: {word}\nCreate exactly 5 natural sentences using only top 800 words.\n- Progressive difficulty\n- Sentence 1: clean unvoweled Arabic\n- Sentences 2-5: add harakat as difficulty increases\n- Natural collocations\n- < 12 words each\nRespond ONLY with valid JSON in this format, with no extra text, no explanation, no markdown:\n[{{\"arabic\": \"الجملة\", \"english\": \"Natural English\", \"ipa\": \"/strict.IPA/\"}}]\n"""
+    prompt = f"""You are an expert {LANGUAGE_NAME} language teacher specializing in language learning using the Fluent Forever method.
+
+Word: {word}
+Target Language: {LANGUAGE_NAME}
+
+Generate exactly 10 natural, authentic sentences that demonstrate all common uses of this word.
+
+Coverage requirements:
+1. Different grammatical roles (subject, object, verb, adjective, adverb, preposition)
+2. Different tenses and moods (present, past, future, conditional, subjunctive if applicable)
+3. Different formality levels (formal, informal, colloquial, slang if applicable)
+4. Different real-world contexts (daily life, work, school, family, idioms, proverbs)
+5. Natural collocations and word combinations
+
+Requirements for each sentence:
+- 4-15 words maximum
+- Use only top 1000 most common words (except the target word itself)
+- Authentic usage patterns
+- Progressive difficulty (simple to slightly complex)
+- Age-appropriate and culturally sensitive
+
+Respond ONLY with valid JSON array, no extra text, no markdown, no explanation:
+[
+  {{"sentence": "sentence in {LANGUAGE_NAME}", "english": "English translation", "ipa": "/IPA.pronunciation/"}},
+  ...
+]
+
+Generate 10 sentences now:"""
+    
     try:
-        print("Calling Google Gemini for sentences...")
+        print(f"   🔄 Generating {SENTENCES_PER_WORD} sentences for '{word}'...")
         model = genai.GenerativeModel(MODEL)
         response = model.generate_content(prompt)
         content = response.text.strip() if response.text else ""
-        print("Gemini raw response:\n", content)
         
         if not content:
-            print("Error: Gemini returned empty response.")
+            print("   ❌ Empty response from API")
             return None
         
-        # Remove markdown code block markers (sometimes Gemini wraps JSON in ```json```)
+        # Remove markdown code block markers
         if content.startswith("```json"):
             content = content[7:]
         if content.startswith("```"):
@@ -85,43 +150,47 @@ def generate_sentences(word: str) -> list[dict] | None:
             content = content[:-3]
         content = content.strip()
         
-        # Parse the JSON response
+        # Parse JSON
         try:
             data = json.loads(content)
-        except Exception as exc:
-            print(f"Error parsing Gemini response as JSON: {exc}")
+        except json.JSONDecodeError as e:
+            print(f"   ❌ JSON parse error: {e}")
             return None
         
-        # Validate we got exactly 5 sentences in a list
-        if not isinstance(data, list) or len(data) != 5:
-            print("Error: Did not receive 5 sentences in JSON list.")
-            return None
+        # Validate
+        if not isinstance(data, list) or len(data) < SENTENCES_PER_WORD:
+            print(f"   ⚠️  Got {len(data)} sentences, expected {SENTENCES_PER_WORD}")
+            if len(data) < 5:
+                return None
         
-        # Normalize the sentence data
+        # Normalize
         normalized = []
         for item in data:
-            arabic = str(item.get("arabic", word)).strip()
-            english = str(item.get("english", f"Example: {word}")).strip()
+            sentence = str(item.get("sentence", "")).strip()
+            english = str(item.get("english", "")).strip()
             ipa = str(item.get("ipa", "")).strip()
-            normalized.append({"arabic": arabic, "english": english, "ipa": ipa})
+            if sentence and english:
+                normalized.append({"sentence": sentence, "english": english, "ipa": ipa})
         
-        return normalized
-    except Exception as exc:
-        print(f"Error generating sentences: {exc}")
+        print(f"   ✅ Generated {len(normalized)} sentences")
+        return normalized[:SENTENCES_PER_WORD]
+    
+    except Exception as e:
+        print(f"   ❌ Error: {e}")
         return None
 
 
 def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentences: list[dict]) -> bool:
     """
-    Append 5 sentence rows to working_data.xlsx for review before further processing.
+    Append sentence rows to working_data.xlsx for review before further processing.
     
     Each row represents one sentence for the word and includes:
     - File Name: Pattern {freq:04d}_{word}_{sentence:02d} for tracking
-    - What is the Word?: The Arabic word
+    - What is the Word?: The word
     - Meaning of the Word: English translation
-    - Arabic Sentence: Full Arabic sentence
+    - Sentence: Full sentence in target language
     - IPA Transliteration: Pronunciation guide
-    - English Sentence: English translation
+    - English Translation: English translation
     - Sound: (empty, filled by script 2)
     - Image: (empty, filled by script 3)
     
@@ -132,9 +201,9 @@ def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentence
         "File Name",
         "What is the Word?",
         "Meaning of the Word",
-        "Arabic Sentence",
+        "Sentence",
         "IPA Transliteration",
-        "English Sentence",
+        "English Translation",
         "Sound",
         "Image"
     ]
@@ -144,15 +213,18 @@ def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentence
         existing = pd.read_excel(WORKING_DATA)
         pattern = f"{freq_num:04d}_{word}_"
         if existing["File Name"].str.startswith(pattern, na=False).any():
-            print(f"Rows for '{word}' already exist in {WORKING_DATA.name}. Skipping.")
+            print(f"   Rows for '{word}' already exist in {WORKING_DATA.name}. Skipping.")
             return False
         # Reorder existing columns if needed (for consistency)
         if list(existing.columns) != CORRECT_COLUMNS:
+            for col in CORRECT_COLUMNS:
+                if col not in existing.columns:
+                    existing[col] = ""
             existing = existing[CORRECT_COLUMNS]
     else:
         existing = pd.DataFrame()
     
-    # Create 5 rows (one per sentence) for this word
+    # Create rows (one per sentence) for this word
     rows = []
     for j, sent in enumerate(sentences, start=1):
         file_name = f"{freq_num:04d}_{word}_{j:02d}"
@@ -160,9 +232,9 @@ def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentence
             "File Name": file_name,
             "What is the Word?": word,
             "Meaning of the Word": word_meaning,
-            "Arabic Sentence": sent["arabic"],
-            "IPA Transliteration": sent["ipa"],
-            "English Sentence": sent["english"],
+            "Sentence": sent.get("sentence", ""),
+            "IPA Transliteration": sent.get("ipa", ""),
+            "English Translation": sent.get("english", ""),
             "Sound": "",  # Will be filled by script 2
             "Image": "",  # Will be filled by script 3
         })
@@ -175,8 +247,8 @@ def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentence
     
     # Ensure correct column order and save
     combined = combined[CORRECT_COLUMNS]
-    combined.to_excel(WORKING_DATA, index=False)
-    print(f"Appended 5 rows to {WORKING_DATA.name}")
+    combined.to_excel(WORKING_DATA, index=False, engine="openpyxl")
+    print(f"   ✅ Added {len(rows)} rows to working_data.xlsx")
     return True
 
 
@@ -184,55 +256,75 @@ def main() -> None:
     """
     Main workflow:
     1. Load API key from .env
-    2. Read Arabic Frequency Word List.xlsx
-    3. Find first word with empty Status (not yet processed)
-    4. Generate 5 sentences for that word
-    5. Append rows to working_data.xlsx
-    6. Update Status to "sentences_done"
+    2. Load language configuration from language_config.txt
+    3. Read frequency word list for selected language
+    4. Find first word with empty Status (not yet processed)
+    5. Generate 10 sentences for that word (all use cases)
+    6. Append rows to working_data.xlsx
+    7. Update Status to "sentences_done"
     """
     # Get Google API key from environment
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        print("Error: GOOGLE_API_KEY is not set in .env file. Export it and retry.")
+        print("❌ ERROR: GOOGLE_API_KEY is not set in .env file")
+        print("   Create .env with: GOOGLE_API_KEY=your_key_here")
         sys.exit(1)
     genai.configure(api_key=api_key)
 
-    # Load the frequency word list
+    # Verify frequency file exists
     if not EXCEL_FILE.exists():
-        print(f"Error: Excel file not found at {EXCEL_FILE}")
+        print(f"❌ ERROR: Frequency file not found: {EXCEL_FILE}")
+        print(f"   Make sure to run: python 0_select_language.py")
         sys.exit(1)
 
+    # Load and check frequency list
     df = ensure_columns(pd.read_excel(EXCEL_FILE))
+    
+    # Find column names dynamically (works with any language)
+    word_col = None
+    meaning_col = None
+    for col in df.columns:
+        col_lower = col.lower()
+        if 'word' in col_lower:
+            word_col = col
+        if 'meaning' in col_lower or 'english' in col_lower:
+            meaning_col = col
+    
+    if not word_col or not meaning_col:
+        print(f"❌ ERROR: Cannot find 'Word' and 'Meaning' columns")
+        print(f"   Available columns: {list(df.columns)}")
+        sys.exit(1)
     
     # Find first word that needs sentences (Status is empty)
     todo = df[df["Status"] == ""]
     if todo.empty:
-        print("No rows need sentences. Status column has no empty entries.")
+        print("✅ All words have sentences! Status column has no empty entries.")
         return
 
     # Get the first word to process
     idx = todo.index[0]
-    word_raw = df.loc[idx, "Arabic Word"]
+    word_raw = df.loc[idx, word_col]
     word = safe_word(str(word_raw))
-    word_meaning = str(df.loc[idx, "English Meaning"]) if "English Meaning" in df.columns else ""
+    word_meaning = str(df.loc[idx, meaning_col]) if meaning_col in df.columns else ""
     freq_num = idx + 1  # Position in frequency list (1-indexed)
     
-    print(f"Starting sentence generation for word '{word}' (freq #{freq_num})")
+    print(f"\n📝 Processing word #{freq_num}: '{word}' ({word_meaning})")
 
-    # Generate 5 sentences using Gemini
+    # Generate 10 sentences using Gemini
     sentences = generate_sentences(word)
-    if not sentences or len(sentences) != 5:
-        print("Critical: Failed to generate sentences. Status not updated.")
+    if not sentences or len(sentences) < 5:
+        print("❌ Failed to generate sentences. Status not updated.")
         return
 
     # Save to working_data.xlsx (also checks for duplicates)
     if not append_to_working_data(word, word_meaning, freq_num, sentences):
-        print("Rows already exist. Updating status only.")
+        print("⚠️  Rows already exist. Updating status only.")
     
     # Mark this word as "sentences_done" so script 2 can process it
     df.at[idx, "Status"] = "sentences_done"
-    df.to_excel(EXCEL_FILE, index=False)
-    print(f"Updated Status=sentences_done for '{word}' in {EXCEL_FILE.name}")
+    df.to_excel(EXCEL_FILE, index=False, engine="openpyxl")
+    print(f"✅ Updated Status='sentences_done' in frequency list")
+    print(f"✅ Word '{word}' complete! Run script 2 to download audio.")
 
 
 if __name__ == "__main__":
