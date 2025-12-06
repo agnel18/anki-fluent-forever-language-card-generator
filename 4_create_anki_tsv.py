@@ -4,12 +4,46 @@ from pathlib import Path
 
 import pandas as pd
 
-# ========== CONFIG: File paths and settings ==========
+# ========== LANGUAGE CONFIGURATION ==========
+def load_language_config() -> dict:
+    """Load language configuration from language_config.txt"""
+    config_file = Path(__file__).parent / "language_config.txt"
+    
+    if not config_file.exists():
+        print("\n❌ ERROR: language_config.txt not found!")
+        print("   Please run: python 0_select_language.py")
+        sys.exit(1)
+    
+    config = {}
+    with open(config_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line:
+                key, value = line.split("=", 1)
+                config[key.strip()] = value.strip()
+    
+    return config
+
+# Load configuration
+CONFIG = load_language_config()
+LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
+LANGUAGE_CODE = CONFIG.get("language_code", "XX")
+FREQUENCY_FILE = Path(CONFIG.get("frequency_file"))
+OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
+
+# ========== FILE PATHS ==========
 BASE_DIR = Path(__file__).resolve().parent
-EXCEL_FILE = BASE_DIR / "Arabic Frequency Word List.xlsx"  # Tracking file with Status
-OUTPUT_DIR = BASE_DIR / "FluentForever_Arabic_Perfect"  # All output directory
+EXCEL_FILE = FREQUENCY_FILE  # Tracking file with Status
+OUTPUT_DIR = BASE_DIR / OUTPUT_BASE  # All output directory
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Source data (with sentences, audio, images)
 ANKI_TSV = OUTPUT_DIR / "ANKI_IMPORT.tsv"  # Final output: Anki import file (tab-separated)
+
+print(f"\n{'='*60}")
+print(f"🌍 CREATING ANKI CARDS FOR: {LANGUAGE_NAME}")
+print(f"{'='*60}")
+print(f"Language Code: {LANGUAGE_CODE}")
+print(f"Output Directory: {OUTPUT_DIR}")
+print(f"{'='*60}\n")
 
 # Create output directory if it doesn't exist
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

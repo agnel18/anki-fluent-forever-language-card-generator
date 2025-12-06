@@ -14,13 +14,45 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-# ========== CONFIG: File paths and settings ==========
+# ========== LANGUAGE CONFIGURATION ==========
+def load_language_config() -> dict:
+    """Load language configuration from language_config.txt"""
+    config_file = Path(__file__).parent / "language_config.txt"
+    
+    if not config_file.exists():
+        print("\n❌ ERROR: language_config.txt not found!")
+        print("   Please run: python 0_select_language.py")
+        sys.exit(1)
+    
+    config = {}
+    with open(config_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line:
+                key, value = line.split("=", 1)
+                config[key.strip()] = value.strip()
+    
+    return config
+
+# Load configuration
+CONFIG = load_language_config()
+LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
+LANGUAGE_CODE = CONFIG.get("language_code", "XX")
+OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
+
+# ========== FILE PATHS ==========
 BASE_DIR = Path(__file__).resolve().parent
-EXCEL_FILE = BASE_DIR / "Arabic Frequency Word List.xlsx"  # Tracking file
-OUTPUT_DIR = BASE_DIR / "FluentForever_Arabic_Perfect"  # All output
+OUTPUT_DIR = BASE_DIR / OUTPUT_BASE  # All output
 AUDIO_DIR = OUTPUT_DIR / "audio"  # For reference (not used in this script)
 IMAGE_DIR = OUTPUT_DIR / "images"  # Where JPG images are saved
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Source data with sentences
+
+print(f"\n{'='*60}")
+print(f"🌍 DOWNLOADING IMAGES FOR: {LANGUAGE_NAME}")
+print(f"{'='*60}")
+print(f"Language Code: {LANGUAGE_CODE}")
+print(f"Output Directory: {OUTPUT_DIR}")
+print(f"{'='*60}\n")
 
 # Create directories if they don't exist
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
