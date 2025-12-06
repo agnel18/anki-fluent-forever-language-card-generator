@@ -256,7 +256,11 @@ def main() -> None:
                     print(f"  📥 Downloading: {sentence[:60]}... -> {filename}")
                     ok = download_audio(driver, sentence, outfile)
                     if ok:
-                        time.sleep(1.5)
+                        # Random delay between 2-4 seconds to be respectful to the site
+                        import random
+                        delay = random.uniform(2.0, 4.0)
+                        print(f"    ⏱️  Waiting {delay:.1f}s before next request...")
+                        time.sleep(delay)
             finally:
                 driver.quit()
 

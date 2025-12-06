@@ -183,85 +183,79 @@ def main() -> None:
     df = pd.read_excel(WORKING_DATA)
     df_track = ensure_columns(pd.read_excel(TRACKING_FILE))
 
-    processed_words = set()
     processed_count = 0
 
-    for idx in df.index:
+    # Iterate over tracking file to decide which words need images
+    for track_idx in df_track.index:
         if processed_count >= BATCH_WORDS:
             print(f"⏸️ Reached batch limit ({BATCH_WORDS} words). Run again for more.")
             break
 
-        if pd.isna(df.at[idx, "Image"]) or df.at[idx, "Image"] == "":
-            file_name = df.at[idx, "File Name"]
-            if not isinstance(file_name, str) or not file_name:
+        audio_count = int(df_track.at[track_idx, "Audio"])
+        images_count = int(df_track.at[track_idx, "Images"])
+
+        # Only process if audio exists and images are incomplete
+        if audio_count > 0 and images_count < 10:
+            freq_num = track_idx + 1
+            pattern_prefix = f"{freq_num:04d}_"
+            word_rows = df[df["File Name"].str.startswith(pattern_prefix, na=False)]
+            if word_rows.empty:
                 continue
 
+            first_row = word_rows.iloc[0]
+            file_name = first_row["File Name"]
             parts = file_name.split("_")
-            if len(parts) >= 2:
-                freq_num = int(parts[0])
-                word = "_".join(parts[1:-1])
+            if len(parts) < 3:
+                continue
+            word = "_".join(parts[1:-1])
 
-                status_idx = freq_num - 1
-                audio_count = int(df_track.at[status_idx, "Audio"]) if status_idx < len(df_track) else 0
-                images_count = int(df_track.at[status_idx, "Images"]) if status_idx < len(df_track) else 0
-                if audio_count == 0 or images_count >= 10:
+            processed_count += 1
+
+            print(f"Processing word: '{word}' (frequency #{freq_num})")
+            print(f"   Sentences to download images for: {len(word_rows)}")
+
+            target_files: list[Path] = []
+
+            for _, row in word_rows.iterrows():
+                file_name = row["File Name"]
+                english_translation = str(row.get("English Translation", "")).strip()
+
+                search_terms: list[str] = []
+                if english_translation:
+                    search_terms.append(english_translation)
+                    tokens = [t.strip(".,!?;:") for t in english_translation.split() if t.strip(".,!?;:")]
+                    if len(tokens) >= 2:
+                        last_two = " ".join(tokens[-2:])
+                        if last_two not in search_terms:
+                            search_terms.append(last_two)
+                    if tokens:
+                        last_one = tokens[-1]
+                        if last_one not in search_terms:
+                            search_terms.append(last_one)
+                if word not in search_terms:
+                    search_terms.append(word)
+
+                filename = f"{file_name}.jpg"
+                outfile = IMAGE_DIR / filename
+                target_files.append(outfile)
+
+                if outfile.exists() and outfile.stat().st_size > 1500:
+                    print(f"  Skipping existing: {outfile.name}")
                     continue
 
-                if word in processed_words:
-                    continue
+                print(f"  Downloading image for: {search_terms[0]} -> {filename}")
+                ok = download_image(search_terms, outfile)
+                if ok:
+                    time.sleep(0.5)
 
-                processed_words.add(word)
-                processed_count += 1
-
-                pattern = f"{freq_num}_{word}_"
-                word_mask = df["File Name"].str.startswith(pattern, na=False)
-                word_rows = df[word_mask]
-
-                print(f"Processing word: '{word}' (frequency #{freq_num})")
-                print(f"   Sentences to download images for: {len(word_rows)}")
-
-                target_files: list[Path] = []
-
-                for _, row in word_rows.iterrows():
-                    file_name = row["File Name"]
-                    english_translation = str(row.get("English Translation", "")).strip()
-
-                    search_terms: list[str] = []
-                    if english_translation:
-                        search_terms.append(english_translation)
-                        tokens = [t.strip(".,!?;:") for t in english_translation.split() if t.strip(".,!?;:")]
-                        if len(tokens) >= 2:
-                            last_two = " ".join(tokens[-2:])
-                            if last_two not in search_terms:
-                                search_terms.append(last_two)
-                        if tokens:
-                            last_one = tokens[-1]
-                            if last_one not in search_terms:
-                                search_terms.append(last_one)
-                    if word not in search_terms:
-                        search_terms.append(word)
-
-                    filename = f"{file_name}.jpg"
-                    outfile = IMAGE_DIR / filename
-                    target_files.append(outfile)
-
-                    if outfile.exists() and outfile.stat().st_size > 1500:
-                        print(f"  Skipping existing: {outfile.name}")
-                        continue
-
-                    print(f"  Downloading image for: {search_terms[0]} -> {filename}")
-                    ok = download_image(search_terms, outfile)
-                    if ok:
-                        time.sleep(0.5)
-
-                if all_images_present(target_files):
-                    update_working_data_images(word, freq_num)
-                    update_images_count(freq_num, len(target_files))
-                    print(f"Image download complete for '{word}' ({len(target_files)}/10)! Ready for script 4\n")
-                else:
-                    actual_count = sum(1 for f in target_files if f.exists() and f.stat().st_size > 1024)
-                    update_images_count(freq_num, actual_count)
-                    print(f"⚠️ Image download incomplete for '{word}' ({actual_count}/{len(target_files)} files)")
+            if all_images_present(target_files):
+                update_working_data_images(word, freq_num)
+                update_images_count(freq_num, len(target_files))
+                print(f"Image download complete for '{word}' ({len(target_files)}/10)! Ready for script 4\n")
+            else:
+                actual_count = sum(1 for f in target_files if f.exists() and f.stat().st_size > 1024)
+                update_images_count(freq_num, actual_count)
+                print(f"⚠️ Image download incomplete for '{word}' ({actual_count}/{len(target_files)} files)")
 
     print("✅ Image step finished for this batch.")
 
