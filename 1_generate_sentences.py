@@ -107,7 +107,9 @@ def generate_sentences(word: str) -> list[dict] | None:
 Word: {word}
 Target Language: {LANGUAGE_NAME}
 
-Generate exactly 10 natural, authentic sentences that demonstrate all common uses of this word.
+FIRST, provide a brief meaning/definition of this word in English (1-2 sentences).
+
+Then generate exactly 10 natural, authentic sentences that demonstrate all common uses of this word.
 
 Coverage requirements:
 1. Different grammatical roles (subject, object, verb, adjective, adverb, preposition)
@@ -123,13 +125,16 @@ Requirements for each sentence:
 - Progressive difficulty (simple to slightly complex)
 - Age-appropriate and culturally sensitive
 
-Respond ONLY with valid JSON array, no extra text, no markdown, no explanation:
-[
-  {{"sentence": "sentence in {LANGUAGE_NAME}", "english": "English translation", "ipa": "/IPA.pronunciation/"}},
-  ...
-]
+Respond ONLY with valid JSON, no extra text, no markdown, no explanation:
+{{
+  "meaning": "English definition of the word",
+  "sentences": [
+    {{"sentence": "sentence in {LANGUAGE_NAME}", "english": "English translation", "ipa": "/IPA.pronunciation/"}},
+    ...
+  ]
+}}
 
-Generate 10 sentences now:"""
+Generate the meaning and 10 sentences now:"""
     
     try:
         print(f"   🔄 Generating {SENTENCES_PER_WORD} sentences for '{word}'...")
@@ -157,20 +162,25 @@ Generate 10 sentences now:"""
             print(f"   ❌ JSON parse error: {e}")
             return None
         
+        # Extract meaning and sentences
+        meaning = str(data.get("meaning", "")).strip() if isinstance(data, dict) else ""
+        sentences_list = data.get("sentences", data) if isinstance(data, dict) else data
+        
         # Validate
-        if not isinstance(data, list) or len(data) < SENTENCES_PER_WORD:
-            print(f"   ⚠️  Got {len(data)} sentences, expected {SENTENCES_PER_WORD}")
-            if len(data) < 5:
+        if not isinstance(sentences_list, list) or len(sentences_list) < SENTENCES_PER_WORD:
+            print(f"   ⚠️  Got {len(sentences_list)} sentences, expected {SENTENCES_PER_WORD}")
+            if len(sentences_list) < 5:
                 return None
         
         # Normalize
         normalized = []
-        for item in data:
+        for item in sentences_list:
             sentence = str(item.get("sentence", "")).strip()
             english = str(item.get("english", "")).strip()
             ipa = str(item.get("ipa", "")).strip()
             if sentence and english:
-                normalized.append({"sentence": sentence, "english": english, "ipa": ipa})
+                # Include meaning with each sentence
+                normalized.append({"sentence": sentence, "english": english, "ipa": ipa, "meaning": meaning})
         
         print(f"   ✅ Generated {len(normalized)} sentences")
         return normalized[:SENTENCES_PER_WORD]
@@ -228,10 +238,12 @@ def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentence
     rows = []
     for j, sent in enumerate(sentences, start=1):
         file_name = f"{freq_num:04d}_{word}_{j:02d}"
+        # Use meaning from Gemini API if available, otherwise use word_meaning parameter
+        meaning_value = sent.get("meaning", word_meaning) or word_meaning
         rows.append({
             "File Name": file_name,
             "What is the Word?": word,
-            "Meaning of the Word": word_meaning,
+            "Meaning of the Word": meaning_value,
             "Sentence": sent.get("sentence", ""),
             "IPA Transliteration": sent.get("ipa", ""),
             "English Translation": sent.get("english", ""),
@@ -290,10 +302,14 @@ def main() -> None:
         if 'meaning' in col_lower or 'english' in col_lower:
             meaning_col = col
     
-    if not word_col or not meaning_col:
-        print(f"❌ ERROR: Cannot find 'Word' and 'Meaning' columns")
+    if not word_col:
+        print(f"❌ ERROR: Cannot find 'Word' column")
         print(f"   Available columns: {list(df.columns)}")
         sys.exit(1)
+    
+    # Meaning column is optional - if not found, we'll use just the word
+    if not meaning_col:
+        print(f"⚠️  No 'Meaning' column found - will use word definition from Gemini")
     
     # Find first word that needs sentences (Status is empty)
     todo = df[df["Status"] == ""]
@@ -305,7 +321,7 @@ def main() -> None:
     idx = todo.index[0]
     word_raw = df.loc[idx, word_col]
     word = safe_word(str(word_raw))
-    word_meaning = str(df.loc[idx, meaning_col]) if meaning_col in df.columns else ""
+    word_meaning = str(df.loc[idx, meaning_col]) if meaning_col and meaning_col in df.columns else ""
     freq_num = idx + 1  # Position in frequency list (1-indexed)
     
     print(f"\n📝 Processing word #{freq_num}: '{word}' ({word_meaning})")
