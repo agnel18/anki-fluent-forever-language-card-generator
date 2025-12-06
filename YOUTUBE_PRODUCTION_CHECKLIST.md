@@ -82,9 +82,13 @@ Format: MP3
 
 ### Video 1 Description
 ```
-After 8 years of waiting for AI, we can FINALLY automate Anki card creation completely.
+After 8 years away from Chinese, I'm finally getting back to language learning—thanks to AI.
 
-In this series, you'll learn how to create 6,250 professional language learning cards in just 2-3 hours using Google Gemini AI—instead of 520-1,040 hours doing it manually.
+Eight years ago (February 2017), I made a video about building Anki cards for Chinese HSK. It was tedious. Life got busy. I quit.
+
+Today? I created 6,250 professional Anki flashcards in just 2 hours using Google Gemini AI.
+
+In this series, you'll learn how to do the same—for ANY of 109 languages.
 
 ⏱️ SERIES BREAKDOWN:
 Video 1 (this one) - The Method [12 min]
@@ -92,15 +96,14 @@ Video 2 - Complete Setup Guide [14 min]
 Video 3 - Generate 625 Cards [13 min]
 Video 4 - Import & Start Learning [11 min]
 
-🌍 SUPPORTS 109 LANGUAGES:
-Arabic, Spanish, Japanese, French, German, Korean, Mandarin, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi, Polish, Dutch, Swedish, Greek, Hebrew, Persian, Indonesian, Bulgarian, Romanian, Norwegian, Danish, Finnish, Czech, Icelandic, Latvian, Lithuanian, Estonian, Slovenian, Croatian, Serbian, Ukrainian, Hungarian, Slovak, Albanian, Macedonian, Bosnian, Armenian, Georgian, Azeri, Kurdish, Pashto, Urdu, Bengali, Gujarati, Marathi, Punjabi, Tamil, Telugu, Kannada, Malayalam, Nepali, Sinhala, Burmese, Khmer, Lao, Tagalog, Indonesian, Malay, Javanese, Sundanese, Malagasy, Samoan, Shona, Zulu, Xhosa, Sotho, Yoruba, Igbo, Somali, Swahili, Hausa, Amharic + 30+ more!
+🌍 WORKS FOR 109 LANGUAGES:
+Including: Chinese, Arabic, Spanish, Japanese, French, German, Korean, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi, Polish, Dutch, Swedish, Greek, Hebrew, Persian, Indonesian, Bulgarian, Romanian, Norwegian, Danish, Finnish, Czech, Icelandic, Latvian, Lithuanian, Estonian, Slovenian, Croatian, Serbian, Ukrainian, Hungarian, Slovak, Albanian, Macedonian, Bosnian, Armenian, Georgian, Azeri, Kurdish, Pashto, Urdu, Bengali, Gujarati, Marathi, Punjabi, Tamil, Telugu, Kannada, Malayalam, Nepali, Sinhala, Burmese, Khmer, Lao, Tagalog, Indonesian, Malay, Javanese, Sundanese, Malagasy, Samoan, Shona, Zulu, Xhosa, Sotho, Yoruba, Igbo, Somali, Swahili, Hausa, Amharic + 30+ more!
 
 ✨ WHAT YOU'LL LEARN:
 • The Fluent Forever method (science-backed language learning)
-• Why automation is now possible (thanks to AI)
-• How to build a professional deck in 2 hours
-• How to scale to 6,250+ cards
-• Why this beats traditional language learning
+• How I wasted 8 years and how AI brings me back
+• Why automation is now possible (thanks to Google Gemini)
+• How to create your target language deck in 2-3 hours (not 1,000+ hours)
 
 📚 KEY CONCEPTS:
 ✓ Spaced Repetition (300% better retention)

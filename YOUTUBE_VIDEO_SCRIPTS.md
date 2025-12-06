@@ -5,28 +5,27 @@
 ### [INTRO - 0:00-1:00]
 
 **[Hook - Start strong]**
-"What if I told you that you could create 6,250 professional Anki flashcards in just 2 hours? 
+"Eight years ago, I created a video about building Anki language cards for Chinese. I was studying for HSK 1 and 2, but creating those cards was incredibly tedious. Life got busy. Work took over. I lost touch with the language completely.
 
-No copying. No pasting. No manually finding images or recording audio.
+But something changed. AI evolved.
 
-Just... press play and watch AI do all the work.
+Today, I can create 6,250 professional Anki flashcards in just 2 hours. No copying. No pasting. No manually finding images or recording audio. Just press play and watch AI do all the work.
 
-8 years ago, I made a video about creating language cards. Back then, automation was impossible. But AI has changed everything. And I'm about to show you exactly how."
+I'm getting back into Chinese. And this time, with AI, it's going to be different. I'm about to show you exactly how."
 
-**[Visual: Show "Before: 1,000+ hours" vs "After: 2 hours" side-by-side]**
+**[Visual: Show your 2017 YouTube video thumbnail → new 2025 video thumbnail → "Before: 1,000+ hours" vs "After: 2 hours" side-by-side]**
 
 ---
 
 ### [PROBLEM STATEMENT - 1:00-2:30]
 
 **[The pain point]**
-"Here's the reality of traditional flashcard creation:
+"I experienced this firsthand. Eight years ago, I was trying to learn Chinese. To create ONE professional card for a single Chinese word, you need:
 
-To create ONE professional card, you need:
-- A natural sentence with the word
-- Native speaker audio
-- A relevant image
-- Proper formatting for Anki
+- A natural sentence with the word (requires native speaker knowledge)
+- Native speaker audio (expensive or hard to find)
+- A relevant image (time-consuming search)
+- Proper formatting for Anki (technical)
 
 That takes 5-10 minutes per card. Just one.
 
@@ -34,9 +33,9 @@ Now, multiply that by 6,250 cards. Do the math.
 
 That's 520 to 1,040 hours of tedious, repetitive work.
 
-Nearly a full-time job just to make flashcards.
+Nearly a full-time job. No wonder I quit and got busy with work instead.
 
-Is it any wonder most language learners quit? They burn out before they even start learning."
+Is it any wonder most language learners burn out? They don't finish the cards before life gets in the way."
 
 **[Visual: Show timer ticking up to 1,000 hours]**
 
@@ -156,13 +155,13 @@ Compare that to the traditional method: 520-1,040 hours. Or paying hundreds of d
 ### [SUPPORTED LANGUAGES - 11:00-11:30]
 
 **[The scope]**
-"This system works with 109 languages:
+"This system works with 109 languages. In this series, I'm demonstrating with Chinese (my HSK learning goal), but the exact same process works for:
 
-All major languages: Arabic, Spanish, Japanese, French, German, Korean, Mandarin, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi...
+All major languages: Arabic, Spanish, Japanese, French, German, Korean, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi...
 
-Plus dozens of less common languages you won't find elsewhere: Armenian, Georgian, Kurdish, Uyghur, Khmer, Lao...
+Plus dozens of less common languages: Armenian, Georgian, Kurdish, Uyghur, Khmer, Lao...
 
-Whether you're learning your second language or your fifth, this works for you."
+If you're learning Chinese, Spanish, Japanese, or any of 109 languages, this works for you. Just follow along with your own language."
 
 **[Visual: Map or collage of country flags]**
 
@@ -171,11 +170,11 @@ Whether you're learning your second language or your fifth, this works for you."
 ### [OUTRO - 11:30-12:00]
 
 **[Call to action]**
-"If you're serious about language learning, this series will change your life.
+"If you're serious about language learning, this series will change your life. I waited 8 years to get back into Chinese. I'm not waiting anymore.
 
-Click the link in the description to move to Video 2: The Setup Guide.
+Click the link in the description to move to Video 2: The Setup Guide. In less than 2 hours, you'll have a complete Chinese deck ready to study.
 
-And if you have questions, drop them in the comments. I read every single one.
+And if you have questions, drop them in the comments. I read every single one. Let me know what language you're learning too—I want to hear your story.
 
 Let's go."
 
