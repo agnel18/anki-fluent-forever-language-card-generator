@@ -49,7 +49,7 @@ AUDIO_DIR = OUTPUT_DIR / "audio"
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"
 
 print(f"\n{'='*60}")
-print(f"🌍 DOWNLOADING AUDIO FOR: {LANGUAGE_NAME}")
+print(f"DOWNLOADING AUDIO FOR: {LANGUAGE_NAME}")
 print(f"{'='*60}")
 print(f"Language Code: {LANGUAGE_CODE}")
 print(f"Output Directory: {OUTPUT_DIR}")
@@ -90,13 +90,17 @@ def download_audio(driver: webdriver.Chrome, text: str, outfile: Path) -> bool:
         textarea.send_keys(text)
 
         print(f"    Setting language to {LANGUAGE_NAME}...")
-        voice_select = wait.until(EC.presence_of_element_located((By.NAME, "voice")))
+        voice_select = wait.until(EC.element_to_be_clickable((By.NAME, "voice")))
+        time.sleep(0.5)  # Wait for dropdown to be fully interactive
         voice_select.send_keys(LANGUAGE_NAME)
+        time.sleep(0.3)
         voice_select.send_keys(Keys.RETURN)
+        time.sleep(0.5)  # Let dropdown close
 
         print(f"    Clicking submit...")
         submit_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[type='submit']")))
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", submit_btn)
+        time.sleep(0.3)
         try:
             submit_btn.click()
         except ElementClickInterceptedException:
