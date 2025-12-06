@@ -1,14 +1,14 @@
 # ✅ BEFORE PUBLISHING TO GITHUB
 
-## Required Action: Create the Anki Template File
+## Required Action: Ship the Anki Template File
 
 ### Why is this needed?
 
-Your documentation references `Anki Arabic Template/Arabic Template.apkg` as a pre-made template file that users can import. **This file doesn't exist yet!** You need to create it once so users can skip manual Anki setup.
+Your documentation references `Anki Arabic Template/Language Learning Template.apkg` as a pre-made template file that users can import. Ensure the latest template (no notes) is present so users can skip manual Anki setup.
 
 ### How to create it (10 minutes)
 
-Follow the detailed guide: **`Anki Arabic Template/CREATE_TEMPLATE.md`**
+If rebuilding, follow the detailed guide: **`Anki Arabic Template/CREATE_TEMPLATE.md`**
 
 Quick summary:
 1. Open Anki
@@ -16,7 +16,7 @@ Quick summary:
 3. Create "Arabic Card" note type with 8 fields
 4. Customize card templates (front/back)
 5. Export as `.apkg` file
-6. Save to `Anki Arabic Template/Arabic Template.apkg`
+6. Save to `Anki Arabic Template/Language Learning Template.apkg`
 7. Commit to repository
 
 ### Why include this file?
@@ -41,18 +41,18 @@ When they download your repository:
 ```
 LanguagLearning/
 ├── Anki Arabic Template/
-│   ├── Arabic Template.apkg    ← This file enables instant setup!
+│   ├── Language Learning Template.apkg    ← This file enables instant setup!
 │   ├── README.md
 │   └── CREATE_TEMPLATE.md
 ```
 
 ### Repository checklist before publishing
 
-- [ ] Create `Arabic Template.apkg` using CREATE_TEMPLATE.md
+- [ ] Verify `Language Learning Template.apkg` is present (rebuild if needed)
 - [ ] Test importing the `.apkg` file in a fresh Anki installation
 - [ ] Verify all 8 fields are present
 - [ ] Verify card styling displays correctly (Arabic right-to-left, etc.)
-- [ ] Add to git: `git add "Anki Arabic Template/Arabic Template.apkg"`
+- [ ] Add to git: `git add "Anki Arabic Template/Language Learning Template.apkg"`
 - [ ] Commit: `git commit -m "Add Anki template for beginner-friendly setup"`
 - [ ] Push to GitHub: `git push`
 
@@ -82,6 +82,6 @@ This helps users verify the template works before generating their own cards.
 ✅ README includes multi-language adaptation guide
 ✅ README emphasizes learning benefits (immersion > card creation)
 
-⚠️ **ACTION REQUIRED:** Create `Arabic Template.apkg` before publishing!
+⚠️ **ACTION REQUIRED:** Ensure `Language Learning Template.apkg` is present before publishing!
 
 After creating the template, your repository will be **100% ready** for GitHub and ready for absolute beginners to use! 🚀

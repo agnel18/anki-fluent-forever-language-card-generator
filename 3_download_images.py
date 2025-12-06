@@ -1,18 +1,12 @@
 from __future__ import annotations
-import json
+import os
 import sys
 import time
 from pathlib import Path
 
 import pandas as pd
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
+from dotenv import load_dotenv
 
 # ========== LANGUAGE CONFIGURATION ==========
 def load_language_config() -> dict:
@@ -40,207 +34,195 @@ LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
 LANGUAGE_CODE = CONFIG.get("language_code", "XX")
 OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
 
+# Load environment (.env at repository root)
+load_dotenv(Path(__file__).parent.parent / ".env")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "").strip()
+
 # ========== FILE PATHS ==========
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = BASE_DIR / OUTPUT_BASE  # All output
-AUDIO_DIR = OUTPUT_DIR / "audio"  # For reference (not used in this script)
-IMAGE_DIR = OUTPUT_DIR / "images"  # Where JPG images are saved
-WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Source data with sentences
+OUTPUT_DIR = BASE_DIR / OUTPUT_BASE
+IMAGE_DIR = OUTPUT_DIR / "images"
+WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"
 
 print(f"\n{'='*60}")
-print(f"🌍 DOWNLOADING IMAGES FOR: {LANGUAGE_NAME}")
+print(f"DOWNLOADING IMAGES FOR: {LANGUAGE_NAME}")
 print(f"{'='*60}")
 print(f"Language Code: {LANGUAGE_CODE}")
 print(f"Output Directory: {OUTPUT_DIR}")
 print(f"{'='*60}\n")
 
-# Create directories if they don't exist
-AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+# Create directories
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensure Status column exists in tracking spreadsheet."""
-    if "Status" not in df.columns:
-        df["Status"] = ""
-    df["Status"] = df["Status"].fillna("")
-    return df
-
-
-def safe_word(word: str) -> str:
-    """Clean word for use in filenames (replace special chars)."""
-    return word.replace("/", "-").replace("\\", "-").strip()
-
-
-def get_word_rows(word: str, freq_num: int) -> pd.DataFrame:
-    """
-    Load the 5 sentence rows for this word from working_data.xlsx.
-    Filters rows by file name pattern {freq:04d}_{word}_*
-    """
-    if not WORKING_DATA.exists():
-        print(f"Error: {WORKING_DATA} not found. Run script 1 first.")
-        sys.exit(1)
-    df = pd.read_excel(WORKING_DATA)
-    # Find rows matching this word's file name pattern
-    pattern = f"{freq_num:04d}_{word}_"
-    mask = df["File Name"].str.startswith(pattern, na=False)
-    return df[mask]
-
-
-def build_driver() -> webdriver.Chrome:
-    """
-    Create a Selenium WebDriver instance for Chrome automation.
-    Uses ChromeDriverManager to automatically download compatible ChromeDriver.
-    """
-    options = Options()
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    return driver
-
-
-def download_image_for_sentence(driver: webdriver.Chrome, sentence: str, outfile: Path) -> bool:
-    """
-    Download a clean image (without text) for a sentence from Google Images.
-    
-    Strategy:
-    1. Search Google Images with "pure image" keyword + photo type filter
-    2. Try multiple image results (first 5) to find one without text
-    3. Extract the image URL and download it
-    4. Save to outfile
-    
-    Returns True if successful, False if failed
-    """
-    try:
-        # Use "pure image" keyword to tell Google to filter for text-free images
-        # Also filter by type=photo to get actual photos, not diagrams/charts
-        search_query = f"{sentence} pure image"
-        search_url = f"https://www.google.com/search?q={search_query}&tbm=isch&tbs=itp:photo"
-        driver.get(search_url)
-        wait = WebDriverWait(driver, 15)  # Wait up to 15 seconds
-        time.sleep(2)  # Wait for page to load
-        
-        # Try multiple CSS selectors for finding image thumbnails
-        # (Google changes these frequently, so we try multiple)
-        selectors = [
-            "img.rg_i",  # Common class for image thumbnails
-            "img.Q4LuWd",  # Alternative class
-            "div.H8Rx8c img",  # Image inside container
-            "div[data-ri] img",  # Data-indexed images
-        ]
-        
-        thumbnails = None
-        # Try each selector until we find thumbnails
-        for selector in selectors:
-            try:
-                thumbnails = driver.find_elements(By.CSS_SELECTOR, selector)
-                if thumbnails and len(thumbnails) > 0:
-                    break  # Found thumbnails, use this selector
-            except Exception:  # noqa: BLE001
-                continue  # Try next selector
-        
-        if not thumbnails or len(thumbnails) == 0:
-            print("  Error: No thumbnails found")
-            return False
-        
-        # Try first 5 image results to find one that downloads successfully
-        for idx in range(min(5, len(thumbnails))):
-            try:
-                thumb = thumbnails[idx]
-                src = thumb.get_attribute("src")  # Get the image URL
-
-                
-                # If src is base64 or data URL, try clicking to load full image
-                if not src or not src.startswith("http"):
-                    try:
-                        thumb.click()
-                        time.sleep(1)
-                        large_img = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "img.sFlh5c, img.n3VNCb")))
-                        src = large_img.get_attribute("src")
-                    except Exception:  # noqa: BLE001
-                        continue
-                
-                if not src or not src.startswith("http"):
-                    continue
-                
-                img_data = requests.get(src, timeout=20)
-                if img_data.status_code == 200 and len(img_data.content) > 500:
-                    outfile.write_bytes(img_data.content)
-                    print(f"  Saved image -> {outfile}")
-                    return True
-            except Exception:  # noqa: BLE001
-                continue
-        
-        print("  Error: Could not download any valid images")
+def download_image(search_terms: list[str], outfile: Path) -> bool:
+    """Download a thumbnail image from Pexels trying each search term until one succeeds."""
+    if not PEXELS_API_KEY:
+        print("❌ PEXELS_API_KEY missing. Set it in your .env file.")
         return False
-    except Exception as exc:  # noqa: BLE001
-        print(f"  Error downloading image: {exc}")
-        return False
+
+    headers = {"Authorization": PEXELS_API_KEY}
+
+    for term in search_terms:
+        params = {"query": term, "per_page": 1}
+        try:
+            resp = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=15)
+        except requests.RequestException as exc:  # noqa: BLE001
+            print(f"  Error calling Pexels for '{term}': {exc}")
+            continue
+
+        if resp.status_code != 200:
+            print(f"  Pexels error for '{term}': HTTP {resp.status_code} - {resp.text[:200]}")
+            continue
+
+        data = resp.json()
+        photos = data.get("photos", [])
+        if not photos:
+            print(f"  No images found for query '{term}'")
+            continue
+
+        src = photos[0].get("src", {})
+        image_url = src.get("tiny") or src.get("small") or src.get("medium")
+        if not image_url:
+            print(f"  No usable image URLs for '{term}'")
+            continue
+
+        try:
+            img_resp = requests.get(image_url, timeout=15)
+        except requests.RequestException as exc:  # noqa: BLE001
+            print(f"  Error downloading image for '{term}': {exc}")
+            continue
+
+        if img_resp.status_code != 200 or len(img_resp.content) < 2048:
+            print(f"  Invalid image response for '{term}' (status {img_resp.status_code}, size {len(img_resp.content)})")
+            continue
+
+        outfile.write_bytes(img_resp.content)
+        print(f"  Saved image -> {outfile.name} ({len(img_resp.content)} bytes) [query: '{term}']")
+        return True
+
+    return False
 
 
 def all_images_present(files: list[Path]) -> bool:
-    return all(f.exists() and f.stat().st_size > 0 for f in files)
+    """Check if all image files exist and have reasonable size"""
+    for f in files:
+        if not f.exists():
+            return False
+        if f.stat().st_size <= 1024:
+            return False
+    return True
+
+
+def update_working_data_images(word: str, freq_num: int) -> None:
+    """Update Image column in working_data.xlsx"""
+    df = pd.read_excel(WORKING_DATA)
+    if "Image" in df.columns:
+        df["Image"] = df["Image"].astype("string")
+    pattern = f"{freq_num:04d}_{word}_"
+    mask = df["File Name"].str.startswith(pattern, na=False)
+    
+    for idx in df[mask].index:
+        file_name = df.at[idx, "File Name"]
+        df.at[idx, "Image"] = f"<img src=\"{file_name}.jpg\">"
+    
+    df.to_excel(WORKING_DATA, index=False)
+    print(f"Updated Image column in {WORKING_DATA.name}")
 
 
 def main() -> None:
-    if not EXCEL_FILE.exists():
-        print(f"Error: Excel file not found at {EXCEL_FILE}")
+    """
+    Main workflow:
+    1. Load working_data.xlsx
+    2. Find first word with audio but no images yet
+    3. Search for images on Pexels using the English translation (thumbnail only)
+    4. Download first relevant image for each sentence
+    5. Update Image column with <img src="filename.jpg"> tags
+    """
+    # Verify input file exists
+    if not WORKING_DATA.exists():
+        print(f"Error: {WORKING_DATA} not found.")
+        print("   Run script 2 first to download audio.")
         sys.exit(1)
 
-    df = ensure_columns(pd.read_excel(EXCEL_FILE))
-    todo = df[df["Status"] == "audio_done"]
-    if todo.empty:
-        print("No rows with Status=audio_done. Nothing to do.")
-        return
+    if not PEXELS_API_KEY:
+        print("❌ Missing PEXELS_API_KEY. Set it in your .env file before running.")
+        sys.exit(1)
 
-    idx = todo.index[0]
-    word_raw = df.loc[idx, "Arabic Word"]
-    word = safe_word(str(word_raw))
-    freq_num = idx + 1
-    print(f"Starting image download for '{word}' (freq #{freq_num})")
+    # Load working data
+    df = pd.read_excel(WORKING_DATA)
+    
+    # Find first word that needs images (Image column is empty)
+    processed_words = set()
+    
+    for idx in df.index:
+        if pd.isna(df.at[idx, "Image"]) or df.at[idx, "Image"] == "":
+            file_name = df.at[idx, "File Name"]
+            # Extract word from filename pattern: 0001_word_01
+            parts = file_name.split("_")
+            if len(parts) >= 2:
+                freq_num = parts[0]
+                word = "_".join(parts[1:-1])  # Handle multi-part words
+                
+                if word not in processed_words:
+                    processed_words.add(word)
+                    
+                    # Get all sentence rows for this word
+                    pattern = f"{freq_num}_{word}_"
+                    word_mask = df["File Name"].str.startswith(pattern, na=False)
+                    word_rows = df[word_mask]
+                    
+                    print(f"Processing word: '{word}' (frequency #{freq_num})")
+                    print(f"   Sentences to download images for: {len(word_rows)}")
+                    
+                    # Download image for each sentence
+                    target_files: list[Path] = []
+                    
+                    for _, row in word_rows.iterrows():
+                        file_name = row["File Name"]
+                        # Use English translation as the search query (better results), fallback to word
+                        english_translation = str(row.get("English Translation", "")).strip()
 
-    word_rows = get_word_rows(word, freq_num)
-    if word_rows.empty:
-        print(f"Critical: No rows found in working_data.xlsx for word '{word}'. Run script 1 first.")
-        return
+                        # Build a small set of fallbacks: full translation, last two words, last word, then the base word
+                        search_terms: list[str] = []
+                        if english_translation:
+                            search_terms.append(english_translation)
+                            tokens = [t.strip(".,!?;:") for t in english_translation.split() if t.strip(".,!?;:")]
+                            if len(tokens) >= 2:
+                                last_two = " ".join(tokens[-2:])
+                                if last_two not in search_terms:
+                                    search_terms.append(last_two)
+                            if tokens:
+                                last_one = tokens[-1]
+                                if last_one not in search_terms:
+                                    search_terms.append(last_one)
+                        if word not in search_terms:
+                            search_terms.append(word)
 
-    driver = build_driver()
-    target_files: list[Path] = []
+                        filename = f"{file_name}.jpg"
+                        outfile = IMAGE_DIR / filename
+                        target_files.append(outfile)
 
-    try:
-        for _, row in word_rows.iterrows():
-            file_name = row["File Name"]
-            english = row["English Sentence"]
-            filename = f"{file_name}.jpg"
-            outfile = IMAGE_DIR / filename
-            target_files.append(outfile)
+                        if outfile.exists() and outfile.stat().st_size > 1500:
+                            print(f"  Skipping existing: {outfile.name}")
+                            continue
 
-            if outfile.exists() and outfile.stat().st_size > 0:
-                print(f"  Skipping existing image (OK): {outfile.name}")
-                continue
+                        print(f"  Downloading image for: {search_terms[0]} -> {filename}")
+                        ok = download_image(search_terms, outfile)
+                        if ok:
+                            time.sleep(0.5)  # Gentle rate limit for Pexels
 
-            print(f"  Downloading image: {english} -> {filename}")
-            download_image_for_sentence(driver, english, outfile)
-            time.sleep(1.5)
-    finally:
-        driver.quit()
+                    # Update working data if all images present
+                    if all_images_present(target_files):
+                        update_working_data_images(word, int(freq_num))
+                        print(f"Image download complete for '{word}'!")
+                        print(f"   Ready for script 4 (create Anki cards)\n")
+                    else:
+                        print(f"Image download incomplete for '{word}' (some files missing)")
+                    
+                    return  # Process one word at a time
 
-    if all_images_present(target_files):
-        # Update working_data.xlsx with image references
-        work_df = pd.read_excel(WORKING_DATA)
-        pattern = f"{freq_num:04d}_{word}_"
-        mask = work_df["File Name"].str.startswith(pattern, na=False)
-        for idx_work in work_df[mask].index:
-            file_name = work_df.at[idx_work, "File Name"]
-            work_df.at[idx_work, "Image"] = f'<img src="{file_name}.jpg">'
-        work_df.to_excel(WORKING_DATA, index=False)
-        print(f"Updated Image column in {WORKING_DATA.name}")
-        
-        df.at[idx, "Status"] = "images_done"
-        df.to_excel(EXCEL_FILE, index=False)
-        print(f"Images complete for '{word}'. Status set to images_done.")
-    else:
-        print("Images incomplete (some files missing). Status not updated.")
+    print("All words have images! Nothing more to do.")
 
 
 if __name__ == "__main__":

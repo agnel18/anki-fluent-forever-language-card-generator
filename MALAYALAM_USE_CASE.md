@@ -78,7 +78,7 @@ python 4_create_anki_tsv.py
 
 ### Step 6: Import to Anki
 
-1. Import the template: `Anki Arabic Template/Arabic Template.apkg`
+1. Import the template: `Anki Arabic Template/Language Learning Template.apkg`
    - (Note: Template is language-agnostic; rename deck to "Malayalam" after import)
 2. Import TSV: **File** → **Import** → `FluentForever_Malayalam_Perfect/ANKI_IMPORT.tsv`
 3. Copy media files:

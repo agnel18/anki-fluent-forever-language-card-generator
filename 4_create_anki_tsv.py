@@ -86,8 +86,8 @@ def main() -> None:
     df_tracking = ensure_columns(pd.read_excel(EXCEL_FILE))
     todo = df_tracking[df_tracking["Status"] == "images_done"]
     if todo.empty:
-        print("No rows with Status=images_done. Nothing to do.")
-        return
+        print("No rows marked images_done; falling back to all rows in tracking file.")
+        todo = df_tracking
 
     # Load all data rows from working_data.xlsx
     df_work = pd.read_excel(WORKING_DATA)

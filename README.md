@@ -6,6 +6,13 @@ Generate professional language learning cards for Anki with sentences, audio, im
 
 📖 **Book:** [Fluent Forever: How to Learn Any Language Fast and Never Forget It](https://www.amazon.com/Fluent-Forever-Learn-Language-Forget/dp/0385348118) by Gabriel Wyner
 
+## About This Repository
+
+- Language-agnostic pipeline (109 frequency lists included) with one-click language selection.
+- Packaged Anki note-type: `Anki Arabic Template/Language Learning Template.apkg` (no manual setup; works for any language, rename deck after import).
+- Modernized media pipeline: Gemini sentences, soundoftext audio, Pexels thumbnails via English translation, restartable scripts.
+- Outputs ready for Anki import: TSV + media under `FluentForever_{Language}_Perfect/`.
+
 ## Features
 
 - 🤖 **AI-Powered Sentences**: Uses Google Gemini API to generate **10 natural sentences per word** (maximum token efficiency)
@@ -13,11 +20,21 @@ Generate professional language learning cards for Anki with sentences, audio, im
 - 🌍 **109 Languages Supported**: Instantly switch between any language with 1 command
 - 📋 **Built-in Frequency Lists**: Curated most-common-words lists for all languages (ready to use)
 - 🔊 **Audio**: Downloads native speaker audio from soundoftext.com (50+ language support)
-- 🖼️ **Images**: Downloads relevant clean images from Google Images
+- 🖼️ **Images**: Downloads clean thumbnail images from **Pexels** (uses English translation for better results)
 - 📝 **IPA Transliteration**: Includes International Phonetic Alphabet for pronunciation
 - 📊 **Progress Tracking**: Tracks processing status for each word
 - 🔄 **Restartable**: Each script is independent and can be restarted without losing work
 - ⚙️ **Language-Agnostic**: Works with any language's frequency list
+
+### Image Download (Pexels) – Setup, Benefits, and Ethics
+
+- **Setup:** Add your Pexels API key to `.env` (kept out of git).
+   ```
+   PEXELS_API_KEY=your_pexels_key_here
+   ```
+- **How it works:** Script 3 (`3_download_images.py`) searches **Pexels** with the **English translation** of each sentence and downloads a **thumbnail** (`tiny`) to keep downloads light and fast.
+- **Rate limits:** Pexels free tier is roughly **~200 requests/hour**. A full deck (6,250 images) should be run in batches (e.g., 200–400 images, pause 1–2 hours, then continue) to avoid throttling.
+- **Ethical use:** Respect the rate limits, avoid excessive retries, and keep usage to personal learning. Using thumbnails reduces bandwidth impact on Pexels and speeds up your workflow.
 
 ## Why Use This Script?
 
@@ -226,7 +243,7 @@ This tool is now **completely language-agnostic**:
 4. **Update Excel File**:
    - Rename `Arabic Frequency Word List.xlsx` → `{Language} Frequency Word List.xlsx`
    - Add your target language's most common words (find frequency lists online)
-   - Keep same columns: `Arabic Word` → `{Language} Word`, `English Meaning`, `Status`
+   - Keep same columns: `Word`, `English Meaning`, `Status`
 
 5. **Update Output Folder**:
    ```python
@@ -284,7 +301,7 @@ git clone https://github.com/agnel18/anki-fluent-forever-language-card-generator
 cd anki-fluent-forever-language-card-generator
 ```
 
-> 💡 **Note:** This repo includes sample files (6 completed Arabic words) for demonstration. See step 6 below for how to start fresh.
+> 💡 **Note:** This repo previously shipped Arabic sample outputs. If you want a clean start, remove the old sample files listed below.
 
 ### 2. Create Python Virtual Environment
 ```bash
@@ -313,9 +330,9 @@ GOOGLE_API_KEY=your_api_key_here
 1. Open Anki
 2. Click **File** → **Import**
 3. Navigate to `LanguagLearning/Anki Arabic Template/`
-4. Select `Arabic Template.apkg`
+4. Select `Language Learning Template.apkg`
 5. Click **Open**
-6. ✅ Done! You now have the **Arabic** deck with the correct note type
+6. ✅ Done! You now have the note type and card styling ready for any language (rename the deck after import)
 
 **Option B: Create From Scratch** (Advanced users)
 
@@ -323,28 +340,19 @@ See [ANKI_SETUP.md](ANKI_SETUP.md) for detailed manual setup instructions.
 
 ### 6. Prepare Input Excel File
 
-> ⚠️ **Important:** This repository includes **sample output files** (6 completed Arabic words) for demonstration purposes. If you want to start fresh or adapt to another language:
-> 
-> **Delete these files before running:**
-> - `Arabic Frequency Word List.xlsx` (or rename and create your own)
-> - `FluentForever_Arabic_Perfect/working_data.xlsx`
-> - `FluentForever_Arabic_Perfect/ANKI_IMPORT.tsv`
-> - `FluentForever_Arabic_Perfect/audio/*.mp3`
-> - `FluentForever_Arabic_Perfect/images/*.jpg`
->
-> Then create a fresh Excel file as described below.
+> ⚠️ **Important:** If you want to start fresh or adapt to another language, delete any old sample artifacts (e.g., `FluentForever_Arabic_Perfect/*` outputs) and create/rename your own frequency list.
 
-Create `Arabic Frequency Word List.xlsx` in `LanguagLearning/` folder with columns:
-- **Arabic Word**: The Arabic word (e.g., ال, و, في)
-- **English Meaning**: English translation (e.g., the, and, in)
+Create `<Language> Frequency Word List.xlsx` in `LanguagLearning/` folder with columns:
+- **Word**: The target-language word
+- **English Meaning**: English translation
 - **Status**: Leave empty (will be auto-populated)
 
 Example:
-| Arabic Word | English Meaning | Status |
-|-------------|-----------------|--------|
-| ال          | the             |        |
-| و           | and             |        |
-| في         | in              |        |
+| Word | English Meaning | Status |
+|------|-----------------|--------|
+| hola | hello | |
+| casa | house | |
+| libro | book | |
 
 ## Workflow
 
@@ -399,13 +407,12 @@ python LanguagLearning/2_download_audio.py
 ```
 
 ### Script 3: Download Images (`3_download_images.py`)
-Downloads clean, text-free images from Google Images (Unsplash fallback).
+Downloads clean thumbnail images from **Pexels** using the **English translation** of each sentence (better relevance, lower bandwidth).
 - Finds words with Status=`audio_done`
-- Searches Google Images with "pure image" filter for clean photos
-- Tries multiple results to find best image
-- Saves to `FluentForever_Arabic_Perfect/images/`
+- Queries Pexels with the English translation; downloads thumbnail (`tiny`) to save bandwidth
+- Saves to `FluentForever_{Language}_Perfect/images/`
 - Updates Image column with `<img src="filename.jpg">`
-- Updates Status → `images_done`
+- (Rate limits) Free tier is ~200 requests/hour → run in batches if needed
 
 **Run:**
 ```bash
@@ -427,7 +434,7 @@ python LanguagLearning/4_create_anki_tsv.py
 ## Data Flow
 
 ```
-Arabic Frequency Word List.xlsx
+<Language> Frequency Word List.xlsx
            ↓
     Script 1: Sentences
            ↓
@@ -435,11 +442,11 @@ Arabic Frequency Word List.xlsx
            ↓
     Script 2: Audio
            ↓
-    FluentForever_Arabic_Perfect/audio/
+   FluentForever_{Language}_Perfect/audio/
            ↓
     Script 3: Images
            ↓
-    FluentForever_Arabic_Perfect/images/
+   FluentForever_{Language}_Perfect/images/
            ↓
     Script 4: TSV Export
            ↓
@@ -459,20 +466,20 @@ LanguagLearning/
 ├── README.md
 ├── ANKI_SETUP.md
 ├── .env (keep this secret!)
-├── Arabic Frequency Word List.xlsx
+├── <Language> Frequency Word List.xlsx
 ├── Anki Arabic Template/
-│   └── Arabic Template.apkg       ⭐ PRE-MADE TEMPLATE (INCLUDED!)
-└── FluentForever_Arabic_Perfect/
+│   └── Language Learning Template.apkg       ⭐ PRE-MADE TEMPLATE (INCLUDED!)
+└── FluentForever_{Language}_Perfect/
     ├── working_data.xlsx
     ├── ANKI_IMPORT.tsv
     ├── audio/
-    │   ├── 0001_ال_01.mp3
-    │   ├── 0001_ال_02.mp3
-    │   └── ...
+   │   ├── 0001_word_01.mp3
+   │   ├── 0001_word_02.mp3
+   │   └── ...
     └── images/
-        ├── 0001_ال_01.jpg
-        ├── 0001_ال_02.jpg
-        └── ...
+      ├── 0001_word_01.jpg
+      ├── 0001_word_02.jpg
+      └── ...
 ```
 
 ## Anki Setup (For Complete Beginners)
@@ -494,15 +501,14 @@ This repository includes a ready-to-use Anki template file. **No manual setup re
 
 1. In Anki, click **File** → **Import**
 2. Navigate to this project folder: `LanguagLearning/Anki Arabic Template/`
-3. Select **Arabic Template.apkg**
+3. Select **Language Learning Template.apkg**
 4. Click **Open** (or **Import**)
 5. ✅ Done! You now have an **Arabic** deck with pre-configured fields and card styling
 
 **What's included in the template:**
-- ✅ **Arabic** deck (ready to use)
-- ✅ **Arabic Card** note type with 8 fields (File Name, Word, Meaning, Sentence, IPA, Translation, Sound, Image)
+- ✅ Note type with 8 fields (File Name, Word, Meaning, Sentence, IPA, Translation, Sound, Image)
 - ✅ Front/back card templates optimized for language learning
-- ✅ Proper styling for Arabic text (right-to-left display)
+- ✅ Styling that works for both left-to-right and right-to-left languages (rename the deck after import)
 
 ### Step 3: Import Your Generated Cards
 
@@ -515,8 +521,8 @@ After running scripts 1-4, you'll have `ANKI_IMPORT.tsv` ready to import. See th
 3. **Import TSV**:
    - File → **Import**
    - Select `ANKI_IMPORT.tsv`
-   - Choose note type: **Arabic Card**
-   - Select deck: **Arabic**
+   - Choose the note type from the template (preloaded by `Language Learning Template.apkg`)
+   - Select your target-language deck
    - Click **Import**
 
 ### Import Media Files
@@ -525,12 +531,12 @@ After importing TSV, you need to add the audio and image files:
 
 1. In Anki, click **Tools** → **Check Media**
 2. Click **View Files** to open the media folder
-3. In your file explorer, navigate to `FluentForever_Arabic_Perfect/audio/`
+3. In your file explorer, navigate to `FluentForever_{Language}_Perfect/audio/`
 4. Select all MP3 files (Ctrl+A)
 5. Copy them (Ctrl+C)
 6. Go back to Anki's media folder
 7. Paste (Ctrl+V)
-8. Repeat for images from `FluentForever_Arabic_Perfect/images/`
+8. Repeat for images from `FluentForever_{Language}_Perfect/images/`
 
 ⚠️ **Important**: Copy the individual files, NOT the folders!
 
@@ -569,18 +575,18 @@ python LanguagLearning/4_create_anki_tsv.py
 
 ### "No rows with Status=sentences_done"
 - Run script 1 first to generate sentences
-- Check `Arabic Frequency Word List.xlsx` has empty Status column
+- Check your `<Language> Frequency Word List.xlsx` has empty Status column
 
 ### Audio download fails
-- Ensure Chrome browser is installed and up to date
 - Check internet connection
 - soundoftext.com may be temporarily down, try again later
+- If many requests in a row, wait 1–2 minutes and rerun
 
 ### Image download fails
-- "pure image" filter might not return results for some search terms
-- Script automatically tries Google Images fallback
+- Ensure `PEXELS_API_KEY` is set in `.env`
 - Check internet connection
-- Manual image download recommended if automatic fails
+- Pexels free tier rate limit is ~200 requests/hour; wait and rerun if you hit it
+- Some words may simply have no good results; add manually if needed
 
 ### Permission denied on Excel
 - Close Excel files before running scripts
@@ -597,20 +603,20 @@ Each Anki card contains:
 
 | Field | Example | Format |
 |-------|---------|--------|
-| File Name | 0001_ال_01 | {freq:04d}_{word}_{sentence:02d} |
-| What is the Word? | ال | Arabic word |
-| Meaning of the Word | the | English translation |
-| Arabic Sentence | البيت كبير. | Full Arabic sentence |
-| IPA Transliteration | /al-baytu kabir/ | IPA pronunciation |
-| English Sentence | The house is big. | English translation |
-| Sound | [sound:0001_ال_01.mp3] | Anki sound tag |
-| Image | <img src="0001_ال_01.jpg"> | Anki image tag |
+| File Name | 0001_word_01 | {freq:04d}_{word}_{sentence:02d} |
+| What is the Word? | palabra | Target word |
+| Meaning of the Word | word | English translation |
+| Arabic Sentence | La palabra es útil. | Target-language sentence (field name kept for compatibility) |
+| IPA Transliteration | /paˈlaβɾa/ | IPA pronunciation |
+| English Sentence | The word is useful. | English translation |
+| Sound | [sound:0001_word_01.mp3] | Anki sound tag |
+| Image | <img src="0001_word_01.jpg"> | Anki image tag |
 
 ## API Costs
 
 - **Google Gemini API**: Free tier available (up to 15 requests/minute)
 - **Audio (soundoftext.com)**: Free
-- **Images (Google Images/Unsplash)**: Free
+- **Images (Pexels API thumbnails)**: Free tier (rate limited ~200 requests/hour)
 
 ## Tips & Best Practices
 

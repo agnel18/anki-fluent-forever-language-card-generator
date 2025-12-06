@@ -2,21 +2,21 @@
 
 ## Quick Start (Recommended for Beginners)
 
-**Good news!** This repository includes a pre-made Anki template file: `Anki Arabic Template/Arabic Template.apkg`
+**Good news!** This repository includes a pre-made Anki template file: `Anki Arabic Template/Language Learning Template.apkg`
 
 ### Using the Pre-Made Template (2 minutes)
 
 1. Open Anki
 2. Click **File** → **Import**
 3. Navigate to `LanguagLearning/Anki Arabic Template/`
-4. Select `Arabic Template.apkg`
+4. Select `Language Learning Template.apkg`
 5. Click **Open**
-6. ✅ Done! You now have the **Arabic** deck ready to use
+6. ✅ Done! You now have the note type and styling ready; rename the deck to your target language
 
 **The template includes:**
-- ✅ Pre-configured **Arabic Card** note type with 8 fields
+- ✅ Pre-configured note type with 8 fields
 - ✅ Optimized card styling for language learning
-- ✅ Right-to-left text support for Arabic
+- ✅ Left-to-right and right-to-left support
 - ✅ Ready to import TSV files
 
 **Skip to [Importing TSV Files](#importing-tsv-files) below.**
@@ -32,13 +32,13 @@ Only follow this section if you want to customize the template or create it from
 1. **In Anki, create the deck structure:**
    - Right-click on "Default" deck
    - Click "New Deck"
-   - Name it "Arabic"
+   - Name it with your target language (e.g., "Malayalam")
 
 2. **Create the Note Type:**
    - Click **Tools** → **Manage Note Types**
    - Click **Add**
    - Select **Clone: Basic**
-   - Name it "Arabic Card"
+   - Name it something memorable (e.g., "Language Card")
    
 3. **Add Fields:**
    - Click **Fields**
@@ -76,10 +76,10 @@ Only follow this section if you want to customize the template or create it from
    - Select **Export**
    - Choose **Export format: Single file (.apkg)**
    - Choose the save location
-   - Save as **ANKI_IMPORT.apkg**
+   - Save as **Language Learning Template.apkg** (or your own name)
 
 6. **Move the file:**
-   - Copy `ANKI_IMPORT.apkg` to `FluentForever_Arabic_Perfect/` directory
+   - Copy the exported `.apkg` to `Anki Arabic Template/` for reuse
 
 ## Importing TSV Files
 
@@ -88,8 +88,8 @@ After you have the Anki template set up (either using the pre-made `.apkg` or ma
 1. Click **File** → **Import**
 2. Select your generated `ANKI_IMPORT.tsv`
 3. Ensure these settings:
-   - **Deck**: Arabic
-   - **Type**: Arabic Card
+   - **Deck**: your target deck
+   - **Type**: the note type from the template
    - **Map columns**: Match columns to fields
    - **Options**: Duplicate handling = Replace
 4. Click **Import**
@@ -100,8 +100,8 @@ Your cards are now in Anki!
 
 1. In Anki, go to **Tools** → **Check Media**
 2. Click **View Files** (opens collection.media folder)
-3. Copy audio files from `FluentForever_Arabic_Perfect/audio/` to this folder
-4. Copy image files from `FluentForever_Arabic_Perfect/images/` to this folder
+3. Copy audio files from `FluentForever_{Language}_Perfect/audio/` to this folder
+4. Copy image files from `FluentForever_{Language}_Perfect/images/` to this folder
 5. ⚠️ Copy FILES, not FOLDERS!
 6. Close the media check window
 

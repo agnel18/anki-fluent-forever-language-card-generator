@@ -41,10 +41,10 @@ LanguagLearning/
 ├── 2_download_audio.py                 ← Full comments
 ├── 3_download_images.py                ← Full comments
 ├── 4_create_anki_tsv.py                ← Full comments
-├── Arabic Frequency Word List.xlsx     ← Input: words to process
+├── <Language> Frequency Word List.xlsx     ← Input: words to process
 ├── Anki Arabic Template/
-│   └── Arabic Template.apkg            ← ⭐ PRE-MADE TEMPLATE (INCLUDE THIS!)
-└── FluentForever_Arabic_Perfect/
+│   └── Language Learning Template.apkg            ← ⭐ PRE-MADE TEMPLATE (INCLUDE THIS!)
+└── FluentForever_{Language}_Perfect/
     ├── working_data.xlsx               ← Review file (30 rows)
     ├── ANKI_IMPORT.tsv                 ← Ready for Anki import
     ├── audio/                          ← 30 MP3 files
@@ -54,10 +54,10 @@ LanguagLearning/
 ### 🚀 Quick Start for Users (Absolute Beginners Welcome!)
 
 1. **Install Anki** - Download from [ankiweb.net](https://apps.ankiweb.net/)
-2. **Import template** - Use `Anki Arabic Template/Arabic Template.apkg` (included!)
+2. **Import template** - Use `Anki Arabic Template/Language Learning Template.apkg` (included!)
 3. **Read README.md** - Understand the workflow
 4. **Set up .env** - Add Google Gemini API key (free!)
-5. **Prepare input Excel** - Add Arabic words to track
+5. **Prepare input Excel** - Add your target-language words to track
 6. **Run scripts sequentially**:
    ```bash
    # Activate virtual environment first!
@@ -167,7 +167,7 @@ The commented code teaches:
 
 ### 🎯 Next Steps for Users
 
-1. Add more words to `Arabic Frequency Word List.xlsx`
+1. Add more words to `<Language> Frequency Word List.xlsx`
 2. Run the scripts repeatedly to build up a deck
 3. Customize Anki card templates as desired
 4. Study with the generated flashcards!
