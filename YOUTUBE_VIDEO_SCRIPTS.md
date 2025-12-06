@@ -1,6 +1,22 @@
-# YouTube Video Scripts & Talking Points
+# YouTube Video Script - Single Video Guide
 
-## VIDEO 1: The Revolutionary Method (12 min)
+## THE COMPLETE GUIDE: From Zero to 625 Anki Cards in 2 Hours (50 min)
+
+**Jump to Sections:**
+- [0:00] Intro & Hook
+- [1:00] The Problem
+- [2:30] The Solution: Fluent Forever Method
+- [5:00] Why This Works Now (The AI Revolution)
+- [7:00] What You'll Get
+- [8:00] **SECTION BREAK 1:** Setup Guide Begins Here
+- [20:00] **SECTION BREAK 2:** Generation Begins Here
+- [35:00] **SECTION BREAK 3:** Import & Learning Begins Here
+- [45:00] Pro Tips & Scaling
+- [48:30] Outro
+
+---
+
+## PART 1: THE METHOD & WHY IT WORKS (0:00-8:00)
 
 ### [INTRO - 0:00-1:00]
 
@@ -121,36 +137,29 @@ We can now automate the entire process. From raw frequency word lists to ready-t
 
 ---
 
-### [SERIES ROADMAP - 9:00-11:30]
+### [WHAT YOU'LL GET - 8:00-8:30]
 
-**[What you'll learn]**
-"In this 4-video series, you'll learn:
+**[The outcome]**
+"By the end of this video, you'll know how to:
+- Set up all free tools (5 tools, $0 total)
+- Generate 625 AI-written sentences in any language
+- Download native speaker audio automatically
+- Find relevant images for each word
+- Import everything into Anki in under 5 minutes
 
-**Video 1 (this one): The Method**
-Why this works. Why now. The science behind it.
+And you'll have a complete, professional language learning deck ready to use.
 
-**Video 2: Setup (14 min)**
-Everything you need to get started. All free tools. Step-by-step for absolute beginners. No coding experience needed—seriously.
+This is the same method used by polyglots and language professionals. Now you can build it in 2-3 hours instead of 1,000+ hours.
 
-**Video 3: The Magic (13 min)**
-We'll generate a complete deck of 625 cards in about 2 hours. You'll see exactly how it works.
+Stick with me. This is going to change how you learn languages."
 
-**Video 4: Import & Learn (11 min)**
-Import everything into Anki. Customize it. Start studying. And learn how to scale to 6,250+ cards.
-
-**By the end of this series, you'll have:**
-- A complete, professional language learning deck
-- Understanding of the Fluent Forever method
-- The ability to create decks for ANY of 109 languages
-- A system that's actually fun to use
-
-And it will have taken you just 2-3 hours total.
-
-Compare that to the traditional method: 520-1,040 hours. Or paying hundreds of dollars for pre-made decks that don't fit your needs."
-
-**[Visual: Show series playlist/thumbnails]**
+**[Visual: Show finished example cards from different languages]**
 
 ---
+
+---
+
+## PART 2: COMPLETE SETUP GUIDE (8:30-20:00)
 
 ### [SUPPORTED LANGUAGES - 11:00-11:30]
 
@@ -180,45 +189,26 @@ Let's go."
 
 **[Visual: Subscribe button animation + next video preview]**
 
----
-
----
-
-## VIDEO 2: Setup Guide (14 min)
-
-### [INTRO - 0:00-0:45]
-
-**[Energy]**
-"Welcome back! You're ready to set up your language learning system.
-
-Don't worry—this looks intimidating but it's actually super simple. Think of it as 'installing apps on your phone' - you've done that before.
-
-By the end of this video, you'll have everything installed and ready to generate your first batch of cards.
-
-Let's go."
-
-**[Visual: Show the 5 tools we'll install with checkmarks]**
-
----
-
-### [WHAT WE'RE INSTALLING - 0:45-2:00]
+### [WHAT WE'RE INSTALLING - 8:30-9:30]
 
 **[Overview]**
-"Here's what you need (all free):
+"Here's everything you need (all free):
 
-**1. Anki** - Your flashcard app (where you'll study)
+**1. Anki** - Your flashcard app
 **2. VS Code** - Our code editor (don't worry, you won't be 'coding')
 **3. Python** - The language that runs our scripts
 **4. Google Gemini API Key** - Free AI for sentences
 **5. Pexels API Key** - Free images
 
-Total install time: 20-30 minutes. Total cost: $0."
+Total install time: 20-30 minutes. Total cost: $0.
+
+If you already have any of these, great—skip ahead. If not, stay with me."
 
 **[Visual: Show each tool's logo]**
 
 ---
 
-### [INSTALL ANKI - 2:00-3:30]
+### [INSTALL ANKI - 9:30-10:30]
 
 **[Step-by-step]**
 
@@ -244,7 +234,7 @@ Easy, right?"
 
 ---
 
-### [INSTALL VS CODE - 3:30-5:00]
+### [INSTALL VS CODE - 10:30-11:45]
 
 **[Step-by-step]**
 
@@ -268,7 +258,7 @@ You're doing great. Two down, three to go."
 
 ---
 
-### [INSTALL PYTHON - 5:00-7:00]
+### [INSTALL PYTHON - 11:45-13:30]
 
 **[Step-by-step]**
 
@@ -306,7 +296,7 @@ You're almost there."
 
 ---
 
-### [GET GOOGLE GEMINI API KEY - 7:00-8:30]
+### [GET GOOGLE GEMINI API KEY - 13:30-14:45]
 
 **[Step-by-step]**
 
@@ -330,7 +320,7 @@ Leave this browser tab open."
 
 ---
 
-### [GET PEXELS API KEY - 8:30-9:00]
+### [GET PEXELS API KEY - 14:45-15:30]
 
 **[Step-by-step]**
 
@@ -354,7 +344,7 @@ Done. You now have both API keys."
 
 ---
 
-### [DOWNLOAD PROJECT FILES - 10:30-12:00]
+### [DOWNLOAD PROJECT FILES - 15:30-17:00]
 
 **[Step-by-step]**
 
@@ -376,7 +366,7 @@ This gives you all our scripts and files. They're pre-written. You're not writin
 
 ---
 
-### [SET UP .ENV FILE - 12:00-13:30]
+### [SET UP .ENV FILE - 17:00-18:30]
 
 **[Step-by-step]**
 
@@ -407,9 +397,9 @@ Done. Your API keys are now stored securely. Never share this file with anyone."
 
 ---
 
-### [VERIFICATION & TROUBLESHOOTING - 13:30-14:00]
+### [VERIFICATION & SELECT LANGUAGE - 18:30-20:00]
 
-**[Final check]**
+**[Final check + language selection]**
 
 "Let's verify everything works.
 
@@ -419,15 +409,19 @@ Open VS Code. In the terminal, type:
 
 If you see 'Success!' printed, you're good.
 
-If you see an error, don't panic:
+If you see an error, don't panic. Try:
 
-- 'Python not found' - Re-install Python and check 'Add to PATH'
-- 'Module not found' - Run: **pip install google-generativeai requests python-dotenv**
-- Still stuck? Drop a comment and I'll help.
+**pip install google-generativeai requests python-dotenv**
 
-You're all set! Move to Video 3 to generate your first cards.
+Now, let's pick your language.
 
-See you there!"
+Type: **python 0_select_language.py**
+
+You'll see a numbered list of 109 languages. Pick yours. Type the number and press Enter.
+
+Done. The system is now configured for your language.
+
+You're all set. Next section: We generate your cards."
 
 **[Visual: Show checklist with everything checked off]**
 
@@ -435,18 +429,18 @@ See you there!"
 
 ---
 
-## VIDEO 3: Generate Cards (13 min)
+## PART 3: GENERATE YOUR 625 CARDS (20:00-35:00)
 
-### [INTRO - 0:00-0:45]
+### [INTRO TO GENERATION - 20:00-21:00]
 
 **[Energy]**
-"This is the cool part.
+"Now for the magic.
 
 We're about to generate 625 professional language cards completely automatically.
 
 You literally just press play and watch AI work.
 
-In the next 2 hours, you'll have:
+In the next 15 minutes, I'll show you how to run the scripts. Then in about 2 hours of mostly unattended time, you'll have:
 - 625 personalized sentences
 - 625 native speaker audio files
 - 625 relevant images
@@ -456,42 +450,14 @@ All without touching a single line of code.
 
 Let's do this."
 
-**[Visual: Show finished example cards]**
+**[Visual: Show finished example cards from multiple languages]**
 
 ---
 
-### [SELECT YOUR LANGUAGE - 2:30-4:00]
-
-**[Step-by-step]**
-
-"First, pick your language.
-
-Open VS Code.
-
-Go to File → Open Folder → select the project folder.
-
-Open the terminal (Terminal → New Terminal).
-
-Type: **python 0_select_language.py**
-
-Press Enter.
-
-You'll see a numbered list of 109 languages. Pick yours. Type the number and press Enter.
-
-Done. The system is now configured for your language.
-
-If you want to switch languages later, just run this same script again."
-
-**[Visual: Screen recording of selecting language]**
-
----
-
-### [SCRIPT 1: GENERATE SENTENCES - 4:00-6:00]
+### [SCRIPT 1: GENERATE SENTENCES - 21:00-24:00]
 
 **[Explanation]**
-"Now for the magic.
-
-Script 1 generates sentences using Google Gemini AI.
+"Script 1 generates sentences using Google Gemini AI.
 
 Here's what it does behind the scenes:
 - Takes your language's frequency word list
@@ -499,7 +465,9 @@ Here's what it does behind the scenes:
 - Varies the tense, formality, and context
 - Stores everything in a spreadsheet
 
-Type: **python 1_generate_sentences.py**
+Open VS Code. Make sure you're in your project folder.
+
+Type in the terminal: **python 1_generate_sentences.py**
 
 Press Enter.
 
@@ -507,13 +475,13 @@ You'll see output scrolling by. Don't worry about understanding it—it's just p
 
 Generating 625 sentences takes about 20-30 minutes depending on your internet speed.
 
-This is a good time to grab coffee or check your phone."
+This is a good time to grab coffee or check your phone. The script will keep running."
 
 **[Visual: Screen recording of script running, fast-forwarded]**
 
 ---
 
-### [SCRIPT 2: DOWNLOAD AUDIO - 6:00-8:30]
+### [SCRIPT 2: DOWNLOAD AUDIO - 24:00-27:00]
 
 **[Explanation]**
 "Script 2 downloads native speaker audio.
@@ -528,15 +496,17 @@ Downloading 625 audio files takes about 60-90 minutes depending on internet spee
 
 Again, mostly unattended. You're just watching progress.
 
-**Pro tip:** If the script stops (network error, computer sleep), just run it again. It automatically picks up where it left off. Nothing is lost.
+**Pro tip:** If the script stops (network error, computer sleep, power loss), just run it again. It automatically picks up where it left off. Nothing is lost.
 
-This is why we love this system—it's restart-friendly."
+This is why we love this system—it's restart-friendly.
+
+Go do something else. Come back in an hour."
 
 **[Visual: Screen recording of script running]**
 
 ---
 
-### [SCRIPT 3: DOWNLOAD IMAGES - 8:30-10:00]
+### [SCRIPT 3: DOWNLOAD IMAGES - 27:00-30:00]
 
 **[Explanation]**
 "Script 3 downloads relevant images from Pexels.
@@ -551,13 +521,15 @@ Each image is a small thumbnail to keep file sizes low.
 
 Downloading 625 images takes about 30-45 minutes.
 
-By the end, you'll have folder full of high-quality, relevant images for every single card."
+By the end, you'll have a folder full of high-quality, relevant images for every single card.
 
-**[Visual: Show examples of downloaded images]**
+Again, unattended. Go do something else while this runs."
+
+**[Visual: Show examples of downloaded images from different languages]**
 
 ---
 
-### [SCRIPT 4: EXPORT TO TSV - 10:00-12:30]
+### [SCRIPT 4: EXPORT TO TSV - 30:00-35:00]
 
 **[Explanation]**
 "Finally, Script 4 packages everything into one Anki-import file.
@@ -568,7 +540,7 @@ This creates 'ANKI_IMPORT.tsv' - a file Anki can read and import instantly.
 
 This step takes less than a minute.
 
-By now, you have:
+And you're done. By now, you have:
 ✓ 625 sentences (AI-generated)
 ✓ 625 audio files (native speakers)
 ✓ 625 images (relevant, high-quality)
@@ -580,43 +552,27 @@ All completely automated.
 
 In 2 hours, what would have taken 520 hours to do manually is done.
 
-Ready to import? Watch Video 4."
+You can see all your files in the project folder:
+- /audio folder (625 MP3 files)
+- /images folder (625 JPG files)
+- ANKI_IMPORT.tsv (ready to import)
+
+Ready to import? Let's move to the final section."
 
 **[Visual: Show folder structure with all generated files]**
 
 ---
 
-### [SUMMARY & NEXT STEPS - 12:30-13:00]
-
-**[Recap]**
-"To recap:
-
-1 command per script
-4 scripts total
-~2 hours of mostly unattended time
-625 professional flashcards ready to use
-
-If something goes wrong:
-- Restart the script (it picks up where it left off)
-- Check the README.md file for troubleshooting
-- Drop a comment and I'll help
-
-Next video: We'll import everything into Anki and you'll study your first cards.
-
-See you there."
-
 ---
 
----
+## PART 4: IMPORT INTO ANKI & START LEARNING (35:00-48:30)
 
-## VIDEO 4: Import & Start Learning (11 min)
-
-### [INTRO - 0:00-0:45]
+### [INTRO TO IMPORT - 35:00-35:30]
 
 **[Energy]**
 "You've built your deck. Now let's use it.
 
-In this video:
+In this final section:
 - Import 625 cards into Anki (5 minutes)
 - Set up your first study session
 - Learn pro tips for language learning success
@@ -628,7 +584,7 @@ Let's go."
 
 ---
 
-### [IMPORT TSV INTO ANKI - 0:45-2:30]
+### [IMPORT TSV INTO ANKI - 35:30-37:00]
 
 **[Step-by-step]**
 
@@ -650,7 +606,7 @@ Done. Your cards are now in Anki."
 
 ---
 
-### [ORGANIZE YOUR DECK - 2:30-4:00]
+### [ORGANIZE YOUR DECK - 37:00-38:30]
 
 **[Step-by-step]**
 
@@ -675,7 +631,7 @@ Click the cards to familiarize yourself with the format."
 
 ---
 
-### [COPY MEDIA FILES - 4:00-5:30]
+### [COPY MEDIA FILES - 38:30-40:00]
 
 **[Step-by-step]**
 
@@ -700,7 +656,7 @@ Now your cards will show the audio and images when you study."
 
 ---
 
-### [YOUR FIRST STUDY SESSION - 5:30-7:00]
+### [YOUR FIRST STUDY SESSION - 40:00-42:00]
 
 **[Walkthrough]**
 
@@ -727,36 +683,7 @@ Tomorrow, study again. The same cards will appear, plus new ones. Anki handles t
 
 ---
 
-### [SCALING TO 6,250 CARDS - 7:00-9:00]
-
-**[How to add more]**
-
-"Right now you have 625 cards (62 words × 10 sentences each).
-
-To scale to 6,250 cards (625 words), just repeat the process:
-
-Set an environment variable to tell the scripts how many words to process:
-
-In PowerShell (Windows):
-**$env:BATCH_WORDS=50; python 1_generate_sentences.py**
-
-This generates sentences for 50 words instead of just a few.
-
-Run scripts 2, 3, 4 again.
-
-Now import the new cards into Anki (or the same deck—Anki prevents duplicates automatically).
-
-Keep repeating until you reach your goal.
-
-The beauty: You can do this on your own schedule. Generate 50 cards a week. In 12 weeks, you have 6,250 professional cards.
-
-Or do it all at once if you want. The system is flexible."
-
-**[Visual: Show environment variable setting]**
-
----
-
-### [PRO TIPS FOR SUCCESS - 9:00-10:30]
+### [PRO TIPS FOR SUCCESS - 42:00-45:00]
 
 **[Real advice]**
 
@@ -778,13 +705,52 @@ When you hear the audio, repeat it. Speak the words. This engages your speaking 
 Anki lets you add notes to cards. If a sentence is confusing, add a note explaining it. Make the cards yours.
 
 **Tip 6: Celebrate milestones**
-Every 100 cards reviewed is progress. Every 1,000 cards is major. Celebrate these moments."
+Every 100 cards reviewed is progress. Every 1,000 cards is major. Celebrate these moments.
 
-**[Visual: Show Anki tips graphically]**
+**Tip 7: Scale when ready**
+After you've completed this batch, you can generate more cards. Want 6,250 cards instead of 625?
+
+In PowerShell (Windows):
+**$env:BATCH_WORDS=100; python 1_generate_sentences.py**
+
+This tells the script to process 100 words at a time instead of just a few.
+
+Just rerun scripts 2, 3, and 4, then import the new cards into Anki. Anki automatically prevents duplicates."
+
+**[Visual: Show Anki tips graphically + scaling example]**
 
 ---
 
-### [OUTRO & CALL TO ACTION - 10:30-11:00]
+### [SCALING TO 6,250+ CARDS - 45:00-48:00]
+
+**[How to add more]**
+
+"Right now you have 625 cards (62 words × 10 sentences each).
+
+To scale to 6,250 cards (625 words), repeat the process:
+
+**Option 1: In batches**
+Generate 100 words at a time. It takes about 4-5 hours per batch. Do it weekly or whenever you want.
+
+**Option 2: All at once**
+Set the batch size to 625 and generate all 6,250 cards in one go. Takes about a day, but then you have everything.
+
+**Option 3: Different languages**
+Don't want more Spanish cards? Generate a completely different language! Repeat the language selection step, and generate a new batch for that language.
+
+The system is flexible. You control how much you want to generate, when, and for which language.
+
+The same method works for all 109 languages.
+
+If you have 625 Spanish cards, you can add 625 French cards. Then Arabic. Then Japanese. Your Anki deck can contain cards from multiple languages if you want.
+
+The possibilities are endless."
+
+**[Visual: Show environment variable setting + multiple language examples]**
+
+---
+
+### [OUTRO & CALL TO ACTION - 48:00-50:00]
 
 **[Final message]**
 
@@ -792,16 +758,22 @@ Every 100 cards reviewed is progress. Every 1,000 cards is major. Celebrate thes
 
 This is the same method used by polyglots and language professionals. But now you can build it yourself in 2-3 hours, not 1,000+ hours.
 
+Eight years ago, I created a primitive version of this for Chinese. I quit because life got busy. This time, with AI, it's different. I'm not waiting anymore.
+
 If this helps you, please:
 1. **Subscribe** - I make more language learning content
 2. **Share** - Help others discover this
 3. **Comment** - Tell me your progress. I read and respond to every comment
+4. **Like** - It helps YouTube recommend this to other language learners
 
-And if you get stuck, comment with your error or question. The community and I will help.
+And if you get stuck:
+- Comment with your error or question
+- Check the README.md file in the project for troubleshooting
+- The community will help
 
 Now go. Start studying. Six months from now, you'll surprise yourself with what you can understand.
 
-Good luck."
+The link to everything is in the description. Thank you for watching. Good luck."
 
 **[Visual: Motivational montage of languages, flags, people speaking]**
 
@@ -809,7 +781,7 @@ Good luck."
 
 ---
 
-# Recording Notes
+## PRODUCTION NOTES
 
 ## Screen Recording Tips
 
@@ -835,24 +807,69 @@ Good luck."
 
 ## Editing Tips
 
-1. **Pacing:** Aim for 2-3 minutes per major topic
+1. **Pacing:** Aim for consistent pacing throughout
 2. **Cuts:** Cut awkward pauses, stumbles, long silences
-3. **Graphics:** Add title cards between sections
+3. **Graphics:** Add title cards at each section break (0:00, 8:30, 20:00, 35:00, 48:00)
 4. **Music:** Use royalty-free background music (low volume, doesn't drown out voice)
 5. **Captions:** Auto-generate captions, then manually review for accuracy
 6. **Transitions:** Keep transitions simple (fade, cut, or slide)
+7. **Section Breaks:** Add a visual break/card between each major section so viewers know where to jump
+
+## Timestamps to Add to YouTube Description
+
+```
+0:00 - Intro & Hook (The Problem)
+1:00 - The Pain Point (Why you need this)
+2:30 - The Fluent Forever Method
+5:00 - The AI Revolution
+7:00 - What You'll Get
+8:30 - SETUP SECTION BEGINS: Install Anki
+9:30 - Install VS Code
+10:30 - Install Python
+11:45 - Get Google Gemini API Key
+13:30 - Get Pexels API Key
+15:30 - Download Project Files
+17:00 - Set Up .env File
+18:30 - Verify & Select Language
+20:00 - GENERATION SECTION BEGINS: Script 1 - Generate Sentences
+21:00 - Script 2 - Download Audio
+24:00 - Script 3 - Download Images
+27:00 - Script 4 - Export to TSV
+30:00 - Summary of Generation
+35:00 - IMPORT SECTION BEGINS: Import Into Anki
+35:30 - Organize Your Deck
+37:00 - Copy Media Files
+38:30 - Your First Study Session
+40:00 - Pro Tips for Success
+42:00 - Scaling to 6,250+ Cards
+45:00 - Outro & Call to Action
+48:00 - End
+```
 
 ---
 
-**Total Production Time Estimate:**
-- Scripts: 2 hours (done)
-- Recording: 3-4 hours
-- Editing: 4-5 hours
-- Publishing prep: 1 hour
-- **Total: 10-12 hours for entire series**
+**Production Timeline:**
+- Voiceover recording: 2-3 hours (50 min content, multiple takes)
+- Screen recording: 3-4 hours (pause at breaks, use fast-forward for long processing)
+- Editing: 4-5 hours (cut/trim, add graphics, sync audio, color correction, captions)
+- Publishing prep: 1 hour (thumbnails, description, tags, scheduling)
+- **Total: 10-12 hours for entire single video**
 
 **ElevenLabs Cost:**
 - Free tier: 10,000 words/month
-- Videos use ~2,500 words total
+- Video uses ~2,500 words total
 - **Cost: $0 (well within free tier)**
+
+---
+
+## Key Message to Emphasize
+
+This is ONE complete video. No series. No part 1, 2, 3, 4. Just one 50-minute video with clear section breaks and timestamps in the description so viewers can jump to what they need.
+
+This saves viewers time. They don't waste time watching sections they don't need. They jump straight to:
+- Just the setup? Jump to 8:30
+- Just the generation? Jump to 20:00
+- Just the import? Jump to 35:00
+
+Complete in one sitting. Efficient. Respectful of viewer time.
 

@@ -1,9 +1,9 @@
 # YouTube Production Quick Reference
 
-## 🎬 Series Summary
+## 🎬 Video Summary
 
-**Total Videos:** 4
-**Total Duration:** 50 minutes (12+14+13+11 min)
+**Format:** Single video (NOT a series)
+**Duration:** 50 minutes
 **Audience:** Complete beginners (10-year-olds can follow)
 **Pre-Production:** Scripts completed ✓
 **Tools Needed:** VS Code, Python, Anki, ElevenLabs, Simple video editor (DaVinci Resolve free)
@@ -13,12 +13,13 @@
 ## 📋 Checklist Before Recording
 
 ### Pre-Production
-- [ ] Read through all 4 scripts multiple times
-- [ ] Time each script (should match 12/14/13/11 min)
+- [ ] Read through entire script multiple times
+- [ ] Time the script (should be ~50 minutes total)
 - [ ] Create shot list (what screen you're on for each part)
 - [ ] Prepare demo files (language selected, test data)
 - [ ] Create graphics/thumbnail ideas
 - [ ] Set up ElevenLabs account
+- [ ] Plan section breaks (add visual card at 0:00, 8:30, 20:00, 35:00, 48:00)
 
 ### Recording Setup
 - [ ] Test screen recording software (OBS, Camtasia, or ScreenFlow)
@@ -27,12 +28,13 @@
 - [ ] Disable notifications
 - [ ] Use 1920x1080 resolution
 - [ ] Record all screen recordings first (easier to match voiceover later)
+- [ ] Use fast-forward for waiting periods (script generation, downloads)
 
 ### Voiceover Recording
 - [ ] Read scripts naturally (not robotic)
-- [ ] Record voiceovers in ElevenLabs
-- [ ] Download MP3 files
-- [ ] Label them: "Video1_Intro.mp3", "Video1_Problem.mp3", etc.
+- [ ] Record voiceovers in ElevenLabs (you can paste the entire 2,500-word script)
+- [ ] Download MP3 file
+- [ ] Label it: "SingleVideo_Voiceover.mp3"
 
 ---
 
@@ -50,10 +52,10 @@ Format: MP3
 ```
 
 **Process:**
-1. Copy-paste each section of script into ElevenLabs
+1. Copy-paste the entire script into ElevenLabs
 2. Click "Generate"
 3. Download as MP3
-4. Label file clearly (e.g., "Video2_Setup_Anki.mp3")
+4. Label file clearly (e.g., "SingleVideo_Voiceover.mp3")
 
 **Total Words:** ~2,500 (well within free tier)
 **Cost:** $0
@@ -62,12 +64,12 @@ Format: MP3
 
 ## 🎨 Thumbnail Ideas
 
-| Video | Idea | Colors |
-|-------|------|--------|
-| 1 | "1,000+ hours → 2 hours" timer comparison | Red/Green, bold |
-| 2 | VS Code + Anki + Python icons with "FREE" badge | Blue/White, clean |
-| 3 | Terminal showing "625 cards generated ✓" | Black/Green, hacker aesthetic |
-| 4 | Anki card with checkmark "✓ READY" | Blue/White, success theme |
+**Single Video Thumbnail:**
+- Main idea: "625 Cards in 2 Hours" with huge number
+- Side panel: Split screen showing "Before: 1,000+ hours" vs "After: 2 hours"
+- Colors: Bold red/green contrast, eye-catching
+- Text: Large, bold, readable from thumbnails
+- Optional: Your face showing surprise/excitement
 
 **Thumbnail Best Practices:**
 - Use 1280x720px dimensions
@@ -78,9 +80,8 @@ Format: MP3
 
 ---
 
-## 📱 Video Descriptions (Copy-Paste Ready)
+## 📱 Video Description (Copy-Paste Ready)
 
-### Video 1 Description
 ```
 After 8 years away from Chinese, I'm finally getting back to language learning—thanks to AI.
 
@@ -88,13 +89,14 @@ Eight years ago (February 2017), I made a video about building Anki cards for Ch
 
 Today? I created 6,250 professional Anki flashcards in just 2 hours using Google Gemini AI.
 
-In this series, you'll learn how to do the same—for ANY of 109 languages.
+In this complete guide, you'll learn how to do the same—for ANY of 109 languages.
 
-⏱️ SERIES BREAKDOWN:
-Video 1 (this one) - The Method [12 min]
-Video 2 - Complete Setup Guide [14 min]
-Video 3 - Generate 625 Cards [13 min]
-Video 4 - Import & Start Learning [11 min]
+⏱️ WATCH FULL VIDEO OR JUMP TO SECTION:
+0:00 - Hook & Intro
+8:30 - Setup Guide (5 free tools)
+20:00 - Generate 625 Cards (4 scripts)
+35:00 - Import to Anki & Learn
+48:00 - Pro Tips & Scaling
 
 🌍 WORKS FOR 109 LANGUAGES:
 Including: Chinese, Arabic, Spanish, Japanese, French, German, Korean, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi, Polish, Dutch, Swedish, Greek, Hebrew, Persian, Indonesian, Bulgarian, Romanian, Norwegian, Danish, Finnish, Czech, Icelandic, Latvian, Lithuanian, Estonian, Slovenian, Croatian, Serbian, Ukrainian, Hungarian, Slovak, Albanian, Macedonian, Bosnian, Armenian, Georgian, Azeri, Kurdish, Pashto, Urdu, Bengali, Gujarati, Marathi, Punjabi, Tamil, Telugu, Kannada, Malayalam, Nepali, Sinhala, Burmese, Khmer, Lao, Tagalog, Indonesian, Malay, Javanese, Sundanese, Malagasy, Samoan, Shona, Zulu, Xhosa, Sotho, Yoruba, Igbo, Somali, Swahili, Hausa, Amharic + 30+ more!
@@ -117,16 +119,6 @@ Including: Chinese, Arabic, Spanish, Japanese, French, German, Korean, Vietnames
 • Google Gemini: aistudio.google.com
 • Pexels API: pexels.com/api
 
-⏰ TIMESTAMPS:
-0:00 - Hook
-1:00 - The Problem (why flashcards take forever)
-2:30 - The Fluent Forever Method
-5:00 - Before AI (the old way)
-7:00 - The AI Revolution (what's changed)
-9:00 - Series Roadmap
-11:00 - Supported Languages
-11:30 - Next Steps
-
 🎯 WHO THIS IS FOR:
 • Anyone learning a language
 • People frustrated with traditional language apps
@@ -142,89 +134,13 @@ Including: Chinese, Arabic, Spanish, Japanese, French, German, Korean, Vietnames
 ❌ Any special software
 ✅ Just time and motivation
 
-🚀 NEXT VIDEO:
-Click here to watch Video 2 where we set up everything from scratch.
+💡 PRO TIP:
+If you only need setup help, jump to 8:30. If you just want to see the magic happen, jump to 20:00. If you're ready to start studying, jump to 35:00. No need to watch sections you don't need.
 
-SUBSCRIBE for the full series!
+SUBSCRIBE for more language learning content!
 
 #LanguageLearning #Anki #AI #FluentForever #LanguageHacks #SpacedRepetition
 ```
-
-### Video 2 Description
-```
-Complete setup guide to get everything ready. This is step-by-step for absolute beginners—no coding experience needed.
-
-⏱️ WHAT WE INSTALL:
-0:45 - Anki (flashcard app)
-2:00 - VS Code (code editor)
-3:30 - Python (programming language)
-5:00 - Google Gemini API Key (free AI)
-8:30 - Pexels API Key (free images)
-9:00 - Download project files
-12:00 - Set up .env file
-13:30 - Verify everything works
-
-⏳ TOTAL TIME: ~30-45 minutes
-
-💰 TOTAL COST: $0
-
-📋 WHAT YOU'LL NEED:
-• A Windows/Mac/Linux computer
-• Internet connection
-• Email address (for API keys)
-• ~30 minutes of your time
-
-🔗 LINKS:
-• Anki: ankiweb.net
-• VS Code: code.visualstudio.com
-• Python: python.org/downloads
-• Google Gemini: aistudio.google.com/app/apikey
-• Pexels API: pexels.com/api
-• Project Files: [your-github-link]
-
-✅ AFTER THIS VIDEO:
-✓ Anki installed
-✓ VS Code installed
-✓ Python installed
-✓ API keys configured
-✓ Ready to generate cards!
-
-⚠️ COMMON ISSUES:
-• "Python not found" → Re-install, check "Add to PATH"
-• "Module not found" → Run: pip install google-generativeai requests python-dotenv
-• Can't find API keys → Re-watch the relevant section
-
-🎥 NEXT VIDEO:
-Video 3: We'll generate your first 625 cards automatically!
-
-SUBSCRIBE and hit the bell icon so you don't miss when it drops!
-
-#Setup #Python #Anki #AI #NoCode #BeginnerFriendly
-```
-
-### Video 3 Description
-```
-Watch as AI generates 625 professional language cards completely automatically. You literally just press play and come back in 2 hours.
-
-⏱️ WHAT HAPPENS:
-0:45 - Select your language (109 available)
-4:00 - Script 1: Generate sentences with Google Gemini (25-30 min)
-6:00 - Script 2: Download native audio (60-90 min)
-8:30 - Script 3: Download images from Pexels (30-45 min)
-10:00 - Script 4: Export ready-to-import file (1 min)
-10:30 - Summary
-
-⏳ TOTAL TIME: ~2 hours (mostly unattended)
-
-🤖 WHAT AI DOES FOR YOU:
-✓ Generates 625 varied, natural sentences (using Gemini)
-✓ Downloads native speaker audio (using soundoftext.com)
-✓ Finds relevant images (using Pexels)
-✓ Formats everything for Anki import
-✓ All automatically, no manual work
-
-🌍 WORKS WITH 109+ LANGUAGES:
-All major languages + endangered languages + rare languages
 
 📊 WHAT YOU'LL HAVE AFTER:
 ✓ 625 sentences
