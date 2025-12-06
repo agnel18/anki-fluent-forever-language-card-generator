@@ -50,10 +50,16 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensure Status column exists in tracking spreadsheet."""
-    if "Status" not in df.columns:
-        df["Status"] = ""
-    df["Status"] = df["Status"].fillna("")
+    """Ensure Sentences, Audio, Images columns exist for tracking"""
+    if "Sentences" not in df.columns:
+        df["Sentences"] = 0
+    if "Audio" not in df.columns:
+        df["Audio"] = 0
+    if "Images" not in df.columns:
+        df["Images"] = 0
+    df["Sentences"] = df["Sentences"].fillna(0).astype(int)
+    df["Audio"] = df["Audio"].fillna(0).astype(int)
+    df["Images"] = df["Images"].fillna(0).astype(int)
     return df
 
 
@@ -82,13 +88,9 @@ def main() -> None:
         print(f"Error: {WORKING_DATA} not found. Run scripts 1-3 first.")
         sys.exit(1)
 
-    # Load tracking spreadsheet to find completed words
+    # Load tracking spreadsheet to find completed words (Images >= 10)
     df_tracking = ensure_columns(pd.read_excel(EXCEL_FILE))
-    todo = df_tracking[df_tracking["Status"] == "images_done"]
-    if todo.empty:
-        print("No rows marked images_done; falling back to all rows in tracking file.")
-        todo = df_tracking
-
+    
     # Load all data rows from working_data.xlsx
     df_work = pd.read_excel(WORKING_DATA)
     
@@ -104,15 +106,16 @@ def main() -> None:
     # Export to TSV (tab-separated values) format that Anki can import
     # Anki expects tab-separated values with headers
     completed.to_csv(ANKI_TSV, sep="\t", index=False, encoding="utf-8")
-    print(f"Exported {len(completed)} rows to {ANKI_TSV}")
-
-    # Mark all processed words as complete in the tracking file
-    # This prevents scripts from re-processing them
-    for idx in todo.index:
-        df_tracking.at[idx, "Status"] = "complete"
+    print(f"✅ Exported {len(completed)} rows to {ANKI_TSV}")
+    print(f"\n📊 Summary:")
     
-    # Save updated tracking file
-    df_tracking.to_excel(EXCEL_FILE, index=False)
+    # Show completion counts for each word
+    for idx in df_tracking.index:
+        sentences = df_tracking.at[idx, "Sentences"]
+        audio = df_tracking.at[idx, "Audio"]
+        images = df_tracking.at[idx, "Images"]
+        if sentences > 0 or audio > 0 or images > 0:
+            print(f"   Word #{idx+1}: Sentences={sentences}/10 | Audio={audio}/10 | Images={images}/10}")
     print(f"Marked {len(todo)} words as complete in {EXCEL_FILE.name}")
 
 

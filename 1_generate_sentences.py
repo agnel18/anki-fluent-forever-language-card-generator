@@ -47,6 +47,7 @@ IMAGE_DIR = OUTPUT_DIR / "images"  # JPG images
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Review file with all columns
 MODEL = "gemini-2.0-flash"  # Google Gemini model for sentence generation
 SENTENCES_PER_WORD = 10  # Maximum benefit per token!
+BATCH_WORDS = int(os.getenv("BATCH_WORDS", "5"))  # Process up to this many words per run
 
 # Create directories if they don't exist
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -62,19 +63,22 @@ print(f"{'='*60}\n")
 
 def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Ensure the Status column exists in the tracking spreadsheet.
-    This column is used to track which words have been processed.
+    Ensure tracking columns exist in the frequency list.
     
-    Status values:
-    - "" (empty) = not started
-    - "sentences_done" = sentences generated, ready for audio
-    - "audio_done" = audio downloaded, ready for images
-    - "images_done" = images downloaded, ready for TSV export
-    - "complete" = fully processed
+    Columns track completion counts at each pipeline stage:
+    - Sentences: Number of sentences generated (0-10)
+    - Audio: Number of audio files downloaded (0-10)
+    - Images: Number of images downloaded (0-10)
     """
-    if "Status" not in df.columns:
-        df["Status"] = ""
-    df["Status"] = df["Status"].fillna("")
+    if "Sentences" not in df.columns:
+        df["Sentences"] = 0
+    if "Audio" not in df.columns:
+        df["Audio"] = 0
+    if "Images" not in df.columns:
+        df["Images"] = 0
+    df["Sentences"] = df["Sentences"].fillna(0).astype(int)
+    df["Audio"] = df["Audio"].fillna(0).astype(int)
+    df["Images"] = df["Images"].fillna(0).astype(int)
     return df
 
 
@@ -311,36 +315,46 @@ def main() -> None:
     if not meaning_col:
         print(f"⚠️  No 'Meaning' column found - will use word definition from Gemini")
     
-    # Find first word that needs sentences (Status is empty)
-    todo = df[df["Status"] == ""]
+    # Find words that need sentences (Sentences count is 0)
+    todo = df[df["Sentences"] == 0]
     if todo.empty:
-        print("✅ All words have sentences! Status column has no empty entries.")
+        print("✅ All words have sentences generated!")
         return
 
-    # Get the first word to process
-    idx = todo.index[0]
-    word_raw = df.loc[idx, word_col]
-    word = safe_word(str(word_raw))
-    word_meaning = str(df.loc[idx, meaning_col]) if meaning_col and meaning_col in df.columns else ""
-    freq_num = idx + 1  # Position in frequency list (1-indexed)
-    
-    print(f"\n📝 Processing word #{freq_num}: '{word}' ({word_meaning})")
+    # Process up to BATCH_WORDS words per run to stay under rate limits
+    processed = 0
+    for idx in df.index:
+        if processed >= BATCH_WORDS:
+            print(f"⏸️ Reached batch limit ({BATCH_WORDS} words). Run again for more.")
+            break
+            
+        if df.at[idx, "Sentences"] > 0:
+            continue
+            
+        word_raw = df.loc[idx, word_col]
+        word = safe_word(str(word_raw))
+        word_meaning = str(df.loc[idx, meaning_col]) if meaning_col and meaning_col in df.columns else ""
+        freq_num = idx + 1  # Position in frequency list (1-indexed)
+        
+        print(f"\n📝 Processing word #{freq_num}: '{word}' ({word_meaning})")
 
-    # Generate 10 sentences using Gemini
-    sentences = generate_sentences(word)
-    if not sentences or len(sentences) < 5:
-        print("❌ Failed to generate sentences. Status not updated.")
-        return
+        # Generate 10 sentences using Gemini
+        sentences = generate_sentences(word)
+        if not sentences or len(sentences) < 5:
+            print("❌ Failed to generate sentences. Count not updated for this word.")
+            continue
 
-    # Save to working_data.xlsx (also checks for duplicates)
-    if not append_to_working_data(word, word_meaning, freq_num, sentences):
-        print("⚠️  Rows already exist. Updating status only.")
-    
-    # Mark this word as "sentences_done" so script 2 can process it
-    df.at[idx, "Status"] = "sentences_done"
-    df.to_excel(EXCEL_FILE, index=False, engine="openpyxl")
-    print(f"✅ Updated Status='sentences_done' in frequency list")
-    print(f"✅ Word '{word}' complete! Run script 2 to download audio.")
+        # Save to working_data.xlsx (also checks for duplicates)
+        if not append_to_working_data(word, word_meaning, freq_num, sentences):
+            print("⚠️  Rows already exist. Updating count only.")
+        
+        # Update sentence count (10 sentences generated)
+        actual_count = len(sentences)
+        df.at[idx, "Sentences"] = actual_count
+        df.to_excel(EXCEL_FILE, index=False, engine="openpyxl")
+        print(f"✅ Updated Sentences={actual_count}/10 for word #{freq_num}")
+        print(f"✅ Word '{word}' complete! Run script 2 to download audio.")
+        processed += 1
 
 
 if __name__ == "__main__":

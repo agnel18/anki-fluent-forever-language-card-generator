@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 import sys
 import time
 from pathlib import Path
@@ -41,12 +42,36 @@ LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
 LANGUAGE_CODE = CONFIG.get("language_code", "XX")
 FREQUENCY_FILE = Path(CONFIG.get("frequency_file"))
 OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
+BATCH_WORDS = int(os.getenv("BATCH_WORDS", "5"))
 
 # ========== FILE PATHS ==========
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / OUTPUT_BASE
 AUDIO_DIR = OUTPUT_DIR / "audio"
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"
+TRACKING_FILE = FREQUENCY_FILE  # Frequency list with Status column
+def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure Sentences, Audio, Images columns exist for tracking"""
+    if "Sentences" not in df.columns:
+        df["Sentences"] = 0
+    if "Audio" not in df.columns:
+        df["Audio"] = 0
+    if "Images" not in df.columns:
+        df["Images"] = 0
+    df["Sentences"] = df["Sentences"].fillna(0).astype(int)
+    df["Audio"] = df["Audio"].fillna(0).astype(int)
+    df["Images"] = df["Images"].fillna(0).astype(int)
+    return df
+
+
+def update_audio_count(freq_num: int, count: int) -> None:
+    """Update Audio column count in tracking file"""
+    df_track = ensure_columns(pd.read_excel(TRACKING_FILE))
+    idx = freq_num - 1
+    if 0 <= idx < len(df_track):
+        df_track.at[idx, "Audio"] = count
+        df_track.to_excel(TRACKING_FILE, index=False)
+        print(f"✅ Updated Audio={count}/10 for freq #{freq_num} in {TRACKING_FILE.name}")
 
 print(f"\n{'='*60}")
 print(f"DOWNLOADING AUDIO FOR: {LANGUAGE_NAME}")
@@ -172,35 +197,43 @@ def main() -> None:
 
     # Load working data
     df = pd.read_excel(WORKING_DATA)
-    
-    # Find first word that needs audio (Sound column is empty)
-    # Group by File Name prefix to get unique words
+    df_track = ensure_columns(pd.read_excel(TRACKING_FILE))
     processed_words = set()
-    
+    processed_count = 0
+
     for idx in df.index:
+        if processed_count >= BATCH_WORDS:
+            print(f"⏸️ Reached batch limit ({BATCH_WORDS} words). Run again for more.")
+            break
+
         if pd.isna(df.at[idx, "Sound"]) or df.at[idx, "Sound"] == "":
             file_name = df.at[idx, "File Name"]
-            # Extract word from filename pattern: 0001_word_01
             parts = file_name.split("_")
             if len(parts) >= 2:
-                freq_num = parts[0]
-                word = "_".join(parts[1:-1])  # Handle multi-part words
-                
+                freq_num = int(parts[0])
+                word = "_".join(parts[1:-1])
+
+                # Only process if sentences are complete but audio is not
+                status_idx = freq_num - 1
+                sentences_count = int(df_track.at[status_idx, "Sentences"]) if status_idx < len(df_track) else 0
+                audio_count = int(df_track.at[status_idx, "Audio"]) if status_idx < len(df_track) else 0
+                if sentences_count == 0 or audio_count >= 10:
+                    continue
+
                 if word not in processed_words:
                     processed_words.add(word)
-                    
-                    # Get all sentence rows for this word
+                    processed_count += 1
+
                     pattern = f"{freq_num}_{word}_"
                     word_mask = df["File Name"].str.startswith(pattern, na=False)
                     word_rows = df[word_mask]
-                    
+
                     print(f"📝 Processing word: '{word}' (frequency #{freq_num})")
                     print(f"   Sentences to download: {len(word_rows)}")
-                    
-                    # Download audio for each sentence
+
                     driver = build_driver()
                     target_files: list[Path] = []
-                    
+
                     try:
                         for _, row in word_rows.iterrows():
                             file_name = row["File Name"]
@@ -216,21 +249,20 @@ def main() -> None:
                             print(f"  📥 Downloading: {sentence[:60]}... -> {filename}")
                             ok = download_audio(driver, sentence, outfile)
                             if ok:
-                                time.sleep(1.5)  # Rate limiting
+                                time.sleep(1.5)
                     finally:
                         driver.quit()
 
-                    # Update working data if all audio present
                     if all_audio_present(target_files):
-                        update_working_data_audio(word, int(freq_num))
-                        print(f"✅ Audio complete for '{word}'!")
-                        print(f"   Ready for script 3 (download images)\n")
+                        update_working_data_audio(word, freq_num)
+                        update_audio_count(freq_num, len(target_files))
+                        print(f"✅ Audio complete for '{word}' ({len(target_files)}/10)! Ready for script 3\n")
                     else:
-                        print(f"❌ Audio incomplete for '{word}' (some files missing)")
-                    
-                    return  # Process one word at a time
+                        actual_count = sum(1 for f in target_files if f.exists() and f.stat().st_size > 1024)
+                        update_audio_count(freq_num, actual_count)
+                        print(f"⚠️ Audio incomplete for '{word}' ({actual_count}/{len(target_files)} files)")
 
-    print("✅ All words have audio! Nothing more to do.")
+    print("✅ Audio step finished for this batch.")
 
 
 if __name__ == "__main__":
