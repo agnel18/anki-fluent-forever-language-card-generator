@@ -8,6 +8,8 @@ import pandas as pd
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+GROQ_CLIENT = None
+
 # Load environment variables from .env file (contains GOOGLE_API_KEY)
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -50,6 +52,12 @@ SENTENCES_PER_WORD = 10  # Maximum benefit per token!
 
 # ========== SAFETY LIMITS ==========
 MAX_BATCH_WITHOUT_CONFIRMATION = 10  # Hard limit: max 10 words without user confirmation
+
+# ========== GROQ CONFIGURATION ==========
+USE_GROQ = os.getenv("USE_GROQ", "0").strip() == "1"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MAX_TOKENS = int(os.getenv("GROQ_MAX_TOKENS", "1200"))
+GROQ_TEMPERATURE = float(os.getenv("GROQ_TEMPERATURE", "0.7"))
 
 
 def resolve_batch_words() -> int:
@@ -119,6 +127,35 @@ def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def get_groq_client():
+    """Lazily create and return a Groq client when USE_GROQ is enabled."""
+    global GROQ_CLIENT
+    if GROQ_CLIENT is not None:
+        return GROQ_CLIENT
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        print("❌ ERROR: GROQ_API_KEY is not set in .env file")
+        sys.exit(1)
+    try:
+        from groq import Groq
+    except ImportError:
+        print("❌ ERROR: groq package not installed. Run: pip install groq")
+        sys.exit(1)
+    GROQ_CLIENT = Groq(api_key=api_key)
+    return GROQ_CLIENT
+
+
+def extract_json_block(text: str) -> str:
+    """Best-effort extraction of the first JSON object in a string."""
+    if not text:
+        return ""
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return text[start : end + 1]
+    return text
+
+
 def safe_word(word: str) -> str:
     """
     Clean up word for use in filenames.
@@ -136,27 +173,58 @@ def generate_sentences(word: str, max_retries: int = 3) -> tuple[list[dict] | No
         sentences: List of 10 sentence dicts, or None if failed
         stop_flag: True if we should stop the batch immediately (e.g., quota)
     """
-    prompt = f"""You are an expert {LANGUAGE_NAME} language teacher specializing in language learning using the Fluent Forever method.
+    # Detect if input is a single character/letter
+    is_single_char = len(word.strip()) == 1
+    
+    if is_single_char:
+        prompt = f"""You are an expert {LANGUAGE_NAME} language teacher specializing in language learning.
+
+Character/Letter: {word}
+Target Language: {LANGUAGE_NAME}
+
+FIRST, provide pronunciation and definition of this character in English (1-2 sentences).
+
+Then generate exactly 10 authentic example sentences showing how this character appears in real {LANGUAGE_NAME} words and writing:
+
+Requirements:
+1) Show words containing this character (beginning, middle, end positions)
+2) Different word categories: common nouns, verbs, adjectives, names
+3) Different formality levels: formal, informal, colloquial
+4) Real-world contexts: daily conversation, writing, names, idioms
+5) Progressive difficulty (simple to complex usage patterns)
+6) 8-15 words per sentence
+7) Authentic, natural usage only
+
+Respond ONLY with valid JSON, no extra text, no markdown, no explanation:
+{{
+  "meaning": "Pronunciation and brief definition",
+  "sentences": [
+    {{"sentence": "sentence in {LANGUAGE_NAME} using this character", "english": "English translation", "ipa": "/IPA.pronunciation/"}},
+    ...
+  ]
+}}
+
+Generate the meaning and 10 example sentences now:"""
+    else:
+        prompt = f"""You are an expert {LANGUAGE_NAME} language teacher specializing in language learning using the Fluent Forever method.
 
 Word: {word}
 Target Language: {LANGUAGE_NAME}
 
 FIRST, provide a brief meaning/definition of this word in English (1-2 sentences).
 
-Then generate exactly 10 natural, authentic sentences that demonstrate all common uses of this word.
-
-Coverage requirements:
-1. Different grammatical roles (subject, object, verb, adjective, adverb, preposition)
-2. Different tenses and moods (present, past, future, conditional, subjunctive if applicable)
-3. Different formality levels (formal, informal, colloquial, slang if applicable)
-4. Different real-world contexts (daily life, work, school, family, idioms, proverbs)
-5. Natural collocations and word combinations
+Then generate exactly 10 natural, authentic sentences that collectively cover the main use cases (MECE):
+1) Grammatical roles: subject, object, verb, adjective, adverb, preposition
+2) Tenses/moods: present, past, future, conditional, subjunctive (if applicable)
+3) Formality: formal, neutral, informal/colloquial
+4) Contexts: daily life, work/school, family, idiom/proverb if applicable, one collocation-heavy sentence
+5) Natural collocations and word combinations
 
 Requirements for each sentence:
-- 4-15 words maximum
+- 8-15 words
 - Use only top 1000 most common words (except the target word itself)
 - Authentic usage patterns
-- Progressive difficulty (simple to slightly complex)
+- Difficulty increases from sentence 1 (simplest) to sentence 10 (most complex)
 - Age-appropriate and culturally sensitive
 
 Respond ONLY with valid JSON, no extra text, no markdown, no explanation:
@@ -178,9 +246,21 @@ Generate the meaning and 10 sentences now:"""
                 time.sleep(wait_time)
 
             print(f"   🔄 Generating {SENTENCES_PER_WORD} sentences for '{word}'...")
-            model = genai.GenerativeModel(MODEL)
-            response = model.generate_content(prompt)
-            content = response.text.strip() if response.text else ""
+            if USE_GROQ:
+                client = get_groq_client()
+                response = client.chat.completions.create(
+                    model=GROQ_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=GROQ_TEMPERATURE,
+                    max_tokens=GROQ_MAX_TOKENS,
+                    response_format={"type": "json_object"},
+                )
+                choice = response.choices[0].message if response and response.choices else None
+                content = choice.content.strip() if choice and choice.content else ""
+            else:
+                model = genai.GenerativeModel(MODEL)
+                response = model.generate_content(prompt)
+                content = response.text.strip() if response.text else ""
 
             if not content:
                 print("   ❌ Empty response from API")
@@ -197,9 +277,10 @@ Generate the meaning and 10 sentences now:"""
                 content = content[:-3]
             content = content.strip()
 
-            # Parse JSON
+            # Parse JSON (best effort extraction first)
+            content_json = extract_json_block(content)
             try:
-                data = json.loads(content)
+                data = json.loads(content_json)
             except json.JSONDecodeError as e:
                 print(f"   ❌ JSON parse error: {e}")
                 if attempt == max_retries:
@@ -213,10 +294,9 @@ Generate the meaning and 10 sentences now:"""
             # Validate
             if not isinstance(sentences_list, list) or len(sentences_list) < SENTENCES_PER_WORD:
                 print(f"   ⚠️  Got {len(sentences_list)} sentences, expected {SENTENCES_PER_WORD}")
-                if len(sentences_list) < 5:
-                    if attempt == max_retries:
-                        return None, False
-                    continue
+                if attempt == max_retries:
+                    return None, False
+                continue
 
             # Normalize
             normalized = []
@@ -334,13 +414,16 @@ def main() -> None:
     6. Append rows to working_data.xlsx
     7. Update Status to "sentences_done"
     """
-    # Get Google API key from environment
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        print("❌ ERROR: GOOGLE_API_KEY is not set in .env file")
-        print("   Create .env with: GOOGLE_API_KEY=your_key_here")
-        sys.exit(1)
-    genai.configure(api_key=api_key)
+    # Configure provider
+    if USE_GROQ:
+        get_groq_client()  # validates key and availability
+    else:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            print("❌ ERROR: GOOGLE_API_KEY is not set in .env file")
+            print("   Create .env with: GOOGLE_API_KEY=your_key_here")
+            sys.exit(1)
+        genai.configure(api_key=api_key)
 
     # Verify frequency file exists
     if not EXCEL_FILE.exists():

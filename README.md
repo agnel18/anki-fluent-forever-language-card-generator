@@ -1,6 +1,6 @@
 # Fluent Forever Anki Language Card Generator
 
-Generate professional language learning cards for Anki with sentences, audio, images, and IPA transliterations using Google Gemini API. **Support for 109 languages** with frequency word lists, dynamic language selection, and intelligent sentence generation.
+Generate professional language learning cards for Anki with sentences, audio, images, and IPA transliterations. **Support for 109 languages** with frequency word lists, dynamic language selection, and intelligent sentence generation using **Groq (llama-3.3-70b)** or Google Gemini.
 
 **Based on the [Fluent Forever method](https://fluent-forever.com/) by Gabriel Wyner** - A proven language learning system using spaced repetition, personalized sentences, and multi-sensory memory techniques.
 
@@ -15,11 +15,11 @@ Generate professional language learning cards for Anki with sentences, audio, im
 
 ## Features
 
-- 🤖 **AI-Powered Sentences**: Uses Google Gemini API to generate **10 natural sentences per word** (maximum token efficiency)
+- 🤖 **AI-Powered Sentences**: Uses **Groq llama-3.3-70b** by default (set `USE_GROQ=1`) with Google Gemini fallback; generates **10 natural sentences per word**
 - ✅ **All Use Cases Covered**: Different grammatical contexts, tenses, formality levels, and real-world usage
 - 🌍 **109 Languages Supported**: Instantly switch between any language with 1 command
 - 📋 **Built-in Frequency Lists**: Curated most-common-words lists for all languages (ready to use)
-- 🔊 **Audio**: Downloads native speaker audio from soundoftext.com (50+ language support)
+- 🔊 **Audio**: Downloads native speaker audio from **Google Cloud Text-to-Speech** via service account (fallback: soundoftext.com)
 - 🖼️ **Images**: Downloads clean thumbnail images from **Pexels** (uses English translation for better results)
 - 📝 **IPA Transliteration**: Includes International Phonetic Alphabet for pronunciation
 - 📊 **Progress Tracking**: Tracks processing status for each word
@@ -290,10 +290,11 @@ This tool is now **completely language-agnostic**:
 
 - Python 3.10+
 - Internet connection
-- **Google Gemini API key** (free tier - required for sentence generation)
-- **Google Text-to-Speech API key** (free tier - required for audio generation)
-  - ⚠️ **Note**: Google TTS API requires a credit/debit card on file (even though it's free)
-  - 💡 **No card?** Use the fallback script: `python 2_download_audio_soundoftext.py` (selenium-based)
+- **Groq API key** (recommended default for sentence generation)
+- **Google Gemini API key** (optional fallback; free tier 1,500 req/day)
+- **Google Cloud Text-to-Speech service account JSON** (required for audio generation)
+   - ⚠️ Billing must be enabled once; free tier covers the whole deck (~312k chars of 1M free)
+   - 💡 **No card?** Use the fallback script: `python 2_download_audio_soundoftext.py` (selenium-based)
 - **Pexels API key** (free tier - required for image downloads)
 - Google Chrome browser (only if using soundoftext fallback)
 
@@ -401,9 +402,18 @@ python 2_download_audio_soundoftext.py  # Uses soundoftext.com (selenium-based)
 
 Create a `.env` file in the workspace root with:
 ```
-GOOGLE_API_KEY=your_gemini_api_key_here
+# Sentence generation
+USE_GROQ=1                     # 1 = use Groq (recommended), empty/0 = use Gemini
+GROQ_API_KEY=your_groq_key_here
+GOOGLE_API_KEY=your_gemini_api_key_here  # Only used if USE_GROQ is empty/0
+
+# Images
 PEXELS_API_KEY=your_pexels_api_key_here
+
+# Audio
+AUDIO_SPEED=0.8                # 0.5–2.0 supported; 0.8 is learner-friendly
 ```
+Place your Google Cloud **service account JSON** for Text-to-Speech in `LanguagLearning/`. The scripts auto-detect any `*.json` there; you can also point `GOOGLE_APPLICATION_CREDENTIALS` to the file if you prefer.
 
 ### 5. Set Up Anki Template (Beginner-Friendly)
 
@@ -440,6 +450,17 @@ Example:
 
 The system uses a **5-step pipeline**:
 
+### Quick Start (Current Setup)
+
+- `USE_GROQ=1` (Groq llama-3.3-70b for sentences), `AUDIO_SPEED=0.8`, `.json` service account for TTS placed in `LanguagLearning/`.
+- Run in order:
+   1) `python 0_select_language.py`
+   2) `python 1_generate_sentences.py` (default batch=1; raise with `$env:BATCH_WORDS="3"` after a test word)
+   3) `python 2_download_audio.py`
+   4) `python 3_download_images.py`
+   5) `python 4_create_anki_tsv.py`
+- Import `FluentForever_{Language}_Perfect/ANKI_IMPORT.tsv` into Anki, then copy `audio/` and `images/` files into Anki media folder.
+
 ### Step 0: Select Your Language (One-Time Setup)
 
 ```bash
@@ -460,22 +481,25 @@ python 0_select_language.py
 
 ### Script 1: Generate Sentences (`1_generate_sentences.py`)
 
-Generates **10 natural sentences** for each word using Gemini API (all use cases covered!).
+Generates **10 natural sentences** for each word using **Groq (llama-3.3-70b)** by default (`USE_GROQ=1`). If `USE_GROQ` is empty/0, it falls back to **Google Gemini** (subject to daily quota).
 
 - Reads next word with empty Status
 - Generates 10 sentences covering different grammatical contexts, tenses, formality levels
 - Saves to `working_data.xlsx` for review
 - Updates Status → `sentences_done`
 
+**Safety defaults:** Batch size = 1 word (env `BATCH_WORDS` overridable), max 3 retries with backoff (4s/8s/16s), stops immediately on quota/rate-limit/billing errors.
+
 **Run:**
 ```bash
 python 1_generate_sentences.py
-# Repeat 625 times for all frequency words
+# Increase batch cautiously after testing a word or two:
+$env:BATCH_WORDS="3"; python 1_generate_sentences.py
 ```
 
 ### Script 2: Download Audio (`2_download_audio.py`)
 
-Downloads native speaker audio using **Google Text-to-Speech API** (109 languages supported).
+Downloads native speaker audio using **Google Cloud Text-to-Speech** with a **service account JSON** placed in `LanguagLearning/` (auto-detected). Fallback: `2_download_audio_soundoftext.py` if you cannot enable billing.
 
 - Finds words with Status=`sentences_done`
 - Generates audio at **0.8x speed** (recommended for language learners)
@@ -732,10 +756,9 @@ Each Anki card contains:
 ### 🛡️ Built-in Safety Features
 
 **All scripts include protection against:**
-- ✅ **Max 3 retry attempts** per item (prevents infinite loops)
-- ✅ **Automatic quota detection** - stops immediately when limit hit
-- ✅ **Exponential backoff** - respectful delays between retries
-- ✅ **Batch size limits** - max 10 words without confirmation
+- ✅ **Max 3 retry attempts** per item with backoff (4s → 8s → 16s)
+- ✅ **Automatic quota/rate/billing detection** - stops immediately when limit hit
+- ✅ **Default batch size = 1 word** (env `BATCH_WORDS` to override cautiously)
 - ✅ **Clear error messages** - explains what went wrong and how to fix
 
 **You are protected from:**
@@ -744,20 +767,24 @@ Each Anki card contains:
 - ❌ Quota exhaustion
 - ❌ Rate limit violations
 
-### Google Gemini API (Sentence Generation)
+### Groq API (Sentence Generation - Default)
+- **Model**: llama-3.3-70b-versatile
+- **Quota**: No daily cap; billed per token (see Groq pricing)
+- **Safety**: Same retry/backoff; still stops on unexpected errors
+- **Recommendation**: Start with batch=1, then 3-5 after verifying quality
+
+### Google Gemini API (Sentence Generation - Fallback)
 - **Free Tier**: 15 requests per minute, 1,500 requests per day
-- **Cost**: $0 for reasonable usage
-- **Safety**: Script stops after 3 failed attempts OR when quota hit
-- **Recommendation**: Generate 5-10 words per batch (default: 5)
-- **625 words total**: Spread over 60-120 batches = safe & steady
+- **Safety**: Stops immediately on quota hit (429/insufficient-quota), max 3 retries for transient errors
+- **Recommendation**: Keep batch low (1-3) to avoid hitting daily quota
 
 ### Google Text-to-Speech API (Audio)
 - **Free Tier**: 1 million characters per month
 - **Average**: ~50 characters per sentence
 - **625 words × 10 sentences = 6,250 sentences × 50 chars = 312,500 characters**
-- **Cost**: $0 (well within free tier)
-- **Safety**: Script stops after 3 failed attempts OR when billing error detected
-- **Recommendation**: Generate in small batches to monitor usage
+- **Cost**: $0 (well within free tier) when billing is enabled once
+- **Safety**: Stops on billing/quota errors; retries with backoff for transient issues
+- **Recommendation**: Batch size 1-5 words until confident; monitor console usage if scaling
 
 ### Pexels API (Images)
 - **Free Tier**: ~200 requests per hour

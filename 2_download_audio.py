@@ -17,7 +17,7 @@ load_dotenv()
 # Audio speed for learners (0.8 = 80% speed, slower for comprehension)
 # You can change this: 0.5 (very slow) to 2.0 (fast)
 AUDIO_SPEED = float(os.getenv("AUDIO_SPEED", "0.8"))  # Default: 0.8x speed (recommended for learners)
-SERVICE_ACCOUNT_JSON = "languagelearning-480303-0225aa1c8383.json"  # Path to service account JSON
+SERVICE_ACCOUNT_JSON = "languagelearning-480303-93748916f7bd.json"  # Path to service account JSON
 
 # ========== LANGUAGE CONFIGURATION ==========
 def load_language_config() -> dict:
