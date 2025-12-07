@@ -69,13 +69,34 @@ def select_language():
         except ValueError:
             print("❌ Invalid input. Please enter a number.")
 
+def get_google_tts_code(lang_code):
+    """Map frequency list language code to Google TTS language code"""
+    # Google TTS uses BCP-47 language codes
+    # Most codes are the same, but some need special mapping
+    tts_mapping = {
+        # Common mappings
+        "zh": "zh-CN",  # Chinese -> Chinese (Simplified)
+        "zh-CN": "zh-CN",
+        "zh-TW": "zh-TW",
+        "iw": "he",  # Hebrew (old code -> new code)
+        "jw": "jv",  # Javanese
+        "no": "nb",  # Norwegian -> Norwegian Bokmål
+        # Add more mappings as needed
+    }
+    
+    # Return mapped code or original code
+    return tts_mapping.get(lang_code.lower(), lang_code.lower())
+
 def create_language_config(lang_file, lang_name, lang_code):
     """Create configuration for selected language"""
     config_file = Path(__file__).parent / "language_config.txt"
     
+    google_tts_code = get_google_tts_code(lang_code)
+    
     config = {
         "language_name": lang_name,
         "language_code": lang_code,
+        "google_tts_code": google_tts_code,
         "frequency_file": str(lang_file),
         "output_dir": f"FluentForever_{lang_name.replace(' ', '_')}_Perfect",
     }
@@ -115,10 +136,11 @@ def main():
     print("\n" + "="*60)
     print("📝 CONFIGURATION SUMMARY")
     print("="*60)
-    print(f"Language:      {config['language_name']}")
-    print(f"Language Code: {config['language_code']}")
-    print(f"Frequency File: {config['frequency_file']}")
-    print(f"Output Dir:    {config['output_dir']}")
+    print(f"Language:         {config['language_name']}")
+    print(f"Language Code:    {config['language_code']}")
+    print(f"Google TTS Code:  {config['google_tts_code']}")
+    print(f"Frequency File:   {config['frequency_file']}")
+    print(f"Output Dir:       {config['output_dir']}")
     print("="*60)
     
     print("\n✅ Setup complete! You can now run the scripts:")

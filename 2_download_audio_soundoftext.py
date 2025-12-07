@@ -5,13 +5,16 @@ import time
 from pathlib import Path
 
 import pandas as pd
-from google.cloud import texttospeech
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import ElementClickInterceptedException
+from webdriver_manager.chrome import ChromeDriverManager
 import requests
-
-# ========== CONFIGURATION ==========
-# Audio speed for learners (0.8 = 80% speed, slower for comprehension)
-# You can change this: 0.5 (very slow) to 2.0 (fast)
-AUDIO_SPEED = float(os.getenv("AUDIO_SPEED", "0.8"))  # Default: 0.8x speed (recommended for learners)
 
 # ========== LANGUAGE CONFIGURATION ==========
 def load_language_config() -> dict:
@@ -37,7 +40,6 @@ def load_language_config() -> dict:
 CONFIG = load_language_config()
 LANGUAGE_NAME = CONFIG.get("language_name", "Unknown")
 LANGUAGE_CODE = CONFIG.get("language_code", "XX")
-GOOGLE_TTS_CODE = CONFIG.get("google_tts_code", LANGUAGE_CODE)  # Some languages need different code for TTS
 FREQUENCY_FILE = Path(CONFIG.get("frequency_file"))
 OUTPUT_BASE = CONFIG.get("output_dir", "FluentForever_Output")
 BATCH_WORDS = int(os.getenv("BATCH_WORDS", "5"))
@@ -48,7 +50,6 @@ OUTPUT_DIR = BASE_DIR / OUTPUT_BASE
 AUDIO_DIR = OUTPUT_DIR / "audio"
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"
 TRACKING_FILE = FREQUENCY_FILE  # Frequency list with Status column
-
 def ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure Sentences, Audio, Images columns exist for tracking"""
     if "Sentences" not in df.columns:
@@ -73,10 +74,9 @@ def update_audio_count(freq_num: int, count: int) -> None:
         print(f"✅ Updated Audio={count}/10 for freq #{freq_num} in {TRACKING_FILE.name}")
 
 print(f"\n{'='*60}")
-print(f"DOWNLOADING AUDIO (Google Text-to-Speech): {LANGUAGE_NAME}")
+print(f"DOWNLOADING AUDIO FOR: {LANGUAGE_NAME}")
 print(f"{'='*60}")
-print(f"Language Code: {GOOGLE_TTS_CODE}")
-print(f"Audio Speed: {AUDIO_SPEED}x (0.8 = slower for learners)")
+print(f"Language Code: {LANGUAGE_CODE}")
 print(f"Output Directory: {OUTPUT_DIR}")
 print(f"{'='*60}\n")
 
@@ -89,57 +89,69 @@ def safe_word(word: str) -> str:
     return word.replace("/", "-").replace("\\", "-").strip()
 
 
-def get_tts_client() -> texttospeech.TextToSpeechClient:
-    """Initialize Google Text-to-Speech client"""
+def build_driver() -> webdriver.Chrome:
+    """Create Selenium WebDriver for Chrome automation"""
+    options = Options()
+    options.add_argument("--start-maximized")
+    options.add_argument("--disable-extensions")
     try:
-        client = texttospeech.TextToSpeechClient()
-        return client
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        return driver
     except Exception as exc:
-        print(f"\n❌ ERROR: Failed to initialize Google Text-to-Speech client")
-        print(f"   Details: {exc}")
-        print(f"\n📝 TROUBLESHOOTING:")
-        print(f"   1. Make sure you have enabled Google Text-to-Speech API in Google Cloud Console")
-        print(f"   2. Set up authentication: https://cloud.google.com/docs/authentication/getting-started")
-        print(f"   3. Set GOOGLE_APPLICATION_CREDENTIALS environment variable to your service account key JSON file")
-        print(f"   4. Install the library: pip install google-cloud-texttospeech")
-        print(f"\n💡 NOTE: Google TTS API requires a credit/debit card (even though it's free tier)")
-        print(f"   If you don't have a card, use the fallback script: python 2_download_audio.py")
-        sys.exit(1)
+        print(f"Error creating Chrome driver: {exc}")
+        raise
 
 
-def download_audio_gtts(client: texttospeech.TextToSpeechClient, text: str, outfile: Path) -> bool:
-    """Download audio using Google Text-to-Speech API"""
+def download_audio(driver: webdriver.Chrome, text: str, outfile: Path) -> bool:
+    """Download audio for a sentence from soundoftext.com"""
     try:
-        # Set the text input
-        synthesis_input = texttospeech.SynthesisInput(text=text)
+        print(f"    Opening soundoftext.com...")
+        driver.get("https://soundoftext.com/")
+        wait = WebDriverWait(driver, 20)
 
-        # Build the voice request
-        voice = texttospeech.VoiceSelectionParams(
-            language_code=GOOGLE_TTS_CODE,
-            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-        )
+        print(f"    Finding text input...")
+        textarea = wait.until(EC.presence_of_element_located((By.NAME, "text")))
+        textarea.clear()
+        textarea.send_keys(text)
 
-        # Select the audio file type and set audio speed
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3,
-            speaking_rate=AUDIO_SPEED  # 0.8 = slower for learners, 1.0 = normal, 2.0 = fast
-        )
+        print(f"    Setting language to {LANGUAGE_NAME}...")
+        voice_select = wait.until(EC.element_to_be_clickable((By.NAME, "voice")))
+        time.sleep(0.5)  # Wait for dropdown to be fully interactive
+        voice_select.send_keys(LANGUAGE_NAME)
+        time.sleep(0.3)
+        voice_select.send_keys(Keys.RETURN)
+        time.sleep(0.5)  # Let dropdown close
 
-        # Perform the text-to-speech request
-        response = client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
-        )
+        print(f"    Clicking submit...")
+        submit_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[type='submit']")))
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", submit_btn)
+        time.sleep(0.3)
+        try:
+            submit_btn.click()
+        except ElementClickInterceptedException:
+            driver.execute_script("arguments[0].click();", submit_btn)
 
-        # Write the response to the output file
-        outfile.write_bytes(response.audio_content)
-        print(f"  ✓ Saved audio -> {outfile.name} ({len(response.audio_content)} bytes)")
-        return True
+        print(f"    Waiting for download link to appear...")
+        time.sleep(3)
+        download_link = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a.card__action[download][href]")))
+        mp3_url = download_link.get_attribute("href")
         
+        if not mp3_url:
+            print("  Error: Download link href missing")
+            return False
+        
+        print(f"    Downloading MP3 from URL...")
+        mp3 = requests.get(mp3_url, timeout=20)
+        if mp3.status_code != 200:
+            print(f"  Error: HTTP {mp3.status_code}")
+            return False
+            
+        outfile.write_bytes(mp3.content)
+        print(f"  ✓ Saved audio -> {outfile.name} ({len(mp3.content)} bytes)")
+        return True
     except Exception as exc:
         import traceback
-        print(f"  ❌ Error downloading audio: {exc}")
+        print(f"  Error downloading audio: {exc}")
         print(f"  Details: {traceback.format_exc()[:200]}")
         return False
 
@@ -173,7 +185,7 @@ def main() -> None:
     Main workflow:
     1. Load working_data.xlsx
     2. Find first word with sentences but no audio yet
-    3. Download audio from Google Text-to-Speech API for each sentence
+    3. Download audio from soundoftext.com for each sentence
     4. Update Sound column with [sound:filename.mp3] tags
     5. Mark word as audio_done
     """
@@ -182,9 +194,6 @@ def main() -> None:
         print(f"❌ Error: {WORKING_DATA} not found.")
         print("   Run script 1 first to generate sentences.")
         sys.exit(1)
-
-    # Initialize Google TTS client
-    client = get_tts_client()
 
     # Load working data
     df = pd.read_excel(WORKING_DATA)
@@ -229,24 +238,31 @@ def main() -> None:
             print(f"📝 Processing word: '{word}' (frequency #{freq_num})")
             print(f"   Sentences to download: {len(word_rows)}")
 
+            driver = build_driver()
             target_files: list[Path] = []
 
-            for _, row in word_rows.iterrows():
-                file_name = row["File Name"]
-                sentence = row["Sentence"]
-                filename = f"{file_name}.mp3"
-                outfile = AUDIO_DIR / filename
-                target_files.append(outfile)
+            try:
+                for _, row in word_rows.iterrows():
+                    file_name = row["File Name"]
+                    sentence = row["Sentence"]
+                    filename = f"{file_name}.mp3"
+                    outfile = AUDIO_DIR / filename
+                    target_files.append(outfile)
 
-                if outfile.exists() and outfile.stat().st_size > 1024:
-                    print(f"  ⏭️  Skipping existing: {outfile.name}")
-                    continue
+                    if outfile.exists() and outfile.stat().st_size > 1024:
+                        print(f"  ⏭️  Skipping existing: {outfile.name}")
+                        continue
 
-                print(f"  📥 Downloading: {sentence[:60]}... -> {filename}")
-                ok = download_audio_gtts(client, sentence, outfile)
-                if ok:
-                    # Small delay to be respectful to API
-                    time.sleep(0.2)
+                    print(f"  📥 Downloading: {sentence[:60]}... -> {filename}")
+                    ok = download_audio(driver, sentence, outfile)
+                    if ok:
+                        # Random delay between 2-4 seconds to be respectful to the site
+                        import random
+                        delay = random.uniform(2.0, 4.0)
+                        print(f"    ⏱️  Waiting {delay:.1f}s before next request...")
+                        time.sleep(delay)
+            finally:
+                driver.quit()
 
             if all_audio_present(target_files):
                 update_working_data_audio(word, freq_num)
@@ -257,13 +273,7 @@ def main() -> None:
                 update_audio_count(freq_num, actual_count)
                 print(f"⚠️ Audio incomplete for '{word}' ({actual_count}/{len(target_files)} files)")
 
-    print(f"\n{'='*60}")
-    print(f"✅ Audio step finished for this batch.")
-    print(f"📊 API USAGE NOTE:")
-    print(f"   Google Text-to-Speech free tier: 1 million characters/month")
-    print(f"   This batch used approximately {processed_count * 10 * 50} characters")
-    print(f"   (assuming ~50 chars per sentence)")
-    print(f"{'='*60}\n")
+    print("✅ Audio step finished for this batch.")
 
 
 if __name__ == "__main__":
