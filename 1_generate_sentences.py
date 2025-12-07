@@ -47,7 +47,21 @@ IMAGE_DIR = OUTPUT_DIR / "images"  # JPG images
 WORKING_DATA = OUTPUT_DIR / "working_data.xlsx"  # Review file with all columns
 MODEL = "gemini-2.0-flash"  # Google Gemini model for sentence generation
 SENTENCES_PER_WORD = 10  # Maximum benefit per token!
-BATCH_WORDS = int(os.getenv("BATCH_WORDS", "5"))  # Process up to this many words per run
+
+# ========== SAFETY LIMITS ==========
+MAX_BATCH_WITHOUT_CONFIRMATION = 10  # Hard limit: max 10 words without user confirmation
+BATCH_WORDS = int(os.getenv("BATCH_WORDS", "5"))  # Default: 5 words per run
+
+# Enforce safety limit
+if BATCH_WORDS > MAX_BATCH_WITHOUT_CONFIRMATION:
+    print(f"\n⚠️  WARNING: You requested {BATCH_WORDS} words")
+    print(f"   This will use ~{BATCH_WORDS * SENTENCES_PER_WORD} API requests!")
+    print(f"   Daily limit: 1,500 requests")
+    print(f"\n   Safety limit is {MAX_BATCH_WITHOUT_CONFIRMATION} words without confirmation.")
+    response = input(f"\n   Type 'yes' to proceed with {BATCH_WORDS} words: ").strip().lower()
+    if response != "yes":
+        print("   Cancelled. Reducing to safety limit.")
+        BATCH_WORDS = MAX_BATCH_WITHOUT_CONFIRMATION
 
 # Create directories if they don't exist
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -57,6 +71,7 @@ print(f"\n{'='*60}")
 print(f"🌍 GENERATING {SENTENCES_PER_WORD} SENTENCES FOR: {LANGUAGE_NAME}")
 print(f"{'='*60}")
 print(f"Language Code: {LANGUAGE_CODE}")
+print(f"Batch Size: {BATCH_WORDS} words (max {BATCH_WORDS * SENTENCES_PER_WORD} API requests)")
 print(f"Output Directory: {OUTPUT_DIR}")
 print(f"{'='*60}\n")
 
