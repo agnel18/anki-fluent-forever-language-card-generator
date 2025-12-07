@@ -314,8 +314,15 @@ python -m venv .venv
 ```
 
 ### 3. Install Dependencies
+
+**Option A: Using requirements.txt (recommended)**
 ```bash
-pip install google-generativeai google-cloud-texttospeech pandas openpyxl python-dotenv requests
+pip install -r requirements.txt
+```
+
+**Option B: Manual installation**
+```bash
+pip install google-generativeai pandas openpyxl python-dotenv requests
 
 # Only if using soundoftext.com fallback (no credit/debit card):
 pip install selenium webdriver-manager
@@ -331,30 +338,49 @@ pip install selenium webdriver-manager
 
 #### 4b. Google Text-to-Speech API Key (Required - Audio Generation)
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Enable **Google Cloud Text-to-Speech API**
-4. Create a service account:
-   - Go to **IAM & Admin** → **Service Accounts**
-   - Click **Create Service Account**
-   - Name it (e.g., "anki-tts")
-   - Grant role: **Cloud Text-to-Speech Client**
-   - Click **Done**
-5. Create and download JSON key:
-   - Click on the service account
-   - Go to **Keys** tab
-   - Click **Add Key** → **Create new key** → **JSON**
-   - Save the JSON file securely
-6. Set environment variable:
-   ```bash
-   # Windows PowerShell:
-   $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account-key.json"
-   
-   # Linux/Mac:
-   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-service-account-key.json"
-   ```
+📚 **Official Documentation**: [Google Cloud Text-to-Speech](https://cloud.google.com/text-to-speech?hl=en_GB)
 
-⚠️ **Important**: Google TTS API requires a credit/debit card on file (even though free tier is generous)
+**Step-by-Step Instructions:**
+
+1. **Go to Google Cloud Console**
+   - Visit: [https://console.cloud.google.com/](https://console.cloud.google.com/)
+   - Sign in with your Google account
+
+2. **Create a New Project** (or select existing)
+   - Click the project dropdown at the top
+   - Click **"New Project"**
+   - Name it (e.g., "Anki Language Learning")
+   - Click **"Create"**
+
+3. **Enable Billing** ⚠️ **REQUIRED (even for free tier)**
+   - Go to **"Billing"** in the left sidebar
+   - Click **"Link a Billing Account"**
+   - Add your credit/debit card details
+   - ✅ Don't worry: You won't be charged if you stay within free tier limits (see below)
+
+4. **Enable Cloud Text-to-Speech API**
+   - Go to **"APIs & Services"** → **"Library"**
+   - Search for **"Cloud Text-to-Speech API"**
+   - Click on it, then click **"Enable"**
+
+5. **Create API Key**
+   - Go to **"APIs & Services"** → **"Credentials"**
+   - Click **"Create Credentials"** → **"API Key"**
+   - Copy your API key (it looks like: `AQ.Ab8RN6KSxej5...`)
+   - Click **"Restrict Key"** (recommended):
+     - Under "API restrictions", select "Restrict key"
+     - Choose **"Cloud Text-to-Speech API"** only
+     - Click **"Save"**
+
+6. **Add to `.env` File** (already done in this repo)
+   - The API key is already in `.env` file
+   - ✅ Never commit `.env` to git (it's in `.gitignore`)
+
+⚠️ **IMPORTANT - Stay Within Free Tier Limits**:
+- **Free Tier**: 1 million characters per month
+- **Your Usage**: ~312,500 characters for full 625-word deck
+- **Stay Safe**: Follow the batch recommendations in "API Costs & Rate Limits" section
+- **Monitor**: Check usage at [Google Cloud Console → Billing](https://console.cloud.google.com/billing)
 
 💡 **No credit/debit card?** Use the fallback script:
 ```bash
