@@ -181,43 +181,47 @@ Generate the meaning and 10 sentences now:"""
                 if attempt == max_retries:
                     return None
                 continue
-        
-        # Remove markdown code block markers
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-        content = content.strip()
-        
-        # Parse JSON
-        try:
-            data = json.loads(content)
-        except json.JSONDecodeError as e:
-            print(f"   ❌ JSON parse error: {e}")
-            return None
-        
-        # Extract meaning and sentences
-        meaning = str(data.get("meaning", "")).strip() if isinstance(data, dict) else ""
-        sentences_list = data.get("sentences", data) if isinstance(data, dict) else data
-        
-        # Validate
-        if not isinstance(sentences_list, list) or len(sentences_list) < SENTENCES_PER_WORD:
-            print(f"   ⚠️  Got {len(sentences_list)} sentences, expected {SENTENCES_PER_WORD}")
-            if len(sentences_list) < 5:
-                return None
-        
-        # Normalize
-        normalized = []
-        for item in sentences_list:
-            sentence = str(item.get("sentence", "")).strip()
-            english = str(item.get("english", "")).strip()
-            ipa = str(item.get("ipa", "")).strip()
-            if sentence and english:
-                # Include meaning with each sentence
-                normalized.append({"sentence": sentence, "english": english, "ipa": ipa, "meaning": meaning})
-        
+            
+            # Remove markdown code block markers
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.startswith("```"):
+                content = content[3:]
+            if content.endswith("```"):
+                content = content[:-3]
+            content = content.strip()
+            
+            # Parse JSON
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError as e:
+                print(f"   ❌ JSON parse error: {e}")
+                if attempt == max_retries:
+                    return None
+                continue
+            
+            # Extract meaning and sentences
+            meaning = str(data.get("meaning", "")).strip() if isinstance(data, dict) else ""
+            sentences_list = data.get("sentences", data) if isinstance(data, dict) else data
+            
+            # Validate
+            if not isinstance(sentences_list, list) or len(sentences_list) < SENTENCES_PER_WORD:
+                print(f"   ⚠️  Got {len(sentences_list)} sentences, expected {SENTENCES_PER_WORD}")
+                if len(sentences_list) < 5:
+                    if attempt == max_retries:
+                        return None
+                    continue
+            
+            # Normalize
+            normalized = []
+            for item in sentences_list:
+                sentence = str(item.get("sentence", "")).strip()
+                english = str(item.get("english", "")).strip()
+                ipa = str(item.get("ipa", "")).strip()
+                if sentence and english:
+                    # Include meaning with each sentence
+                    normalized.append({"sentence": sentence, "english": english, "ipa": ipa, "meaning": meaning})
+            
             print(f"   ✅ Generated {len(normalized)} sentences")
             return normalized[:SENTENCES_PER_WORD]
         
