@@ -28,6 +28,7 @@ env/
 
 # Sensitive Files
 .env
+*.json  # Google service account keys and other sensitive JSON files
 
 # Excel temporary files
 ~$*.xlsx

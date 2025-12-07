@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 
 import pandas as pd
+from google.cloud import texttospeech
+from google.oauth2 import service_account
 import requests
 from dotenv import load_dotenv
 
@@ -15,7 +17,7 @@ load_dotenv()
 # Audio speed for learners (0.8 = 80% speed, slower for comprehension)
 # You can change this: 0.5 (very slow) to 2.0 (fast)
 AUDIO_SPEED = float(os.getenv("AUDIO_SPEED", "0.8"))  # Default: 0.8x speed (recommended for learners)
-GOOGLE_TTS_API_KEY = os.getenv("GOOGLE_TTS_API_KEY")  # From .env file
+SERVICE_ACCOUNT_JSON = "languagelearning-480303-0225aa1c8383.json"  # Path to service account JSON
 
 # ========== LANGUAGE CONFIGURATION ==========
 def load_language_config() -> dict:
@@ -94,59 +96,69 @@ def safe_word(word: str) -> str:
 
 
 def check_api_key() -> None:
-    """Check if Google TTS API key is configured"""
-    if not GOOGLE_TTS_API_KEY:
-        print(f"\n❌ ERROR: GOOGLE_TTS_API_KEY not found in .env file")
+    """Check if service account JSON file exists"""
+    if not Path(SERVICE_ACCOUNT_JSON).exists():
+        print(f"\n❌ ERROR: Service account JSON file not found: {SERVICE_ACCOUNT_JSON}")
         print(f"\n📝 SETUP INSTRUCTIONS:")
-        print(f"   1. Create a .env file in the project root")
-        print(f"   2. Add your API key: GOOGLE_TTS_API_KEY=your_api_key_here")
+        print(f"   1. Download service account key from Google Cloud Console")
+        print(f"   2. Save it as: {SERVICE_ACCOUNT_JSON}")
         print(f"   3. See README.md section 4b for detailed setup")
         print(f"\n💡 NOTE: Google TTS API requires a credit/debit card (even though it's free tier)")
         print(f"   If you don't have a card, use the fallback script: python 2_download_audio_soundoftext.py")
         sys.exit(1)
     
-    print(f"✅ API Key found: {GOOGLE_TTS_API_KEY[:10]}...")  # Only show first 10 chars for security
+    print(f"✅ Service account JSON found: {SERVICE_ACCOUNT_JSON}")
 
 
-def download_audio_gtts(text: str, outfile: Path) -> bool:
-    """Download audio using Google Text-to-Speech API (REST API with API key)"""
+def get_tts_client() -> texttospeech.TextToSpeechClient:
+    """Initialize Google Text-to-Speech client using service account"""
     try:
-        # Google TTS REST API endpoint
-        url = "https://texttospeech.googleapis.com/v1/text:synthesize"
-        
-        # Request payload
-        payload = {
-            "input": {"text": text},
-            "voice": {
-                "languageCode": GOOGLE_TTS_CODE,
-                "ssmlGender": "NEUTRAL"
-            },
-            "audioConfig": {
-                "audioEncoding": "MP3",
-                "speakingRate": AUDIO_SPEED  # 0.8 = slower for learners
-            }
-        }
-        
-        # Add API key to request
-        headers = {"Content-Type": "application/json"}
-        params = {"key": GOOGLE_TTS_API_KEY}
-        
-        # Make the request
-        response = requests.post(url, json=payload, headers=headers, params=params, timeout=30)
-        
-        # Check for errors
-        if response.status_code != 200:
-            print(f"  ❌ API Error: {response.status_code}")
-            print(f"  Response: {response.text[:200]}")
-            return False
-        
-        # Extract audio content (it's base64 encoded)
-        import base64
-        audio_content = base64.b64decode(response.json()["audioContent"])
-        
-        # Write the audio file
-        outfile.write_bytes(audio_content)
-        print(f"  ✓ Saved audio -> {outfile.name} ({len(audio_content)} bytes)")
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_JSON
+        )
+        client = texttospeech.TextToSpeechClient(credentials=credentials)
+        return client
+    except Exception as exc:
+        print(f"\n❌ ERROR: Failed to initialize Google Text-to-Speech client")
+        print(f"   Details: {exc}")
+        print(f"\n📝 TROUBLESHOOTING:")
+        print(f"   1. Verify service account JSON file exists: {SERVICE_ACCOUNT_JSON}")
+        print(f"   2. Make sure Cloud Text-to-Speech API is enabled in Google Cloud Console")
+        print(f"   3. Verify billing is enabled for your Google Cloud Project")
+        print(f"   4. Install the library: pip install google-cloud-texttospeech")
+        print(f"\n💡 NOTE: Google TTS API requires a credit/debit card (even though it's free tier)")
+        print(f"   If you don't have a card, use the fallback script: python 2_download_audio_soundoftext.py")
+        sys.exit(1)
+
+
+def download_audio_gtts(client: texttospeech.TextToSpeechClient, text: str, outfile: Path) -> bool:
+    """Download audio using Google Text-to-Speech API"""
+    try:
+        # Set the text input
+        synthesis_input = texttospeech.SynthesisInput(text=text)
+
+        # Build the voice request
+        voice = texttospeech.VoiceSelectionParams(
+            language_code=GOOGLE_TTS_CODE,
+            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+        )
+
+        # Select the audio file type and set audio speed
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3,
+            speaking_rate=AUDIO_SPEED  # 0.8 = slower for learners, 1.0 = normal, 2.0 = fast
+        )
+
+        # Perform the text-to-speech request
+        response = client.synthesize_speech(
+            input=synthesis_input,
+            voice=voice,
+            audio_config=audio_config
+        )
+
+        # Write the response to the output file
+        outfile.write_bytes(response.audio_content)
+        print(f"  ✓ Saved audio -> {outfile.name} ({len(response.audio_content)} bytes)")
         return True
         
     except Exception as exc:
@@ -195,8 +207,11 @@ def main() -> None:
         print("   Run script 1 first to generate sentences.")
         sys.exit(1)
 
-    # Check API key is configured
+    # Check service account JSON file exists
     check_api_key()
+    
+    # Initialize Google TTS client
+    client = get_tts_client()
 
     # Load working data
     df = pd.read_excel(WORKING_DATA)
@@ -255,7 +270,7 @@ def main() -> None:
                     continue
 
                 print(f"  📥 Downloading: {sentence[:60]}... -> {filename}")
-                ok = download_audio_gtts(sentence, outfile)
+                ok = download_audio_gtts(client, sentence, outfile)
                 if ok:
                     # Small delay to be respectful to API
                     time.sleep(0.2)

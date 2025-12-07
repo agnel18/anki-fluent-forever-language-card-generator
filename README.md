@@ -322,7 +322,7 @@ pip install -r requirements.txt
 
 **Option B: Manual installation**
 ```bash
-pip install google-generativeai pandas openpyxl python-dotenv requests
+pip install google-generativeai google-cloud-texttospeech pandas openpyxl python-dotenv requests
 
 # Only if using soundoftext.com fallback (no credit/debit card):
 pip install selenium webdriver-manager
@@ -336,7 +336,7 @@ pip install selenium webdriver-manager
 2. Click "Create API Key"
 3. Copy your API key
 
-#### 4b. Google Text-to-Speech API Key (Required - Audio Generation)
+#### 4b. Google Text-to-Speech API (Required - Audio Generation)
 
 📚 **Official Documentation**: [Google Cloud Text-to-Speech](https://cloud.google.com/text-to-speech?hl=en_GB)
 
@@ -363,18 +363,22 @@ pip install selenium webdriver-manager
    - Search for **"Cloud Text-to-Speech API"**
    - Click on it, then click **"Enable"**
 
-5. **Create API Key**
+5. **Create Service Account & Download JSON Key**
    - Go to **"APIs & Services"** → **"Credentials"**
-   - Click **"Create Credentials"** → **"API Key"**
-   - Copy your API key (it looks like: `AQ.Ab8RN6KSxej5...`)
-   - Click **"Restrict Key"** (recommended):
-     - Under "API restrictions", select "Restrict key"
-     - Choose **"Cloud Text-to-Speech API"** only
-     - Click **"Save"**
+   - Click **"Create Credentials"** → **"Service Account"**
+   - Enter service account details (e.g., name: "language-learning-tts")
+   - Click **"Create and Continue"**
+   - Click **"Continue"** on permissions page (optional)
+   - Click **"Done"**
+   - Click the service account you just created
+   - Go to **"Keys"** tab → **"Add Key"** → **"Create new key"**
+   - Select **"JSON"** format
+   - **JSON key file downloads** → Save it
 
-6. **Add to `.env` File** (already done in this repo)
-   - The API key is already in `.env` file
-   - ✅ Never commit `.env` to git (it's in `.gitignore`)
+6. **Add JSON Key to Project Folder**
+   - Move the downloaded JSON file to: `LanguagLearning/` folder
+   - The code will automatically find it (e.g., `languagelearning-480303-0225aa1c8383.json`)
+   - ✅ JSON file is protected in `.gitignore` (never committed to git)
 
 ⚠️ **IMPORTANT - Stay Within Free Tier Limits**:
 - **Free Tier**: 1 million characters per month

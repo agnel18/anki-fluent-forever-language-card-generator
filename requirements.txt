@@ -1,9 +1,10 @@
 # Core dependencies for language learning card generator
 google-generativeai>=0.3.0  # Gemini API for sentence generation
+google-cloud-texttospeech>=2.14.0  # Google Cloud TTS (service account auth)
 pandas>=2.0.0               # Data manipulation
 openpyxl>=3.1.0             # Excel file support
 python-dotenv>=1.0.0        # Environment variable management
-requests>=2.31.0            # HTTP requests (Google TTS REST API, Pexels)
+requests>=2.31.0            # HTTP requests (Pexels API)
 
 # Optional: Only if using soundoftext.com fallback (no credit/debit card)
 # Uncomment these lines if you need the fallback audio script:
