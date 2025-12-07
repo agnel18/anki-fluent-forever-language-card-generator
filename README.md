@@ -289,9 +289,13 @@ This tool is now **completely language-agnostic**:
 ## System Requirements
 
 - Python 3.10+
-- Google Chrome browser (for Selenium automation)
 - Internet connection
-- Google Gemini API key (free tier)
+- **Google Gemini API key** (free tier - required for sentence generation)
+- **Google Text-to-Speech API key** (free tier - required for audio generation)
+  - ⚠️ **Note**: Google TTS API requires a credit/debit card on file (even though it's free)
+  - 💡 **No card?** Use the fallback script: `python 2_download_audio_soundoftext.py` (selenium-based)
+- **Pexels API key** (free tier - required for image downloads)
+- Google Chrome browser (only if using soundoftext fallback)
 
 ## Installation
 
@@ -311,16 +315,64 @@ python -m venv .venv
 
 ### 3. Install Dependencies
 ```bash
-pip install google-generativeai pandas selenium webdriver-manager openpyxl python-dotenv requests
+pip install google-generativeai google-cloud-texttospeech pandas openpyxl python-dotenv requests
+
+# Only if using soundoftext.com fallback (no credit/debit card):
+pip install selenium webdriver-manager
 ```
 
-### 4. Set Up Google Gemini API Key
+### 4. Set Up API Keys
+
+#### 4a. Google Gemini API Key (Required - Sentence Generation)
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikeys)
 2. Click "Create API Key"
-3. Create a `.env` file in the workspace root with:
+3. Copy your API key
+
+#### 4b. Google Text-to-Speech API Key (Required - Audio Generation)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or select existing)
+3. Enable **Google Cloud Text-to-Speech API**
+4. Create a service account:
+   - Go to **IAM & Admin** → **Service Accounts**
+   - Click **Create Service Account**
+   - Name it (e.g., "anki-tts")
+   - Grant role: **Cloud Text-to-Speech Client**
+   - Click **Done**
+5. Create and download JSON key:
+   - Click on the service account
+   - Go to **Keys** tab
+   - Click **Add Key** → **Create new key** → **JSON**
+   - Save the JSON file securely
+6. Set environment variable:
+   ```bash
+   # Windows PowerShell:
+   $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account-key.json"
+   
+   # Linux/Mac:
+   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-service-account-key.json"
+   ```
+
+⚠️ **Important**: Google TTS API requires a credit/debit card on file (even though free tier is generous)
+
+💡 **No credit/debit card?** Use the fallback script:
+```bash
+python 2_download_audio_soundoftext.py  # Uses soundoftext.com (selenium-based)
 ```
-GOOGLE_API_KEY=your_api_key_here
+
+#### 4c. Pexels API Key (Required - Image Downloads)
+
+1. Go to [Pexels API](https://www.pexels.com/api/)
+2. Click "Get Started" and create a free account
+3. Copy your API key from the dashboard
+
+#### 4d. Create `.env` File
+
+Create a `.env` file in the workspace root with:
+```
+GOOGLE_API_KEY=your_gemini_api_key_here
+PEXELS_API_KEY=your_pexels_api_key_here
 ```
 
 ### 5. Set Up Anki Template (Beginner-Friendly)
@@ -393,17 +445,32 @@ python 1_generate_sentences.py
 
 ### Script 2: Download Audio (`2_download_audio.py`)
 
-Downloads native speaker audio from soundoftext.com (50+ languages supported).
+Downloads native speaker audio using **Google Text-to-Speech API** (109 languages supported).
 
 - Finds words with Status=`sentences_done`
-- Downloads MP3 for each sentence using Selenium
+- Generates audio at **0.8x speed** (recommended for language learners)
 - Saves to `FluentForever_{Language}_Perfect/audio/`
 - Updates Sound column with `[sound:filename.mp3]`
 - Updates Status → `audio_done`
 
+**Audio Speed Options:**
+```bash
+# Default (0.8x - slower for learners, recommended):
+python 2_download_audio.py
+
+# Custom speed (0.5 = very slow, 1.0 = normal, 2.0 = fast):
+$env:AUDIO_SPEED="1.0"; python 2_download_audio.py
+```
+
+**Fallback Option (No Credit/Debit Card):**
+```bash
+# Uses soundoftext.com (selenium-based, slower but free):
+python 2_download_audio_soundoftext.py
+```
+
 **Run:**
 ```bash
-python LanguagLearning/2_download_audio.py
+python 2_download_audio.py
 ```
 
 ### Script 3: Download Images (`3_download_images.py`)
@@ -459,27 +526,37 @@ python LanguagLearning/4_create_anki_tsv.py
 
 ```
 LanguagLearning/
+├── 0_select_language.py
 ├── 1_generate_sentences.py
-├── 2_download_audio.py
+├── 2_download_audio.py                      ⭐ DEFAULT (Google TTS)
+├── 2_download_audio_soundoftext.py          💡 FALLBACK (no card required)
 ├── 3_download_images.py
 ├── 4_create_anki_tsv.py
+├── sync_counts.py                            🔧 UTILITY (sync progress)
+├── reset_images.py                           🔧 UTILITY (reset images)
 ├── README.md
 ├── ANKI_SETUP.md
-├── .env (keep this secret!)
-├── <Language> Frequency Word List.xlsx
-├── Anki Arabic Template/
-│   └── Language Learning Template.apkg       ⭐ PRE-MADE TEMPLATE (INCLUDED!)
+├── .env                                      🔒 KEEP SECRET!
+├── language_config.txt                       📝 AUTO-GENERATED
+├── 109 Languages Frequency Word Lists/
+│   ├── Malayalam (ML).xlsx
+│   ├── Spanish (ES).xlsx
+│   ├── Chinese (ZH).xlsx
+│   └── ... (109 total)
+├── Anki Language Template/
+│   ├── Language Learning Template.apkg      ⭐ PRE-MADE TEMPLATE
+│   └── CREATE_TEMPLATE.md
 └── FluentForever_{Language}_Perfect/
     ├── working_data.xlsx
     ├── ANKI_IMPORT.tsv
     ├── audio/
-   │   ├── 0001_word_01.mp3
-   │   ├── 0001_word_02.mp3
-   │   └── ...
+    │   ├── 0001_word_01.mp3
+    │   ├── 0001_word_02.mp3
+    │   └── ... (10 per word)
     └── images/
-      ├── 0001_word_01.jpg
-      ├── 0001_word_02.jpg
-      └── ...
+        ├── 0001_word_01.jpg
+        ├── 0001_word_02.jpg
+        └── ... (10 per word)
 ```
 
 ## Anki Setup (For Complete Beginners)
@@ -577,10 +654,18 @@ python LanguagLearning/4_create_anki_tsv.py
 - Run script 1 first to generate sentences
 - Check your `<Language> Frequency Word List.xlsx` has empty Status column
 
-### Audio download fails
+### Audio download fails (Google TTS)
+- **Authentication error**: Verify GOOGLE_APPLICATION_CREDENTIALS environment variable is set
+- **Service account error**: Ensure Text-to-Speech API is enabled in Google Cloud Console
+- **Credit/debit card required**: Google TTS API requires card on file (even though free)
+- **No card? Use fallback**: `python 2_download_audio_soundoftext.py` (selenium-based)
+- Check internet connection
+
+### Audio download fails (soundoftext.com fallback)
 - Check internet connection
 - soundoftext.com may be temporarily down, try again later
 - If many requests in a row, wait 1–2 minutes and rerun
+- Chrome driver issues: Update Chrome browser or reinstall webdriver-manager
 
 ### Image download fails
 - Ensure `PEXELS_API_KEY` is set in `.env`
@@ -606,17 +691,56 @@ Each Anki card contains:
 | File Name | 0001_word_01 | {freq:04d}_{word}_{sentence:02d} |
 | What is the Word? | palabra | Target word |
 | Meaning of the Word | word | English translation |
-| Arabic Sentence | La palabra es útil. | Target-language sentence (field name kept for compatibility) |
+| Sentence | La palabra es útil. | Target-language sentence |
 | IPA Transliteration | /paˈlaβɾa/ | IPA pronunciation |
-| English Sentence | The word is useful. | English translation |
+| English Translation | The word is useful. | English translation |
 | Sound | [sound:0001_word_01.mp3] | Anki sound tag |
 | Image | <img src="0001_word_01.jpg"> | Anki image tag |
 
-## API Costs
+## API Costs & Rate Limits
 
-- **Google Gemini API**: Free tier available (up to 15 requests/minute)
-- **Audio (soundoftext.com)**: Free
-- **Images (Pexels API thumbnails)**: Free tier (rate limited ~200 requests/hour)
+### Google Gemini API (Sentence Generation)
+- **Free Tier**: 15 requests per minute, 1,500 requests per day
+- **Cost**: $0 for reasonable usage
+- **Recommendation**: Generate 50-100 words per day to stay well within limits
+- **625 words total**: Spread over 6-12 days = ~50-100 words/day
+
+### Google Text-to-Speech API (Audio)
+- **Free Tier**: 1 million characters per month
+- **Average**: ~50 characters per sentence
+- **625 words × 10 sentences = 6,250 sentences × 50 chars = 312,500 characters**
+- **Cost**: $0 (well within free tier)
+- **Recommendation**: Generate all audio in one go, no daily limits needed
+
+### Pexels API (Images)
+- **Free Tier**: ~200 requests per hour
+- **Recommendation**: Generate 100-200 images per session, pause 1-2 hours, continue
+- **625 words × 10 images = 6,250 images**: Spread over 30-60 hours (3-6 sessions)
+
+### Optimal Batch Workflow
+
+**Day 1-12**: Generate sentences (50-100 words/day)
+```bash
+$env:BATCH_WORDS="50"; python 1_generate_sentences.py
+```
+
+**Day 13**: Generate all audio (1 session, ~3-4 hours)
+```bash
+$env:BATCH_WORDS="625"; python 2_download_audio.py
+```
+
+**Day 14-19**: Generate all images (6 sessions, 100 words each)
+```bash
+# Session 1:
+$env:BATCH_WORDS="100"; python 3_download_images.py
+# Wait 1-2 hours
+# Session 2:
+$env:BATCH_WORDS="100"; python 3_download_images.py
+# ... repeat 6 times total
+```
+
+**Total Time**: 19 days, mostly unattended
+**Total Cost**: $0
 
 ## Tips & Best Practices
 
