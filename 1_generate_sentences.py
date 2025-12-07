@@ -106,9 +106,14 @@ def safe_word(word: str) -> str:
     return word.replace("/", "-").replace("\\", "-").strip()
 
 
-def generate_sentences(word: str) -> list[dict] | None:
+def generate_sentences(word: str, max_retries: int = 3) -> list[dict] | None:
     """
     Use Google Gemini API to generate 10 natural sentences for a word.
+    
+    Safety Features:
+    - Max 3 retry attempts per word (prevents infinite loops)
+    - Exponential backoff between retries (respectful of API limits)
+    - Clear error messages for quota/rate limit issues
     
     Covers all use cases:
     - Different grammatical contexts (subject, object, predicate, etc.)
@@ -119,7 +124,11 @@ def generate_sentences(word: str) -> list[dict] | None:
     
     This maximizes token efficiency: 10 sentences = maximum benefit per API call!
     
-    Returns: List of 10 sentence dicts, or None if failed
+    Args:
+        word: The word to generate sentences for
+        max_retries: Maximum retry attempts (default: 3)
+    
+    Returns: List of 10 sentence dicts, or None if failed after all retries
     """
     prompt = f"""You are an expert {LANGUAGE_NAME} language teacher specializing in language learning using the Fluent Forever method.
 
@@ -155,15 +164,23 @@ Respond ONLY with valid JSON, no extra text, no markdown, no explanation:
 
 Generate the meaning and 10 sentences now:"""
     
-    try:
-        print(f"   🔄 Generating {SENTENCES_PER_WORD} sentences for '{word}'...")
-        model = genai.GenerativeModel(MODEL)
-        response = model.generate_content(prompt)
-        content = response.text.strip() if response.text else ""
-        
-        if not content:
-            print("   ❌ Empty response from API")
-            return None
+    for attempt in range(1, max_retries + 1):
+        try:
+            if attempt > 1:
+                wait_time = 2 ** attempt  # Exponential backoff: 4s, 8s, 16s
+                print(f"   ⏳ Retry {attempt}/{max_retries} after {wait_time}s wait...")
+                time.sleep(wait_time)
+            
+            print(f"   🔄 Generating {SENTENCES_PER_WORD} sentences for '{word}'...")
+            model = genai.GenerativeModel(MODEL)
+            response = model.generate_content(prompt)
+            content = response.text.strip() if response.text else ""
+            
+            if not content:
+                print("   ❌ Empty response from API")
+                if attempt == max_retries:
+                    return None
+                continue
         
         # Remove markdown code block markers
         if content.startswith("```json"):
@@ -201,12 +218,25 @@ Generate the meaning and 10 sentences now:"""
                 # Include meaning with each sentence
                 normalized.append({"sentence": sentence, "english": english, "ipa": ipa, "meaning": meaning})
         
-        print(f"   ✅ Generated {len(normalized)} sentences")
-        return normalized[:SENTENCES_PER_WORD]
+            print(f"   ✅ Generated {len(normalized)} sentences")
+            return normalized[:SENTENCES_PER_WORD]
+        
+        except Exception as e:
+            error_msg = str(e)
+            print(f"   ❌ Error: {error_msg}")
+            
+            # Check for quota/rate limit errors
+            if "429" in error_msg or "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
+                print(f"   ⚠️  QUOTA/RATE LIMIT HIT - Stopping to protect your account")
+                print(f"   💡 Wait for quota reset (midnight PT) or upgrade your plan")
+                return None  # Don't retry on quota errors
+            
+            if attempt == max_retries:
+                print(f"   ❌ Failed after {max_retries} attempts")
+                return None
+            # Otherwise, continue to next retry
     
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return None
+    return None
 
 
 def append_to_working_data(word: str, word_meaning: str, freq_num: int, sentences: list[dict]) -> bool:

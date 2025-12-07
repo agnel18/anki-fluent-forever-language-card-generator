@@ -57,8 +57,22 @@ print(f"{'='*60}\n")
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def download_image(search_terms: list[str], outfile: Path) -> bool:
-    """Download a thumbnail image from Pexels trying each search term until one succeeds."""
+def download_image(search_terms: list[str], outfile: Path, max_retries: int = 3) -> bool:
+    """
+    Download a thumbnail image from Pexels trying each search term until one succeeds.
+    
+    Safety Features:
+    - Max 3 retry attempts per search term (prevents infinite loops)
+    - Detects rate limit errors (429) and stops immediately
+    - Respectful delays between requests
+    
+    Args:
+        search_terms: List of search terms to try
+        outfile: Output file path
+        max_retries: Maximum retry attempts per term (default: 3)
+    
+    Returns: True if successful, False otherwise
+    """
     if not PEXELS_API_KEY:
         print("❌ PEXELS_API_KEY missing. Set it in your .env file.")
         return False
@@ -67,41 +81,65 @@ def download_image(search_terms: list[str], outfile: Path) -> bool:
 
     for term in search_terms:
         params = {"query": term, "per_page": 1}
-        try:
-            resp = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=15)
-        except requests.RequestException as exc:  # noqa: BLE001
-            print(f"  Error calling Pexels for '{term}': {exc}")
-            continue
+        
+        for attempt in range(1, max_retries + 1):
+            try:
+                if attempt > 1:
+                    wait_time = 2 ** attempt  # Exponential backoff: 4s, 8s, 16s
+                    print(f"  ⏳ Retry {attempt}/{max_retries} after {wait_time}s...")
+                    time.sleep(wait_time)
+                
+                resp = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=15)
+            except requests.RequestException as exc:  # noqa: BLE001
+                print(f"  Error calling Pexels for '{term}': {exc}")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        if resp.status_code != 200:
-            print(f"  Pexels error for '{term}': HTTP {resp.status_code} - {resp.text[:200]}")
-            continue
+            if resp.status_code == 429:
+                print(f"  ⚠️  RATE LIMIT HIT (429) - Stopping to protect your account")
+                print(f"  💡 Pexels free tier: ~200 requests/hour")
+                return False  # Stop completely on rate limit
+            
+            if resp.status_code != 200:
+                print(f"  Pexels error for '{term}': HTTP {resp.status_code} - {resp.text[:200]}")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        data = resp.json()
-        photos = data.get("photos", [])
-        if not photos:
-            print(f"  No images found for query '{term}'")
-            continue
+            data = resp.json()
+            photos = data.get("photos", [])
+            if not photos:
+                print(f"  No images found for query '{term}'")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        src = photos[0].get("src", {})
-        image_url = src.get("tiny") or src.get("small") or src.get("medium")
-        if not image_url:
-            print(f"  No usable image URLs for '{term}'")
-            continue
+            src = photos[0].get("src", {})
+            image_url = src.get("tiny") or src.get("small") or src.get("medium")
+            if not image_url:
+                print(f"  No usable image URLs for '{term}'")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        try:
-            img_resp = requests.get(image_url, timeout=15)
-        except requests.RequestException as exc:  # noqa: BLE001
-            print(f"  Error downloading image for '{term}': {exc}")
-            continue
+            try:
+                img_resp = requests.get(image_url, timeout=15)
+            except requests.RequestException as exc:  # noqa: BLE001
+                print(f"  Error downloading image for '{term}': {exc}")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        if img_resp.status_code != 200 or len(img_resp.content) < 2048:
-            print(f"  Invalid image response for '{term}' (status {img_resp.status_code}, size {len(img_resp.content)})")
-            continue
+            if img_resp.status_code != 200 or len(img_resp.content) < 2048:
+                print(f"  Invalid image response for '{term}' (status {img_resp.status_code}, size {len(img_resp.content)})")
+                if attempt == max_retries:
+                    break  # Try next search term
+                continue
 
-        outfile.write_bytes(img_resp.content)
-        print(f"  Saved image -> {outfile.name} ({len(img_resp.content)} bytes) [query: '{term}']")
-        return True
+            outfile.write_bytes(img_resp.content)
+            print(f"  Saved image -> {outfile.name} ({len(img_resp.content)} bytes) [query: '{term}']")
+            return True
 
     return False
 

@@ -131,41 +131,74 @@ def get_tts_client() -> texttospeech.TextToSpeechClient:
         sys.exit(1)
 
 
-def download_audio_gtts(client: texttospeech.TextToSpeechClient, text: str, outfile: Path) -> bool:
-    """Download audio using Google Text-to-Speech API"""
-    try:
-        # Set the text input
-        synthesis_input = texttospeech.SynthesisInput(text=text)
+def download_audio_gtts(client: texttospeech.TextToSpeechClient, text: str, outfile: Path, max_retries: int = 3) -> bool:
+    """
+    Download audio using Google Text-to-Speech API with retry protection.
+    
+    Safety Features:
+    - Max 3 retry attempts per file (prevents infinite loops)
+    - Detects quota/billing errors and stops immediately
+    - Exponential backoff between retries
+    
+    Args:
+        client: TTS client instance
+        text: Text to convert to speech
+        outfile: Output file path
+        max_retries: Maximum retry attempts (default: 3)
+    
+    Returns: True if successful, False otherwise
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            if attempt > 1:
+                wait_time = 2 ** attempt  # Exponential backoff: 4s, 8s, 16s
+                print(f"  ⏳ Retry {attempt}/{max_retries} after {wait_time}s...")
+                time.sleep(wait_time)
+            
+            # Set the text input
+            synthesis_input = texttospeech.SynthesisInput(text=text)
 
-        # Build the voice request
-        voice = texttospeech.VoiceSelectionParams(
-            language_code=GOOGLE_TTS_CODE,
-            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-        )
+            # Build the voice request
+            voice = texttospeech.VoiceSelectionParams(
+                language_code=GOOGLE_TTS_CODE,
+                ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+            )
 
-        # Select the audio file type and set audio speed
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3,
-            speaking_rate=AUDIO_SPEED  # 0.8 = slower for learners, 1.0 = normal, 2.0 = fast
-        )
+            # Select the audio file type and set audio speed
+            audio_config = texttospeech.AudioConfig(
+                audio_encoding=texttospeech.AudioEncoding.MP3,
+                speaking_rate=AUDIO_SPEED  # 0.8 = slower for learners, 1.0 = normal, 2.0 = fast
+            )
 
-        # Perform the text-to-speech request
-        response = client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
-        )
+            # Perform the text-to-speech request
+            response = client.synthesize_speech(
+                input=synthesis_input,
+                voice=voice,
+                audio_config=audio_config
+            )
 
-        # Write the response to the output file
-        outfile.write_bytes(response.audio_content)
-        print(f"  ✓ Saved audio -> {outfile.name} ({len(response.audio_content)} bytes)")
-        return True
-        
-    except Exception as exc:
-        import traceback
-        print(f"  ❌ Error downloading audio: {exc}")
-        print(f"  Details: {traceback.format_exc()[:200]}")
-        return False
+            # Write the response to the output file
+            outfile.write_bytes(response.audio_content)
+            print(f"  ✓ Saved audio -> {outfile.name} ({len(response.audio_content)} bytes)")
+            return True
+            
+        except Exception as exc:
+            error_msg = str(exc)
+            print(f"  ❌ Error downloading audio: {error_msg[:100]}")
+            
+            # Check for quota/billing errors - STOP IMMEDIATELY
+            if any(keyword in error_msg.lower() for keyword in ["quota", "billing", "limit exceeded", "429"]):
+                print(f"  ⚠️  QUOTA/BILLING ERROR - Stopping to protect your account!")
+                print(f"  💡 Check: https://console.cloud.google.com/billing")
+                return False  # Don't retry on quota/billing errors
+            
+            if attempt == max_retries:
+                import traceback
+                print(f"  ❌ Failed after {max_retries} attempts")
+                print(f"  Details: {traceback.format_exc()[:200]}")
+                return False
+    
+    return False
 
 
 def all_audio_present(files: list[Path]) -> bool:

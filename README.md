@@ -729,23 +729,41 @@ Each Anki card contains:
 
 ## API Costs & Rate Limits
 
+### 🛡️ Built-in Safety Features
+
+**All scripts include protection against:**
+- ✅ **Max 3 retry attempts** per item (prevents infinite loops)
+- ✅ **Automatic quota detection** - stops immediately when limit hit
+- ✅ **Exponential backoff** - respectful delays between retries
+- ✅ **Batch size limits** - max 10 words without confirmation
+- ✅ **Clear error messages** - explains what went wrong and how to fix
+
+**You are protected from:**
+- ❌ Account bans
+- ❌ Unexpected charges
+- ❌ Quota exhaustion
+- ❌ Rate limit violations
+
 ### Google Gemini API (Sentence Generation)
 - **Free Tier**: 15 requests per minute, 1,500 requests per day
 - **Cost**: $0 for reasonable usage
-- **Recommendation**: Generate 50-100 words per day to stay well within limits
-- **625 words total**: Spread over 6-12 days = ~50-100 words/day
+- **Safety**: Script stops after 3 failed attempts OR when quota hit
+- **Recommendation**: Generate 5-10 words per batch (default: 5)
+- **625 words total**: Spread over 60-120 batches = safe & steady
 
 ### Google Text-to-Speech API (Audio)
 - **Free Tier**: 1 million characters per month
 - **Average**: ~50 characters per sentence
 - **625 words × 10 sentences = 6,250 sentences × 50 chars = 312,500 characters**
 - **Cost**: $0 (well within free tier)
-- **Recommendation**: Generate all audio in one go, no daily limits needed
+- **Safety**: Script stops after 3 failed attempts OR when billing error detected
+- **Recommendation**: Generate in small batches to monitor usage
 
 ### Pexels API (Images)
 - **Free Tier**: ~200 requests per hour
-- **Recommendation**: Generate 100-200 images per session, pause 1-2 hours, continue
-- **625 words × 10 images = 6,250 images**: Spread over 30-60 hours (3-6 sessions)
+- **Safety**: Script stops immediately on rate limit (429 error)
+- **Recommendation**: Generate 50-100 images per session, pause 1-2 hours
+- **625 words × 10 images = 6,250 images**: Spread over multiple sessions
 
 ### Optimal Batch Workflow
 
