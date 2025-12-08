@@ -27,6 +27,57 @@ try:
 except ImportError:
     HAS_HYBRID_TTS = False
     logger.warning("Hybrid TTS module not available, using Edge TTS only")
+# ============================================================================
+# WORD MEANING GENERATION (Groq)
+# ============================================================================
+
+def generate_word_meaning(
+    word: str,
+    language: str,
+    groq_api_key: str = None,
+) -> str:
+    """
+    Generate English meaning and brief explanation for a word.
+    
+    Args:
+        word: Target language word
+        language: Language name (e.g., "Spanish", "Hindi")
+        groq_api_key: Groq API key
+        
+    Returns:
+        String with meaning and brief explanation (e.g., "he (male pronoun, used as subject)")
+    """
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+    
+    client = Groq(api_key=groq_api_key)
+    
+    prompt = f"""Provide a brief English meaning for the {language} word "{word}".
+
+Format: Return ONLY a single line with the meaning and a brief explanation in parentheses.
+Example: "house (a building where people live)" or "he (male pronoun, used as subject)"
+
+IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanation, no JSON."""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,  # Lower temperature for consistency
+            max_tokens=100,
+        )
+        
+        meaning = response.choices[0].message.content.strip()
+        
+        # Clean up any quotes
+        meaning = meaning.strip('"\'')
+        
+        return meaning if meaning else word
+        
+    except Exception as e:
+        logger.error(f"Error generating meaning for '{word}': {e}")
+        return word  # Fallback to word itself
+
 
 # ============================================================================
 # SENTENCE GENERATION (Groq)
@@ -132,7 +183,7 @@ def generate_sentences_batch(
     groq_api_key: str = None,
 ) -> dict:
     """
-    Generate sentences for multiple words.
+    Generate sentences and meanings for multiple words.
     
     Args:
         words: List of target language words
@@ -146,10 +197,17 @@ def generate_sentences_batch(
     all_sentences = {}
     
     for word in words:
-        # Try to generate English meaning from word (fallback: use word itself)
-        meaning = word  # In production, you'd look this up
-        
         try:
+            # Step 1: Generate meaning for this word
+            logger.info(f"Generating meaning for '{word}'...")
+            meaning = generate_word_meaning(
+                word=word,
+                language=language,
+                groq_api_key=groq_api_key,
+            )
+            
+            # Step 2: Generate sentences using the meaning
+            logger.info(f"Generating sentences for '{word}'...")
             sentences = generate_sentences(
                 word=word,
                 meaning=meaning,
@@ -159,7 +217,7 @@ def generate_sentences_batch(
             )
             all_sentences[word] = sentences
         except Exception as e:
-            logger.error(f"Error generating sentences for '{word}': {e}")
+            logger.error(f"Error generating for '{word}': {e}")
             all_sentences[word] = []
     
     return all_sentences
@@ -442,7 +500,7 @@ def generate_images_pixabay(
         batch_name: Prefix for filenames
         num_images: Number of images per query (usually 1 for Anki)
         pixabay_api_key: Pixabay API key
-        randomize: Randomize from top 5 results
+        randomize: Randomize from top 3 results
         
     Returns:
         List of generated file paths
@@ -459,7 +517,7 @@ def generate_images_pixabay(
             params = {
                 "key": pixabay_api_key,
                 "q": query,
-                "per_page": 5,
+                "per_page": 3,  # Only get top 3 results instead of 5
                 "image_type": "photo",
                 "category": "people,places,nature",
             }
@@ -474,9 +532,9 @@ def generate_images_pixabay(
                 logger.warning(f"No images found for query: {query}")
                 continue
             
-            # Select image (randomize from top 5 or use first)
+            # Select image (randomize from top 3 or use first)
             import random
-            img_idx = random.randint(0, min(4, len(hits)-1)) if randomize else 0
+            img_idx = random.randint(0, min(2, len(hits)-1)) if randomize else 0
             image_url = hits[img_idx]["webformatURL"]
             
             # Download image
