@@ -77,32 +77,68 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
     Load frequency word list for a language.
     
     Args:
-        language: Language name (e.g., "Spanish", "Hindi")
+        language: Language name (e.g., "Spanish", "Mandarin Chinese")
         limit: Maximum number of words to load
         
     Returns:
         List of words in frequency order
     """
+    # Mapping from UI names to file names
+    language_mapping = {
+        "Mandarin Chinese": "Chinese (Simplified)",
+        "Cantonese": "Chinese (Traditional)",
+        "Moroccan Arabic": "Arabic",
+        "English": "English",
+        "Spanish": "Spanish",
+        "French": "French",
+        "German": "German",
+        "Italian": "Italian",
+        "Portuguese": "Portuguese",
+        "Russian": "Russian",
+        "Chinese (Simplified)": "Chinese (Simplified)",
+        "Chinese (Traditional)": "Chinese (Traditional)",
+    }
+    
+    # Get the filename-friendly name
+    search_name = language_mapping.get(language, language)
+    
     lists_dir = Path(__file__).parent.parent / "109 Languages Frequency Word Lists"
     
-    # Find matching language file
-    matching_files = list(lists_dir.glob(f"{language}*"))
+    if not lists_dir.exists():
+        return []
+    
+    # Find matching file by looking for the search_name in filename
+    matching_files = []
+    for file in lists_dir.glob("*.xlsx"):
+        if search_name in file.stem:
+            matching_files.append(file)
     
     if not matching_files:
+        # Fallback: just try the original language name
+        for file in lists_dir.glob("*.xlsx"):
+            if language in file.stem:
+                matching_files.append(file)
+    
+    if not matching_files:
+        # Last resort: return empty list
+        print(f"Warning: No word list found for {language} or {search_name}")
         return []
     
     file_path = matching_files[0]
     
     try:
         df = pd.read_excel(file_path, sheet_name=0, header=None)
-        words = df[0].tolist()  # Assume first column is words
+        words = df.iloc[:, 0].tolist()  # Get first column
+        
+        # Clean words
+        words = [str(w).strip() for w in words if w and str(w).strip()]
         
         if limit:
             words = words[:limit]
         
-        return [str(w).strip() for w in words if w]
+        return words
     except Exception as e:
-        print(f"Error loading {language} frequency list: {e}")
+        print(f"Error loading {language} frequency list from {file_path}: {e}")
         return []
 
 
