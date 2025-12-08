@@ -151,6 +151,65 @@ if st.session_state.page == "api_setup":
     
     st.divider()
     
+    st.markdown("### 🎵 Google Cloud TTS (Optional Fallback)")
+    
+    # Check if Google TTS credentials exist
+    creds_file = Path(__file__).parent.parent / "languagelearning-480303-93748916f7bd.json"
+    google_tts_ready = creds_file.exists()
+    
+    if google_tts_ready:
+        st.success("✅ Google Cloud TTS is configured! (Will auto-use as fallback if Edge TTS fails)")
+    else:
+        with st.expander("📖 Setup Google Cloud TTS (Optional but Recommended)", expanded=False):
+            st.markdown("""
+            **What it's for:** Backup audio generation if Edge TTS fails
+            
+            **Why optional?** Edge TTS usually works fine. Google TTS is just a safety net.
+            
+            **Setup Instructions (5 minutes):**
+            
+            1. **Create Google Cloud Account**
+               - Go to https://console.cloud.google.com
+               - Click "Create Project"
+               - Name it: "Language Learning" (or anything)
+               - Click Create
+            
+            2. **Enable Text-to-Speech API**
+               - Search for "Text-to-Speech API" in the search bar
+               - Click on it
+               - Click "ENABLE"
+               - Wait 30 seconds for it to activate
+            
+            3. **Create Service Account**
+               - Go to https://console.cloud.google.com/iam-admin/serviceaccounts
+               - Click "Create Service Account"
+               - Name: `language-learning-tts`
+               - Click "Create and Continue"
+               - Click "Continue" again (skip optional steps)
+               - Click "Done"
+            
+            4. **Create JSON Key**
+               - You'll see your service account listed
+               - Click on it (the email address)
+               - Click "KEYS" tab at the top
+               - Click "Add Key" → "Create new key"
+               - Choose "JSON"
+               - Click "Create"
+               - A file will download: `service-account-key.json`
+            
+            5. **Rename & Place File**
+               - Rename the downloaded file to: `languagelearning-480303-93748916f7bd.json`
+               - Move it to the main project folder
+               - Location should be: `d:\\Language Learning\\LanguagLearning\\languagelearning-480303-93748916f7bd.json`
+               - **Then restart the app** (refresh this page)
+            
+            **That's it!** Google TTS will auto-activate as fallback.
+            
+            **Cost:** Free tier includes 1 million characters/month. Usually enough unless generating thousands of decks.
+            """)
+    
+    st.divider()
+    
     if st.button("🚀 Let's Go!", use_container_width=True):
         if not groq_key:
             st.error("❌ Please enter your Groq API key")

@@ -26,7 +26,14 @@ def get_google_tts_client():
         if creds_file.exists():
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(creds_file)
             client = texttospeech.TextToSpeechClient()
+            logger.info("✅ Google Cloud TTS initialized successfully")
             return client
+        else:
+            logger.warning(f"Google Cloud TTS credentials not found at: {creds_file}")
+            logger.warning("(Optional) To set up Google TTS fallback, see app's API setup page")
+    except ImportError:
+        logger.warning("Google Cloud TTS library not installed")
+        logger.warning("Install with: pip install google-cloud-texttospeech")
     except Exception as e:
         logger.warning(f"Google Cloud TTS not available: {e}")
     return None
@@ -188,8 +195,14 @@ async def generate_audio_hybrid_async(
     
     # Fall back to Google TTS if enabled
     if use_google_fallback:
-        logger.warning(f"Edge TTS failed, trying Google Cloud TTS...")
+        logger.info(f"Edge TTS failed, attempting Google Cloud TTS fallback...")
         success = generate_audio_google_tts(text, language, output_path, rate)
+        if success:
+            logger.info(f"✅ Google Cloud TTS succeeded")
+        else:
+            logger.error(f"⚠️ Both Edge TTS and Google TTS failed")
+            logger.error(f"   (Optional) To set up Google TTS, see the API setup page")
         return success
     
+    logger.error(f"Edge TTS failed and fallback is disabled")
     return False
