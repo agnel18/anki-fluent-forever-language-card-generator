@@ -185,11 +185,26 @@ if st.session_state.page == "api_setup":
     st.markdown("""
     Before we begin, we need your API keys to generate sentences and download images.
     
+    **How this works:**
+    1. You enter your API keys in this form
+    2. They stay in your browser's temporary memory (session)
+    3. We use them only to make API calls on YOUR behalf
+    4. Your keys are NEVER stored anywhere - we can't access them
+    5. When you close this tab/browser, keys are deleted
+    
+    **For Deployed Apps (Streamlit Cloud, etc):**
+    - You never paste keys into the web form
+    - App admin sets keys securely on the server
+    - You just use the app - no key entry needed
+    
     **Important privacy notes:**
     - ✅ Your API keys are **YOUR responsibility** - we never store them
     - ✅ Your data **stays with you** - nothing uploaded to our servers
     - ✅ You control the API usage and costs
     - ✅ You can delete/regenerate your keys anytime
+    - ❌ DO NOT share your API keys with anyone
+    - ❌ DO NOT upload .env files to websites
+    - ❌ DO NOT commit .env to GitHub
     """)
     
     st.divider()
@@ -238,24 +253,25 @@ if st.session_state.page == "api_setup":
     
     st.divider()
     
-    # Check for environment variables as fallback
+    # Check for environment variables as fallback (development only)
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
     
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.markdown("**Have keys saved locally?**")
-    with col2:
-        use_env = st.checkbox(
-            "Use keys from .env file",
-            value=bool(groq_env and pixabay_env),
-            help="Will auto-load from environment"
-        )
-    
-    if use_env and groq_env and pixabay_env:
+    # If both env keys are available, auto-load them (no user action needed)
+    if groq_env and pixabay_env and not groq_key_input:
+        st.info("""
+        ℹ️ **Development Mode Detected**
+        
+        Your API keys were found in environment variables (automatically loaded).
+        
+        **⚠️ Important:**
+        - You are running this app locally on your computer
+        - Your .env file stays on your computer only
+        - DO NOT upload .env to any website or server
+        - DO NOT commit .env to GitHub
+        """)
         groq_key_input = groq_env
         pixabay_key_input = pixabay_env
-        st.success("✅ Loaded from .env file")
     
     st.divider()
     
