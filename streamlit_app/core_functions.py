@@ -15,6 +15,8 @@ import edge_tts
 import requests
 from groq import Groq
 import logging
+import re
+from typing import Optional, List
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +165,7 @@ def generate_complete_deck(
     output_dir: str = "./output",
     num_sentences: int = 10,
     audio_speed: float = 0.8,
+    all_words: Optional[list] = None,
 ) -> dict:
     """
     Complete workflow: Generate sentences, audio, images, and create Anki TSV.
@@ -183,13 +186,11 @@ def generate_complete_deck(
     from pathlib import Path
     
     try:
-        # Create temp directories
+        # Create temp directories (single media folder)
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        audio_dir = output_path / "audio"
-        image_dir = output_path / "images"
-        audio_dir.mkdir(exist_ok=True)
-        image_dir.mkdir(exist_ok=True)
+        media_dir = output_path / "media"
+        media_dir.mkdir(exist_ok=True)
         
         # Step 1: Generate sentences
         logger.info(f"Generating sentences for {len(words)} words...")
@@ -200,40 +201,68 @@ def generate_complete_deck(
             groq_api_key=groq_api_key,
         )
         
-        # Step 2: Generate audio
-        logger.info("Generating audio files...")
-        audio_files = generate_audio_batch(
-            sentences_batch=sentences_batch,
-            language=language,
-            output_dir=str(audio_dir),
-            speed=audio_speed,
-        )
-        
-        # Step 3: Download images
-        logger.info("Downloading images...")
-        images = generate_images_batch(
-            words=words,
-            output_dir=str(image_dir),
-            pixabay_api_key=pixabay_api_key,
-        )
-        
-        # Step 4: Prepare data for Anki
-        logger.info("Creating Anki TSV file...")
+        # Step 2-4: Per-sentence audio, images, TSV rows
+        logger.info("Generating audio and images per sentence, then building TSV rows...")
         words_data = []
-        
+        voice = _voice_for_language(language)
+
+        def rank_for_word(word: str) -> int:
+            if all_words:
+                try:
+                    return all_words.index(word) + 1
+                except ValueError:
+                    return len(all_words) + 1
+            return words.index(word) + 1
+
         for word in words:
+            safe_word = _sanitize_word(word)
             sents = sentences_batch.get(word, [])
-            audio_list = audio_files.get(word, [])
-            img_list = images.get(word, [])
-            
-            words_data.append({
-                "word": word,
-                "meaning": word,  # Fallback to word itself
-                "sentences": sents,
-                "audio_files": audio_list,
-                "image_files": img_list,
-            })
-        
+            sentence_texts = [s.get("sentence", "") for s in sents]
+
+            rank = rank_for_word(word)
+
+            # Build per-sentence base names
+            base_names = [f"{rank}_{safe_word}_{j:03d}" for j in range(1, len(sentence_texts) + 1)]
+
+            # Audio per sentence with exact filenames
+            audio_files = generate_audio(
+                sentences=sentence_texts,
+                voice=voice,
+                output_dir=str(media_dir),
+                batch_name="unused",
+                rate=audio_speed,
+                exact_filenames=[f"{b}.mp3" for b in base_names],
+            )
+
+            # Images per sentence with exact filenames
+            image_files = generate_images_pixabay(
+                queries=sentence_texts,
+                output_dir=str(media_dir),
+                batch_name="unused",
+                num_images=1,
+                pixabay_api_key=pixabay_api_key,
+                exact_filenames=[f"{b}.jpg" for b in base_names],
+            )
+
+            # Build TSV rows (one per sentence)
+            for idx_sent, sent in enumerate(sents):
+                file_base = base_names[idx_sent] if idx_sent < len(base_names) else f"{rank}_{safe_word}_{idx_sent+1:03d}"
+                audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
+                image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
+
+                words_data.append({
+                    "file_name": file_base,
+                    "word": word,
+                    "meaning": sent.get("meaning", word),
+                    "sentence": sent.get("sentence", ""),
+                    "ipa": sent.get("ipa", ""),
+                    "english": sent.get("english_translation", ""),
+                    "context": sent.get("context", ""),
+                    "audio": f"[sound:{audio_name}]" if audio_name else "",
+                    "image": f"<img src=\"{image_name}\">" if image_name else "",
+                    "tags": "",
+                })
+
         # Step 5: Create TSV
         tsv_path = output_path / "ANKI_IMPORT.tsv"
         if not create_anki_tsv(words_data, str(tsv_path)):
@@ -242,8 +271,7 @@ def generate_complete_deck(
         return {
             "success": True,
             "tsv_path": str(tsv_path),
-            "audio_dir": str(audio_dir),
-            "image_dir": str(image_dir),
+            "media_dir": str(media_dir),
             "output_dir": str(output_path),
             "error": None,
         }
@@ -253,8 +281,7 @@ def generate_complete_deck(
         return {
             "success": False,
             "tsv_path": None,
-            "audio_dir": None,
-            "image_dir": None,
+            "media_dir": None,
             "output_dir": None,
             "error": str(e),
         }
@@ -283,7 +310,10 @@ async def generate_audio_async(
         True if successful, False otherwise
     """
     try:
-        communicate = edge_tts.Communicate(text=text, voice=voice, rate=f"{rate-1:+.0%}")
+        # Edge TTS rate format: "+0%" for normal, "-20%" for 0.8x
+        rate_pct = int((rate - 1.0) * 100)
+        rate_str = f"{rate_pct:+d}%"
+        communicate = edge_tts.Communicate(text=text, voice=voice, rate=rate_str)
         await communicate.save(output_path)
         return True
     except Exception as e:
@@ -297,6 +327,7 @@ def generate_audio(
     output_dir: str,
     batch_name: str = "batch",
     rate: float = 0.8,
+    exact_filenames: Optional[List[str]] = None,
 ) -> list[str]:
     """
     Batch generate audio files synchronously.
@@ -317,7 +348,8 @@ def generate_audio(
     async def batch_generate():
         tasks = []
         for i, sentence in enumerate(sentences):
-            output_path = Path(output_dir) / f"{batch_name}_{i+1:02d}.mp3"
+            filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
+            output_path = Path(output_dir) / filename
             tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
         
         results = await asyncio.gather(*tasks)
@@ -334,30 +366,19 @@ def generate_audio(
     
     for i, success in enumerate(results):
         if success:
-            generated.append(f"{batch_name}_{i+1:02d}.mp3")
+            filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
+            generated.append(filename)
     
     return generated
 
 
-def generate_audio_batch(
-    sentences_batch: dict,
-    language: str,
-    output_dir: str,
-    speed: float = 0.8,
-) -> dict:
-    """
-    Generate audio for batch of words with sentences.
-    
-    Args:
-        sentences_batch: Dict with {word: [sentence_dicts]}
-        language: Language name to determine voice
-        output_dir: Base output directory
-        speed: Audio speed
-        
-    Returns:
-        Dict with {word: [audio_filenames]}
-    """
-    # Map language to voice (simplified - in production use languages.yaml)
+def _sanitize_word(word: str) -> str:
+    """Sanitize word for filesystem-safe names."""
+    safe = re.sub(r"[^\w\-]+", "_", word.strip())
+    return safe or "word"
+
+
+def _voice_for_language(language: str) -> str:
     voice_map = {
         "Spanish": "es-ES-ElviraNeural",
         "French": "fr-FR-DeniseNeural",
@@ -374,30 +395,7 @@ def generate_audio_batch(
         "Mandarin Chinese": "zh-CN-XiaoxiaoNeural",
         "English": "en-US-AvaNeural",
     }
-    
-    voice = voice_map.get(language, "en-US-AvaNeural")
-    
-    audio_output = {}
-    
-    for word, sentences in sentences_batch.items():
-        word_audio_dir = Path(output_dir) / word.replace(" ", "_")
-        word_audio_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Extract sentence text
-        sentence_texts = [s.get("sentence", "") for s in sentences]
-        
-        # Generate audio
-        audio_files = generate_audio(
-            sentences=sentence_texts,
-            voice=voice,
-            output_dir=str(word_audio_dir),
-            batch_name=word.replace(" ", "_"),
-            rate=speed,
-        )
-        
-        audio_output[word] = audio_files
-    
-    return audio_output
+    return voice_map.get(language, "en-US-AvaNeural")
 
 
 # ============================================================================
@@ -411,6 +409,7 @@ def generate_images_pixabay(
     num_images: int = 1,
     pixabay_api_key: str = None,
     randomize: bool = True,
+    exact_filenames: Optional[List[str]] = None,
 ) -> list[str]:
     """
     Download images from Pixabay.
@@ -462,11 +461,11 @@ def generate_images_pixabay(
             img_response = requests.get(image_url, timeout=10)
             img_response.raise_for_status()
             
-            output_path = Path(output_dir) / f"{batch_name}_{i+1:02d}.jpg"
+            filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.jpg"
+            output_path = Path(output_dir) / filename
             with open(output_path, "wb") as f:
                 f.write(img_response.content)
-            
-            generated.append(f"{batch_name}_{i+1:02d}.jpg")
+            generated.append(filename)
             
         except Exception as e:
             logger.error(f"Pixabay error for query '{query}': {e}")
@@ -516,49 +515,41 @@ def generate_images_batch(
 # ============================================================================
 
 def create_anki_tsv(
-    words_data: list[dict],
+    rows: list[dict],
     output_path: str,
 ) -> bool:
-    """
-    Create Anki-compatible TSV file.
-    
-    Args:
-        words_data: List of dicts with keys:
-                    word, meaning, sentences (list of dicts), audio_files, image_files
-        output_path: Path to save TSV file
-        
-    Returns:
-        True if successful
-    """
+    """Create Anki TSV without headers in expected field order."""
     try:
-        rows = []
-        
-        for word_info in words_data:
-            word = word_info["word"]
-            meaning = word_info["meaning"]
-            sentences = word_info.get("sentences", [])
-            audio_files = word_info.get("audio_files", [])
-            image_files = word_info.get("image_files", [])
-            
-            for i, sent in enumerate(sentences):
-                audio_tag = f"[sound:{audio_files[i]}]" if i < len(audio_files) else ""
-                image_tag = f'<img src="{image_files[i]}">' if i < len(image_files) else ""
-                
-                row = {
-                    "Word": word,
-                    "Meaning": meaning,
-                    "Sentence": sent.get("sentence", ""),
-                    "English Translation": sent.get("english_translation", ""),
-                    "Context": sent.get("context", ""),
-                    "Audio": audio_tag,
-                    "Image": image_tag,
-                }
-                rows.append(row)
-        
-        df = pd.DataFrame(rows)
-        df.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
+        columns = [
+            "File Name",
+            "What is the Word?",
+            "Meaning of the Word",
+            "Sentence",
+            "IPA Transliteration",
+            "English Translation",
+            "Sound",
+            "Image",
+            "Tags",
+        ]
+
+        formatted_rows = []
+        for r in rows:
+            formatted_rows.append({
+                "File Name": f"{r.get('file_name','')}",
+                "What is the Word?": r.get("word", ""),
+                "Meaning of the Word": r.get("meaning", ""),
+                "Sentence": r.get("sentence", ""),
+                "IPA Transliteration": r.get("ipa", ""),
+                "English Translation": r.get("english", ""),
+                "Sound": r.get("audio", ""),
+                "Image": r.get("image", ""),
+                "Tags": r.get("tags", ""),
+            })
+
+        df = pd.DataFrame(formatted_rows, columns=columns)
+        df.to_csv(output_path, sep="\t", index=False, header=False, encoding="utf-8")
         return True
-        
+
     except Exception as e:
         logger.error(f"TSV creation error: {e}")
         return False
@@ -566,17 +557,15 @@ def create_anki_tsv(
 
 def create_zip_export(
     tsv_path: str,
-    audio_dir: str,
-    image_dir: str,
+    media_dir: str,
     output_zip: str,
 ) -> bool:
     """
-    Create ZIP file with TSV + media folders.
+    Create ZIP file with TSV + media folder.
     
     Args:
         tsv_path: Path to ANKI_IMPORT.tsv
-        audio_dir: Path to audio folder
-        image_dir: Path to images folder
+        media_dir: Path to media folder (contains audio + images)
         output_zip: Path to save ZIP file
         
     Returns:
@@ -591,11 +580,8 @@ def create_zip_export(
             # Copy files
             shutil.copy(tsv_path, deck_dir / "ANKI_IMPORT.tsv")
             
-            if os.path.exists(audio_dir):
-                shutil.copytree(audio_dir, deck_dir / "audio")
-            
-            if os.path.exists(image_dir):
-                shutil.copytree(image_dir, deck_dir / "images")
+            if os.path.exists(media_dir):
+                shutil.copytree(media_dir, deck_dir / "media")
             
             # Create instructions file
             instructions = """HOW TO IMPORT TO ANKI
@@ -604,10 +590,13 @@ def create_zip_export(
 2. Open Anki → File → Import
 3. Select ANKI_IMPORT.tsv
 4. Choose the note type and deck
-5. Drag audio/ and images/ folders to Anki's media folder
+5. Copy all files from the media/ folder to Anki's collection.media folder
 6. Start learning!
 
-Media Folder Location:
+Finding Anki's Media Folder:
+  Easy way: In Anki, go to Main Menu → Tools → Check Media → View Files
+  
+  Manual locations:
   Windows: C:\\Users\\<YourUsername>\\AppData\\Roaming\\Anki2\\User 1\\collection.media
   Mac: ~/Library/Application Support/Anki2/User 1/collection.media
   Linux: ~/.local/share/Anki2/User 1/collection.media
