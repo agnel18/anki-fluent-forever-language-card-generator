@@ -115,6 +115,151 @@ IMPORTANT: Return ONLY valid JSON, nothing else. No markdown, no code blocks, no
         raise
 
 
+def generate_sentences_batch(
+    words: list,
+    language: str,
+    num_sentences: int = 10,
+    groq_api_key: str = None,
+) -> dict:
+    """
+    Generate sentences for multiple words.
+    
+    Args:
+        words: List of target language words
+        language: Language name
+        num_sentences: Sentences per word
+        groq_api_key: Groq API key
+        
+    Returns:
+        Dict with structure: {word: [sentence_dicts]}
+    """
+    all_sentences = {}
+    
+    for word in words:
+        # Try to generate English meaning from word (fallback: use word itself)
+        meaning = word  # In production, you'd look this up
+        
+        try:
+            sentences = generate_sentences(
+                word=word,
+                meaning=meaning,
+                language=language,
+                num_sentences=num_sentences,
+                groq_api_key=groq_api_key,
+            )
+            all_sentences[word] = sentences
+        except Exception as e:
+            logger.error(f"Error generating sentences for '{word}': {e}")
+            all_sentences[word] = []
+    
+    return all_sentences
+
+
+def generate_complete_deck(
+    words: list,
+    language: str,
+    groq_api_key: str,
+    pixabay_api_key: str,
+    output_dir: str = "./output",
+    num_sentences: int = 10,
+    audio_speed: float = 0.8,
+) -> dict:
+    """
+    Complete workflow: Generate sentences, audio, images, and create Anki TSV.
+    
+    Args:
+        words: List of words to process
+        language: Language name
+        groq_api_key: Groq API key
+        pixabay_api_key: Pixabay API key
+        output_dir: Output directory
+        num_sentences: Sentences per word
+        audio_speed: Audio playback speed
+        
+    Returns:
+        Dict with keys: success, tsv_path, audio_dir, image_dir, error
+    """
+    import tempfile
+    from pathlib import Path
+    
+    try:
+        # Create temp directories
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        audio_dir = output_path / "audio"
+        image_dir = output_path / "images"
+        audio_dir.mkdir(exist_ok=True)
+        image_dir.mkdir(exist_ok=True)
+        
+        # Step 1: Generate sentences
+        logger.info(f"Generating sentences for {len(words)} words...")
+        sentences_batch = generate_sentences_batch(
+            words=words,
+            language=language,
+            num_sentences=num_sentences,
+            groq_api_key=groq_api_key,
+        )
+        
+        # Step 2: Generate audio
+        logger.info("Generating audio files...")
+        audio_files = generate_audio_batch(
+            sentences_batch=sentences_batch,
+            language=language,
+            output_dir=str(audio_dir),
+            speed=audio_speed,
+        )
+        
+        # Step 3: Download images
+        logger.info("Downloading images...")
+        images = generate_images_batch(
+            words=words,
+            output_dir=str(image_dir),
+            pixabay_api_key=pixabay_api_key,
+        )
+        
+        # Step 4: Prepare data for Anki
+        logger.info("Creating Anki TSV file...")
+        words_data = []
+        
+        for word in words:
+            sents = sentences_batch.get(word, [])
+            audio_list = audio_files.get(word, [])
+            img_list = images.get(word, [])
+            
+            words_data.append({
+                "word": word,
+                "meaning": word,  # Fallback to word itself
+                "sentences": sents,
+                "audio_files": audio_list,
+                "image_files": img_list,
+            })
+        
+        # Step 5: Create TSV
+        tsv_path = output_path / "ANKI_IMPORT.tsv"
+        if not create_anki_tsv(words_data, str(tsv_path)):
+            raise Exception("Failed to create TSV file")
+        
+        return {
+            "success": True,
+            "tsv_path": str(tsv_path),
+            "audio_dir": str(audio_dir),
+            "image_dir": str(image_dir),
+            "output_dir": str(output_path),
+            "error": None,
+        }
+        
+    except Exception as e:
+        logger.error(f"Complete deck generation error: {e}")
+        return {
+            "success": False,
+            "tsv_path": None,
+            "audio_dir": None,
+            "image_dir": None,
+            "output_dir": None,
+            "error": str(e),
+        }
+
+
 # ============================================================================
 # AUDIO GENERATION (Edge TTS)
 # ============================================================================
@@ -194,6 +339,67 @@ def generate_audio(
     return generated
 
 
+def generate_audio_batch(
+    sentences_batch: dict,
+    language: str,
+    output_dir: str,
+    speed: float = 0.8,
+) -> dict:
+    """
+    Generate audio for batch of words with sentences.
+    
+    Args:
+        sentences_batch: Dict with {word: [sentence_dicts]}
+        language: Language name to determine voice
+        output_dir: Base output directory
+        speed: Audio speed
+        
+    Returns:
+        Dict with {word: [audio_filenames]}
+    """
+    # Map language to voice (simplified - in production use languages.yaml)
+    voice_map = {
+        "Spanish": "es-ES-ElviraNeural",
+        "French": "fr-FR-DeniseNeural",
+        "German": "de-DE-KatjaNeural",
+        "Italian": "it-IT-IsabellaNeural",
+        "Portuguese": "pt-BR-FranciscaNeural",
+        "Russian": "ru-RU-SvetlanaNeural",
+        "Japanese": "ja-JP-NanamiNeural",
+        "Korean": "ko-KR-SoonBokNeural",
+        "Chinese (Simplified)": "zh-CN-XiaoxiaoNeural",
+        "Chinese (Traditional)": "zh-TW-HsiaoChenNeural",
+        "Arabic": "ar-SA-LeenNeural",
+        "Hindi": "hi-IN-SwaraNeural",
+        "Mandarin Chinese": "zh-CN-XiaoxiaoNeural",
+        "English": "en-US-AvaNeural",
+    }
+    
+    voice = voice_map.get(language, "en-US-AvaNeural")
+    
+    audio_output = {}
+    
+    for word, sentences in sentences_batch.items():
+        word_audio_dir = Path(output_dir) / word.replace(" ", "_")
+        word_audio_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Extract sentence text
+        sentence_texts = [s.get("sentence", "") for s in sentences]
+        
+        # Generate audio
+        audio_files = generate_audio(
+            sentences=sentence_texts,
+            voice=voice,
+            output_dir=str(word_audio_dir),
+            batch_name=word.replace(" ", "_"),
+            rate=speed,
+        )
+        
+        audio_output[word] = audio_files
+    
+    return audio_output
+
+
 # ============================================================================
 # IMAGE GENERATION (Pixabay)
 # ============================================================================
@@ -267,6 +473,42 @@ def generate_images_pixabay(
             continue
     
     return generated
+
+
+def generate_images_batch(
+    words: list,
+    output_dir: str,
+    pixabay_api_key: str,
+) -> dict:
+    """
+    Generate images for batch of words.
+    
+    Args:
+        words: List of words to get images for
+        output_dir: Base output directory
+        pixabay_api_key: Pixabay API key
+        
+    Returns:
+        Dict with {word: [image_filenames]}
+    """
+    images_output = {}
+    
+    for word in words:
+        word_image_dir = Path(output_dir) / word.replace(" ", "_")
+        word_image_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Download one image per word
+        image_files = generate_images_pixabay(
+            queries=[word],
+            output_dir=str(word_image_dir),
+            batch_name=word.replace(" ", "_"),
+            num_images=1,
+            pixabay_api_key=pixabay_api_key,
+        )
+        
+        images_output[word] = image_files
+    
+    return images_output
 
 
 # ============================================================================

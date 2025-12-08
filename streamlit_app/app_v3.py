@@ -9,10 +9,7 @@ import os
 from pathlib import Path
 import pandas as pd
 from core_functions import (
-    generate_sentences,
-    generate_audio,
-    generate_images_pixabay,
-    create_anki_tsv,
+    generate_complete_deck,
     create_zip_export,
 )
 from frequency_utils import (
@@ -415,57 +412,38 @@ elif st.session_state.page == "generating":
     status_text = st.empty()
     
     try:
-        # Step 1: Sentences
-        status_text.info("🤖 **Step 1/4:** Generating sentences using Groq AI...")
-        st.write("This generates 10 example sentences for each word in your target language.")
-        progress_bar.progress(25, text="Step 1/4: Generating sentences...")
+        # Create output directory
+        import tempfile
+        output_dir = tempfile.mkdtemp(prefix="anki_deck_")
         
-        sentences_data = generate_sentences(
-            st.session_state.selected_words,
+        # Run complete deck generation
+        status_text.info("🚀 **Starting deck generation...**")
+        st.write("This will generate sentences, audio, images, and create your Anki deck.")
+        
+        result = generate_complete_deck(
+            words=st.session_state.selected_words,
             language=st.session_state.selected_lang,
             groq_api_key=st.session_state.groq_api_key,
-            num_sentences=10
+            pixabay_api_key=st.session_state.pixabay_api_key,
+            output_dir=output_dir,
+            num_sentences=10,
+            audio_speed=0.8,
         )
         
-        # Step 2: Audio
-        status_text.info("🎵 **Step 2/4:** Generating audio files using Edge TTS (0.8x speed for learners)...")
-        st.write("Audio is slowed to 0.8x speed to help you learn pronunciation.")
-        progress_bar.progress(50, text="Step 2/4: Generating audio...")
+        if not result["success"]:
+            raise Exception(result["error"])
         
-        audio_files = generate_audio(
-            sentences_data,
-            language=st.session_state.selected_lang,
-            speed=0.8
-        )
+        # Update progress
+        progress_bar.progress(90, text="Finalizing ZIP file...")
+        status_text.info("📦 **Step 4/4:** Creating final ZIP export...")
         
-        # Step 3: Images
-        status_text.info("🖼️ **Step 3/4:** Downloading images from Pixabay...")
-        st.write("Finding relevant images for each word to aid visual memory.")
-        progress_bar.progress(75, text="Step 3/4: Downloading images...")
-        
-        images = generate_images_pixabay(
-            st.session_state.selected_words,
-            pixabay_api_key=st.session_state.pixabay_api_key
-        )
-        
-        # Step 4: Anki files
-        status_text.info("📦 **Step 4/4:** Creating Anki deck files...")
-        st.write("Creating TSV file and ZIP export ready for import.")
-        progress_bar.progress(90, text="Step 4/4: Creating Anki files...")
-        
-        tsv_content = create_anki_tsv(
-            st.session_state.selected_words,
-            sentences_data,
-            images,
-            st.session_state.selected_lang
-        )
-        
-        zip_file = create_zip_export(
-            st.session_state.selected_words,
-            sentences_data,
-            audio_files,
-            images,
-            st.session_state.selected_lang
+        # Create ZIP file
+        zip_output = Path(output_dir) / "AnkiDeck.zip"
+        create_zip_export(
+            tsv_path=result["tsv_path"],
+            audio_dir=result["audio_dir"],
+            image_dir=result["image_dir"],
+            output_zip=str(zip_output),
         )
         
         # Complete
@@ -474,7 +452,10 @@ elif st.session_state.page == "generating":
         
         st.success("✅ **Your Anki deck is ready!**")
         
-        st.session_state.zip_file = zip_file
+        # Read and store ZIP for download
+        with open(zip_output, "rb") as f:
+            st.session_state.zip_file = f.read()
+        
         st.session_state.page = "complete"
         st.rerun()
         
