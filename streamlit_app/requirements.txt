@@ -1,0 +1,20 @@
+# Streamlit app
+streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
+
+# Core dependencies
+pandas>=2.0.0
+requests>=2.31.0
+pyyaml>=6.0
+
+# AI/ML
+groq>=0.9.0
+
+# Text-to-Speech
+edge-tts>=6.1.0
+
+# Image generation
+Pillow>=10.0.0
+
+# Utilities
+python-dotenv>=1.0.0
