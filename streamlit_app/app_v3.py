@@ -22,7 +22,6 @@ from core_functions import (
     get_available_voices,
     parse_csv_upload,
 )
-from firebase_utils import firebase
 from frequency_utils import (
     get_available_frequency_lists,
     load_frequency_list,
