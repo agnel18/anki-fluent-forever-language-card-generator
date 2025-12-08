@@ -19,6 +19,21 @@ from frequency_utils import (
     validate_word_list,
     get_csv_template,
 )
+from db_manager import (
+    get_words_paginated,
+    search_words,
+    mark_words_completed,
+    get_completed_words,
+    get_word_stats,
+    log_generation,
+)
+from firebase_manager import (
+    get_session_id,
+    sync_progress_to_firebase,
+    load_progress_from_firebase,
+    save_settings_to_firebase,
+    log_generation_to_firebase,
+)
 
 # ============================================================================
 # PAGE CONFIG & STYLING
@@ -86,6 +101,12 @@ if "selected_voice" not in st.session_state:
     st.session_state.selected_voice = None
 if "selected_voice_display" not in st.session_state:
     st.session_state.selected_voice_display = None
+
+# Database and Firebase
+if "session_id" not in st.session_state:
+    st.session_state.session_id = get_session_id()
+if "current_page" not in st.session_state:
+    st.session_state.current_page = {}
 
 config_path = Path(__file__).parent / "languages.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
@@ -327,155 +348,88 @@ elif st.session_state.page == "main":
     # Step 3: Select words
     st.markdown("## 📚 Step 3: Select Your Words")
     
-    # Load words for this language (cached)
-    if selected_lang not in st.session_state.loaded_words:
-        with st.spinner(f"Loading {selected_lang} word list..."):
-            try:
-                all_words = load_frequency_list(selected_lang, limit=1000)
-                # Header row is already skipped in load_frequency_list()
-                if not all_words:
-                    st.warning(f"⚠️ No word list found for {selected_lang}")
-                    all_words = [f"word_{i}" for i in range(1, 51)]
-                st.session_state.loaded_words[selected_lang] = all_words
-            except Exception as e:
-                st.error(f"❌ Error loading words: {str(e)}")
-                all_words = [f"word_{i}" for i in range(1, 51)]
-                st.session_state.loaded_words[selected_lang] = all_words
+    # Load words from database
+    if selected_lang not in st.session_state.current_page:
+        st.session_state.current_page[selected_lang] = 1
     
-    all_words = st.session_state.loaded_words[selected_lang]
-    completed = st.session_state.completed_words.get(selected_lang, [])
-    remaining = [w for w in all_words if w not in completed]
+    # Get completed words
+    completed = get_completed_words(selected_lang)
+    stats = get_word_stats(selected_lang)
     
-    st.markdown(f"**Total words:** {len(all_words)} | **Completed:** {len(completed)} | **Remaining:** {len(remaining)}")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total words", stats.get("total", 0))
+    col2.metric("Completed", stats.get("completed", 0))
+    col3.metric("Remaining", stats.get("remaining", 0))
     
-    # Selection Mode Tabs
-    tab1, tab2, tab3 = st.tabs(["🎯 Range-Based", "🔍 Manual Pick", "⚡ Quick Options"])
+    # Pagination
+    page_size = 20
+    current_page = st.session_state.current_page[selected_lang]
+    words_page, total_words = get_words_paginated(selected_lang, page=current_page, page_size=page_size)
+    total_pages = (total_words + page_size - 1) // page_size
     
+    # Page navigation
+    col1, col2, col3, col4 = st.columns([1, 1, 2, 1])
+    
+    with col1:
+        if st.button("⬅️ Previous", key="prev_page"):
+            if current_page > 1:
+                st.session_state.current_page[selected_lang] -= 1
+                st.rerun()
+    
+    with col2:
+        if st.button("Next ➡️", key="next_page"):
+            if current_page < total_pages:
+                st.session_state.current_page[selected_lang] += 1
+                st.rerun()
+    
+    with col3:
+        st.markdown(f"**Page {current_page} of {total_pages}** | Words {(current_page-1)*page_size+1}-{min(current_page*page_size, total_words)} of {total_words}")
+    
+    # Jump to page
+    with col4:
+        if total_pages > 1:
+            jump_page = st.number_input("Go to page", min_value=1, max_value=total_pages, value=current_page, key="jump_page")
+            if jump_page != current_page:
+                st.session_state.current_page[selected_lang] = jump_page
+                st.rerun()
+    
+    st.divider()
+    
+    # Search
+    st.markdown("### 🔍 Or search for specific words")
+    search_term = st.text_input("Search words:", placeholder="e.g., 'water', 'love', 'cat'...", key="word_search")
+    
+    if search_term:
+        search_results = search_words(selected_lang, search_term, limit=50)
+        if search_results:
+            st.markdown(f"**Found {len(search_results)} matching words:**")
+            words_page = search_results
+            words_title = "Search Results"
+        else:
+            st.info("No words found matching your search")
+            words_page = []
+    else:
+        words_title = f"Page {current_page}"
+    
+    st.divider()
+    
+    # Word selection
     selected_words = []
     
-    # ============================================================================
-    # TAB 1: RANGE-BASED SELECTION
-    # ============================================================================
-    with tab1:
-        st.markdown("**Select words by frequency rank**")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            mode = st.radio(
-                "Which words?",
-                ["Top (most common)", "Skip completed", "Custom range"],
-                label_visibility="collapsed"
-            )
-        
-        if mode == "Top (most common)":
-            batch_start = 0
-            batch_end = min(selected_batch_size, len(all_words))
-            display_words = all_words[batch_start:batch_end]
-            st.markdown(f"**Words 1-{batch_end}** (Most common first)")
-            
-        elif mode == "Skip completed":
-            if len(completed) > 0:
-                batch_end = min(len(completed) + selected_batch_size, len(all_words))
-                display_words = all_words[len(completed):batch_end]
-                st.markdown(f"**Words {len(completed)+1}-{batch_end}** (After your last completed words)")
-            else:
-                batch_end = min(selected_batch_size, len(all_words))
-                display_words = all_words[0:batch_end]
-                st.info("📝 You haven't completed any words yet. Starting from the beginning!")
-        
-        else:  # Custom range
-            st.markdown("**Enter custom range:**")
-            col1, col2 = st.columns(2)
-            with col1:
-                start = st.number_input("Start from word #", min_value=1, max_value=len(all_words), value=1, key="range_start")
-            with col2:
-                num_words = st.number_input("How many words?", min_value=1, max_value=100, value=5, key="range_count")
-            
-            batch_start = start - 1
-            batch_end = min(start - 1 + num_words, len(all_words))
-            display_words = all_words[batch_start:batch_end]
-            st.markdown(f"**Words {start}-{batch_end}** ({batch_end - batch_start} words total)")
-        
-        # Show checkboxes
-        st.markdown("*Select which words:*")
+    if words_page:
+        st.markdown(f"### {words_title}")
         cols = st.columns(5)
-        for idx, word in enumerate(display_words):
+        for idx, word in enumerate(words_page):
             with cols[idx % 5]:
                 is_completed = word in completed
                 checkbox_label = f"{word}"
                 if is_completed:
                     checkbox_label += " ✓"
                 
-                if st.checkbox(checkbox_label, key=f"range_{word}_{idx}"):
+                if st.checkbox(checkbox_label, key=f"word_{selected_lang}_{word}_{idx}"):
                     selected_words.append(word)
-    
-    # ============================================================================
-    # TAB 2: MANUAL PICK
-    # ============================================================================
-    with tab2:
-        st.markdown("**Search and manually select any words**")
-        
-        search_term = st.text_input(
-            "Search for words:",
-            placeholder="e.g., 'water', 'love', 'cat'...",
-            key="word_search"
-        )
-        
-        if search_term:
-            search_lower = search_term.lower()
-            filtered = [w for w in all_words if search_lower in w.lower()]
-            st.markdown(f"**Found {len(filtered)} matching words:**")
-        else:
-            filtered = all_words[:50]  # Show first 50 if no search
-            st.markdown(f"**Showing first 50 words (type to search):**")
-        
-        cols = st.columns(5)
-        for idx, word in enumerate(filtered):
-            with cols[idx % 5]:
-                is_completed = word in completed
-                checkbox_label = f"{word}"
-                if is_completed:
-                    checkbox_label += " ✓"
-                
-                if st.checkbox(checkbox_label, key=f"manual_{word}_{idx}"):
-                    selected_words.append(word)
-    
-    # ============================================================================
-    # TAB 3: QUICK OPTIONS
-    # ============================================================================
-    with tab3:
-        st.markdown("**Quick selection presets**")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🔥 Top 10 (Most Common)", use_container_width=True):
-                selected_words = all_words[:10]
-                st.success(f"✅ Selected top 10 words")
-        
-        with col2:
-            if st.button("📈 Next 10 (11-20)", use_container_width=True):
-                selected_words = all_words[10:20]
-                st.success(f"✅ Selected words 11-20")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🎲 Random 10 Words", use_container_width=True):
-                import random
-                selected_words = random.sample(all_words, min(10, len(all_words)))
-                st.success(f"✅ Selected 10 random words")
-        
-        with col2:
-            if len(completed) > 0:
-                if st.button(f"⏭️ Continue ({len(completed)} done)", use_container_width=True):
-                    start_idx = len(completed)
-                    end_idx = min(len(completed) + 10, len(all_words))
-                    selected_words = all_words[start_idx:end_idx]
-                    st.success(f"✅ Continuing from word {start_idx+1}")
-            else:
-                st.info("📝 No progress yet. Complete some words first!")
+    else:
+        st.info("📝 No words available for this page")
     
     # Summary
     st.divider()
@@ -631,11 +585,27 @@ elif st.session_state.page == "generating":
         
         st.success("✅ **Your Anki deck is ready!**")
 
-        # Track progress if enabled
+        # Track progress if enabled (save to database and Firebase)
         if st.session_state.track_progress and st.session_state.selected_lang != "Custom":
-            completed_list = st.session_state.completed_words.get(st.session_state.selected_lang, [])
-            updated = completed_list + [w for w in st.session_state.selected_words if w not in completed_list]
-            st.session_state.completed_words[st.session_state.selected_lang] = updated
+            # Save to SQLite database
+            mark_words_completed(st.session_state.selected_lang, st.session_state.selected_words)
+            log_generation(
+                st.session_state.session_id,
+                st.session_state.selected_lang,
+                len(st.session_state.selected_words),
+                len(st.session_state.selected_words) * st.session_state.sentences_per_word
+            )
+            
+            # Sync to Firebase
+            completed_words = get_completed_words(st.session_state.selected_lang)
+            stats = get_word_stats(st.session_state.selected_lang)
+            sync_progress_to_firebase(st.session_state.session_id, st.session_state.selected_lang, completed_words, stats)
+            log_generation_to_firebase(
+                st.session_state.session_id,
+                st.session_state.selected_lang,
+                len(st.session_state.selected_words),
+                len(st.session_state.selected_words) * st.session_state.sentences_per_word
+            )
         
         # Read and store ZIP for download
         with open(zip_output, "rb") as f:

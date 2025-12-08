@@ -1,12 +1,13 @@
 """
 Frequency list management and utilities.
-Handles loading word lists and batch size recommendations.
+Handles loading word lists (via SQLite) and batch size recommendations.
 """
 
 import os
 from pathlib import Path
 from typing import List, Dict, Tuple
 import pandas as pd
+from db_manager import get_words_paginated, search_words, get_languages
 
 # Batch size presets with time/complexity estimates
 BATCH_PRESETS = {
@@ -49,32 +50,15 @@ BATCH_PRESETS = {
 
 def get_available_frequency_lists() -> Dict[str, int]:
     """
-    Get available frequency word lists.
-    Returns dict of {language: max_words_available}
+    Get available frequency word lists from SQLite database.
+    Returns dict of {language: word_count}
     """
-    lists_dir = Path(__file__).parent.parent / "109 Languages Frequency Word Lists"
-    
-    available_lists = {}
-    
-    if lists_dir.exists():
-        for file in lists_dir.glob("*.xlsx"):
-            language_code = file.stem.split(" (")[1].rstrip(")")
-            language_name = file.stem.split(" (")[0]
-            
-            # Try to count words in the file
-            try:
-                df = pd.read_excel(file, sheet_name=0, header=None)
-                word_count = len(df)
-                available_lists[language_name] = word_count
-            except:
-                available_lists[language_name] = 5000  # Default estimate
-    
-    return available_lists
+    return get_languages()
 
 
 def load_frequency_list(language: str, limit: int = None) -> List[str]:
     """
-    Load frequency word list for a language.
+    Load frequency word list for a language from SQLite.
     
     Args:
         language: Language name (e.g., "Spanish", "Mandarin Chinese")
@@ -83,7 +67,7 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
     Returns:
         List of words in frequency order
     """
-    # Mapping from UI names to file names
+    # Mapping from UI names to database names
     language_mapping = {
         "Mandarin Chinese": "Chinese (Simplified)",
         "Cantonese": "Chinese (Traditional)",
@@ -99,50 +83,19 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
         "Chinese (Traditional)": "Chinese (Traditional)",
     }
     
-    # Get the filename-friendly name
-    search_name = language_mapping.get(language, language)
-    
-    lists_dir = Path(__file__).parent.parent / "109 Languages Frequency Word Lists"
-    
-    if not lists_dir.exists():
-        return []
-    
-    # Find matching file by looking for the search_name in filename
-    matching_files = []
-    for file in lists_dir.glob("*.xlsx"):
-        if search_name in file.stem:
-            matching_files.append(file)
-    
-    if not matching_files:
-        # Fallback: just try the original language name
-        for file in lists_dir.glob("*.xlsx"):
-            if language in file.stem:
-                matching_files.append(file)
-    
-    if not matching_files:
-        # Last resort: return empty list
-        print(f"Warning: No word list found for {language} or {search_name}")
-        return []
-    
-    file_path = matching_files[0]
+    db_language = language_mapping.get(language, language)
     
     try:
-        df = pd.read_excel(file_path, sheet_name=0, header=None)
-        words = df.iloc[:, 0].tolist()  # Get first column
-        
-        # Clean words
-        words = [str(w).strip() for w in words if w and str(w).strip()]
-        
-        # Skip header row if detected (common headers in word lists)
-        if words and words[0].lower() in ['word', 'rank', 'frequency', 'english', 'translation', 'pinyin', 'hiragana', 'romaji', 'pronunciation', 'definition', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'ar', 'zh', 'hi']:
-            words = words[1:]
+        # Get all words from database
+        words, total = get_words_paginated(db_language, page=1, page_size=1000)
         
         if limit:
             words = words[:limit]
         
-        return words
+        return words if words else []
+        
     except Exception as e:
-        print(f"Error loading {language} frequency list from {file_path}: {e}")
+        print(f"Error loading {language} frequency list from database: {e}")
         return []
 
 
