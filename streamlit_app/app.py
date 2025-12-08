@@ -22,6 +22,17 @@ from core_functions import (
 )
 
 # ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def get_secret(key: str, default: str = "") -> str:
+    """Get secret from Streamlit secrets or environment variables"""
+    try:
+        return st.secrets.get(key, os.getenv(key, default))
+    except:
+        return os.getenv(key, default)
+
+# ============================================================================
 # PAGE CONFIG & STYLING
 # ============================================================================
 
@@ -152,6 +163,12 @@ if "app_language" not in st.session_state:
 if "generated_data" not in st.session_state:
     st.session_state.generated_data = None
 
+if "groq_api_key" not in st.session_state:
+    st.session_state.groq_api_key = ""
+
+if "pixabay_api_key" not in st.session_state:
+    st.session_state.pixabay_api_key = ""
+
 def t(key: str) -> str:
     """Translate UI string."""
     lang = st.session_state.app_language
@@ -180,24 +197,30 @@ with st.sidebar:
     
     st.divider()
     
-    # API Key inputs
+    # API Key inputs - persist in session
     st.markdown("### Groq API")
     st.info(t("groq_info"))
     groq_key = st.text_input(
         t("groq_api_key"),
         type="password",
-        value=st.secrets.get("GROQ_API_KEY", ""),
-        key="groq_input"
+        value=st.session_state.groq_api_key or get_secret("GROQ_API_KEY", ""),
+        key="groq_input",
+        on_change=lambda: st.session_state.update(groq_api_key=st.session_state.groq_input)
     )
+    if not st.session_state.groq_api_key and groq_key:
+        st.session_state.groq_api_key = groq_key
     
     st.markdown("### Pixabay API")
     st.info(t("pixabay_info"))
     pixabay_key = st.text_input(
         t("pixabay_api_key"),
         type="password",
-        value=st.secrets.get("PIXABAY_API_KEY", ""),
-        key="pixabay_input"
+        value=st.session_state.pixabay_api_key or get_secret("PIXABAY_API_KEY", ""),
+        key="pixabay_input",
+        on_change=lambda: st.session_state.update(pixabay_api_key=st.session_state.pixabay_input)
     )
+    if not st.session_state.pixabay_api_key and pixabay_key:
+        st.session_state.pixabay_api_key = pixabay_key
     
     st.info("📢 Edge TTS is free and requires no API key!")
     
@@ -269,33 +292,36 @@ st.markdown(f"### {t('subtitle')}")
 # Language selector (main)
 st.markdown(f"## {t('select_language')}")
 
-col1, col2 = st.columns([1, 2])
+# Create combined language list with section divider
+st.markdown("**Select Language**")
 
-with col1:
-    st.markdown("**Most Spoken (Quick Start)**")
-    top_5_names = [lang["name"] for lang in top_5]
-    top_5_codes = [lang["code"] for lang in top_5]
-    selected_top_5 = st.selectbox(
-        label="Top 5",
-        options=range(len(top_5)),
-        format_func=lambda i: f"{top_5[i]['flag']} {top_5[i]['name']} ({top_5[i]['speakers']})",
-        key="top_5_select"
-    )
-    selected_lang_code = top_5_codes[selected_top_5]
-    selected_lang_name = top_5_names[selected_top_5]
+# Prepare options: Top 5 + All languages in one dropdown
+top_5_with_flags = [
+    {"display": f"⭐ {lang['flag']} {lang['name']} ({lang['speakers']})", "code": lang["code"], "name": lang["name"]}
+    for lang in top_5
+]
 
-with col2:
-    st.markdown("**All 109 Languages**")
-    all_names = [lang["name"] for lang in all_languages]
-    all_codes = [lang["code"] for lang in all_languages]
-    selected_all = st.selectbox(
-        label="Full List",
-        options=range(len(all_languages)),
-        format_func=lambda i: all_languages[i]["name"],
-        key="all_lang_select"
-    )
-    selected_lang_code = all_codes[selected_all]
-    selected_lang_name = all_languages[selected_all]["name"]
+all_langs_list = [
+    {"display": lang["name"], "code": lang["code"], "name": lang["name"]}
+    for lang in all_languages
+]
+
+# Combine: Top 5 + divider line + All languages
+combined_options = top_5_with_flags + [{"display": "─" * 50, "code": "divider", "name": "divider"}] + all_langs_list
+
+selected_lang = st.selectbox(
+    label="Top 5 Most Spoken ⭐ + All Languages",
+    options=combined_options,
+    format_func=lambda x: x["display"],
+    key="language_select"
+)
+
+# Handle divider selection (redirect to first language)
+if selected_lang["code"] == "divider":
+    selected_lang = top_5_with_flags[0]
+
+selected_lang_code = selected_lang["code"]
+selected_lang_name = selected_lang["name"]
 
 # Voice selection
 available_voices = get_available_voices(selected_lang_code)
@@ -402,21 +428,22 @@ st.divider()
 # ============================================================================
 
 if st.button(f"📚 {t('demo_button')}", use_container_width=True):
-    st.info("Demo: Generating 1 sentence in English...")
+    st.info(f"Demo: Generating 1 sentence in {selected_lang_name}...")
     
     try:
-        if not groq_key:
+        api_key = st.session_state.groq_api_key or groq_key
+        if not api_key:
             st.error("❌ Groq API key required for demo")
         else:
             sentences = generate_sentences(
-                word="house",
-                meaning="a building for living",
-                language="English",
+                word="water",
+                meaning="transparent liquid",
+                language=selected_lang_name,
                 num_sentences=1,
                 min_length=5,
                 max_length=15,
                 difficulty="beginner",
-                groq_api_key=groq_key,
+                groq_api_key=api_key,
             )
             
             if sentences:
@@ -580,25 +607,20 @@ st.divider()
 
 st.markdown(f"## {t('anki_instructions')}")
 
-col1, col2, col3 = st.columns([1, 1, 1])
-
-with col1:
-    st.markdown(f"**{t('instruction_1')}**")
-    st.markdown(f"**{t('instruction_2')}**")
-    st.markdown(f"**{t('instruction_3')}**")
-
-with col2:
-    st.markdown(f"**{t('instruction_4')}**")
-    st.markdown(f"**{t('instruction_5')}**")
-
-with col3:
-    st.markdown(f"**{t('instruction_6')}**")
+# Vertical list format for clarity (prevents side-by-side confusion)
+st.markdown(f"1. **{t('instruction_1')}**")
+st.markdown(f"2. **{t('instruction_2')}**")
+st.markdown(f"3. **{t('instruction_3')}**")
+st.markdown(f"4. **{t('instruction_4')}**")
+st.markdown(f"5. **{t('instruction_5')}**")
+st.markdown(f"6. **{t('instruction_6')}**")
 
 st.info(
     "💡 **Tip**: Your Anki media folder is usually located at:\n"
     "- Windows: `C:\\Users\\<YourUsername>\\AppData\\Roaming\\Anki2\\User 1\\collection.media`\n"
     "- Mac: `~/Library/Application Support/Anki2/User 1/collection.media`\n"
-    "- Linux: `~/.local/share/Anki2/User 1/collection.media`"
+    "- Linux: `~/.local/share/Anki2/User 1/collection.media`\n\n"
+    "**Easier way**: In Anki, go to **Menu Bar > Tools > Check Media > View Files** to open the folder directly!"
 )
 
 st.divider()

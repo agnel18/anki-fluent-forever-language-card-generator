@@ -76,14 +76,14 @@ Format: Return ONLY a valid JSON array with NO additional text. Each item must h
 IMPORTANT: Return ONLY valid JSON, nothing else. No markdown, no code blocks, no explanation."""
 
     try:
-        response = client.messages.create(
+        response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1200,
         )
         
-        response_text = response.content[0].text.strip()
+        response_text = response.choices[0].message.content.strip()
         
         # Extract JSON from response (handle markdown blocks)
         if "```json" in response_text:
