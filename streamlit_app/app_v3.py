@@ -71,6 +71,22 @@ if "completed_words" not in st.session_state:
 if "selection_mode" not in st.session_state:
     st.session_state.selection_mode = "range"  # range, manual, search
 
+# Global settings defaults
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = "intermediate"  # beginner, intermediate, advanced
+if "sentence_length_range" not in st.session_state:
+    st.session_state.sentence_length_range = (6, 16)
+if "sentences_per_word" not in st.session_state:
+    st.session_state.sentences_per_word = 10
+if "track_progress" not in st.session_state:
+    st.session_state.track_progress = True
+if "audio_speed" not in st.session_state:
+    st.session_state.audio_speed = 0.8
+if "selected_voice" not in st.session_state:
+    st.session_state.selected_voice = None
+if "selected_voice_display" not in st.session_state:
+    st.session_state.selected_voice_display = None
+
 config_path = Path(__file__).parent / "languages.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
@@ -227,13 +243,54 @@ if st.session_state.page == "api_setup":
 
 elif st.session_state.page == "main":
     
-    col1, col2 = st.columns([4, 1])
+    col1, col2, col3 = st.columns([4, 1, 1])
     with col1:
         st.markdown("# 🌍 Language Learning Anki Deck Generator")
     with col2:
         if st.button("🔐 Change Keys"):
             st.session_state.page = "api_setup"
             st.rerun()
+    with col3:
+        settings_pop = st.popover("⚙️ Settings", help="Adjust difficulty, sentence length, audio, and tracking", use_container_width=True)
+        with settings_pop:
+            st.markdown("### Global Settings")
+            st.session_state.difficulty = st.radio(
+                "Difficulty",
+                ["beginner", "intermediate", "advanced"],
+                index=["beginner", "intermediate", "advanced"].index(st.session_state.difficulty),
+                help="Controls sentence complexity",
+            )
+            st.session_state.sentence_length_range = st.slider(
+                "Sentence length (words)",
+                min_value=4,
+                max_value=30,
+                value=st.session_state.sentence_length_range,
+                step=1,
+                help="Min and max words per sentence",
+            )
+            st.session_state.sentences_per_word = st.slider(
+                "Sentences per word",
+                min_value=3,
+                max_value=15,
+                value=st.session_state.sentences_per_word,
+                step=1,
+                help="How many sentences to generate per word",
+            )
+            st.session_state.track_progress = st.checkbox(
+                "Track progress (mark generated words as completed)",
+                value=st.session_state.track_progress,
+            )
+            st.session_state.audio_speed = st.slider(
+                "Audio speed",
+                min_value=0.5,
+                max_value=1.5,
+                value=st.session_state.audio_speed,
+                step=0.1,
+                help="0.5 = slow, 1.0 = normal, 1.5 = fast",
+            )
+            st.markdown(
+                f"**Voice preview:** {st.session_state.selected_voice_display or 'Set in Audio Settings below'}"
+            )
     
     st.divider()
     
@@ -251,7 +308,7 @@ elif st.session_state.page == "main":
     
     # Step 2: Batch size
     st.markdown("## ⏱️ Step 2: Choose Batch Size")
-    st.markdown("*(10 sentences per word)*")
+    st.markdown(f"*({st.session_state.sentences_per_word} sentences per word)*")
     
     batch_options = []
     batch_values = []
@@ -441,10 +498,11 @@ elif st.session_state.page == "main":
             "🎵 Audio Speed",
             min_value=0.5,
             max_value=1.5,
-            value=0.8,
+            value=st.session_state.audio_speed,
             step=0.1,
             help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
         )
+        st.session_state.audio_speed = audio_speed
     
     with col_voice:
         # Get available voices for the language
@@ -464,15 +522,28 @@ elif st.session_state.page == "main":
             "English": ["en-US-AvaNeural (Female)", "en-US-AndrewNeural (Male)", "en-GB-SoniaNeural (Female UK)"],
         }
         
-        available_voices = voice_options.get(language, ["Auto-detect"])
+        available_voices = voice_options.get(selected_lang, ["Auto-detect"])
+        default_voice_display = st.session_state.selected_voice_display
+        if default_voice_display and default_voice_display not in available_voices:
+            default_voice_display = available_voices[0]
+
         selected_voice_display = st.selectbox(
             "🎤 Voice",
             options=available_voices,
+            index=available_voices.index(default_voice_display) if default_voice_display in available_voices else 0,
             help="Select the voice for audio generation"
         )
         
         # Extract actual voice code from display name
         selected_voice = selected_voice_display.split(" (")[0] if "(" in selected_voice_display else None
+        st.session_state.selected_voice_display = selected_voice_display
+        st.session_state.selected_voice = selected_voice
+
+    st.caption(
+        f"Difficulty: **{st.session_state.difficulty}**, Sentences/word: **{st.session_state.sentences_per_word}**, "
+        f"Length: **{st.session_state.sentence_length_range[0]}-{st.session_state.sentence_length_range[1]} words**, "
+        f"Tracking: {'On' if st.session_state.track_progress else 'Off'}"
+    )
     
     st.divider()
     
@@ -530,9 +601,12 @@ elif st.session_state.page == "generating":
             groq_api_key=st.session_state.groq_api_key,
             pixabay_api_key=st.session_state.pixabay_api_key,
             output_dir=output_dir,
-            num_sentences=10,
-            audio_speed=audio_speed,
-            voice=selected_voice,
+            num_sentences=st.session_state.sentences_per_word,
+            min_length=st.session_state.sentence_length_range[0],
+            max_length=st.session_state.sentence_length_range[1],
+            difficulty=st.session_state.difficulty,
+            audio_speed=st.session_state.audio_speed,
+            voice=st.session_state.selected_voice,
             all_words=st.session_state.loaded_words.get(st.session_state.selected_lang, []),
         )
         
@@ -556,6 +630,12 @@ elif st.session_state.page == "generating":
         status_text.empty()
         
         st.success("✅ **Your Anki deck is ready!**")
+
+        # Track progress if enabled
+        if st.session_state.track_progress and st.session_state.selected_lang != "Custom":
+            completed_list = st.session_state.completed_words.get(st.session_state.selected_lang, [])
+            updated = completed_list + [w for w in st.session_state.selected_words if w not in completed_list]
+            st.session_state.completed_words[st.session_state.selected_lang] = updated
         
         # Read and store ZIP for download
         with open(zip_output, "rb") as f:

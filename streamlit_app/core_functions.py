@@ -180,6 +180,9 @@ def generate_sentences_batch(
     words: list,
     language: str,
     num_sentences: int = 10,
+    min_length: int = 5,
+    max_length: int = 20,
+    difficulty: str = "intermediate",
     groq_api_key: str = None,
 ) -> dict:
     """
@@ -189,6 +192,9 @@ def generate_sentences_batch(
         words: List of target language words
         language: Language name
         num_sentences: Sentences per word
+        min_length: Minimum sentence length (words)
+        max_length: Maximum sentence length (words)
+        difficulty: Sentence complexity level
         groq_api_key: Groq API key
         
     Returns:
@@ -213,6 +219,9 @@ def generate_sentences_batch(
                 meaning=meaning,
                 language=language,
                 num_sentences=num_sentences,
+                min_length=min_length,
+                max_length=max_length,
+                difficulty=difficulty,
                 groq_api_key=groq_api_key,
             )
             all_sentences[word] = sentences
@@ -230,6 +239,9 @@ def generate_complete_deck(
     pixabay_api_key: str,
     output_dir: str = "./output",
     num_sentences: int = 10,
+    min_length: int = 5,
+    max_length: int = 20,
+    difficulty: str = "intermediate",
     audio_speed: float = 0.8,
     voice: Optional[str] = None,
     all_words: Optional[list] = None,
@@ -244,6 +256,9 @@ def generate_complete_deck(
         pixabay_api_key: Pixabay API key
         output_dir: Output directory
         num_sentences: Sentences per word
+        min_length: Minimum words per sentence
+        max_length: Maximum words per sentence
+        difficulty: Sentence complexity level
         audio_speed: Audio playback speed
         
     Returns:
@@ -265,6 +280,9 @@ def generate_complete_deck(
             words=words,
             language=language,
             num_sentences=num_sentences,
+            min_length=min_length,
+            max_length=max_length,
+            difficulty=difficulty,
             groq_api_key=groq_api_key,
         )
         
