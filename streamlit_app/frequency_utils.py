@@ -10,49 +10,40 @@ import pandas as pd
 
 # Batch size presets with time/complexity estimates
 BATCH_PRESETS = {
-    100: {
+    5: {
         "label": "🟢 Quick Start",
-        "time_estimate": "10 minutes",
-        "description": "Perfect for first-timers",
+        "time_estimate": "5-10 minutes",
+        "description": "Perfect for first-timers (50 sentences)",
         "emoji": "🟢",
         "recommended": True
     },
-    200: {
-        "label": "🟡 Medium",
-        "time_estimate": "20 minutes",
-        "description": "Good balance of size and speed",
+    10: {
+        "label": "🟡 Small",
+        "time_estimate": "10-15 minutes",
+        "description": "Good for testing (100 sentences)",
         "emoji": "🟡",
         "recommended": False
     },
-    500: {
-        "label": "🟠 Comprehensive",
-        "time_estimate": "45-60 minutes",
-        "description": "Most common choice",
+    20: {
+        "label": "🟠 Medium",
+        "time_estimate": "20-30 minutes",
+        "description": "Balanced batch (200 sentences)",
         "emoji": "🟠",
         "recommended": False
     },
-    1000: {
-        "label": "🔴 Long Session",
-        "time_estimate": "90+ minutes",
-        "description": "Consider splitting into 2-3 batches",
+    40: {
+        "label": "🔴 Large",
+        "time_estimate": "40-60 minutes",
+        "description": "Bigger commitment (400 sentences)",
         "emoji": "🔴",
         "recommended": False
     },
-    3000: {
-        "label": "⚫ Not Recommended",
-        "time_estimate": "4+ hours",
-        "description": "Split into 3 batches of 1000",
+    50: {
+        "label": "⚫ Very Large",
+        "time_estimate": "50-80 minutes",
+        "description": "Full session (500 sentences)",
         "emoji": "⚫",
-        "recommended": False,
-        "disabled": True
-    },
-    5000: {
-        "label": "⚫ Not Recommended",
-        "time_estimate": "6+ hours",
-        "description": "Split into 5 batches of 1000",
-        "emoji": "⚫",
-        "recommended": False,
-        "disabled": True
+        "recommended": False
     }
 }
 
@@ -136,20 +127,22 @@ def recommend_batch_strategy(total_words: int) -> Tuple[List[int], str]:
     Returns:
         (list of batch sizes, recommendation message)
     """
-    if total_words <= 100:
-        return [total_words], "✅ One batch - quick and easy!"
-    elif total_words <= 500:
-        return [total_words], "✅ One batch - manageable"
-    elif total_words <= 1000:
-        return [total_words], "⚠️ Large batch - may take 90+ minutes"
+    if total_words <= 5:
+        return [total_words], "✅ Quick batch - less than 5 minutes!"
+    elif total_words <= 10:
+        return [total_words], "✅ Small batch - very manageable"
+    elif total_words <= 20:
+        return [total_words], "✅ Medium batch - 20-30 minutes"
+    elif total_words <= 50:
+        return [total_words], "⚠️ Large batch - 50-80 minutes"
     else:
-        # Split into 1000-word chunks
-        num_batches = (total_words + 999) // 1000
-        batches = [1000] * num_batches
-        if total_words % 1000 != 0:
-            batches[-1] = total_words % 1000
+        # Split into 50-word chunks
+        num_batches = (total_words + 49) // 50
+        batches = [50] * num_batches
+        if total_words % 50 != 0:
+            batches[-1] = total_words % 50
         
-        return batches, f"📊 Recommended: Split into {num_batches} batches of ~1000 words each"
+        return batches, f"📊 Recommended: Split into {num_batches} batches of ~50 words each"
 
 
 def get_csv_template() -> str:

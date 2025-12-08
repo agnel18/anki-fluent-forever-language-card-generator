@@ -132,7 +132,7 @@ if "current_language" not in st.session_state:
     st.session_state.current_language = None
 
 if "current_batch_size" not in st.session_state:
-    st.session_state.current_batch_size = None
+    st.session_state.current_batch_size = 5
 
 # Load configuration
 config_path = Path(__file__).parent / "languages.yaml"
@@ -294,7 +294,7 @@ with tab1:
                 on_click=lambda b=batch_size: setattr(st.session_state, "selected_batch_size", b)
             )
     
-    selected_batch = getattr(st.session_state, "selected_batch_size", 100)
+    selected_batch = getattr(st.session_state, "selected_batch_size", 5)
     
     st.divider()
     
