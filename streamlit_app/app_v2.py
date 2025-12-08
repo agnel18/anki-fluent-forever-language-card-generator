@@ -136,7 +136,7 @@ if "current_batch_size" not in st.session_state:
 
 # Load configuration
 config_path = Path(__file__).parent / "languages.yaml"
-with open(config_path, "r") as f:
+with open(config_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
 top_5 = config["top_5"]
