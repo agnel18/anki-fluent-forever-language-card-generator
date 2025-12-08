@@ -1,6 +1,6 @@
 """
 Core functions for Anki card generation.
-Handles: Groq sentences, Edge TTS audio, Pixabay images, TSV export, ZIP creation.
+Handles: Groq sentences, Edge TTS audio (with Google fallback), Pixabay images, TSV export, ZIP creation.
 """
 
 import os
@@ -19,6 +19,14 @@ import re
 from typing import Optional, List
 
 logger = logging.getLogger(__name__)
+
+# Try to import hybrid TTS
+try:
+    from tts_hybrid import generate_audio_hybrid_async
+    HAS_HYBRID_TTS = True
+except ImportError:
+    HAS_HYBRID_TTS = False
+    logger.warning("Hybrid TTS module not available, using Edge TTS only")
 
 # ============================================================================
 # SENTENCE GENERATION (Groq)
@@ -233,6 +241,7 @@ def generate_complete_deck(
                 batch_name="unused",
                 rate=audio_speed,
                 exact_filenames=[f"{b}.mp3" for b in base_names],
+                language=language,
             )
 
             # Images per sentence with exact filenames (using English translations for better results)
@@ -330,9 +339,11 @@ def generate_audio(
     batch_name: str = "batch",
     rate: float = 0.8,
     exact_filenames: Optional[List[str]] = None,
+    language: str = "English",
 ) -> list[str]:
     """
     Batch generate audio files synchronously.
+    Tries Edge TTS first, falls back to Google Cloud TTS if available.
     
     Args:
         sentences: List of sentences to synthesize
@@ -340,6 +351,8 @@ def generate_audio(
         output_dir: Directory to save MP3 files
         batch_name: Prefix for filenames
         rate: Playback speed
+        exact_filenames: Custom filenames for each sentence
+        language: Language name (for Google fallback)
         
     Returns:
         List of generated file paths
@@ -352,7 +365,14 @@ def generate_audio(
         for i, sentence in enumerate(sentences):
             filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
             output_path = Path(output_dir) / filename
-            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
+            
+            # Use hybrid TTS if available, otherwise use basic Edge TTS
+            if HAS_HYBRID_TTS:
+                tasks.append(generate_audio_hybrid_async(
+                    sentence, voice, language, str(output_path), rate, use_google_fallback=True
+                ))
+            else:
+                tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
         
         results = await asyncio.gather(*tasks)
         return results
