@@ -133,6 +133,10 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
         # Clean words
         words = [str(w).strip() for w in words if w and str(w).strip()]
         
+        # Skip header row if detected (common headers in word lists)
+        if words and words[0].lower() in ['word', 'rank', 'frequency', 'english', 'translation', 'pinyin', 'hiragana', 'romaji', 'pronunciation', 'definition', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'ar', 'zh', 'hi']:
+            words = words[1:]
+        
         if limit:
             words = words[:limit]
         

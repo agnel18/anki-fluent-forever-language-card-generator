@@ -1,16 +1,12 @@
 """
 Fluent Forever Anki Card Generator - Streamlit GUI (v3)
-Production-ready, accessible, with progress tracking and optimal UX
-API keys upfront, "Let's Go!" button, optimized loading
+Production-ready with full generation workflow
 """
 
 import streamlit as st
 import yaml
 import os
-import json
 from pathlib import Path
-import tempfile
-from datetime import datetime
 import pandas as pd
 from core_functions import (
     generate_sentences,
@@ -18,18 +14,13 @@ from core_functions import (
     generate_images_pixabay,
     create_anki_tsv,
     create_zip_export,
-    estimate_api_costs,
-    get_available_voices,
-    parse_csv_upload,
 )
 from frequency_utils import (
     get_available_frequency_lists,
     load_frequency_list,
     BATCH_PRESETS,
-    format_batch_option,
-    recommend_batch_strategy,
-    get_csv_template,
     validate_word_list,
+    get_csv_template,
 )
 
 # ============================================================================
@@ -40,170 +31,84 @@ st.set_page_config(
     page_title="Fluent Forever Anki Generator",
     page_icon="🌍",
     layout="wide",
-    initial_sidebar_state="expanded",
 )
 
-# High contrast dark theme with large fonts
 st.markdown("""
 <style>
-    :root {
-        --base-font-size: 16px;
-    }
-    
-    body {
-        font-size: var(--base-font-size);
-        background-color: #0e1117;
-        color: #e6edf3;
-    }
-    
-    /* High contrast colors */
-    .stTitle {
-        font-size: 2.5rem !important;
-        color: #58a6ff !important;
-        font-weight: bold !important;
-    }
-    
-    .stMarkdown {
-        font-size: 1rem !important;
-    }
-    
+    body { font-size: 16px !important; }
     .stButton > button {
         background-color: #238636 !important;
         color: #ffffff !important;
         font-size: 1.1rem !important;
         padding: 0.75rem 1.5rem !important;
-        border-radius: 0.5rem !important;
-        border: 2px solid #238636 !important;
         font-weight: bold !important;
     }
-    
-    .stButton > button:hover {
-        background-color: #2ea043 !important;
-        border-color: #58a6ff !important;
-    }
-    
-    .stSelectbox, .stSlider, .stFileUploader, .stTextInput {
-        font-size: 1rem !important;
-    }
-    
-    .stAlert {
-        font-size: 1.05rem !important;
-        padding: 1rem !important;
-    }
-    
-    /* Accessibility: High contrast */
-    .stMetric {
-        background-color: #161b22 !important;
-        padding: 1.5rem !important;
-        border-radius: 0.5rem !important;
-        border: 1px solid #30363d !important;
-    }
-    
-    /* Progress bar styling */
     .stProgress > div > div > div > div {
         background-color: #58a6ff !important;
-    }
-    
-    /* CTA Button - larger and more prominent */
-    .cta-button {
-        font-size: 1.3rem !important;
-        padding: 1rem 2rem !important;
-        background-color: #238636 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# SESSION STATE & INITIALIZATION
+# SESSION STATE
 # ============================================================================
-
-if "app_language" not in st.session_state:
-    st.session_state.app_language = "en"
-
-if "generated_data" not in st.session_state:
-    st.session_state.generated_data = None
-
-if "groq_api_key" not in st.session_state:
-    st.session_state.groq_api_key = ""
-
-if "pixabay_api_key" not in st.session_state:
-    st.session_state.pixabay_api_key = ""
-
-if "user_id" not in st.session_state:
-    st.session_state.user_id = f"user_{hash(str(datetime.now())) % 1000000}"
-
-if "current_progress" not in st.session_state:
-    st.session_state.current_progress = None
-
-if "current_language" not in st.session_state:
-    st.session_state.current_language = None
-
-if "current_batch_size" not in st.session_state:
-    st.session_state.current_batch_size = 5
-
-if "api_keys_set" not in st.session_state:
-    st.session_state.api_keys_set = False
 
 if "page" not in st.session_state:
     st.session_state.page = "api_setup"
+if "groq_api_key" not in st.session_state:
+    st.session_state.groq_api_key = ""
+if "pixabay_api_key" not in st.session_state:
+    st.session_state.pixabay_api_key = ""
+if "current_batch_size" not in st.session_state:
+    st.session_state.current_batch_size = 5
 
-# Load configuration
+if "loaded_words" not in st.session_state:
+    st.session_state.loaded_words = {}
+
+if "current_lang_words" not in st.session_state:
+    st.session_state.current_lang_words = []
+
+if "completed_words" not in st.session_state:
+    st.session_state.completed_words = {}  # {language: [list of completed words]}
+
+if "selection_mode" not in st.session_state:
+    st.session_state.selection_mode = "range"  # range, manual, search
+
 config_path = Path(__file__).parent / "languages.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
-top_5 = config["top_5"]
 all_languages = config["all_languages"]
-ui_strings_all = config["ui_strings"]
 
 def get_secret(key: str, default: str = "") -> str:
-    """Get secret from environment or Streamlit secrets."""
     try:
         return st.secrets.get(key, os.getenv(key, default))
     except:
         return os.getenv(key, default)
 
-def t(key: str) -> str:
-    """Translate UI string."""
-    lang = st.session_state.app_language
-    if lang not in ui_strings_all:
-        lang = "en"
-    return ui_strings_all[lang].get(key, key)
-
 # ============================================================================
-# PAGE 1: API SETUP (FIRST-TIME)
+# PAGE 1: API SETUP
 # ============================================================================
 
 if st.session_state.page == "api_setup":
     st.markdown("# 🌍 Language Learning Anki Deck Generator")
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
-    
     st.divider()
     
     st.markdown("## 🔐 API Keys Setup")
     st.markdown("""
-    Before we begin, we need your API keys to generate sentences and download images.
-    
-    **How this works:**
+    **How it works:**
     1. You enter your API keys in this form
-    2. They stay in your browser's temporary memory (session)
-    3. We use them only to make API calls on YOUR behalf
-    4. Your keys are NEVER stored anywhere - we can't access them
-    5. When you close this tab/browser, keys are deleted
-    
-    **For Deployed Apps (Streamlit Cloud, etc):**
-    - You never paste keys into the web form
-    - App admin sets keys securely on the server
-    - You just use the app - no key entry needed
+    2. They stay in your browser's temporary memory (session only)
+    3. We use them ONLY to make API calls on YOUR behalf
+    4. Your keys are NEVER stored anywhere
+    5. When you close this tab, keys are automatically deleted
     
     **Important privacy notes:**
-    - ✅ Your API keys are **YOUR responsibility** - we never store them
-    - ✅ Your data **stays with you** - nothing uploaded to our servers
-    - ✅ You control the API usage and costs
-    - ✅ You can delete/regenerate your keys anytime
-    - ❌ DO NOT share your API keys with anyone
-    - ❌ DO NOT upload .env files to websites
-    - ❌ DO NOT commit .env to GitHub
+    - ✅ Your API keys are YOUR responsibility
+    - ✅ Your data stays with you (nothing uploaded)
+    - ✅ You control API usage and costs
+    - ✅ You can regenerate keys anytime
     """)
     
     st.divider()
@@ -213,223 +118,434 @@ if st.session_state.page == "api_setup":
     with col1:
         st.markdown("### 🤖 Groq API Key")
         st.markdown("""
-        **What it's for:** Generate example sentences in your target language
+        **What it's for:** Generate sentences in your language
         
-        **Get your free key:**
-        1. Visit https://console.groq.com/keys
-        2. Create an account (free)
+        **Get free key:**
+        1. https://console.groq.com/keys
+        2. Create account (free)
         3. Generate new API key
-        4. Copy and paste below
+        4. Copy & paste below
         """)
-        
-        groq_key_input = st.text_input(
-            "Groq API Key",
-            type="password",
-            key="groq_setup",
-            placeholder="gsk_...",
-            help="Your Groq API key - kept secure in your session"
-        )
+        groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...")
     
     with col2:
         st.markdown("### 🖼️ Pixabay API Key")
         st.markdown("""
-        **What it's for:** Download relevant images for each word
+        **What it's for:** Download images for each word
         
-        **Get your free key:**
-        1. Visit https://pixabay.com/api/docs/
-        2. Create an account (free)
-        3. Find your API key in dashboard
-        4. Copy and paste below
+        **Get free key:**
+        1. https://pixabay.com/api/docs/
+        2. Create account (free)
+        3. Find API key in dashboard
+        4. Copy & paste below
         """)
-        
-        pixabay_key_input = st.text_input(
-            "Pixabay API Key",
-            type="password",
-            key="pixabay_setup",
-            placeholder="53606933-...",
-            help="Your Pixabay API key - kept secure in your session"
-        )
+        pixabay_key = st.text_input("Pixabay API Key", type="password", placeholder="53606933-...")
     
     st.divider()
     
-    # Check for environment variables as fallback (development only)
+    # Check for environment variables
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
     
-    # If both env keys are available, auto-load them (no user action needed)
-    if groq_env and pixabay_env and not groq_key_input:
-        st.info("""
-        ℹ️ **Development Mode Detected**
-        
-        Your API keys were found in environment variables (automatically loaded).
-        
-        **⚠️ Important:**
-        - You are running this app locally on your computer
-        - Your .env file stays on your computer only
-        - DO NOT upload .env to any website or server
-        - DO NOT commit .env to GitHub
-        """)
-        groq_key_input = groq_env
-        pixabay_key_input = pixabay_env
+    if groq_env and pixabay_env and not groq_key:
+        st.info("ℹ️ **Development Mode Detected** - Your API keys were auto-loaded from .env file")
+        groq_key = groq_env
+        pixabay_key = pixabay_env
     
     st.divider()
     
-    # Validate and continue
-    if st.button("🚀 Let's Go!", use_container_width=True, key="start_button"):
-        if not groq_key_input:
+    if st.button("🚀 Let's Go!", use_container_width=True):
+        if not groq_key:
             st.error("❌ Please enter your Groq API key")
-        elif not pixabay_key_input:
+        elif not pixabay_key:
             st.error("❌ Please enter your Pixabay API key")
         else:
-            st.session_state.groq_api_key = groq_key_input
-            st.session_state.pixabay_api_key = pixabay_key_input
-            st.session_state.api_keys_set = True
+            st.session_state.groq_api_key = groq_key
+            st.session_state.pixabay_api_key = pixabay_key
             st.session_state.page = "main"
-            st.success("✅ API keys saved securely!")
             st.rerun()
 
 # ============================================================================
-# PAGE 2: MAIN APP (AFTER API KEYS)
+# PAGE 2: MAIN APP
 # ============================================================================
 
 elif st.session_state.page == "main":
     
-    # Header
     col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown("# 🌍 Language Learning Anki Deck Generator")
     with col2:
-        if st.button("🔐 API Keys"):
+        if st.button("🔐 Change Keys"):
             st.session_state.page = "api_setup"
             st.rerun()
     
-    st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     
-    # ============================================================================
-    # LANGUAGE SELECTION (Step 1)
-    # ============================================================================
+    # Step 1: Language
+    st.markdown("## 📋 Step 1: Select Language")
+    lang_names = [lang["name"] for lang in all_languages]
+    selected_lang = st.selectbox("Which language do you want to learn?", lang_names)
     
-    st.markdown("## 📋 Select Your Language")
-    
+    available_lists = get_available_frequency_lists()
+    max_words = available_lists.get(selected_lang, 5000)
     col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        lang_names = [lang["name"] for lang in all_languages]
-        selected_lang = st.selectbox(
-            "Which language do you want to learn?",
-            lang_names,
-            key="main_language",
-            help="Choose from all available languages"
-        )
-    
-    with col2:
-        st.markdown("**Available**")
-        available_lists = get_available_frequency_lists()
-        max_words = available_lists.get(selected_lang, 5000)
-        st.metric("", f"{max_words:,} words")
+    col2.metric("Available", f"{max_words:,} words")
     
     st.divider()
     
-    # ============================================================================
-    # BATCH SIZE SELECTION (Step 2 - Fast loading with radio)
-    # ============================================================================
+    # Step 2: Batch size
+    st.markdown("## ⏱️ Step 2: Choose Batch Size")
+    st.markdown("*(10 sentences per word)*")
     
-    st.markdown("## ⏱️ Choose Your Batch Size")
-    st.markdown("*10 sentences will be generated for each word*")
-    
-    # Create batch options
     batch_options = []
     batch_values = []
     for batch_size, info in BATCH_PRESETS.items():
-        label = f"{info['emoji']} {batch_size} words • {info['time_estimate']} • {batch_size * 10} sentences"
+        label = f"{info['emoji']} {batch_size} words • {info['time_estimate']}"
         batch_options.append(label)
         batch_values.append(batch_size)
     
-    selected_idx = batch_values.index(st.session_state.current_batch_size)
-    selected_batch = st.radio(
-        "Batch size options:",
-        batch_options,
-        index=selected_idx,
-        key="batch_radio",
-        label_visibility="collapsed"
-    )
-    
-    # Update session state
-    selected_batch_value = batch_values[batch_options.index(selected_batch)]
-    st.session_state.current_batch_size = selected_batch_value
+    selected_batch_idx = batch_values.index(st.session_state.current_batch_size)
+    selected_batch_label = st.radio("Select batch size:", batch_options, index=selected_batch_idx, label_visibility="collapsed")
+    selected_batch_size = batch_values[batch_options.index(selected_batch_label)]
+    st.session_state.current_batch_size = selected_batch_size
     
     st.divider()
     
-    # ============================================================================
-    # CTA BUTTON - "LET'S GO!"
-    # ============================================================================
+    # Step 3: Select words
+    st.markdown("## 📚 Step 3: Select Your Words")
     
-    st.markdown("## 🚀 Ready to Generate?")
+    # Load words for this language (cached)
+    if selected_lang not in st.session_state.loaded_words:
+        with st.spinner(f"Loading {selected_lang} word list..."):
+            try:
+                all_words = load_frequency_list(selected_lang, limit=1000)
+                # Header row is already skipped in load_frequency_list()
+                if not all_words:
+                    st.warning(f"⚠️ No word list found for {selected_lang}")
+                    all_words = [f"word_{i}" for i in range(1, 51)]
+                st.session_state.loaded_words[selected_lang] = all_words
+            except Exception as e:
+                st.error(f"❌ Error loading words: {str(e)}")
+                all_words = [f"word_{i}" for i in range(1, 51)]
+                st.session_state.loaded_words[selected_lang] = all_words
     
-    col1, col2, col3 = st.columns([1.5, 1.5, 1])
+    all_words = st.session_state.loaded_words[selected_lang]
+    completed = st.session_state.completed_words.get(selected_lang, [])
+    remaining = [w for w in all_words if w not in completed]
+    
+    st.markdown(f"**Total words:** {len(all_words)} | **Completed:** {len(completed)} | **Remaining:** {len(remaining)}")
+    
+    # Selection Mode Tabs
+    tab1, tab2, tab3 = st.tabs(["🎯 Range-Based", "🔍 Manual Pick", "⚡ Quick Options"])
+    
+    selected_words = []
+    
+    # ============================================================================
+    # TAB 1: RANGE-BASED SELECTION
+    # ============================================================================
+    with tab1:
+        st.markdown("**Select words by frequency rank**")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            mode = st.radio(
+                "Which words?",
+                ["Top (most common)", "Skip completed", "Custom range"],
+                label_visibility="collapsed"
+            )
+        
+        if mode == "Top (most common)":
+            batch_start = 0
+            batch_end = min(selected_batch_size, len(all_words))
+            display_words = all_words[batch_start:batch_end]
+            st.markdown(f"**Words 1-{batch_end}** (Most common first)")
+            
+        elif mode == "Skip completed":
+            if len(completed) > 0:
+                batch_end = min(len(completed) + selected_batch_size, len(all_words))
+                display_words = all_words[len(completed):batch_end]
+                st.markdown(f"**Words {len(completed)+1}-{batch_end}** (After your last completed words)")
+            else:
+                batch_end = min(selected_batch_size, len(all_words))
+                display_words = all_words[0:batch_end]
+                st.info("📝 You haven't completed any words yet. Starting from the beginning!")
+        
+        else:  # Custom range
+            st.markdown("**Enter custom range:**")
+            col1, col2 = st.columns(2)
+            with col1:
+                start = st.number_input("Start from word #", min_value=1, max_value=len(all_words), value=1, key="range_start")
+            with col2:
+                num_words = st.number_input("How many words?", min_value=1, max_value=100, value=5, key="range_count")
+            
+            batch_start = start - 1
+            batch_end = min(start - 1 + num_words, len(all_words))
+            display_words = all_words[batch_start:batch_end]
+            st.markdown(f"**Words {start}-{batch_end}** ({batch_end - batch_start} words total)")
+        
+        # Show checkboxes
+        st.markdown("*Select which words:*")
+        cols = st.columns(5)
+        for idx, word in enumerate(display_words):
+            with cols[idx % 5]:
+                is_completed = word in completed
+                checkbox_label = f"{word}"
+                if is_completed:
+                    checkbox_label += " ✓"
+                
+                if st.checkbox(checkbox_label, key=f"range_{word}_{idx}"):
+                    selected_words.append(word)
+    
+    # ============================================================================
+    # TAB 2: MANUAL PICK
+    # ============================================================================
+    with tab2:
+        st.markdown("**Search and manually select any words**")
+        
+        search_term = st.text_input(
+            "Search for words:",
+            placeholder="e.g., 'water', 'love', 'cat'...",
+            key="word_search"
+        )
+        
+        if search_term:
+            search_lower = search_term.lower()
+            filtered = [w for w in all_words if search_lower in w.lower()]
+            st.markdown(f"**Found {len(filtered)} matching words:**")
+        else:
+            filtered = all_words[:50]  # Show first 50 if no search
+            st.markdown(f"**Showing first 50 words (type to search):**")
+        
+        cols = st.columns(5)
+        for idx, word in enumerate(filtered):
+            with cols[idx % 5]:
+                is_completed = word in completed
+                checkbox_label = f"{word}"
+                if is_completed:
+                    checkbox_label += " ✓"
+                
+                if st.checkbox(checkbox_label, key=f"manual_{word}_{idx}"):
+                    selected_words.append(word)
+    
+    # ============================================================================
+    # TAB 3: QUICK OPTIONS
+    # ============================================================================
+    with tab3:
+        st.markdown("**Quick selection presets**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🔥 Top 10 (Most Common)", use_container_width=True):
+                selected_words = all_words[:10]
+                st.success(f"✅ Selected top 10 words")
+        
+        with col2:
+            if st.button("📈 Next 10 (11-20)", use_container_width=True):
+                selected_words = all_words[10:20]
+                st.success(f"✅ Selected words 11-20")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🎲 Random 10 Words", use_container_width=True):
+                import random
+                selected_words = random.sample(all_words, min(10, len(all_words)))
+                st.success(f"✅ Selected 10 random words")
+        
+        with col2:
+            if len(completed) > 0:
+                if st.button(f"⏭️ Continue ({len(completed)} done)", use_container_width=True):
+                    start_idx = len(completed)
+                    end_idx = min(len(completed) + 10, len(all_words))
+                    selected_words = all_words[start_idx:end_idx]
+                    st.success(f"✅ Continuing from word {start_idx+1}")
+            else:
+                st.info("📝 No progress yet. Complete some words first!")
+    
+    # Summary
+    st.divider()
+    if selected_words:
+        st.success(f"✅ Selected: **{len(selected_words)} words**")
+        with st.expander("View selected words"):
+            st.write(", ".join(selected_words))
+    else:
+        st.info(f"📝 Select words from one of the tabs above")
+    
+    st.divider()
+    
+    # Step 4: Generate
+    st.markdown("## ✨ Step 4: Generate Your Deck")
+    
+    col1, col2, col3 = st.columns([2, 1, 1])
     
     with col1:
         if st.button(
-            f"✨ Generate {selected_batch_value}-word Deck",
+            f"🚀 Generate Deck ({len(selected_words)} words)",
             use_container_width=True,
-            key="generate_main",
+            disabled=len(selected_words) == 0
         ):
-            st.info(f"🎬 Generating {selected_batch_value} words in {selected_lang}...")
-            st.session_state.current_language = selected_lang
-            st.session_state.current_batch_size = selected_batch_value
-            st.session_state.generating = True
+            st.session_state.page = "generating"
+            st.session_state.selected_lang = selected_lang
+            st.session_state.selected_words = selected_words
+            st.rerun()
     
     with col2:
-        if st.button(
-            f"👁️ Preview 1 Word",
-            use_container_width=True,
-            key="preview_main",
-        ):
-            st.info(f"Loading preview for {selected_lang}...")
-    
-    with col3:
-        if st.button(
-            "📥 Upload CSV",
-            use_container_width=True,
-            key="upload_tab",
-        ):
+        if st.button("📥 Upload CSV", use_container_width=True):
             st.session_state.page = "upload"
             st.rerun()
     
+    with col3:
+        if st.button("ℹ️ Help", use_container_width=True):
+            st.session_state.page = "help"
+            st.rerun()
+
+# ============================================================================
+# PAGE 3: GENERATING
+# ============================================================================
+
+elif st.session_state.page == "generating":
+    
+    st.markdown("# ⚙️ Generating Your Deck")
+    st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
     
-    # ============================================================================
-    # QUICK TIPS
-    # ============================================================================
+    progress_bar = st.progress(0, text="Starting generation...")
+    status_text = st.empty()
     
-    st.markdown("### 💡 Getting Started Tips")
+    try:
+        # Step 1: Sentences
+        status_text.info("🤖 **Step 1/4:** Generating sentences using Groq AI...")
+        st.write("This generates 10 example sentences for each word in your target language.")
+        progress_bar.progress(25, text="Step 1/4: Generating sentences...")
+        
+        sentences_data = generate_sentences(
+            st.session_state.selected_words,
+            language=st.session_state.selected_lang,
+            groq_api_key=st.session_state.groq_api_key,
+            num_sentences=10
+        )
+        
+        # Step 2: Audio
+        status_text.info("🎵 **Step 2/4:** Generating audio files using Edge TTS (0.8x speed for learners)...")
+        st.write("Audio is slowed to 0.8x speed to help you learn pronunciation.")
+        progress_bar.progress(50, text="Step 2/4: Generating audio...")
+        
+        audio_files = generate_audio(
+            sentences_data,
+            language=st.session_state.selected_lang,
+            speed=0.8
+        )
+        
+        # Step 3: Images
+        status_text.info("🖼️ **Step 3/4:** Downloading images from Pixabay...")
+        st.write("Finding relevant images for each word to aid visual memory.")
+        progress_bar.progress(75, text="Step 3/4: Downloading images...")
+        
+        images = generate_images_pixabay(
+            st.session_state.selected_words,
+            pixabay_api_key=st.session_state.pixabay_api_key
+        )
+        
+        # Step 4: Anki files
+        status_text.info("📦 **Step 4/4:** Creating Anki deck files...")
+        st.write("Creating TSV file and ZIP export ready for import.")
+        progress_bar.progress(90, text="Step 4/4: Creating Anki files...")
+        
+        tsv_content = create_anki_tsv(
+            st.session_state.selected_words,
+            sentences_data,
+            images,
+            st.session_state.selected_lang
+        )
+        
+        zip_file = create_zip_export(
+            st.session_state.selected_words,
+            sentences_data,
+            audio_files,
+            images,
+            st.session_state.selected_lang
+        )
+        
+        # Complete
+        progress_bar.progress(100, text="Complete!")
+        status_text.empty()
+        
+        st.success("✅ **Your Anki deck is ready!**")
+        
+        st.session_state.zip_file = zip_file
+        st.session_state.page = "complete"
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"❌ **Error:** {str(e)}")
+        st.error(f"**Details:** {type(e).__name__}")
+        
+        if st.button("← Back to Main"):
+            st.session_state.page = "main"
+            st.rerun()
+
+# ============================================================================
+# PAGE 4: COMPLETE
+# ============================================================================
+
+elif st.session_state.page == "complete":
+    
+    st.markdown("# ✅ Your Anki Deck is Ready!")
+    st.markdown(f"**{len(st.session_state.selected_words)} words** • **{len(st.session_state.selected_words) * 10} sentences** • **Ready to import**")
+    st.divider()
+    
     col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown("### 📥 Download")
         st.markdown("""
-        **🟢 First time?**
-        Start with 5 words to see how it works.
-        Takes only 5-10 minutes!
+        Your ZIP file contains:
+        - ✅ ANKI_IMPORT.tsv
+        - ✅ Audio files (MP3s)
+        - ✅ Images (JPGs)
         """)
+        
+        if "zip_file" in st.session_state and st.session_state.zip_file:
+            st.download_button(
+                label="⬇️ Download Anki Deck",
+                data=st.session_state.zip_file,
+                file_name=f"{st.session_state.selected_lang.replace(' ', '_')}_deck.zip",
+                mime="application/zip",
+                use_container_width=True
+            )
     
     with col2:
+        st.markdown("### 📖 How to Import")
         st.markdown("""
-        **💰 Cost?**
-        Completely FREE using free tiers.
-        You control your API usage.
+        1. Open Anki
+        2. File → Import...
+        3. Select ANKI_IMPORT.tsv
+        4. Click Import
+        5. Your deck appears! ✨
+        
+        Images & audio auto-import.
         """)
     
     st.divider()
     
-    st.markdown("---")
-    st.markdown(
-        "Made with ❤️ for language learners | "
-        "[GitHub](https://github.com/agnel18/anki-fluent-forever-language-card-generator)"
-    )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("🔄 Generate Another", use_container_width=True):
+            st.session_state.page = "main"
+            st.rerun()
+    with col2:
+        if st.button("🔐 Change Keys", use_container_width=True):
+            st.session_state.page = "api_setup"
+            st.rerun()
+    with col3:
+        if st.button("ℹ️ Help", use_container_width=True):
+            st.session_state.page = "help"
+            st.rerun()
 
 # ============================================================================
-# PAGE 3: UPLOAD (CSV/XLSX)
+# PAGE 5: UPLOAD CSV
 # ============================================================================
 
 elif st.session_state.page == "upload":
@@ -442,10 +558,8 @@ elif st.session_state.page == "upload":
             st.session_state.page = "main"
             st.rerun()
     
-    st.markdown("Import your custom word list from CSV or XLSX file")
     st.divider()
     
-    # Template
     csv_template = get_csv_template()
     st.download_button(
         label="📋 Download CSV Template",
@@ -457,12 +571,7 @@ elif st.session_state.page == "upload":
     
     st.divider()
     
-    # Upload
-    uploaded_file = st.file_uploader(
-        "Choose CSV or XLSX file",
-        type=["csv", "xlsx"],
-        help="First column should contain words (one word per row)"
-    )
+    uploaded_file = st.file_uploader("Choose CSV or XLSX file", type=["csv", "xlsx"])
     
     if uploaded_file:
         try:
@@ -478,26 +587,65 @@ elif st.session_state.page == "upload":
             
             if is_valid:
                 st.success(message)
-                
                 col1, col2 = st.columns(2)
-                col1.metric("Words found", len(words))
-                col2.metric("Ready to generate", "✅")
+                col1.metric("Words", len(words))
+                col2.metric("Ready", "✅")
                 
                 st.divider()
                 
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("🚀 Generate Deck", use_container_width=True):
-                        st.session_state.custom_words = words
-                        st.session_state.current_language = "Custom"
-                        st.session_state.current_batch_size = len(words)
-                        st.session_state.generating = True
-                
-                with col2:
-                    if st.button("👁️ Preview 1 Word", use_container_width=True):
-                        st.info("Loading preview...")
+                if st.button("🚀 Generate from Custom Words", use_container_width=True):
+                    st.session_state.selected_lang = "Custom"
+                    st.session_state.selected_words = words
+                    st.session_state.page = "generating"
+                    st.rerun()
             else:
                 st.error(message)
         
         except Exception as e:
-            st.error(f"❌ Error reading file: {str(e)}")
+            st.error(f"❌ Error: {str(e)}")
+
+# ============================================================================
+# PAGE 6: HELP
+# ============================================================================
+
+elif st.session_state.page == "help":
+    
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.markdown("# ℹ️ Help & FAQ")
+    with col2:
+        if st.button("← Back"):
+            st.session_state.page = "main"
+            st.rerun()
+    
+    st.divider()
+    
+    st.markdown("""
+    ## What does this app do?
+    
+    Creates custom Anki decks by:
+    1. **Selecting words** from frequency lists
+    2. **Generating sentences** in your language (Groq AI)
+    3. **Creating audio** at 0.8x speed (learner-friendly)
+    4. **Downloading images** (Pixabay)
+    5. **Creating Anki files** ready to import
+    
+    ## Cost?
+    **Completely FREE!**
+    - Groq: Free tier
+    - Pixabay: Free tier (5,000 images/day)
+    
+    ## How long?
+    - 5 words: 5-10 min
+    - 10 words: 10-15 min
+    - 20 words: 20-30 min
+    
+    ## Privacy?
+    Your data stays with you, nothing stored on our servers.
+    
+    ## Errors?
+    1. Check API keys
+    2. Check internet
+    3. Try 3-5 words first
+    4. Refresh & try again
+    """)
