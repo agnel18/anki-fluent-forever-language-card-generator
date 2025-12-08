@@ -372,8 +372,53 @@ elif st.session_state.page == "main":
     
     st.divider()
     
-    # Step 4: Generate
-    st.markdown("## ✨ Step 4: Generate Your Deck")
+    # Step 4: Audio Settings
+    st.markdown("## ⚙️ Step 4: Audio Settings")
+    
+    col_speed, col_voice = st.columns(2)
+    
+    with col_speed:
+        audio_speed = st.slider(
+            "🎵 Audio Speed",
+            min_value=0.5,
+            max_value=1.5,
+            value=0.8,
+            step=0.1,
+            help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
+        )
+    
+    with col_voice:
+        # Get available voices for the language
+        voice_options = {
+            "Spanish": ["es-ES-ElviraNeural (Female)", "es-ES-AlvaroNeural (Male)", "es-MX-DaliaNeural (Female MX)"],
+            "French": ["fr-FR-DeniseNeural (Female)", "fr-FR-HenriNeural (Male)"],
+            "German": ["de-DE-KatjaNeural (Female)", "de-DE-ConradNeural (Male)"],
+            "Italian": ["it-IT-IsabellaNeural (Female)", "it-IT-DiegoNeural (Male)"],
+            "Portuguese": ["pt-BR-FranciscaNeural (Female)", "pt-BR-AntonioNeural (Male)"],
+            "Russian": ["ru-RU-SvetlanaNeural (Female)", "ru-RU-DmitryNeural (Male)"],
+            "Japanese": ["ja-JP-NanamiNeural (Female)", "ja-JP-KeitaNeural (Male)"],
+            "Korean": ["ko-KR-SoonBokNeural (Female)", "ko-KR-InJoonNeural (Male)"],
+            "Chinese (Simplified)": ["zh-CN-XiaoxiaoNeural (Female)", "zh-CN-YunxiNeural (Male)"],
+            "Mandarin Chinese": ["zh-CN-XiaoxiaoNeural (Female)", "zh-CN-YunxiNeural (Male)"],
+            "Arabic": ["ar-SA-LeenNeural (Female)", "ar-SA-HamedNeural (Male)"],
+            "Hindi": ["hi-IN-SwaraNeural (Female)", "hi-IN-MadhurNeural (Male)"],
+            "English": ["en-US-AvaNeural (Female)", "en-US-AndrewNeural (Male)", "en-GB-SoniaNeural (Female UK)"],
+        }
+        
+        available_voices = voice_options.get(language, ["Auto-detect"])
+        selected_voice_display = st.selectbox(
+            "🎤 Voice",
+            options=available_voices,
+            help="Select the voice for audio generation"
+        )
+        
+        # Extract actual voice code from display name
+        selected_voice = selected_voice_display.split(" (")[0] if "(" in selected_voice_display else None
+    
+    st.divider()
+    
+    # Step 5: Generate
+    st.markdown("## ✨ Step 5: Generate Your Deck")
     
     col1, col2, col3 = st.columns([2, 1, 1])
     
@@ -427,7 +472,9 @@ elif st.session_state.page == "generating":
             pixabay_api_key=st.session_state.pixabay_api_key,
             output_dir=output_dir,
             num_sentences=10,
-            audio_speed=0.8,
+            audio_speed=audio_speed,
+            voice=selected_voice,
+            all_words=st.session_state.loaded_words.get(st.session_state.selected_lang, []),
         )
         
         if not result["success"]:
@@ -441,8 +488,7 @@ elif st.session_state.page == "generating":
         zip_output = Path(output_dir) / "AnkiDeck.zip"
         create_zip_export(
             tsv_path=result["tsv_path"],
-            audio_dir=result["audio_dir"],
-            image_dir=result["image_dir"],
+            media_dir=result["media_dir"],
             output_zip=str(zip_output),
         )
         

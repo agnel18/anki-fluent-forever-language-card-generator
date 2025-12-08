@@ -165,6 +165,7 @@ def generate_complete_deck(
     output_dir: str = "./output",
     num_sentences: int = 10,
     audio_speed: float = 0.8,
+    voice: Optional[str] = None,
     all_words: Optional[list] = None,
 ) -> dict:
     """
@@ -204,7 +205,7 @@ def generate_complete_deck(
         # Step 2-4: Per-sentence audio, images, TSV rows
         logger.info("Generating audio and images per sentence, then building TSV rows...")
         words_data = []
-        voice = _voice_for_language(language)
+        voice = voice or _voice_for_language(language)
 
         def rank_for_word(word: str) -> int:
             if all_words:
@@ -234,9 +235,10 @@ def generate_complete_deck(
                 exact_filenames=[f"{b}.mp3" for b in base_names],
             )
 
-            # Images per sentence with exact filenames
+            # Images per sentence with exact filenames (using English translations for better results)
+            english_translations = [s.get("english_translation", "") for s in sents]
             image_files = generate_images_pixabay(
-                queries=sentence_texts,
+                queries=english_translations,
                 output_dir=str(media_dir),
                 batch_name="unused",
                 num_images=1,
