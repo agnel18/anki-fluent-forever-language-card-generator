@@ -4,6 +4,16 @@
 
 You now have **complete, professional YouTube production materials** ready to film. Everything is written, structured, and ready to go.
 
+### 🆕 Latest Features (December 2024)
+- **Direct .apkg import** (no more ZIP extraction!)
+- **3 learning modes per card**: Listening, Production, Reading
+- **IPA transcriptions** with AI + epitran fallback
+- **Keyword extraction** for better image search results
+- **Dark/Light mode support** in Anki cards
+- **Real-time progress updates** during generation
+- **Custom word import** (upload your own CSV/XLSX)
+- **Frequency-ranked word selection** with pagination
+
 ---
 
 ## 📁 Files Created

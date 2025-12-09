@@ -6,8 +6,20 @@
 **Skill Level:** Absolute beginner-friendly
 **Total Series Length:** 4 videos (10-15 min each)
 **Total Production Time:** ~45-60 min unattended
+**Latest Update:** December 2024 - Major improvements added!
 
 ---
+
+## 🆕 What's New (December 2024)
+
+✨ **Direct .apkg import** - No more ZIP file extraction!
+✨ **3 learning modes per card** - Listening, Production, Reading (scientifically optimized)
+✨ **IPA transcriptions** - AI-generated with epitran fallback for 20+ languages
+✨ **Keyword extraction** - AI extracts keywords from sentences for better image search
+✨ **Dark/Light mode support** - Cards auto-adapt to your Anki theme
+✨ **Real-time progress** - See exactly what's being generated (word by word)
+✨ **Custom word import** - Upload your own CSV/XLSX word lists
+✨ **Frequency-ranked UI** - See word rankings in the word selection interface
 
 ## 🎬 Video Structure (MECE Framework)
 
@@ -30,10 +42,13 @@ In this series, you'll learn the Fluent Forever Method - the science-backed lang
 
 What you'll create:
 ✓ 6,250 professional Anki cards (previously took 1,000+ hours manually)
-✓ Sentences from Google Gemini AI
-✓ Native speaker audio (soundoftext.com)
-✓ Relevant images (Pexels API)
-✓ Everything ready to import in 2 hours
+✓ Sentences from Google Gemini AI (10 per word, varied contexts)
+✓ Native speaker audio (Edge TTS + Google fallback)
+✓ Smart images using keyword extraction (better relevance!)
+✓ IPA phonetic transcriptions (AI + epitran hybrid)
+✓ 3 learning modes per card (Listening, Production, Reading)
+✓ Everything in ONE .apkg file (double-click to import!)
+✓ Dark/Light mode compatible cards
 
 Perfect for learning: Arabic, Spanish, Japanese, French, German, Korean, Mandarin, Vietnamese, Italian, Portuguese, Russian, Turkish, Thai, Hindi, Polish, Dutch, Swedish, Greek, Hebrew, Persian, Indonesian, Bulgarian, Romanian, Norwegian, Danish, Finnish, Czech, Icelandic, Latvian, Lithuanian, Estonian, Slovenian, Croatian, Serbian, Ukrainian, Hungarian, Slovak, Albanian, Macedonian, Bosnian, Turkish, Kazakh, Uzbek, Kyrgyz, Turkmen, Mongolian, Tajik, Armenian, Georgian, Azeri, Kurdish, Pashto, Urdu, Sindhi, Hindi, Bengali, Gujarati, Marathi, Punjabi, Tamil, Telugu, Kannada, Malayalam, Odia, Assamese, Nepali, Sinhala, Burmese, Khmer, Lao, Thai, Vietnamese, Tagalog, Indonesian, Malay, Javanese, Sundanese, Malagasy, Samoan, Samoan, Shona, Zulu, Xhosa, Sotho, Yoruba, Igbo, Somali, Swahili, Hausa, Amharic, Tigrinya, Oromo, Kinyarwanda, Uyghur, Tibetan, Mongolian + 30+ more!
 

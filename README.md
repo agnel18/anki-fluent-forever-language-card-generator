@@ -52,15 +52,18 @@ See [Command Line Guide](#command-line-guide) below for details.
 
 ### 🎯 **Intelligent & Fast**
 - ⚡ **SQLite Database**: 20-200x faster than Excel files
-- 📄 **Paginated UI**: Browse 1000+ words smoothly (20 words/page)
+- 📄 **Paginated UI**: Browse 1000+ words smoothly (25 words/page with frequency ranks)
 - 🔍 **Instant Search**: Find words in <5ms
 - 💾 **Persistent Progress**: Resume where you left off
+- 📤 **Custom Word Import**: Upload your own CSV/XLSX word lists
 
 ### 🤖 **AI-Powered Content**
 - **Groq llama-3.3-70b**: Generates 10 natural sentences per word
 - **Smart Context**: Different tenses, formality levels, real-world usage
 - **Word Meanings**: Auto-generated definitions with explanations
 - 📚 Example: "el" → "the (definite article, used to refer to a specific noun)"
+- **IPA Phonetic Transcriptions**: Hybrid AI + epitran fallback for 20+ languages
+- **Keyword Extraction**: AI extracts image search keywords from sentences for better image relevance
 
 ### 🔊 **Professional Audio**
 - **Edge TTS**: High-quality native speaker audio (primary)
@@ -70,15 +73,24 @@ See [Command Line Guide](#command-line-guide) below for details.
 
 ### 🖼️ **Beautiful Images**
 - **Pixabay API**: 50M+ professional photos
-- **Smart Search**: Uses English translations for better relevance
+- **Smart Search**: Uses extracted keywords for better relevance (improved from full sentences)
 - **Top-3 Selection**: Only best images selected
 - **Fast Delivery**: 47-135 KB JPGs per image
 
-### 📊 **Complete Tracking**
+### 📊 **Complete Tracking & Detailed Progress**
 - ✅ Persistent progress (survives app restarts)
 - 📈 Statistics: Words learned, completion %, generation history
 - ☁️ Optional Firebase cloud sync (multi-session)
 - 🎯 Track which words you've completed
+- **Real-time Progress Messages**: See exactly what's happening (word-by-word updates)
+- **Auto-scroll to Generation**: Jump to top when generation starts
+
+### 🎴 **Professional Anki Cards**
+- **3 Card Types Per Word**: Listening (audio recognition), Production (English to target), Reading (comprehension)
+- **.apkg Export**: Direct Anki format (no ZIP extraction needed)
+- **Dark/Light Mode Support**: Cards auto-adapt to Anki's theme using CSS variables
+- **Embedded Media**: Audio and images packaged in single file
+- **9 Fields**: Word, Meaning, Sentence, IPA, English, Audio, Image, Keywords, Tags
 
 ### 🌍 **109 Languages**
 All with frequency-sorted word lists:
@@ -128,7 +140,7 @@ SELECT LANGUAGE
     ↓
 CHOOSE BATCH SIZE (5-50 words)
     ↓
-SELECT WORDS (paginated, searchable)
+SELECT WORDS (paginated with frequency ranks, searchable, or upload custom CSV/XLSX)
     ↓
 CONFIGURE SETTINGS
     ├─ Difficulty: Beginner/Intermediate/Advanced
@@ -137,18 +149,18 @@ CONFIGURE SETTINGS
     ├─ Audio Speed: 0.5x - 1.5x
     └─ Voice: Male/Female per language
     ↓
-GENERATE DECK (automatic)
-    ├─ Generate word meanings (Groq)
-    ├─ Generate sentences (Groq)
-    ├─ Create audio (Edge TTS + Google fallback)
-    ├─ Download images (Pixabay, top-3)
-    └─ Create Anki TSV + ZIP
+GENERATE DECK (automatic with detailed progress)
+    ├─ Step 1: Generate sentences with AI (Groq)
+    ├─ Step 2: Generate audio for each sentence (Edge TTS)
+    ├─ Step 3: Download images using keyword extraction (Pixabay)
+    ├─ Step 4: Add IPA phonetic transcriptions (AI + epitran fallback)
+    └─ Step 5: Create .apkg Anki deck with 3 card types
     ↓
 DOWNLOAD & IMPORT
-    ├─ Download ZIP file
-    ├─ Open Anki
-    ├─ File → Import → Select ANKI_IMPORT.tsv
-    └─ Done! Cards appear instantly ✅
+    ├─ Download .apkg file directly (no extraction needed!)
+    ├─ Double-click to open in Anki
+    ├─ Anki imports automatically ✅
+    └─ 3 card types per word ready to study
 ```
 
 ---
@@ -223,20 +235,33 @@ Visit: **http://localhost:8507**
 - **Step 1:** Select language (109 options)
 - **Step 2:** Choose batch size (5-50 words)
 - **Step 3:** Select words
-  - Browse by page (⬅️ Previous | Next ➡️)
+  - Browse by page with **frequency ranks** (Top 1-25, Top 25-50, etc.)
+  - **Custom word import**: Upload CSV/XLSX with your own words
   - Search for specific words (🔍)
   - Mark completed words (✓)
+  - Each word shows its frequency rank
 - **Step 4:** Configure audio
   - Speed slider (0.5x - 1.5x)
   - Voice selector (male/female)
 - **Settings Icon (⚙️):** Adjust difficulty, sentence length, tracking
 - **Step 5:** Generate Deck
-  - Watch progress in real-time
-  - Download ZIP when complete
+  - **Watch detailed progress in real-time**:
+    - Step 1/5: Generating sentences (AI batch processing)
+    - Step 2/5: Generating audio (word-by-word progress)
+    - Step 3/5: Downloading images (keyword-based search)
+    - Step 4/5: Adding IPA phonetic transcriptions
+    - Step 5/5: Creating .apkg package with 3 card types
+  - **Page auto-scrolls to top** when generation starts
+  - Download .apkg file when complete
 
 **Page 3: Complete**
-- Download button for ZIP file
+- Download button for .apkg file (ready to import directly!)
 - Import instructions for Anki
+- **3 Card Types Included:**
+  1. 🎧 **Listening**: Audio plays → You guess meaning/translation
+  2. 💬 **Production**: English phrase → You produce target language sentence
+  3. 📖 **Reading**: Target language sentence → You understand meaning
+  - All with IPA, keywords, and images automatically included
 
 ---
 

@@ -144,10 +144,12 @@ We can now automate the entire process. From raw frequency word lists to ready-t
 - Set up all free tools (5 tools, $0 total)
 - Generate 625 AI-written sentences in any language
 - Download native speaker audio automatically
-- Find relevant images for each word
-- Import everything into Anki in under 5 minutes
+- Find relevant images for each word using smart keyword extraction
+- Generate IPA phonetic transcriptions (AI + epitran fallback)
+- Import everything into Anki **directly as .apkg file** (double-click to import!)
+- Get 3 learning modes per word (Listening, Production, Reading)
 
-And you'll have a complete, professional language learning deck ready to use.
+And you'll have a complete, professional language learning deck with dark/light mode support ready to use."
 
 This is the same method used by polyglots and language professionals. Now you can build it in 2-3 hours instead of 1,000+ hours.
 
