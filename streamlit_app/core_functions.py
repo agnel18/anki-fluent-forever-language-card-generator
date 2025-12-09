@@ -142,7 +142,11 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
 # SENTENCE GENERATION (Groq)
 # ============================================================================
 
-def generate_sentences(
+# ============================================================================
+# PASS 1: SENTENCE GENERATION (Raw sentences, no JSON)
+# ============================================================================
+
+def _generate_sentences_pass1(
     word: str,
     meaning: str,
     language: str,
@@ -151,93 +155,76 @@ def generate_sentences(
     max_length: int = 20,
     difficulty: str = "intermediate",
     groq_api_key: str = None,
-) -> list[dict]:
+) -> list[str]:
     """
-    Generate sentences using Groq API.
+    PASS 1: Generate raw sentences using Groq.
+    Returns plain text sentences (one per line), no JSON.
     
     Args:
         word: Target language word
         meaning: English meaning
-        language: Language name (e.g., "Spanish", "Hindi")
-        num_sentences: Number of sentences to generate (1-20)
-        min_length: Minimum sentence length in words
-        max_length: Maximum sentence length in words
+        language: Language name
+        num_sentences: Number of sentences
+        min_length: Minimum sentence length (words)
+        max_length: Maximum sentence length (words)
         difficulty: "beginner", "intermediate", "advanced"
         groq_api_key: Groq API key
         
     Returns:
-        List of dicts with keys: sentence, english_translation, contexts, parts_of_speech
+        List of raw sentence strings
     """
     if not groq_api_key:
         raise ValueError("Groq API key required")
-        
+    
     client = Groq(api_key=groq_api_key)
     
-    difficulty_desc = {
-        "beginner": "simple, present tense, common scenarios",
-        "intermediate": "mixed tenses, formal and informal, various contexts",
-        "advanced": "complex structures, rare vocabulary, literary/academic"
-    }
-    
-     prompt = f"""You are a certified professional linguist and a native-level expert in {language}. You specialize in creating natural, high-quality sentences for language learners.
+    prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
-Your task: Generate exactly {num_sentences} high-quality, natural {language} sentences using the word "{word}" ({meaning}).
+Your task:
+Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} using the word "{word}" ({meaning}).
 
 ===========================
-STRICT QUALITY RULES
+QUALITY RULES (STRICT)
 ===========================
-1. All sentences MUST be:
-    - Grammatically perfect
-    - Idiomatic and natural for native speakers
-    - Culturally appropriate
-    - Semantically meaningful (no filler or generic template sentences)
-    - Fully correct in spelling, accents, tone marks, and punctuation
-
-2. Sentences must NEVER:
-    - Sound translated, robotic, or unnatural
-    - Use awkward literal constructions
-    - Repeat sentence structures or patterns
-    - Use rare or archaic forms unless difficulty="advanced"
-
-3. The word "{word}" MUST:
-    - Be used correctly according to the meaning and part of speech
-    - Fit naturally inside the sentence
-    - NOT be forced into unnatural contexts
-
-4. Sentence length requirement:
-    - Each sentence must be {min_length}-{max_length} words
-    - Count only actual words, not punctuation
-
-5. Difficulty level rules:
-    beginner → simple, everyday vocabulary, mostly present tense
-    intermediate → mix of tenses, some complexity, natural variation
-    advanced → complex syntax, richer vocabulary, natural but not literary
-
-6. Required variety across all sentences:
-    - Different tenses (if applicable in {language})
-    - Different sentence types (statement, question, command)
-    - Different grammatical roles for the target word
-    - Different real-life contexts (home, work, school, social, emotions, etc.)
+- Every sentence must sound like it was written by an educated native speaker.
+- Absolutely no unnatural, robotic, or literal-translation phrasing.
+- Grammar, syntax, spelling, diacritics, gender agreement, case, politeness level, and punctuation must all be correct.
+- The target word "{word}" MUST:
+  * be used correctly in context,
+  * match its real meaning,
+  * NOT be forced into an unnatural construction.
+- Avoid rare or archaic vocabulary (unless difficulty="advanced").
+- All sentences must be semantically meaningful (no filler templates).
+- No repeated sentence structures or patterns — each sentence must be unique.
 
 ===========================
-OUTPUT FORMAT RULES (VERY STRICT)
+LENGTH + DIFFICULTY
 ===========================
-Return ONLY a valid JSON array. Nothing before or after the JSON.
+- Each sentence must be {min_length}-{max_length} words long.
+- Difficulty level:
+  beginner → simple vocabulary, mostly present tense
+  intermediate → mixed tenses, richer but still natural
+  advanced → complex structures, nuanced vocabulary
 
-Each item MUST include:
-{
-  "sentence": "Full {language} sentence with correct grammar",
-  "english_translation": "Accurate natural English translation",
-  "context": "One short phrase describing the situation (e.g., 'office', 'family', 'travel')",
-  "ipa": "Full IPA transcription using correct IPA symbols ONLY",
-  "image_keywords": "2-3 concrete nouns or actions for image generation"
-}
+===========================
+VARIETY REQUIREMENTS
+===========================
+Across the {num_sentences} sentences:
+- Use different tenses (if applicable to {language}).
+- Use different sentence types: declarative, interrogative, imperative.
+- Use the target word in different grammatical roles.
+- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions.
 
-Important:
-- IPA must follow official IPA standards (no approximations).
-- Image keywords MUST be visually representable and concrete.
-- JSON must be valid: no trailing commas, no comments, no backticks.
-- Do NOT include explanations or reasoning in output.
+===========================
+IMPORTANT
+===========================
+- RETURN ONLY the {language} sentences, one per line.
+- NO English translation.
+- NO explanation.
+- NO JSON.
+- NO numbering.
+- NO extra text.
+- Each line = ONE sentence only.
 """
     
     try:
@@ -250,35 +237,291 @@ Important:
         
         response_text = response.choices[0].message.content.strip()
         
-        # Extract JSON from response (handle markdown blocks)
+        # Split by newlines and filter empty lines
+        sentences = [s.strip() for s in response_text.split("\n") if s.strip()]
+        
+        return sentences[:num_sentences]
+        
+    except Exception as e:
+        logger.error(f"PASS 1 (sentence generation) error: {e}")
+        raise
+
+
+# ============================================================================
+# PASS 2: VALIDATION (Check grammar, naturalness, correctness)
+# ============================================================================
+
+def _validate_sentence_pass2(
+    sentence: str,
+    word: str,
+    language: str,
+    groq_api_key: str = None,
+) -> dict:
+    """
+    PASS 2: Validate sentence for correctness, naturalness, proper word usage.
+    Returns validation result with optional corrected sentence.
+    
+    Args:
+        sentence: Sentence to validate
+        word: Target word used in sentence
+        language: Language name
+        groq_api_key: Groq API key
+        
+    Returns:
+        Dict with keys: valid (bool), corrected_sentence (str or "")
+    """
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+    
+    client = Groq(api_key=groq_api_key)
+    
+    prompt = f"""You are a native linguist for {language}.
+
+Check the following sentence for:
+- naturalness
+- grammar correctness
+- correct usage of "{word}"
+- proper spelling/accents
+- cultural appropriateness
+
+Sentence: "{sentence}"
+
+Return JSON only:
+
+{{
+  "valid": true/false,
+  "corrected_sentence": "..."   
+}}
+
+If valid, set corrected_sentence to empty string "".
+If invalid, provide the corrected version."""
+    
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=300,
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        # Extract JSON
         if "```json" in response_text:
             response_text = response_text.split("```json")[1].split("```")[0].strip()
         elif "```" in response_text:
             response_text = response_text.split("```")[1].split("```")[0].strip()
         
-        sentences = json.loads(response_text)
-        
-        # Validate and format
-        validated = []
-        for s in sentences[:num_sentences]:
-            if isinstance(s, dict) and "sentence" in s and "english_translation" in s:
-                validated.append({
-                    "sentence": s["sentence"],
-                    "english_translation": s["english_translation"],
-                    "context": s.get("context", "general"),
-                    "ipa": s.get("ipa", ""),
-                    "image_keywords": s.get("image_keywords", ""),
-                    "word": word,
-                    "meaning": meaning,
-                })
-        
-        return validated if validated else []
+        result = json.loads(response_text)
+        return {
+            "valid": result.get("valid", False),
+            "corrected_sentence": result.get("corrected_sentence", ""),
+        }
         
     except json.JSONDecodeError as e:
-        logger.error(f"JSON parse error: {e}")
-        return []
+        logger.error(f"PASS 2 validation JSON parse error: {e}")
+        return {"valid": False, "corrected_sentence": ""}
     except Exception as e:
-        logger.error(f"Groq API error: {e}")
+        logger.error(f"PASS 2 validation error: {e}")
+        return {"valid": False, "corrected_sentence": ""}
+
+
+# ============================================================================
+# PASS 3: ENRICHMENT (IPA, translation, context, keywords)
+# ============================================================================
+
+def _enrich_sentence_pass3(
+    sentence: str,
+    word: str,
+    language: str,
+    groq_api_key: str = None,
+) -> dict:
+    """
+    PASS 3: Enrich sentence with translation, IPA, context, image keywords.
+    Does NOT modify the sentence.
+    
+    Args:
+        sentence: Validated sentence (immutable)
+        word: Target word
+        language: Language name
+        groq_api_key: Groq API key
+        
+    Returns:
+        Dict with keys: english_translation, ipa, context, image_keywords, role_of_word
+    """
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+    
+    client = Groq(api_key=groq_api_key)
+    
+    prompt = f"""You are a linguist for {language}. Do NOT change the sentence.
+
+Sentence: "{sentence}"
+
+Return JSON only:
+
+{{
+  "english_translation": "...",
+  "ipa": "...",
+  "context": "one short phrase (e.g., office, family, travel)",
+  "image_keywords": "2-3 simple, concrete nouns or actions",
+  "role_of_word": "how '{word}' is used (subject, object, adjective, verb, etc.)"
+}}
+
+Important:
+- IPA must use correct IPA symbols only.
+- Image keywords must be visually representable and concrete.
+- JSON must be valid: no trailing commas, no comments."""
+    
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+            max_tokens=400,
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        # Extract JSON
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+        
+        result = json.loads(response_text)
+        return {
+            "english_translation": result.get("english_translation", ""),
+            "ipa": result.get("ipa", ""),
+            "context": result.get("context", "general"),
+            "image_keywords": result.get("image_keywords", ""),
+            "role_of_word": result.get("role_of_word", ""),
+        }
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"PASS 3 enrichment JSON parse error: {e}")
+        return {
+            "english_translation": "",
+            "ipa": "",
+            "context": "general",
+            "image_keywords": "",
+            "role_of_word": "",
+        }
+    except Exception as e:
+        logger.error(f"PASS 3 enrichment error: {e}")
+        return {
+            "english_translation": "",
+            "ipa": "",
+            "context": "general",
+            "image_keywords": "",
+            "role_of_word": "",
+        }
+
+
+# ============================================================================
+# MAIN: 3-PASS SENTENCE GENERATION
+# ============================================================================
+
+def generate_sentences(
+    word: str,
+    meaning: str,
+    language: str,
+    num_sentences: int = 10,
+    min_length: int = 5,
+    max_length: int = 20,
+    difficulty: str = "intermediate",
+    groq_api_key: str = None,
+) -> list[dict]:
+    """
+    Generate sentences using 3-pass architecture:
+    1. PASS 1: Generate raw sentences (high quality, no JSON)
+    2. PASS 2: Validate each sentence (correct grammar, naturalness)
+    3. PASS 3: Enrich with translation, IPA, context, keywords
+    
+    Args:
+        word: Target language word
+        meaning: English meaning
+        language: Language name (e.g., "Spanish", "Hindi")
+        num_sentences: Number of sentences to generate (1-20)
+        min_length: Minimum sentence length in words
+        max_length: Maximum sentence length in words
+        difficulty: "beginner", "intermediate", "advanced"
+        groq_api_key: Groq API key
+        
+    Returns:
+        List of dicts with keys: sentence, english_translation, ipa, context, image_keywords, role_of_word, word, meaning
+    """
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+    
+    try:
+        # PASS 1: Generate raw sentences
+        logger.info(f"PASS 1: Generating {num_sentences} sentences for '{word}' ({language})...")
+        raw_sentences = _generate_sentences_pass1(
+            word=word,
+            meaning=meaning,
+            language=language,
+            num_sentences=num_sentences,
+            min_length=min_length,
+            max_length=max_length,
+            difficulty=difficulty,
+            groq_api_key=groq_api_key,
+        )
+        
+        if not raw_sentences:
+            logger.warning(f"PASS 1 returned no sentences for '{word}'")
+            return []
+        
+        # PASS 2 & 3: Validate and enrich each sentence
+        validated_sentences = []
+        
+        for idx, raw_sentence in enumerate(raw_sentences, 1):
+            logger.info(f"  Validating sentence {idx}/{len(raw_sentences)}...")
+            
+            # PASS 2: Validate
+            validation_result = _validate_sentence_pass2(
+                sentence=raw_sentence,
+                word=word,
+                language=language,
+                groq_api_key=groq_api_key,
+            )
+            
+            # Use corrected sentence if invalid, otherwise use original
+            final_sentence = raw_sentence
+            if not validation_result["valid"] and validation_result["corrected_sentence"]:
+                logger.info(f"    Sentence {idx} was corrected.")
+                final_sentence = validation_result["corrected_sentence"]
+            elif validation_result["valid"]:
+                logger.info(f"    Sentence {idx} is valid.")
+            else:
+                logger.warning(f"    Sentence {idx} marked invalid but no correction provided; using original.")
+            
+            # PASS 3: Enrich
+            logger.info(f"  Enriching sentence {idx}/{len(raw_sentences)}...")
+            enrichment_result = _enrich_sentence_pass3(
+                sentence=final_sentence,
+                word=word,
+                language=language,
+                groq_api_key=groq_api_key,
+            )
+            
+            # Combine all data
+            validated_sentences.append({
+                "sentence": final_sentence,
+                "english_translation": enrichment_result.get("english_translation", ""),
+                "context": enrichment_result.get("context", "general"),
+                "ipa": enrichment_result.get("ipa", ""),
+                "image_keywords": enrichment_result.get("image_keywords", ""),
+                "role_of_word": enrichment_result.get("role_of_word", ""),
+                "word": word,
+                "meaning": meaning,
+            })
+        
+        logger.info(f"✓ Completed 3-pass generation for '{word}': {len(validated_sentences)} sentences")
+        return validated_sentences
+        
+    except Exception as e:
+        logger.error(f"3-pass sentence generation error: {e}")
         raise
 
 
@@ -486,6 +729,7 @@ def generate_complete_deck(
                     "english": sent.get("english_translation", ""),
                     "context": sent.get("context", ""),
                     "image_keywords": sent.get("image_keywords", ""),
+                    "role_of_word": sent.get("role_of_word", ""),
                     "audio": f"[sound:{audio_name}]" if audio_name else "",
                     "image": f"<img src=\"{image_name}\">" if image_name else "",
                     "tags": "",
@@ -775,6 +1019,7 @@ def create_anki_tsv(
             "Sound",
             "Image",
             "Image Keywords",
+            "Role of Word",
             "Tags",
         ]
 
@@ -790,6 +1035,7 @@ def create_anki_tsv(
                 "Sound": r.get("audio", ""),
                 "Image": r.get("image", ""),
                 "Image Keywords": r.get("image_keywords", ""),
+                "Role of Word": r.get("role_of_word", ""),
                 "Tags": r.get("tags", ""),
             })
 
@@ -897,6 +1143,7 @@ def create_apkg_export(
                 {'name': 'Sound'},
                 {'name': 'Image'},
                 {'name': 'Image Keywords'},
+                {'name': 'Role of Word'},
             ],
             templates=[
                 {
@@ -908,7 +1155,7 @@ def create_apkg_export(
 <div class="sentence">{{Sentence}}</div>
 <div class="image">{{Image}}</div>
 <div class="english">{{English Translation}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
 <div class="ipa">{{IPA Transliteration}}</div>
 <div class="keywords">Keywords: {{Image Keywords}}</div>''',
                 },
@@ -922,7 +1169,7 @@ def create_apkg_export(
 <div class="sound">{{Sound}}</div>
 <div class="image">{{Image}}</div>
 <div class="ipa">{{IPA Transliteration}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
 <div class="keywords">Keywords: {{Image Keywords}}</div>''',
                 },
                 {
@@ -935,7 +1182,7 @@ def create_apkg_export(
 <div class="image">{{Image}}</div>
 <div class="english">{{English Translation}}</div>
 <div class="ipa">{{IPA Transliteration}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
 <div class="keywords">Keywords: {{Image Keywords}}</div>''',
                 },
             ],
@@ -1056,6 +1303,7 @@ def create_apkg_export(
                     _s(row.get('audio', '')),
                     _s(row.get('image', '')),
                     _s(row.get('image_keywords', '')),
+                    _s(row.get('role_of_word', '')),
                 ]
             )
             deck.add_note(note)
