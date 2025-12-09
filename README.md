@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 1. **Groq API** (AI sentences): https://console.groq.com/keys
 2. **Pixabay API** (images): https://pixabay.com/api/docs/
-3. **Edge TTS** (audio): Built-in, no key needed
+3. **Edge TTS** (audio): Free built-in, no key needed
 
 ### 3. Start the App
 
@@ -360,7 +360,6 @@ By automating card creation, you can spend your time on activities that truly ma
 
 ## 📖 Documentation
 
-- **[GOOGLE_TTS_SETUP.md](./GOOGLE_TTS_SETUP.md)** - Setup Google Cloud TTS fallback
 - **[FIREBASE_SETUP.md](./FIREBASE_SETUP.md)** - Setup Firebase for cloud sync
 - **[SETTINGS_FEATURE.md](./SETTINGS_FEATURE.md)** - Detailed settings guide
 - **[WORD_MEANINGS_AND_IMAGES.md](./WORD_MEANINGS_AND_IMAGES.md)** - Meanings & image selection

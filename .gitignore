@@ -28,8 +28,6 @@ env/
 
 # Sensitive Files
 .env
-*.json  # Google service account keys and other sensitive JSON files
-languagelearning-*.json
 
 # Generated outputs (keep local, do not commit)
 FluentForever_*_Perfect/ANKI_IMPORT.tsv

@@ -198,7 +198,7 @@ streamlit run streamlit_app/app_v3.py
 - ✅ **1-word generation** (Hindi): `.apkg` created (118 KB)
 - ✅ **10-word batch** (Spanish): Full pipeline tested (256 KB deck)
 - ✅ **Pitch range** (-20 to +20%): All values processed without errors
-- ✅ **Audio fallback**: Edge TTS + Google TTS fallback verified
+- ✅ **Audio fallback**: Edge TTS is the only audio provider (no fallback needed)
 - ✅ **Image search**: Keyword extraction working for 10+ languages
 - ✅ **.apkg import**: Cards imported to Anki with no errors
 

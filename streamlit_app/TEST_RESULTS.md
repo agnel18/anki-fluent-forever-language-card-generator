@@ -117,14 +117,12 @@ python-dotenv>=1.0.0        ✅ Installed
 ### API Keys Management ✅
 - Groq API: Environment variable + secrets management
 - Pixabay API: Environment variable + secrets management
-- Google Cloud TTS: Service account JSON (gitignored)
 - Edge TTS: Microsoft free service (no key needed)
 
 ### Rate Limiting & Quotas ✅
 - **Groq**: No daily quota (free tier), token-based billing
 - **Edge TTS**: Unlimited free tier
 - **Pixabay**: 5,000 images/day free tier
-- **Google TTS**: 1M characters/month free tier
 
 ### Safety Mechanisms ✅
 - Batch size: 1 word default
