@@ -179,38 +179,65 @@ def generate_sentences(
         "advanced": "complex structures, rare vocabulary, literary/academic"
     }
     
-    prompt = f"""You are an expert professional native {language} teacher with years of experience teaching the language to non-native speakers.
+     prompt = f"""You are a certified professional linguist and a native-level expert in {language}. You specialize in creating natural, high-quality sentences for language learners.
 
-Generate exactly {num_sentences} natural {language} sentences using the word "{word}" ({meaning}).
+Your task: Generate exactly {num_sentences} high-quality, natural {language} sentences using the word "{word}" ({meaning}).
 
-Quality Requirements:
-- Ensure all sentences are grammatically and syntactically correct
-- Ensure sentences sound natural and authentic to native speakers
-- Avoid any awkward phrasings or unnatural constructions
-- Native speakers should not find any issues with quality or feel cringe
+===========================
+STRICT QUALITY RULES
+===========================
+1. All sentences MUST be:
+    - Grammatically perfect
+    - Idiomatic and natural for native speakers
+    - Culturally appropriate
+    - Semantically meaningful (no filler or generic template sentences)
+    - Fully correct in spelling, accents, tone marks, and punctuation
 
-Content Requirements:
-- Each sentence must be {min_length}-{max_length} words long
-- Difficulty: {difficulty_desc.get(difficulty, difficulty_desc['intermediate'])}
-- Cover different:
-  * Grammatical roles (subject, object, predicate)
-  * Sentence types (declarative, interrogative, imperative)
-  * Contexts (daily life, work, academic, informal)
-  * Tenses/moods (when applicable to {language})
+2. Sentences must NEVER:
+    - Sound translated, robotic, or unnatural
+    - Use awkward literal constructions
+    - Repeat sentence structures or patterns
+    - Use rare or archaic forms unless difficulty="advanced"
 
-Format: Return ONLY a valid JSON array with NO additional text. Each item must have:
-{{
-  "sentence": "{language} sentence",
-  "english_translation": "English translation",
-  "context": "context type",
-  "ipa": "IPA phonetic transcription of the {language} sentence (use proper IPA symbols)",
-  "image_keywords": "2-3 keywords for image search (comma-separated, e.g., 'cat, sleeping, couch')"
-}}
+3. The word "{word}" MUST:
+    - Be used correctly according to the meaning and part of speech
+    - Fit naturally inside the sentence
+    - NOT be forced into unnatural contexts
 
-IMPORTANT: 
-- Return ONLY valid JSON, nothing else. No markdown, no code blocks, no explanation.
-- IPA must use proper IPA symbols (e.g., /həˈloʊ/ for hello)
-- Image keywords should be concrete nouns/actions that can be visualized
+4. Sentence length requirement:
+    - Each sentence must be {min_length}-{max_length} words
+    - Count only actual words, not punctuation
+
+5. Difficulty level rules:
+    beginner → simple, everyday vocabulary, mostly present tense
+    intermediate → mix of tenses, some complexity, natural variation
+    advanced → complex syntax, richer vocabulary, natural but not literary
+
+6. Required variety across all sentences:
+    - Different tenses (if applicable in {language})
+    - Different sentence types (statement, question, command)
+    - Different grammatical roles for the target word
+    - Different real-life contexts (home, work, school, social, emotions, etc.)
+
+===========================
+OUTPUT FORMAT RULES (VERY STRICT)
+===========================
+Return ONLY a valid JSON array. Nothing before or after the JSON.
+
+Each item MUST include:
+{
+  "sentence": "Full {language} sentence with correct grammar",
+  "english_translation": "Accurate natural English translation",
+  "context": "One short phrase describing the situation (e.g., 'office', 'family', 'travel')",
+  "ipa": "Full IPA transcription using correct IPA symbols ONLY",
+  "image_keywords": "2-3 concrete nouns or actions for image generation"
+}
+
+Important:
+- IPA must follow official IPA standards (no approximations).
+- Image keywords MUST be visually representable and concrete.
+- JSON must be valid: no trailing commas, no comments, no backticks.
+- Do NOT include explanations or reasoning in output.
 """
     
     try:

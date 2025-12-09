@@ -212,6 +212,9 @@ if st.session_state.page == "api_setup":
 # ============================================================================
 
 elif st.session_state.page == "main":
+
+    # Force scroll to top when landing on main page (Step 1 header)
+    st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
     
     # Ensure we start at the top after navigating from the API screen
     if st.session_state.get('scroll_to_top', False):
@@ -672,6 +675,7 @@ elif st.session_state.page == "main":
             st.session_state.page = "generating"
             st.session_state.selected_lang = selected_lang
             st.session_state.selected_words = selected_words
+            st.session_state.scroll_to_top = True
             st.rerun()
     
     with col2:
@@ -684,8 +688,8 @@ elif st.session_state.page == "main":
 # ============================================================================
 
 elif st.session_state.page == "generating":
-    
-    # Auto-scroll to top of page with smooth animation
+
+    # Force scroll to top when entering generating page
     st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
     
     st.markdown("# ⚙️ Generating Your Deck")
