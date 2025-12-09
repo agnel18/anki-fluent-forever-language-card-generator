@@ -204,6 +204,7 @@ if st.session_state.page == "api_setup":
             st.session_state.groq_api_key = groq_key
             st.session_state.pixabay_api_key = pixabay_key
             st.session_state.page = "main"
+            st.session_state.scroll_to_top = True
             st.rerun()
 
 # ============================================================================
@@ -282,6 +283,20 @@ elif st.session_state.page == "main":
     
     # Step 2: Select words (batch + list combined)
     st.markdown("## 📚 Step 2: Select Your Words")
+    
+    # Info about frequency lists - moved right after title
+    with st.expander("📖 What is a Frequency List?", expanded=False):
+        st.markdown("""
+        A **Frequency List** contains the most commonly used words in a language, ranked by how often they appear in real conversations, books, movies, and other sources.
+        
+        **Why use it?**
+        - Focus on words you'll actually encounter
+        - Learn vocabulary efficiently (top 1,000 words = ~80% of everyday language)
+        - Build a strong foundation for real communication
+        
+        **Example:** In Spanish, "the" (el/la) is word #1, "and" (y) is word #2, "to" (a) is word #3, etc.
+        """)
+    
     st.markdown("**We pull from frequency lists so you start with the most useful words first.**")
     st.info("For your first run, try 1 word. After that, keep batches around 5–10 to respect rate limits.")
     
@@ -302,21 +317,8 @@ elif st.session_state.page == "main":
     st.divider()
 
     # ========================================================================
-    # FREQUENCY LIST INFORMATION & CUSTOM IMPORT
+    # FREQUENCY LIST SELECTION & CUSTOM IMPORT
     # ========================================================================
-
-    # Info about frequency lists
-    with st.expander("📖 What is a Frequency List?", expanded=False):
-        st.markdown("""
-        A **Frequency List** contains the most commonly used words in a language, ranked by how often they appear in real conversations, books, movies, and other sources.
-        
-        **Why use it?**
-        - Focus on words you'll actually encounter
-        - Learn vocabulary efficiently (top 1,000 words = ~80% of everyday language)
-        - Build a strong foundation for real communication
-        
-        **Example:** In Spanish, "the" (el/la) is word #1, "and" (y) is word #2, "to" (a) is word #3, etc.
-        """)
     
     st.markdown("### Pick from **Top Words Used in** " + selected_lang)
     
@@ -709,11 +711,14 @@ elif st.session_state.page == "generating":
                 last_step[0] = step
                 with messages_container:
                     st.write("\n".join(progress_messages))
+                status_text.info(f"**Step {step}/5:** {message}")
+            else:
+                # For same step, just update the status and details without repeating log
+                status_text.info(f"**Step {step}/5:** {message}")
             
             if step <= 5:
                 progress_pct = min(0.95, (step / 5.0))
                 progress_bar.progress(progress_pct)
-            status_text.info(f"**Step {step}/5:** {message}")
             if details:
                 detail_text.markdown(details)
         
@@ -792,6 +797,9 @@ elif st.session_state.page == "generating":
         progress_bar.progress(1.0)
         status_text.success("✅ **Deck generation complete!**")
         detail_text.markdown(f"Created {num_words} notes with {num_words * 3} cards (3 cards per word)")
+        
+        # Scroll to top after generation completes
+        st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
 
         st.session_state.first_run_complete = True
 

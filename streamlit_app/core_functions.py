@@ -179,9 +179,17 @@ def generate_sentences(
         "advanced": "complex structures, rare vocabulary, literary/academic"
     }
     
-    prompt = f"""Generate exactly {num_sentences} natural {language} sentences using the word "{word}" ({meaning}).
+    prompt = f"""You are an expert professional native {language} teacher with years of experience teaching the language to non-native speakers.
 
-Requirements:
+Generate exactly {num_sentences} natural {language} sentences using the word "{word}" ({meaning}).
+
+Quality Requirements:
+- Ensure all sentences are grammatically and syntactically correct
+- Ensure sentences sound natural and authentic to native speakers
+- Avoid any awkward phrasings or unnatural constructions
+- Native speakers should not find any issues with quality or feel cringe
+
+Content Requirements:
 - Each sentence must be {min_length}-{max_length} words long
 - Difficulty: {difficulty_desc.get(difficulty, difficulty_desc['intermediate'])}
 - Cover different:
