@@ -21,6 +21,13 @@ import genanki
 import random
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+console.setFormatter(formatter)
+if not logger.hasHandlers():
+    logger.addHandler(console)
 
 # ============================================================================
 # IPA GENERATION (HYBRID APPROACH)
@@ -197,9 +204,6 @@ QUALITY RULES (STRICT)
 - All sentences must be semantically meaningful (no filler templates).
 - No repeated sentence structures or patterns — each sentence must be unique.
 
-===========================
-LENGTH + DIFFICULTY
-===========================
 - Each sentence must be {min_length}-{max_length} words long.
 - Difficulty level:
   beginner → simple vocabulary, mostly present tense
@@ -533,7 +537,7 @@ def generate_complete_deck(
     max_length: int = 20,
     difficulty: str = "intermediate",
     audio_speed: float = 0.8,
-    pitch: float = 0.0,
+    # pitch: float = 0.0,  # Removed pitch parameter
     voice: Optional[str] = None,
     all_words: Optional[list] = None,
     progress_callback: Optional[callable] = None,
@@ -552,7 +556,7 @@ def generate_complete_deck(
         max_length: Maximum words per sentence
         difficulty: Sentence complexity level
         audio_speed: Audio playback speed
-        pitch: Audio pitch adjustment (percent, -50 to +50)
+        # pitch: Audio pitch adjustment (percent, -50 to +50) [REMOVED]
         progress_callback: Callback function for progress updates: callback(step, message, details)
         
     Returns:
@@ -586,7 +590,7 @@ def generate_complete_deck(
         # Step 2: Per-sentence audio, images, TSV rows
         logger.info("Generating audio and images per sentence, then building TSV rows...")
         if progress_callback:
-            progress_callback(2, "Generating audio with Edge TTS", f"Creating {len(words) * num_sentences} audio files (speed: {audio_speed}x, pitch: {pitch:+.0f}%)...")
+            progress_callback(2, "Generating audio with Edge TTS", f"Creating {len(words) * num_sentences} audio files (speed: {audio_speed}x)...")
         
         words_data = []
         voice = voice or _voice_for_language(language)
@@ -620,7 +624,6 @@ def generate_complete_deck(
                 output_dir=str(media_dir),
                 batch_name="unused",
                 rate=audio_speed,
-                pitch=pitch,
                 exact_filenames=[f"{b}.mp3" for b in base_names],
                 language=language,
             )
@@ -652,6 +655,11 @@ def generate_complete_deck(
                 file_base = base_names[idx_sent] if idx_sent < len(base_names) else f"{rank}_{safe_word}_{idx_sent+1:03d}"
                 audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
                 image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
+                
+                # DEBUG: Log what's in the sent dict
+                logger.debug(f"Building TSV row {idx_sent+1} for word '{word}': sent dict keys = {sent.keys()}")
+                logger.debug(f"  sent['meaning'] = {sent.get('meaning', 'KEY_NOT_FOUND')}")
+                logger.debug(f"  sent['word'] = {sent.get('word', 'KEY_NOT_FOUND')}")
                 
                 # Generate IPA with hybrid approach
                 ai_ipa = sent.get("ipa", "")
@@ -709,7 +717,7 @@ async def generate_audio_async(
     voice: str,
     output_path: str,
     rate: float = 0.8,  # Playback speed for learners
-    pitch: float = 0.0,
+    # pitch: float = 0.0,  # Removed pitch parameter
 ) -> bool:
     """
     Generate audio asynchronously using Edge TTS.
@@ -728,13 +736,7 @@ async def generate_audio_async(
         rate_pct = int((rate - 1.0) * 100)
         rate_str = f"{rate_pct:+d}%"
 
-        # Edge TTS pitch format: use Hz, not percentage; avoid invalid "+0Hz"; omit when near-zero
-        pitch_clamped = max(-20, min(20, pitch))  # Clamp to safe range (-20Hz to +20Hz)
-        pitch_str = None if abs(pitch_clamped) < 0.1 else f"{int(pitch_clamped):+d}Hz"
-
         kwargs = {"text": text, "voice": voice, "rate": rate_str}
-        if pitch_str:
-            kwargs["pitch"] = pitch_str
 
         communicate = edge_tts.Communicate(**kwargs)
         await communicate.save(output_path)
@@ -750,7 +752,7 @@ def generate_audio(
     output_dir: str,
     batch_name: str = "batch",
     rate: float = 0.8,
-    pitch: float = 0.0,
+    # pitch: float = 0.0,  # Removed pitch parameter
     exact_filenames: Optional[List[str]] = None,
     language: str = "English",
 ) -> list[str]:
@@ -763,7 +765,7 @@ def generate_audio(
         output_dir: Directory to save MP3 files
         batch_name: Prefix for filenames
         rate: Playback speed
-        pitch: Pitch adjustment (percent)
+        # pitch: Pitch adjustment (percent) [REMOVED]
         exact_filenames: Custom filenames for each sentence
         language: Language name (kept for API compatibility)
         
@@ -780,7 +782,7 @@ def generate_audio(
             output_path = Path(output_dir) / filename
             
             # Use Edge TTS
-            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate, pitch))
+            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
         
         results = await asyncio.gather(*tasks)
         return results
@@ -950,6 +952,7 @@ def create_anki_tsv(
 ) -> bool:
     """Create Anki TSV without headers in expected field order."""
     try:
+
         columns = [
             "File Name",
             "What is the Word?",
@@ -960,14 +963,13 @@ def create_anki_tsv(
             "Sound",
             "Image",
             "Image Keywords",
-            "Role of Word",
             "Tags",
         ]
 
         formatted_rows = []
         for r in rows:
             formatted_rows.append({
-                "File Name": f"{r.get('file_name','')}",
+                "File Name": r.get("file_name", ""),
                 "What is the Word?": r.get("word", ""),
                 "Meaning of the Word": r.get("meaning", ""),
                 "Sentence": r.get("sentence", ""),
@@ -976,7 +978,6 @@ def create_anki_tsv(
                 "Sound": r.get("audio", ""),
                 "Image": r.get("image", ""),
                 "Image Keywords": r.get("image_keywords", ""),
-                "Role of Word": r.get("role_of_word", ""),
                 "Tags": r.get("tags", ""),
             })
 
@@ -1067,199 +1068,113 @@ def create_apkg_export(
     Returns:
         True if successful, False otherwise
     """
-    try:
-        # Create note model with 9 fields and 3 card templates
-        model_id = random.randrange(1 << 30, 1 << 31)
-        
-        model = genanki.Model(
-            model_id,
-            'Fluent Forever Language Learning',
-            fields=[
-                {'name': 'File Name'},
-                {'name': 'What is the Word?'},
-                {'name': 'Meaning of the Word'},
-                {'name': 'Sentence'},
-                {'name': 'IPA Transliteration'},
-                {'name': 'English Translation'},
-                {'name': 'Sound'},
-                {'name': 'Image'},
-                {'name': 'Image Keywords'},
-                {'name': 'Role of Word'},
-            ],
-            templates=[
-                {
-                    'name': 'Card 1: Listening',
-                    'qfmt': '''<div class="hint">🎧 Listen and understand</div>
-<div class="sound">{{Sound}}</div>''',
-                    'afmt': '''{{FrontSide}}
-<hr id="answer">
-<div class="sentence">{{Sentence}}</div>
-<div class="image">{{Image}}</div>
-<div class="english">{{English Translation}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
-<div class="ipa">{{IPA Transliteration}}</div>
-<div class="keywords">Keywords: {{Image Keywords}}</div>''',
-                },
-                {
-                    'name': 'Card 2: Production',
-                    'qfmt': '''<div class="hint">💬 Say this in ''' + language + ''':</div>
-<div class="english-prompt">{{English Translation}}</div>''',
-                    'afmt': '''{{FrontSide}}
-<hr id="answer">
-<div class="sentence">{{Sentence}}</div>
-<div class="sound">{{Sound}}</div>
-<div class="image">{{Image}}</div>
-<div class="ipa">{{IPA Transliteration}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
-<div class="keywords">Keywords: {{Image Keywords}}</div>''',
-                },
-                {
-                    'name': 'Card 3: Reading',
-                    'qfmt': '''<div class="hint">📖 Read and understand:</div>
-<div class="sentence">{{Sentence}}</div>''',
-                    'afmt': '''{{FrontSide}}
-<hr id="answer">
-<div class="sound">{{Sound}}</div>
-<div class="image">{{Image}}</div>
-<div class="english">{{English Translation}}</div>
-<div class="ipa">{{IPA Transliteration}}</div>
-<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})  |  <em>{{Role of Word}}</em></div>
-<div class="keywords">Keywords: {{Image Keywords}}</div>''',
-                },
-            ],
-            css='''.card {
-    font-family: arial;
-    font-size: 20px;
-    text-align: center;
-    color: var(--text-fg, black);
-    background-color: var(--bg, white);
-}
-
-.hint {
-    font-size: 16px;
-    color: var(--subtle-fg, #666);
-    margin: 10px;
-    font-style: italic;
-}
-
-.sentence {
-    font-size: 32px;
-    color: var(--accent, #0066cc);
-    margin: 20px;
-    font-weight: bold;
-}
-
-.english-prompt {
-    font-size: 28px;
-    color: var(--accent-2, #009900);
-    margin: 20px;
-    font-weight: bold;
-}
-
-.sound {
-    margin: 20px;
-}
-
-.english {
-    font-size: 22px;
-    color: var(--accent-2, #009900);
-    margin: 15px;
-}
-
-.ipa {
-    font-size: 16px;
-    color: var(--subtle-fg, #666);
-    font-family: "Charis SIL", "Doulos SIL", serif;
-    margin: 10px;
-}
-
-.word-info {
-    font-size: 14px;
-    color: var(--fg, #333);
-    margin: 15px;
-}
-
-.keywords {
-    font-size: 12px;
-    color: var(--subtle-fg, #999);
-    margin: 10px;
-    font-style: italic;
-}
-
-.image {
-    margin: 20px;
-}
-
-.image img {
-    max-width: 500px;
-    max-height: 400px;
-}'''
-        )
-        
-        # Ensure output directory exists before writing package
-        output_path = Path(output_apkg)
+    logger.info(f"Preparing to create .apkg at: {output_apkg}")
+    output_path = Path(output_apkg)
+    if not output_path.parent.exists():
+        logger.warning(f"Output parent directory does not exist. Attempting to create: {output_path.parent}")
         output_path.parent.mkdir(parents=True, exist_ok=True)
+    if not output_path.parent.exists():
+        logger.error(f"Failed to create output parent directory: {output_path.parent}")
+        raise FileNotFoundError(f"Could not create output directory: {output_path.parent}")
 
-        # Create deck
-        deck_id = random.randrange(1 << 30, 1 << 31)
-        deck = genanki.Deck(deck_id, deck_name)
-        
-        # Add notes
-        media_files = []
-        for row in rows:
-            # Extract audio and image filenames
-            audio_match = re.search(r'\[sound:(.*?)\]', row.get('audio', ''))
-            audio_file = audio_match.group(1) if audio_match else ''
-            
-            image_match = re.search(r'src="(.*?)"', row.get('image', ''))
-            image_file = image_match.group(1) if image_match else ''
-            
-            # Add media files to list
-            if audio_file:
-                audio_path = os.path.join(media_dir, audio_file)
-                if os.path.exists(audio_path):
-                    media_files.append(audio_path)
-                else:
-                    logger.warning(f"Missing audio file, skipping: {audio_path}")
-            if image_file:
-                image_path = os.path.join(media_dir, image_file)
-                if os.path.exists(image_path):
-                    media_files.append(image_path)
-                else:
-                    logger.warning(f"Missing image file, skipping: {image_path}")
-            
-            # Create note
-            def _s(val):
-                return "" if val is None else str(val)
+    # Create note model with 10 fields and 3 card templates
+    model_id = random.randrange(1 << 30, 1 << 31)
+    model = genanki.Model(
+        model_id,
+        'Fluent Forever Language Learning',
+        fields=[
+            {'name': 'File Name'},
+            {'name': 'What is the Word?'},
+            {'name': 'Meaning of the Word'},
+            {'name': 'Sentence'},
+            {'name': 'IPA Transliteration'},
+            {'name': 'English Translation'},
+            {'name': 'Sound'},
+            {'name': 'Image'},
+            {'name': 'Image Keywords'}
+        ],
+        templates=[
+            {
+                'name': 'Card 1: Listening',
+                'qfmt': '''<div class="hint">🎧 Listen and understand</div>\n<div class="sound">{{Sound}}</div>''',
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sentence">{{Sentence}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+            },
+            {
+                'name': 'Card 2: Production',
+                'qfmt': '''<div class="hint">💬 Say this in ''' + language + ''':</div>\n<div class="english-prompt">{{English Translation}}</div>''',
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sentence">{{Sentence}}</div>\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+            },
+            {
+                'name': 'Card 3: Reading',
+                'qfmt': '''<div class="hint">📖 Read and understand:</div>\n<div class="sentence">{{Sentence}}</div>''',
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+            }
+        ],
+        css='''.card {\n    font-family: arial;\n    font-size: 20px;\n    text-align: center;\n    color: var(--text-fg, black);\n    background-color: var(--bg, white);\n}\n\n.hint {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    margin: 10px;\n    font-style: italic;\n}\n\n.sentence {\n    font-size: 32px;\n    color: var(--accent, #0066cc);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.english-prompt {\n    font-size: 28px;\n    color: var(--accent-2, #009900);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.sound {\n    margin: 20px;\n}\n\n.english {\n    font-size: 22px;\n    color: var(--accent-2, #009900);\n    margin: 15px;\n}\n\n.ipa {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    font-family: "Charis SIL", "Doulos SIL", serif;\n    margin: 10px;\n}\n\n.word-info {\n    font-size: 14px;\n    color: var(--fg, #333);\n    margin: 15px;\n}\n\n.keywords {\n    font-size: 12px;\n    color: var(--subtle-fg, #999);\n    margin: 10px;\n    font-style: italic;\n}\n\n.image {\n    margin: 20px;\n}\n\n.image img {\n    max-width: 500px;\n    max-height: 400px;\n}'''
+    )
 
-            note = genanki.Note(
-                model=model,
-                fields=[
-                    _s(row.get('file_name', '')),
-                    _s(row.get('word', '')),
-                    _s(row.get('meaning', '')),
-                    _s(row.get('sentence', '')),
-                    _s(row.get('ipa', '')),
-                    _s(row.get('english', '')),
-                    _s(row.get('audio', '')),
-                    _s(row.get('image', '')),
-                    _s(row.get('image_keywords', '')),
-                    _s(row.get('role_of_word', '')),
-                ]
-            )
-            deck.add_note(note)
-        
-        # Create package
+    # Create deck
+    deck_id = random.randrange(1 << 30, 1 << 31)
+    deck = genanki.Deck(deck_id, deck_name)
+
+    # Collect media files
+    media_files = []
+    for row in rows:
+        # Extract audio and image filenames
+        audio_match = re.search(r'\[sound:(.*?)\]', row.get('audio', ''))
+        audio_file = audio_match.group(1) if audio_match else ''
+        image_match = re.search(r'src="(.*?)"', row.get('image', ''))
+        image_file = image_match.group(1) if image_match else ''
+        # Add media files to list
+        if audio_file:
+            audio_path = os.path.join(media_dir, audio_file)
+            if os.path.exists(audio_path):
+                media_files.append(audio_path)
+            else:
+                logger.warning(f"Missing audio file, skipping: {audio_path}")
+        if image_file:
+            image_path = os.path.join(media_dir, image_file)
+            if os.path.exists(image_path):
+                media_files.append(image_path)
+            else:
+                logger.warning(f"Missing image file, skipping: {image_path}")
+        # Create note
+        def _s(val):
+            return "" if val is None else str(val)
+        note = genanki.Note(
+            model=model,
+            fields=[
+                _s(row.get('file_name', '')),
+                _s(row.get('word', '')),
+                _s(row.get('meaning', '')),
+                _s(row.get('sentence', '')),
+                _s(row.get('ipa', '')),
+                _s(row.get('english', '')),
+                _s(row.get('audio', '')),
+                _s(row.get('image', '')),
+                _s(row.get('image_keywords', ''))
+            ]
+        )
+        deck.add_note(note)
+
+    # Create package
+    try:
         package = genanki.Package(deck)
         package.media_files = media_files
         package.write_to_file(str(output_path))
-        
         logger.info(f"Created .apkg file with {len(rows)} notes at {output_apkg}")
         return True
-        
-    except Exception as e:
-        logger.error(f".apkg creation error: {e}")
+    except FileNotFoundError as fnf_err:
+        logger.error(f"FileNotFoundError during .apkg creation: {fnf_err}")
+        logger.error(f"Current working directory: {os.getcwd()}")
+        logger.error(f"Attempted output path: {output_path}")
         return False
+    except Exception as e:
+        logger.error(f"General error during .apkg creation: {e}")
+        logger.error(f"Current working directory: {os.getcwd()}")
+        logger.error(f"Attempted output path: {output_path}")
+        return False
+
 
 
 # ============================================================================
