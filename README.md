@@ -2,257 +2,308 @@
 
 **Professional language learning cards in minutes, not months.**
 
-Generate complete Anki decks with AI-powered sentences, native audio, beautiful images, and word meanings—**for 109 languages**. Built with ⚡ **SQLite performance** and a **no-code GUI** for anyone to use.
+Generate complete Anki decks with AI-powered sentences, native audio, beautiful images, and word meanings—**for 109 languages**. Built with Groq AI, Edge TTS, Pixabay, and SQLite.
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized sentences, and multi-sensory learning.
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start (2 Minutes)
 
-### Option 1: GUI (Recommended for Everyone)
-
-**No coding needed!** Just open the app and click.
+### 1. Install Dependencies
 
 ```bash
 cd LanguagLearning
+pip install -r requirements.txt
+```
+
+### 2. Get API Keys (Free)
+
+1. **Groq API** (AI sentences): https://console.groq.com/keys
+2. **Pixabay API** (images): https://pixabay.com/api/docs/
+3. **Edge TTS** (audio): Built-in, no key needed
+
+### 3. Start the App
+
+```bash
 streamlit run streamlit_app/app_v3.py
 ```
 
-**Then:**
-1. Select language
-2. Choose batch size
-3. Pick words
-4. Generate deck
-5. Import to Anki ✅
+Opens at `http://localhost:8501`
 
-### Option 2: Command Line (Advanced Users)
+### 4. Generate Decks
 
-For advanced control over scripts:
-
-```bash
-# Generate sentences
-python 1_generate_sentences.py --language Spanish --words 50
-
-# Download audio
-python 2_download_audio.py
-
-# Download images
-python 3_download_images.py
-
-# Create Anki deck
-python 4_create_anki_tsv.py
-```
-
-See [Command Line Guide](#command-line-guide) below for details.
+1. Enter your API keys in the app
+2. Pick a language
+3. Select 1–10 words (start with 1 to test)
+4. Choose audio speed & pitch
+5. Hit "Generate" and download your `.apkg`
+6. Import into Anki ✅
 
 ---
 
 ## ✨ Key Features
 
-### 🎯 **Intelligent & Fast**
-- ⚡ **SQLite Database**: 20-200x faster than Excel files
-- 📄 **Paginated UI**: Browse 1000+ words smoothly (25 words/page with frequency ranks)
-- 🔍 **Instant Search**: Find words in <5ms
-- 💾 **Persistent Progress**: Resume where you left off
-- 📤 **Custom Word Import**: Upload your own CSV/XLSX word lists
-
-### 🤖 **AI-Powered Content**
-- **Groq llama-3.3-70b**: Generates 10 natural sentences per word
-- **Smart Context**: Different tenses, formality levels, real-world usage
-- **Word Meanings**: Auto-generated definitions with explanations
-- 📚 Example: "el" → "the (definite article, used to refer to a specific noun)"
-- **IPA Phonetic Transcriptions**: Hybrid AI + epitran fallback for 20+ languages
-- **Keyword Extraction**: AI extracts image search keywords from sentences for better image relevance
-
-### 🔊 **Professional Audio**
-- **Edge TTS**: High-quality native speaker audio (primary)
-- **Google Cloud TTS**: Automatic fallback if Edge TTS fails
-- **User Controls**: Adjust speed (0.5x - 1.5x) and select voice (male/female)
-- **Result**: 15-24 KB MP3 files per sentence
-
-### 🖼️ **Beautiful Images**
-- **Pixabay API**: 50M+ professional photos
-- **Smart Search**: Uses extracted keywords for better relevance (improved from full sentences)
-- **Top-3 Selection**: Only best images selected
-- **Fast Delivery**: 47-135 KB JPGs per image
-
-### 📊 **Complete Tracking & Detailed Progress**
-- ✅ Persistent progress (survives app restarts)
-- 📈 Statistics: Words learned, completion %, generation history
-- ☁️ Optional Firebase cloud sync (multi-session)
-- 🎯 Track which words you've completed
-- **Real-time Progress Messages**: See exactly what's happening (word-by-word updates)
-- **Auto-scroll to Generation**: Jump to top when generation starts
-
-### 🎴 **Professional Anki Cards**
-- **3 Card Types Per Word**: Listening (audio recognition), Production (English to target), Reading (comprehension)
-- **.apkg Export**: Direct Anki format (no ZIP extraction needed)
-- **Dark/Light Mode Support**: Cards auto-adapt to Anki's theme using CSS variables
-- **Embedded Media**: Audio and images packaged in single file
-- **9 Fields**: Word, Meaning, Sentence, IPA, English, Audio, Image, Keywords, Tags
-
-### 🌍 **109 Languages**
-All with frequency-sorted word lists:
-
-**European:** Spanish, French, German, Italian, Portuguese, Russian, Polish, Dutch, Greek, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Romanian, Bulgarian, Croatian, Serbian, Ukrainian, Lithuanian, Latvian, Estonian, Albanian, Macedonian, Icelandic, Irish, Welsh, Basque, Catalan, Galician
-
-**Asian:** Mandarin Chinese, Cantonese, Japanese, Korean, Hindi, Bengali, Tamil, Telugu, Kannada, Malayalam, Marathi, Gujarati, Punjabi, Urdu, Thai, Vietnamese, Indonesian, Tagalog, Malay, Burmese, Khmer, Lao, Sinhala, Nepali, Azerbaijani, Kazakh, Kyrgyz, Tajik, Uzbek, Turkmen, Mongolian, Armenian, Georgian, Hebrew, Arabic, Persian, Pashto, Kurdish, Turkish
-
-**African:** Swahili, Yoruba, Igbo, Hausa, Amharic, Somali, Shona, Zulu, Xhosa, Sesotho, Malagasy, Kinyarwanda
-
-**Other:** English, Latin, Esperanto, Yiddish, and more...
+- **109 Languages** with frequency word lists
+- **AI Sentences** via Groq — contextual, natural examples
+- **Native Audio** via Edge TTS — 200+ voices, adjustable speed & pitch
+- **Beautiful Images** via Pixabay — auto-matched to words
+- **3 Card Types** per word — Listening, Production, Reading
+- **Rate Limit Monitor** — warnings for safe batch sizes
+- **Progress Tracking** — SQLite-based word completion
+- **Clean GUI** — no coding required, intuitive flow
+- **.apkg Export** — direct Anki format, ready to import
 
 ---
 
-## 📋 How It Works
-
-### Architecture
+## 📋 Project Structure
 
 ```
-┌─────────────────────────────────────────┐
-│      🎨 Streamlit GUI (app_v3.py)       │
-│   Beautiful, intuitive, no code needed  │
-└──────────────────┬──────────────────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-    ⚡ SQLite DB         🤖 Groq API
-    (word lists)      (sentences, meanings)
-        │                     │
-        └──────────┬──────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-    🔊 Edge TTS           🖼️ Pixabay
-   (primary audio)      (beautiful images)
-        │                     │
-        └─────────┬───────────┘
-                  │
-           📝 Anki TSV
-         (ready to import)
-```
-
-### Workflow
-
-```
-SELECT LANGUAGE
-    ↓
-CHOOSE BATCH SIZE (5-50 words)
-    ↓
-SELECT WORDS (paginated with frequency ranks, searchable, or upload custom CSV/XLSX)
-    ↓
-CONFIGURE SETTINGS
-    ├─ Difficulty: Beginner/Intermediate/Advanced
-    ├─ Sentence Length: 4-30 words per sentence
-    ├─ Sentences Per Word: 3-15 examples
-    ├─ Audio Speed: 0.5x - 1.5x
-    └─ Voice: Male/Female per language
-    ↓
-GENERATE DECK (automatic with detailed progress)
-    ├─ Step 1: Generate sentences with AI (Groq)
-    ├─ Step 2: Generate audio for each sentence (Edge TTS)
-    ├─ Step 3: Download images using keyword extraction (Pixabay)
-    ├─ Step 4: Add IPA phonetic transcriptions (AI + epitran fallback)
-    └─ Step 5: Create .apkg Anki deck with 3 card types
-    ↓
-DOWNLOAD & IMPORT
-    ├─ Download .apkg file directly (no extraction needed!)
-    ├─ Double-click to open in Anki
-    ├─ Anki imports automatically ✅
-    └─ 3 card types per word ready to study
+LanguagLearning/
+├── streamlit_app/
+│   ├── app_v3.py              # Main Streamlit GUI ← USE THIS
+│   ├── core_functions.py      # Generation: sentences, audio, images, .apkg
+│   ├── frequency_utils.py     # Frequency lists & word selection
+│   ├── db_manager.py          # SQLite progress tracking
+│   ├── firebase_manager.py    # Firebase sync (optional)
+│   ├── languages.yaml         # 109 language configuration
+│   ├── requirements.txt       # App dependencies
+│   └── README.md              # App-specific documentation
+│
+├── 109 Languages Frequency Word Lists/  # Frequency word data
+├── Anki Language Template/    # Template Anki deck
+├── ANKI_SETUP.md             # How to import .apkg into Anki
+├── FIREBASE_SETUP.md         # Optional cloud progress sync
+├── requirements.txt          # Main project dependencies
+├── .env                      # Your API keys (DO NOT commit)
+└── README.md                 # This file
 ```
 
 ---
 
-## 🛠️ Setup (2 Steps)
+## 🚀 Quick Setup (3 Steps)
 
-### Step 1: Install Dependencies
+### 1. Install Python Dependencies
 
 ```bash
-cd LanguagLearning
-
-# Create virtual environment
-python -m venv .venv
-
-# Activate it
-# On Windows:
-.venv\Scripts\activate
-# On macOS/Linux:
-source .venv/bin/activate
-
-# Install packages
 pip install -r streamlit_app/requirements.txt
 ```
 
-### Step 2: Add API Keys
+### 2. Get Free API Keys
 
-Create a `.env` file in `LanguagLearning/` folder:
+- **Groq** (AI sentences): https://console.groq.com/keys
+- **Pixabay** (images): https://pixabay.com/api/docs/
+- **Edge TTS** (audio): Built-in, no key needed
 
-```env
-# Required: Groq (free tier, no credit card)
-GROQ_API_KEY=gsk_your_key_here
-
-# Required: Pixabay (free tier, 5000 images/day)
-PIXABAY_API_KEY=your_pixabay_key_here
-
-# Optional: Google Cloud TTS (fallback audio)
-# Setup: GOOGLE_TTS_SETUP.md
-GOOGLE_APPLICATION_CREDENTIALS=./languagelearning-480303-93748916f7bd.json
-
-# Optional: Firebase (cloud progress sync)
-# Setup: FIREBASE_SETUP.md
-FIREBASE_CONFIG=./firebase_config.json
-```
-
-**Get free API keys:**
-- **Groq**: https://console.groq.com/keys (free, instant)
-- **Pixabay**: https://pixabay.com/api/docs/ (free tier, 5000/day)
-- **Google TTS**: [GOOGLE_TTS_SETUP.md](./GOOGLE_TTS_SETUP.md) (optional fallback)
-- **Firebase**: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) (optional cloud sync)
-
----
-
-## 📱 Using the App
-
-### Launch Streamlit GUI
+### 3. Start the App
 
 ```bash
 streamlit run streamlit_app/app_v3.py
 ```
 
-Visit: **http://localhost:8507**
+Then follow the in-app steps to generate your first deck.
 
-### Step-by-Step
+---
 
-**Page 1: API Setup**
-- Enter Groq API key
-- Enter Pixabay API key
-- Optional: Setup Google TTS or Firebase
-- Click "Let's Go!"
+## 🎯 How to Generate a Deck
 
-**Page 2: Main App**
-- **Step 1:** Select language (109 options)
-- **Step 2:** Choose batch size (5-50 words)
-- **Step 3:** Select words
-  - Browse by page with **frequency ranks** (Top 1-25, Top 25-50, etc.)
-  - **Custom word import**: Upload CSV/XLSX with your own words
-  - Search for specific words (🔍)
-  - Mark completed words (✓)
-  - Each word shows its frequency rank
-- **Step 4:** Configure audio
-  - Speed slider (0.5x - 1.5x)
-  - Voice selector (male/female)
-- **Settings Icon (⚙️):** Adjust difficulty, sentence length, tracking
-- **Step 5:** Generate Deck
-  - **Watch detailed progress in real-time**:
-    - Step 1/5: Generating sentences (AI batch processing)
-    - Step 2/5: Generating audio (word-by-word progress)
-    - Step 3/5: Downloading images (keyword-based search)
-    - Step 4/5: Adding IPA phonetic transcriptions
-    - Step 5/5: Creating .apkg package with 3 card types
-  - **Page auto-scrolls to top** when generation starts
-  - Download .apkg file when complete
+### First Time: Test with 1 Word
+
+1. **API Setup**: Enter Groq + Pixabay keys
+2. **Language**: Pick Spanish (or any language)
+3. **Words**: Select 1 word (e.g., "hola")
+4. **Audio**: Keep defaults (0.8x speed, 0% pitch)
+5. **Generate**: Hit the button and watch progress
+6. **Download**: Get your `.apkg` file
+7. **Import**: Double-click the file in Anki ✅
+
+### Next Time: Batch Generation
+
+1. **Words**: Pick 5–10 words per batch
+2. **Run multiple batches** if you need more words
+3. This respects API rate limits and completes faster
+
+---
+
+## ⚙️ Settings Explained
+
+### Global Settings (⚙️ gear icon)
+
+- **Difficulty**: Beginner (short, simple) → Advanced (complex sentences)
+- **Sentence Length**: How many words per sentence (default: 6–16)
+- **Sentences Per Word**: How many example sentences (default: 10)
+- **Audio Speed**: 0.5x (very slow) → 1.5x (fast) [0.8x recommended for learners]
+- **Track Progress**: Save completed words to database
+
+### Audio Settings (Step 3)
+
+- **Speed**: Adjust playback speed (learners prefer 0.7x–0.9x)
+- **Pitch**: Adjust voice tone (-20% to +20%)
+- **Voice**: Auto-selected by language (200+ voices available)
+
+---
+
+## 📊 Rate Limits & Best Practices
+
+### Groq API Limits
+- **Free tier**: 30 requests/minute, ~4 million tokens/day
+- **Safe batch size**: 5–10 words per generation
+- **Why**: 1 word × 10 sentences = 10 API calls
+
+### Pixabay API Limits
+- **Free tier**: 5,000 images/day
+- **Safe batch size**: Keep under 50 words/day
+- **Tip**: Generate in morning, use multiple batches throughout day
+
+### Audio (Edge TTS)
+- No rate limits — unlimited free usage
+- Only limited by generation time (takes 5–10 seconds per word)
+
+### Best Workflow
+1. Generate 5–10 words in morning
+2. Import to Anki, review for 30 mins
+3. Generate next batch in afternoon
+4. Scale up if studying actively
+
+---
+
+## 📥 Importing into Anki
+
+See **[ANKI_SETUP.md](./ANKI_SETUP.md)** for:
+- Step-by-step import instructions
+- Recommended deck settings
+- Spaced repetition best practices
+- Tips for studying effectively
+
+---
+
+## ☁️ Optional: Cloud Sync (Firebase)
+
+To sync your progress across devices:
+
+See **[FIREBASE_SETUP.md](./FIREBASE_SETUP.md)** for:
+- Firebase project setup
+- Enabling cloud progress sync
+- Multi-device study coordination
+
+---
+
+## 🛠️ Troubleshooting
+
+### "Invalid API key"
+- ✅ Check for typos or extra spaces
+- ✅ Verify key works on provider website (Groq, Pixabay)
+- ✅ Regenerate key if needed
+
+### "Port already in use (8501)"
+```bash
+# Kill existing process
+taskkill /IM python.exe /F  # Windows
+pkill -f streamlit          # macOS/Linux
+
+# Restart app
+streamlit run streamlit_app/app_v3.py
+```
+
+### ".apkg file not created"
+- ✅ Verify Pixabay API key (images required)
+- ✅ Check temp folder write permissions
+- ✅ Try a smaller batch (1–3 words)
+
+### Audio sounds strange
+- ✅ Adjust pitch/speed in Step 3
+- ✅ Try a different voice (app shows available voices)
+- ✅ Check Edge TTS availability in your region
+
+### Generation times out
+- ✅ Reduce batch size (try 3 words instead of 10)
+- ✅ Check internet connection
+- ✅ Verify API keys are valid
+
+---
+
+## 🔒 Privacy & Security
+
+- **No data stored on servers** — all processing local
+- **API keys stay in your browser** — never sent to our servers
+- **Anki files on your computer** — full control
+- **Optional Firebase** — only if you enable it explicitly
+- **.env file** — Add to `.gitignore` before committing
+
+---
+
+## 📦 What's Included
+
+### Word Lists (109 Languages)
+- Pre-compiled frequency word lists
+- Ranked by usage in real speech
+- Covers ~80% of everyday vocabulary in top 1,000 words
+
+### Anki Template
+- Professional card template with 3 types
+- Dark/light mode support
+- Responsive layout for desktop & mobile
+
+### Documentation
+- `ANKI_SETUP.md` — Anki import & study guide
+- `FIREBASE_SETUP.md` — Cloud sync setup
+- `streamlit_app/README.md` — App-specific features
+
+---
+
+## 🚀 What's New (v3 - Dec 2024)
+
+✨ **Major Improvements**:
+- Unified GUI (all steps in one flow)
+- Pitch control for audio tone adjustment
+- Rate limit monitor with warnings
+- Clean, specific progress messages
+- Reliable auto-scroll to top
+- Simplified deck names (just language)
+
+🐛 **Fixes**:
+- Fixed Edge TTS pitch invalid format
+- Fixed .apkg FileNotFoundError
+- Fixed duplicate progress log messages
+- Fixed float/NaN field errors in Anki
+
+---
+
+## 📞 Questions or Issues?
+
+1. **Check the docs**:
+   - `streamlit_app/README.md` — App features
+   - `ANKI_SETUP.md` — Anki import help
+   - `FIREBASE_SETUP.md` — Cloud sync
+
+2. **Review the code**:
+   - `streamlit_app/app_v3.py` — Main GUI logic
+   - `streamlit_app/core_functions.py` — Generation pipeline
+   - `streamlit_app/frequency_utils.py` — Word selection & search
+
+3. **Test with 1 word** — Verify all keys work before bulk generation
+
+---
+
+## 🙏 Credits
+
+Built with love using:
+- **[Fluent Forever](https://fluent-forever.com/)** methodology by Gabriel Wyner
+- **[Groq](https://groq.com/)** — Fast AI inference (llama-3.3-70b)
+- **[Edge TTS](https://github.com/rany2/edge-tts)** — Microsoft neural voices
+- **[Pixabay](https://pixabay.com/)** — Free high-quality images
+- **[Genanki](https://github.com/kerrickstaley/genanki)** — Anki deck creation
+- **[Streamlit](https://streamlit.io/)** — Beautiful web GUI framework
+
+---
+
+## 📄 License
+
+MIT License — Free to use, modify, and distribute.
+
+---
+
+**Happy learning! 🌍✨**
 
 **Page 3: Complete**
 - Download button for .apkg file (ready to import directly!)

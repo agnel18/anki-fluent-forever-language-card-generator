@@ -314,6 +314,7 @@ def generate_complete_deck(
     max_length: int = 20,
     difficulty: str = "intermediate",
     audio_speed: float = 0.8,
+    pitch: float = 0.0,
     voice: Optional[str] = None,
     all_words: Optional[list] = None,
     progress_callback: Optional[callable] = None,
@@ -332,6 +333,7 @@ def generate_complete_deck(
         max_length: Maximum words per sentence
         difficulty: Sentence complexity level
         audio_speed: Audio playback speed
+        pitch: Audio pitch adjustment (percent, -50 to +50)
         progress_callback: Callback function for progress updates: callback(step, message, details)
         
     Returns:
@@ -350,7 +352,7 @@ def generate_complete_deck(
         # Step 1: Generate sentences
         logger.info(f"Generating sentences for {len(words)} words...")
         if progress_callback:
-            progress_callback(1, "📝 Generating sentences with AI...", f"Starting batch generation for {len(words)} words...")
+            progress_callback(1, "Generating sentences with AI", f"Creating {num_sentences} example sentences for {len(words)} word(s)...")
         
         sentences_batch = generate_sentences_batch(
             words=words,
@@ -365,7 +367,7 @@ def generate_complete_deck(
         # Step 2: Per-sentence audio, images, TSV rows
         logger.info("Generating audio and images per sentence, then building TSV rows...")
         if progress_callback:
-            progress_callback(2, "🎵 Generating audio files...", f"Creating audio for {len(words)} words...")
+            progress_callback(2, "Generating audio with Edge TTS", f"Creating {len(words) * num_sentences} audio files (speed: {audio_speed}x, pitch: {pitch:+.0f}%)...")
         
         words_data = []
         voice = voice or _voice_for_language(language)
@@ -399,13 +401,14 @@ def generate_complete_deck(
                 output_dir=str(media_dir),
                 batch_name="unused",
                 rate=audio_speed,
+                pitch=pitch,
                 exact_filenames=[f"{b}.mp3" for b in base_names],
                 language=language,
             )
 
             # Images per sentence with exact filenames (using keywords for better results)
-            if progress_callback:
-                progress_callback(3, "🖼️ Downloading images...", f"Finding images for word {word_idx}/{len(words)}: {word}")
+            if progress_callback and word_idx == 1:
+                progress_callback(3, "Downloading images from Pixabay", f"Finding relevant images for {len(words)} word(s)...")
             
             image_queries = []
             for s in sents:
@@ -486,6 +489,7 @@ async def generate_audio_async(
     voice: str,
     output_path: str,
     rate: float = 0.8,  # Playback speed for learners
+    pitch: float = 0.0,
 ) -> bool:
     """
     Generate audio asynchronously using Edge TTS.
@@ -503,7 +507,16 @@ async def generate_audio_async(
         # Edge TTS rate format: "+0%" for normal, "-20%" for 0.8x
         rate_pct = int((rate - 1.0) * 100)
         rate_str = f"{rate_pct:+d}%"
-        communicate = edge_tts.Communicate(text=text, voice=voice, rate=rate_str)
+
+        # Edge TTS pitch: avoid invalid "+0%"; omit when near-zero
+        pitch_clamped = max(-20, min(20, pitch))
+        pitch_str = None if abs(pitch_clamped) < 0.1 else f"{int(pitch_clamped)}%"
+
+        kwargs = {"text": text, "voice": voice, "rate": rate_str}
+        if pitch_str:
+            kwargs["pitch"] = pitch_str
+
+        communicate = edge_tts.Communicate(**kwargs)
         await communicate.save(output_path)
         return True
     except Exception as e:
@@ -517,6 +530,7 @@ def generate_audio(
     output_dir: str,
     batch_name: str = "batch",
     rate: float = 0.8,
+    pitch: float = 0.0,
     exact_filenames: Optional[List[str]] = None,
     language: str = "English",
 ) -> list[str]:
@@ -529,6 +543,7 @@ def generate_audio(
         output_dir: Directory to save MP3 files
         batch_name: Prefix for filenames
         rate: Playback speed
+        pitch: Pitch adjustment (percent)
         exact_filenames: Custom filenames for each sentence
         language: Language name (kept for API compatibility)
         
@@ -545,7 +560,7 @@ def generate_audio(
             output_path = Path(output_dir) / filename
             
             # Use Edge TTS
-            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
+            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate, pitch))
         
         results = await asyncio.gather(*tasks)
         return results
@@ -958,6 +973,10 @@ def create_apkg_export(
 }'''
         )
         
+        # Ensure output directory exists before writing package
+        output_path = Path(output_apkg)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         # Create deck
         deck_id = random.randrange(1 << 30, 1 << 31)
         deck = genanki.Deck(deck_id, deck_name)
@@ -974,23 +993,34 @@ def create_apkg_export(
             
             # Add media files to list
             if audio_file:
-                media_files.append(os.path.join(media_dir, audio_file))
+                audio_path = os.path.join(media_dir, audio_file)
+                if os.path.exists(audio_path):
+                    media_files.append(audio_path)
+                else:
+                    logger.warning(f"Missing audio file, skipping: {audio_path}")
             if image_file:
-                media_files.append(os.path.join(media_dir, image_file))
+                image_path = os.path.join(media_dir, image_file)
+                if os.path.exists(image_path):
+                    media_files.append(image_path)
+                else:
+                    logger.warning(f"Missing image file, skipping: {image_path}")
             
             # Create note
+            def _s(val):
+                return "" if val is None else str(val)
+
             note = genanki.Note(
                 model=model,
                 fields=[
-                    row.get('file_name', ''),
-                    row.get('word', ''),
-                    row.get('meaning', ''),
-                    row.get('sentence', ''),
-                    row.get('ipa', ''),
-                    row.get('english', ''),
-                    row.get('audio', ''),
-                    row.get('image', ''),
-                    row.get('image_keywords', ''),
+                    _s(row.get('file_name', '')),
+                    _s(row.get('word', '')),
+                    _s(row.get('meaning', '')),
+                    _s(row.get('sentence', '')),
+                    _s(row.get('ipa', '')),
+                    _s(row.get('english', '')),
+                    _s(row.get('audio', '')),
+                    _s(row.get('image', '')),
+                    _s(row.get('image_keywords', '')),
                 ]
             )
             deck.add_note(note)
@@ -998,7 +1028,7 @@ def create_apkg_export(
         # Create package
         package = genanki.Package(deck)
         package.media_files = media_files
-        package.write_to_file(output_apkg)
+        package.write_to_file(str(output_path))
         
         logger.info(f"Created .apkg file with {len(rows)} notes at {output_apkg}")
         return True

@@ -100,10 +100,14 @@ if "track_progress" not in st.session_state:
     st.session_state.track_progress = True
 if "audio_speed" not in st.session_state:
     st.session_state.audio_speed = 0.8
+if "audio_pitch" not in st.session_state:
+    st.session_state.audio_pitch = 0
 if "selected_voice" not in st.session_state:
     st.session_state.selected_voice = None
 if "selected_voice_display" not in st.session_state:
     st.session_state.selected_voice_display = None
+if "first_run_complete" not in st.session_state:
+    st.session_state.first_run_complete = False
 
 # Database and Firebase
 if "session_id" not in st.session_state:
@@ -208,6 +212,11 @@ if st.session_state.page == "api_setup":
 
 elif st.session_state.page == "main":
     
+    # Ensure we start at the top after navigating from the API screen
+    if st.session_state.get('scroll_to_top', False):
+        st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
+        st.session_state.scroll_to_top = False
+    
     col1, col2, col3 = st.columns([4, 1, 1])
     with col1:
         st.markdown("# 🌍 Language Learning Anki Deck Generator")
@@ -223,7 +232,7 @@ elif st.session_state.page == "main":
                 "Difficulty",
                 ["beginner", "intermediate", "advanced"],
                 index=["beginner", "intermediate", "advanced"].index(st.session_state.difficulty),
-                help="Controls sentence complexity",
+                help="Beginner uses shorter sentences and simpler vocab; Advanced leans into longer, more complex structures.",
             )
             st.session_state.sentence_length_range = st.slider(
                 "Sentence length (words)",
@@ -253,44 +262,28 @@ elif st.session_state.page == "main":
                 step=0.1,
                 help="0.5 = slow, 1.0 = normal, 1.5 = fast",
             )
-            st.markdown(
-                f"**Voice preview:** {st.session_state.selected_voice_display or 'Set in Audio Settings below'}"
-            )
+            st.caption("Voice and pitch are chosen in Step 3 (Audio Settings).")
     
     st.divider()
     
     # Step 1: Language
     st.markdown("## 📋 Step 1: Select Language")
     lang_names = [lang["name"] for lang in all_languages]
-    selected_lang = st.selectbox("Which language do you want to learn?", lang_names)
+    col_lang, col_available = st.columns([3, 1])
+    with col_lang:
+        selected_lang = st.selectbox("Which language do you want to learn?", lang_names)
     
     available_lists = get_available_frequency_lists()
     max_words = available_lists.get(selected_lang, 5000)
-    col1, col2 = st.columns([3, 1])
-    col2.metric("Available", f"{max_words:,} words")
+    with col_available:
+        st.metric("Available", f"{max_words:,} words")
     
     st.divider()
     
-    # Step 2: Batch size
-    st.markdown("## ⏱️ Step 2: Choose Batch Size")
-    st.markdown(f"*({st.session_state.sentences_per_word} sentences per word)*")
-    
-    batch_options = []
-    batch_values = []
-    for batch_size, info in BATCH_PRESETS.items():
-        label = f"{info['emoji']} {batch_size} words • {info['time_estimate']}"
-        batch_options.append(label)
-        batch_values.append(batch_size)
-    
-    selected_batch_idx = batch_values.index(st.session_state.current_batch_size)
-    selected_batch_label = st.radio("Select batch size:", batch_options, index=selected_batch_idx, label_visibility="collapsed")
-    selected_batch_size = batch_values[batch_options.index(selected_batch_label)]
-    st.session_state.current_batch_size = selected_batch_size
-    
-    st.divider()
-    
-    # Step 3: Select words
-    st.markdown("## 📚 Step 3: Select Your Words")
+    # Step 2: Select words (batch + list combined)
+    st.markdown("## 📚 Step 2: Select Your Words")
+    st.markdown("**We pull from frequency lists so you start with the most useful words first.**")
+    st.info("For your first run, try 1 word. After that, keep batches around 5–10 to respect rate limits.")
     
     # Initialize page tracking
     if selected_lang not in st.session_state.current_page:
@@ -305,13 +298,13 @@ elif st.session_state.page == "main":
     col1.metric("Total words", stats.get("total", 0))
     col2.metric("Completed", stats.get("completed", 0))
     col3.metric("Remaining", stats.get("remaining", 0))
-    
+
     st.divider()
-    
+
     # ========================================================================
     # FREQUENCY LIST INFORMATION & CUSTOM IMPORT
     # ========================================================================
-    
+
     # Info about frequency lists
     with st.expander("📖 What is a Frequency List?", expanded=False):
         st.markdown("""
@@ -559,6 +552,20 @@ elif st.session_state.page == "main":
     # ========================================================================
     
     st.divider()
+
+    if selected_words:
+        est_sentences = len(selected_words) * st.session_state.sentences_per_word
+        st.markdown("### ⏱️ Rate Limit Monitor")
+        st.caption("Stay under ~10 words per run unless you know your rate limits.*")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.metric("Selected words", len(selected_words))
+        with col_b:
+            st.metric("Est. API calls", f"{est_sentences} sentences / {est_sentences} images")
+        if not st.session_state.first_run_complete and len(selected_words) > 1:
+            st.warning("First run? Stick to 1 word to verify keys and audio.")
+        elif len(selected_words) > 10:
+            st.warning("That’s a big batch. Consider 5–10 words to avoid rate limits/timeouts.")
     
     if selected_words:
         st.success(f"✅ Selected: **{len(selected_words)} words**")
@@ -569,10 +576,10 @@ elif st.session_state.page == "main":
     
     st.divider()
     
-    # Step 4: Audio Settings
-    st.markdown("## ⚙️ Step 4: Audio Settings")
+    # Step 3: Audio Settings
+    st.markdown("## ⚙️ Step 3: Audio Settings")
     
-    col_speed, col_voice = st.columns(2)
+    col_speed, col_pitch, col_voice = st.columns(3)
     
     with col_speed:
         audio_speed = st.slider(
@@ -584,6 +591,17 @@ elif st.session_state.page == "main":
             help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
         )
         st.session_state.audio_speed = audio_speed
+
+    with col_pitch:
+        audio_pitch = st.slider(
+            "🎚️ Pitch",
+            min_value=-20,
+            max_value=20,
+            value=st.session_state.audio_pitch,
+            step=1,
+            help="Negative = lower pitch, positive = higher pitch (percent change)."
+        )
+        st.session_state.audio_pitch = audio_pitch
     
     with col_voice:
         # Get available voices for the language
@@ -623,13 +641,14 @@ elif st.session_state.page == "main":
     st.caption(
         f"Difficulty: **{st.session_state.difficulty}**, Sentences/word: **{st.session_state.sentences_per_word}**, "
         f"Length: **{st.session_state.sentence_length_range[0]}-{st.session_state.sentence_length_range[1]} words**, "
+        f"Audio: **{st.session_state.audio_speed}x, {st.session_state.audio_pitch:+d}% pitch**, "
         f"Tracking: {'On' if st.session_state.track_progress else 'Off'}"
     )
     
     st.divider()
     
-    # Step 5: Generate
-    st.markdown("## ✨ Step 5: Generate Your Deck")
+    # Step 4: Generate
+    st.markdown("## ✨ Step 4: Generate Your Deck")
     
     col1, col2 = st.columns([3, 1])
     
@@ -680,11 +699,17 @@ elif st.session_state.page == "generating":
         
         # Progress callback function
         progress_messages = []
+        last_step = [0]  # Track last step to avoid duplicates
         
         def update_progress(step: int, message: str, details: str = ""):
-            progress_messages.append(f"✓ {message}")
-            with messages_container:
-                st.write("\n".join(progress_messages))
+            # Only add new step messages, skip sub-progress duplicates
+            if step > last_step[0]:
+                entry = f"✓ Step {step}/5: {message}"
+                progress_messages.append(entry)
+                last_step[0] = step
+                with messages_container:
+                    st.write("\n".join(progress_messages))
+            
             if step <= 5:
                 progress_pct = min(0.95, (step / 5.0))
                 progress_bar.progress(progress_pct)
@@ -708,6 +733,7 @@ elif st.session_state.page == "generating":
             max_length=st.session_state.sentence_length_range[1],
             difficulty=st.session_state.difficulty,
             audio_speed=st.session_state.audio_speed,
+            pitch=st.session_state.audio_pitch,
             voice=st.session_state.selected_voice,
             all_words=st.session_state.loaded_words.get(st.session_state.selected_lang, []),
             progress_callback=update_progress,
@@ -751,18 +777,23 @@ elif st.session_state.page == "generating":
         
         # Create .apkg file
         apkg_output = Path(output_dir) / f"{st.session_state.selected_lang}_Deck.apkg"
-        create_apkg_export(
+        created_ok = create_apkg_export(
             rows=rows_for_apkg,
             media_dir=result["media_dir"],
             output_apkg=str(apkg_output),
             language=st.session_state.selected_lang,
-            deck_name=f"{st.session_state.selected_lang} - Fluent Forever"
+            deck_name=st.session_state.selected_lang
         )
+
+        if (not created_ok) or (not apkg_output.exists()):
+            raise FileNotFoundError(f".apkg was not created at {apkg_output}")
         
         # Complete
         progress_bar.progress(1.0)
         status_text.success("✅ **Deck generation complete!**")
         detail_text.markdown(f"Created {num_words} notes with {num_words * 3} cards (3 cards per word)")
+
+        st.session_state.first_run_complete = True
 
         # Track progress if enabled (save to database and Firebase)
         if st.session_state.track_progress and st.session_state.selected_lang != "Custom":
