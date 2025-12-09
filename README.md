@@ -1,55 +1,253 @@
-# Fluent Forever Anki Language Card Generator
+# 🌍 Fluent Forever Anki Language Card Generator
 
-Generate professional language learning cards for Anki with sentences, audio, images, and IPA transliterations. **Support for 109 languages** with frequency word lists, dynamic language selection, and intelligent sentence generation using **Groq (llama-3.3-70b)** or Google Gemini.
+**Professional language learning cards in minutes, not months.**
 
-**Based on the [Fluent Forever method](https://fluent-forever.com/) by Gabriel Wyner** - A proven language learning system using spaced repetition, personalized sentences, and multi-sensory memory techniques.
+Generate complete Anki decks with AI-powered sentences, native audio, beautiful images, and word meanings—**for 109 languages**. Built with ⚡ **SQLite performance** and a **no-code GUI** for anyone to use.
 
-📖 **Book:** [Fluent Forever: How to Learn Any Language Fast and Never Forget It](https://www.amazon.com/Fluent-Forever-Learn-Language-Forget/dp/0385348118) by Gabriel Wyner
+Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized sentences, and multi-sensory learning.
 
-## About This Repository
+---
 
-- Language-agnostic pipeline (109 frequency lists included) with one-click language selection.
-- Packaged Anki note-type: `Anki Language Template/Language Learning Template.apkg` (no manual setup; works for any language).
-- Modernized media pipeline: Gemini sentences, soundoftext audio, Pexels thumbnails via English translation, restartable scripts.
-- Outputs ready for Anki import: TSV + media under `FluentForever_{Language}_Perfect/`.
+## 🚀 Quick Start (5 Minutes)
 
-## Features
+### Option 1: GUI (Recommended for Everyone)
 
-- 🤖 **AI-Powered Sentences**: Uses **Groq llama-3.3-70b** by default (set `USE_GROQ=1`) with Google Gemini fallback; generates **10 natural sentences per word**
-- ✅ **All Use Cases Covered**: Different grammatical contexts, tenses, formality levels, and real-world usage
-- 🌍 **109 Languages Supported**: Instantly switch between any language with 1 command
-- 📋 **Built-in Frequency Lists**: Curated most-common-words lists for all languages (ready to use)
-- 🔊 **Audio**: Downloads native speaker audio from **Google Cloud Text-to-Speech** via service account (fallback: soundoftext.com)
-- 🖼️ **Images**: Downloads clean thumbnail images from **Pexels** (uses English translation for better results)
-- 📝 **IPA Transliteration**: Includes International Phonetic Alphabet for pronunciation
-- 📊 **Progress Tracking**: Tracks processing status for each word
-- 🔄 **Restartable**: Each script is independent and can be restarted without losing work
-- ⚙️ **Language-Agnostic**: Works with any language's frequency list
+**No coding needed!** Just open the app and click.
 
-### Image Download (Pexels) – Setup, Benefits, and Ethics
+```bash
+cd LanguagLearning
+streamlit run streamlit_app/app_v3.py
+```
 
-- **Setup:** Add your Pexels API key to `.env` (kept out of git).
-   ```
-   PEXELS_API_KEY=your_pexels_key_here
-   ```
-- **How it works:** Script 3 (`3_download_images.py`) searches **Pexels** with the **English translation** of each sentence and downloads a **thumbnail** (`tiny`) to keep downloads light and fast.
-- **Rate limits:** Pexels free tier is roughly **~200 requests/hour**. A full deck (6,250 images) should be run in batches (e.g., 200–400 images, pause 1–2 hours, then continue) to avoid throttling.
-- **Ethical use:** Respect the rate limits, avoid excessive retries, and keep usage to personal learning. Using thumbnails reduces bandwidth impact on Pexels and speeds up your workflow.
+**Then:**
+1. Select language
+2. Choose batch size
+3. Pick words
+4. Generate deck
+5. Import to Anki ✅
 
-### API Rate Limits (Quick Overview)
+### Option 2: Command Line (Advanced Users)
 
-- **Groq (Sentence Generation)**: No daily cap; billed per token. Start with batch=1, scale to 3-5 after testing.
-- **Google Gemini (Fallback)**: 1,500 requests/day; stops immediately on quota hit (429 error).
-- **Google TTS (Audio)**: 1M characters/month free tier (covers full 625-word deck at ~312k chars).
-- **Pexels (Images)**: ~200 requests/hour; batches of 50-100 images recommended with 1-2 hour pauses.
+For advanced control over scripts:
 
-See **API Costs & Rate Limits** section below for detailed safety mechanisms and batch workflow recommendations.
+```bash
+# Generate sentences
+python 1_generate_sentences.py --language Spanish --words 50
 
-## Why Use This Script?
+# Download audio
+python 2_download_audio.py
 
-### The Fluent Forever Method: Smart, Not Hard
+# Download images
+python 3_download_images.py
 
-The **Fluent Forever method** by Gabriel Wyner is proven to accelerate language acquisition through:
+# Create Anki deck
+python 4_create_anki_tsv.py
+```
+
+See [Command Line Guide](#command-line-guide) below for details.
+
+---
+
+## ✨ Key Features
+
+### 🎯 **Intelligent & Fast**
+- ⚡ **SQLite Database**: 20-200x faster than Excel files
+- 📄 **Paginated UI**: Browse 1000+ words smoothly (20 words/page)
+- 🔍 **Instant Search**: Find words in <5ms
+- 💾 **Persistent Progress**: Resume where you left off
+
+### 🤖 **AI-Powered Content**
+- **Groq llama-3.3-70b**: Generates 10 natural sentences per word
+- **Smart Context**: Different tenses, formality levels, real-world usage
+- **Word Meanings**: Auto-generated definitions with explanations
+- 📚 Example: "el" → "the (definite article, used to refer to a specific noun)"
+
+### 🔊 **Professional Audio**
+- **Edge TTS**: High-quality native speaker audio (primary)
+- **Google Cloud TTS**: Automatic fallback if Edge TTS fails
+- **User Controls**: Adjust speed (0.5x - 1.5x) and select voice (male/female)
+- **Result**: 15-24 KB MP3 files per sentence
+
+### 🖼️ **Beautiful Images**
+- **Pixabay API**: 50M+ professional photos
+- **Smart Search**: Uses English translations for better relevance
+- **Top-3 Selection**: Only best images selected
+- **Fast Delivery**: 47-135 KB JPGs per image
+
+### 📊 **Complete Tracking**
+- ✅ Persistent progress (survives app restarts)
+- 📈 Statistics: Words learned, completion %, generation history
+- ☁️ Optional Firebase cloud sync (multi-session)
+- 🎯 Track which words you've completed
+
+### 🌍 **109 Languages**
+All with frequency-sorted word lists:
+
+**European:** Spanish, French, German, Italian, Portuguese, Russian, Polish, Dutch, Greek, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Romanian, Bulgarian, Croatian, Serbian, Ukrainian, Lithuanian, Latvian, Estonian, Albanian, Macedonian, Icelandic, Irish, Welsh, Basque, Catalan, Galician
+
+**Asian:** Mandarin Chinese, Cantonese, Japanese, Korean, Hindi, Bengali, Tamil, Telugu, Kannada, Malayalam, Marathi, Gujarati, Punjabi, Urdu, Thai, Vietnamese, Indonesian, Tagalog, Malay, Burmese, Khmer, Lao, Sinhala, Nepali, Azerbaijani, Kazakh, Kyrgyz, Tajik, Uzbek, Turkmen, Mongolian, Armenian, Georgian, Hebrew, Arabic, Persian, Pashto, Kurdish, Turkish
+
+**African:** Swahili, Yoruba, Igbo, Hausa, Amharic, Somali, Shona, Zulu, Xhosa, Sesotho, Malagasy, Kinyarwanda
+
+**Other:** English, Latin, Esperanto, Yiddish, and more...
+
+---
+
+## 📋 How It Works
+
+### Architecture
+
+```
+┌─────────────────────────────────────────┐
+│      🎨 Streamlit GUI (app_v3.py)       │
+│   Beautiful, intuitive, no code needed  │
+└──────────────────┬──────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+    ⚡ SQLite DB         🤖 Groq API
+    (word lists)      (sentences, meanings)
+        │                     │
+        └──────────┬──────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+    🔊 Edge TTS           🖼️ Pixabay
+   (primary audio)      (beautiful images)
+        │                     │
+        └─────────┬───────────┘
+                  │
+           📝 Anki TSV
+         (ready to import)
+```
+
+### Workflow
+
+```
+SELECT LANGUAGE
+    ↓
+CHOOSE BATCH SIZE (5-50 words)
+    ↓
+SELECT WORDS (paginated, searchable)
+    ↓
+CONFIGURE SETTINGS
+    ├─ Difficulty: Beginner/Intermediate/Advanced
+    ├─ Sentence Length: 4-30 words per sentence
+    ├─ Sentences Per Word: 3-15 examples
+    ├─ Audio Speed: 0.5x - 1.5x
+    └─ Voice: Male/Female per language
+    ↓
+GENERATE DECK (automatic)
+    ├─ Generate word meanings (Groq)
+    ├─ Generate sentences (Groq)
+    ├─ Create audio (Edge TTS + Google fallback)
+    ├─ Download images (Pixabay, top-3)
+    └─ Create Anki TSV + ZIP
+    ↓
+DOWNLOAD & IMPORT
+    ├─ Download ZIP file
+    ├─ Open Anki
+    ├─ File → Import → Select ANKI_IMPORT.tsv
+    └─ Done! Cards appear instantly ✅
+```
+
+---
+
+## 🛠️ Setup (2 Steps)
+
+### Step 1: Install Dependencies
+
+```bash
+cd LanguagLearning
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate it
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install packages
+pip install -r streamlit_app/requirements.txt
+```
+
+### Step 2: Add API Keys
+
+Create a `.env` file in `LanguagLearning/` folder:
+
+```env
+# Required: Groq (free tier, no credit card)
+GROQ_API_KEY=gsk_your_key_here
+
+# Required: Pixabay (free tier, 5000 images/day)
+PIXABAY_API_KEY=your_pixabay_key_here
+
+# Optional: Google Cloud TTS (fallback audio)
+# Setup: GOOGLE_TTS_SETUP.md
+GOOGLE_APPLICATION_CREDENTIALS=./languagelearning-480303-93748916f7bd.json
+
+# Optional: Firebase (cloud progress sync)
+# Setup: FIREBASE_SETUP.md
+FIREBASE_CONFIG=./firebase_config.json
+```
+
+**Get free API keys:**
+- **Groq**: https://console.groq.com/keys (free, instant)
+- **Pixabay**: https://pixabay.com/api/docs/ (free tier, 5000/day)
+- **Google TTS**: [GOOGLE_TTS_SETUP.md](./GOOGLE_TTS_SETUP.md) (optional fallback)
+- **Firebase**: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) (optional cloud sync)
+
+---
+
+## 📱 Using the App
+
+### Launch Streamlit GUI
+
+```bash
+streamlit run streamlit_app/app_v3.py
+```
+
+Visit: **http://localhost:8507**
+
+### Step-by-Step
+
+**Page 1: API Setup**
+- Enter Groq API key
+- Enter Pixabay API key
+- Optional: Setup Google TTS or Firebase
+- Click "Let's Go!"
+
+**Page 2: Main App**
+- **Step 1:** Select language (109 options)
+- **Step 2:** Choose batch size (5-50 words)
+- **Step 3:** Select words
+  - Browse by page (⬅️ Previous | Next ➡️)
+  - Search for specific words (🔍)
+  - Mark completed words (✓)
+- **Step 4:** Configure audio
+  - Speed slider (0.5x - 1.5x)
+  - Voice selector (male/female)
+- **Settings Icon (⚙️):** Adjust difficulty, sentence length, tracking
+- **Step 5:** Generate Deck
+  - Watch progress in real-time
+  - Download ZIP when complete
+
+**Page 3: Complete**
+- Download button for ZIP file
+- Import instructions for Anki
+
+---
+
+## 🔧 Command Line Guide
+
+### For Advanced Users
+
+**Why?** Power users who want direct control over the Python scripts for batch processing, custom parameters, or integration with other tools.
+
+#### Individual Scripts
+
 - **Spaced Repetition**: Review cards at optimal intervals for long-term retention
 - **Personalized Sentences**: Learn words in context, not isolation
 - **Multi-Sensory Learning**: Combine text, audio, and images for stronger memory
@@ -82,410 +280,66 @@ By automating card creation, you can spend your time on activities that truly ma
 
 **Research shows**: Active immersion and output practice accelerate fluency far more than card creation. This script handles the busywork so you can focus on real language exposure.
 
-## 🌍 Multi-Language Support: 109 Languages Ready to Go!
+---
 
-This tool supports **109 languages** with pre-made frequency word lists. No need to find or format data yourself!
+## 📖 Documentation
 
-### Supported Languages
-
-**Complete List (109 total):**
-Afrikaans, Albanian, Amharic, Arabic, Armenian, Azerbaijani, Basque, Belarusian, Bengali, Bosnian, Bulgarian, Burmese, Catalan, Cebuano, Chichewa, Chinese (Simplified), Chinese (Traditional), Corsican, Croatian, Czech, Danish, Dutch, English, Esperanto, Estonian, Finnish, French, Frisian, Galician, Georgian, German, Greek, Gujarati, Haitian Creole, Hausa, Hawaiian, Hebrew, Hindi, Hmong, Hungarian, Icelandic, Igbo, Indonesian, Irish, Italian, Japanese, Javanese, Kannada, Kazakh, Khmer, Kinyarwanda, Korean, Kurdish, Kyrgyz, Lao, Latin, Latvian, Lithuanian, Luxembourgish, Macedonian, Malagasy, Malay, Malayalam, Maltese, Maori, Marathi, Mongolian, Nepali, Norwegian, Odia, Pashto, Persian, Polish, Portuguese, Punjabi, Romanian, Russian, Samoan, Scots Gaelic, Serbian, Sesotho, Shona, Sindhi, Sinhala, Slovak, Slovenian, Somali, Spanish, Sundanese, Swahili, Swedish, Tagalog, Tajik, Tamil, Tatar, Telugu, Thai, Turkish, Turkmen, Ukrainian, Urdu, Uyghur, Uzbek, Vietnamese, Welsh, Xhosa, Yiddish, Yoruba, Zulu
-
-### Frequency Word Lists Source
-
-All frequency lists come from: **[most-common-words-multilingual](https://github.com/frekwencja/most-common-words-multilingual)**
-
-Credits: Data sourced from publicly available language corpora and frequency analysis.
-
-### How to Use Any Language
-
-The new **language selection system** makes it trivial to switch languages:
-
-#### Step 1: Run Language Selector (First Time Only)
-
-```bash
-python 0_select_language.py
-```
-
-You'll see:
-```
-🌍 FLUENT FOREVER - LANGUAGE SELECTION
-============================================================
-
-✅ Found 109 languages available
-
-  1. Afrikaans (AF)
-  2. Albanian (SQ)
-  ...
- 71. Malayalam (ML)
- ...
-109. Zulu (ZU)
-
-Enter language number (1-109): 71
-```
-
-Select your language, and the system will:
-- ✅ Load the frequency list automatically
-- ✅ Create `language_config.txt` with your language settings
-- ✅ Create output folder: `FluentForever_{Language}_Perfect/`
-
-#### Step 2: Generate Cards
-
-```bash
-# Generate 10 sentences per word (all use cases)
-python 1_generate_sentences.py
-
-# Repeat for all 625 words
-python 1_generate_sentences.py
-python 1_generate_sentences.py
-# ... etc
-```
-
-That's it! Everything else works the same.
-
-### Example: Learning Malayalam
-
-Complete walkthrough: See **[MALAYALAM_USE_CASE.md](MALAYALAM_USE_CASE.md)**
-
-### Example: Learning Spanish
-
-```bash
-# 1. Select language
-python 0_select_language.py
-# Choose: 96. Spanish (ES)
-
-# 2. Generate sentences
-for i in {1..625}; do python 1_generate_sentences.py; done
-
-# 3. Download audio (Spanish support excellent!)
-for i in {1..625}; do python 2_download_audio.py; done
-
-# 4. Download images
-for i in {1..625}; do python 3_download_images.py; done
-
-# 5. Create TSV
-python 4_create_anki_tsv.py
-
-# 6. Import to Anki (6,250 cards!)
-```
-
-### Adapting to Your Language
-
-If your language isn't in the list, you can:
-
-1. Find a frequency list online (Wiktionary has many)
-2. Create an Excel file: `{Language} Word` | `Meaning` | `Status`
-3. Update `language_config.txt` manually:
-   ```
-   language_name=Your Language
-   language_code=YL
-   frequency_file=/path/to/your/file.xlsx
-   output_dir=FluentForever_Your_Language_Perfect
-   ```
-4. Run the scripts normally
-
-## How Sentence Generation Works (10 Sentences = Maximum Benefit)
-
-### Why 10 Sentences Per Word?
-
-**Token Efficiency:** Each API call generates 10 sentences, maximizing the use of your Gemini API tokens.
-- Before: 5 sentences per call = 625 words × 1 call = 625 API calls
-- Now: 10 sentences per call = 625 words × 0.5 calls ≈ 313 API calls
-- **50% fewer API calls, 2x more cards!**
-
-### All Use Cases Covered
-
-Each set of 10 sentences covers:
-
-1. **Grammatical roles**: Subject, object, predicate, indirect object
-2. **Tenses/moods**: Present, past, future, conditional, subjunctive
-3. **Formality levels**: Formal, informal, colloquial, slang
-4. **Real-world contexts**: Daily life, work, school, academic, idioms
-5. **Different sentence structures**: Simple, compound, complex
-
-Example for Malayalam word "വീട്" (veet - house):
-- Simple: "വീട് വലുതാണ്" (The house is big)
-- Possessive: "എന്റെ വീട് പ്രകാശമയമാണ്" (My house is bright)
-- Locative: "വീട്ടിൽ ആളുകൾ ഉണ്ട്" (There are people in the house)
-- ... and 7 more examples
-
-This ensures you learn **all uses** of each word, not just one basic example!
+- **[GOOGLE_TTS_SETUP.md](./GOOGLE_TTS_SETUP.md)** - Setup Google Cloud TTS fallback
+- **[FIREBASE_SETUP.md](./FIREBASE_SETUP.md)** - Setup Firebase for cloud sync
+- **[SETTINGS_FEATURE.md](./SETTINGS_FEATURE.md)** - Detailed settings guide
+- **[WORD_MEANINGS_AND_IMAGES.md](./WORD_MEANINGS_AND_IMAGES.md)** - Meanings & image selection
 
 ---
 
-## Quick Start for Other Languages
+## 🤝 Contributing
 
-This tool is now **completely language-agnostic**:
+Contributions welcome! Areas for improvement:
+- [ ] Additional language support
+- [ ] More TTS voices
+- [ ] User authentication
+- [ ] Deck sharing platform
+- [ ] Mobile app
+- [ ] Browser extension
 
-### Quick Start for Other Languages
+---
 
-1. **Update Script 1** (`1_generate_sentences.py`):
-   ```python
-   # Line ~65: Change the language name and IPA requirement
-   prompt = f"""
-   You are a {YOUR_LANGUAGE} language expert. Generate 5 example sentences using the word "{word}" ({meaning}).
-   Each sentence must:
-   - Use the word naturally in {YOUR_LANGUAGE} context
-   - Be 5-12 words long
-   - Include IPA transliteration for {YOUR_LANGUAGE} pronunciation
-   - Have an accurate English translation
-   """
-   ```
+## 📄 License
 
-2. **Update Script 2** (`2_download_audio.py`):
-   - **Option A**: Keep soundoftext.com (supports 50+ languages)
-     ```python
-     # Line ~35: Change voice selection
-     voice_dropdown = driver.find_element(By.ID, "voice")
-     voice_dropdown.send_keys("{LANGUAGE_CODE}")  # e.g., "Spanish", "French", "Japanese"
-     ```
-   - **Option B**: Use Google TTS or Azure TTS for better quality (requires code changes)
+MIT License - See [LICENSE](./LICENSE)
 
-3. **Update Script 3** (`3_download_images.py`):
-   - No changes needed! Image search works for any language
-   - Optionally adjust search keywords for better results:
-     ```python
-     # Line ~80: Add language-specific context
-     search_query = f"{english_sentence} pure image {YOUR_LANGUAGE} culture"
-     ```
+---
 
-4. **Update Excel File**:
-   - Rename `Arabic Frequency Word List.xlsx` → `{Language} Frequency Word List.xlsx`
-   - Add your target language's most common words (find frequency lists online)
-   - Keep same columns: `Word`, `English Meaning`, `Status`
+## 🙏 Credits
 
-5. **Update Output Folder**:
-   ```python
-   # In all scripts: Change folder name
-   OUTPUT_DIR = "FluentForever_{YOUR_LANGUAGE}_Perfect"
-   ```
+- **Fluent Forever Method**: Gabriel Wyner
+- **Frequency Lists**: [most-common-words-multilingual](https://github.com/frekwencja/most-common-words-multilingual)
+- **Groq API**: Fast, accurate sentence generation
+- **Edge TTS**: Native speaker audio
+- **Pixabay**: Beautiful, professional images
+- **Streamlit**: Beautiful, intuitive GUI
+- **SQLite**: Fast, reliable local database
+- **Firebase**: Optional cloud sync
 
-### Language-Specific Considerations
+---
 
-**For Non-Latin Scripts** (Arabic, Japanese, Chinese, Russian, etc.):
-- ✅ Script already handles Unicode correctly
-- ✅ IPA transliteration automatically generated by Groq/Gemini
-- ✅ Google TTS supports **200+ languages** (primary); fallback: soundoftext.com (~50 languages)
+## 📞 Questions?
 
-**For Tonal Languages** (Chinese, Vietnamese, Thai):
-- ✅ IPA includes tone markers
-- ✅ Google TTS produces native-quality audio with proper tone inflection
-- ⚠️ Always test first word; audio quality varies by language
+- 🐛 **Bug reports**: GitHub Issues
+- 💬 **Discussions**: GitHub Discussions
+- 📧 **Email**: See GitHub profile
 
-**For Languages with Dialects** (Spanish, Arabic, Chinese):
-- 🔧 **Groq/Gemini prompting**: Specify dialect in prompt ("Mexican Spanish", "Egyptian Arabic", "Mandarin Chinese")
-- 🔧 **Google TTS voice selection**: Supported dialects are auto-detected by language (e.g., `es-ES` for Spain Spanish, `es-MX` for Mexican)
-- 💡 Test first word with your desired dialect before full batch
+---
 
-**Google TTS Language Support**:
-- Covers **200+ languages and dialects** including all major language families
-- Auto-detects dialect/region from language code (e.g., `pt-BR` for Brazilian Portuguese)
-- Fallback: If Google TTS doesn't support your language, use `python 2_download_audio_soundoftext.py` (supports ~50 languages)
+## 🎉 Enjoy!
 
-### Example: Adapting to Spanish
+Start learning today. The hardest part is choosing a language—we handle the rest! ✨
 
-1. Update prompt in Script 1:
-   ```python
-   prompt = f"You are a Spanish language expert. Generate 5 example sentences using '{word}' ({meaning})..."
-   ```
-2. Update voice in Script 2: `voice_dropdown.send_keys("Spanish")`
-3. Rename Excel: `Spanish Frequency Word List.xlsx`
-4. Add Spanish frequency words (e.g., "el", "de", "que", "y", "a"...)
-5. Update output folder: `FluentForever_Spanish_Perfect`
-
-**Total adaptation time: 10-15 minutes** ⚡
-
-### Resources for Frequency Lists
-
-- **Free**: Wiktionary frequency lists (most languages)
-- **Book**: "Fluent Forever" by Gabriel Wyner (includes 625-word lists for major languages)
-- **Paid**: Routledge Frequency Dictionaries (academic-quality lists)
-- **Online**: Use Corpus databases (e.g., OPUS for parallel corpora)
-
-## System Requirements
-
-- Python 3.10+
-- Internet connection
-- **Groq API key** (recommended default for sentence generation)
-- **Google Gemini API key** (optional fallback; free tier 1,500 req/day)
-- **Google Cloud Text-to-Speech service account JSON** (required for audio generation)
-   - ⚠️ Billing must be enabled once; free tier covers the whole deck (~312k chars of 1M free)
-   - 💡 **No card?** Use the fallback script: `python 2_download_audio_soundoftext.py` (selenium-based)
-- **Pexels API key** (free tier - required for image downloads)
-- Google Chrome browser (only if using soundoftext fallback)
-
-## Installation
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/agnel18/anki-fluent-forever-language-card-generator.git
-cd anki-fluent-forever-language-card-generator
+```
+🚀 Open Streamlit → Select Language → Click Generate → 
+   Download ZIP → Import to Anki → Review Cards → Learn Faster!
 ```
 
-> 💡 **Note:** This repo previously shipped Arabic sample outputs. If you want a clean start, remove the old sample files listed below.
-
-### 2. Create Python Virtual Environment
-```bash
-python -m venv .venv
-.\.venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-
-**Option A: Using requirements.txt (recommended)**
-```bash
-pip install -r requirements.txt
-```
-
-**Option B: Manual installation**
-```bash
-pip install google-generativeai google-cloud-texttospeech pandas openpyxl python-dotenv requests
-
-# Only if using soundoftext.com fallback (no credit/debit card):
-pip install selenium webdriver-manager
-```
-
-### 4. Set Up API Keys
-
-#### 4a. Google Gemini API Key (Required - Sentence Generation)
-
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikeys)
-2. Click "Create API Key"
-3. Copy your API key
-
-#### 4b. Google Text-to-Speech API (Required - Audio Generation)
-
-📚 **Official Documentation**: [Google Cloud Text-to-Speech](https://cloud.google.com/text-to-speech?hl=en_GB)
-
-**Step-by-Step Instructions:**
-
-1. **Go to Google Cloud Console**
-   - Visit: [https://console.cloud.google.com/](https://console.cloud.google.com/)
-   - Sign in with your Google account
-
-2. **Create a New Project** (or select existing)
-   - Click the project dropdown at the top
-   - Click **"New Project"**
-   - Name it (e.g., "Anki Language Learning")
-   - Click **"Create"**
-
-3. **Enable Billing** ⚠️ **REQUIRED (even for free tier)**
-   - Go to **"Billing"** in the left sidebar
-   - Click **"Link a Billing Account"**
-   - Add your credit/debit card details
-   - ✅ Don't worry: You won't be charged if you stay within free tier limits (see below)
-
-4. **Enable Cloud Text-to-Speech API**
-   - Go to **"APIs & Services"** → **"Library"**
-   - Search for **"Cloud Text-to-Speech API"**
-   - Click on it, then click **"Enable"**
-
-5. **Create Service Account & Download JSON Key**
-   - Go to **"APIs & Services"** → **"Credentials"**
-   - Click **"Create Credentials"** → **"Service Account"**
-   - Enter service account details (e.g., name: "language-learning-tts")
-   - Click **"Create and Continue"**
-   - Click **"Continue"** on permissions page (optional)
-   - Click **"Done"**
-   - Click the service account you just created
-   - Go to **"Keys"** tab → **"Add Key"** → **"Create new key"**
-   - Select **"JSON"** format
-   - **JSON key file downloads** → Save it
-
-6. **Add JSON Key to Project Folder**
-   - Move the downloaded JSON file to: `LanguagLearning/` folder
-   - The code will automatically find it (e.g., `languagelearning-480303-0225aa1c8383.json`)
-   - ✅ JSON file is protected in `.gitignore` (never committed to git)
-
-⚠️ **IMPORTANT - Stay Within Free Tier Limits**:
-- **Free Tier**: 1 million characters per month
-- **Your Usage**: ~312,500 characters for full 625-word deck
-- **Stay Safe**: Follow the batch recommendations in "API Costs & Rate Limits" section
-- **Monitor**: Check usage at [Google Cloud Console → Billing](https://console.cloud.google.com/billing)
-
-💡 **No credit/debit card?** Use the fallback script:
-```bash
-python 2_download_audio_soundoftext.py  # Uses soundoftext.com (selenium-based)
-```
-
-#### 4c. Pexels API Key (Required - Image Downloads)
-
-1. Go to [Pexels API](https://www.pexels.com/api/)
-2. Click "Get Started" and create a free account
-3. Copy your API key from the dashboard
-
-#### 4d. Create `.env` File
-
-Create a `.env` file in the workspace root with:
-```
-# Sentence generation
-USE_GROQ=1                     # 1 = use Groq (recommended), empty/0 = use Gemini
-GROQ_API_KEY=your_groq_key_here
-GOOGLE_API_KEY=your_gemini_api_key_here  # Only used if USE_GROQ is empty/0
-
-# Images
-PEXELS_API_KEY=your_pexels_api_key_here
-
-# Audio
-AUDIO_SPEED=0.8                # 0.5–2.0 supported; 0.8 is learner-friendly
-```
-Place your Google Cloud **service account JSON** for Text-to-Speech in `LanguagLearning/`. The scripts auto-detect any `*.json` there; you can also point `GOOGLE_APPLICATION_CREDENTIALS` to the file if you prefer.
-
-### 5. Set Up Anki Template (Beginner-Friendly)
-
-**Option A: Use Pre-Made Template** (Recommended for beginners)
-
-1. Open Anki
-2. Click **File** → **Import**
-3. Navigate to `LanguagLearning/Anki Language Template/`
-4. Select `Language Learning Template.apkg`
-5. Click **Open**
-6. ✅ Done! You now have the note type and card styling ready for any language
-
-**Option B: Create From Scratch** (Advanced users)
-
-See [ANKI_SETUP.md](ANKI_SETUP.md) for detailed manual setup instructions.
-
-### 6. Prepare Input Excel File
-
-> ⚠️ **Important:** If you want to start fresh or adapt to another language, delete any old sample artifacts (e.g., `FluentForever_Arabic_Perfect/*` outputs) and create/rename your own frequency list.
-
-Create `<Language> Frequency Word List.xlsx` in `LanguagLearning/` folder with columns:
-- **Word**: The target-language word
-- **English Meaning**: English translation
-- **Status**: Leave empty (will be auto-populated)
-
-Example:
-| Word | English Meaning | Status |
-|------|-----------------|--------|
-| hola | hello | |
-| casa | house | |
-| libro | book | |
-
-## Workflow
-
-The system uses a **5-step pipeline**:
-
-### Quick Start (Current Setup)
-
-- `USE_GROQ=1` (Groq llama-3.3-70b for sentences), `AUDIO_SPEED=0.8`, `.json` service account for TTS placed in `LanguagLearning/`.
-- Run in order:
-   1) `python 0_select_language.py`
-   2) `python 1_generate_sentences.py` (default batch=1; raise with `$env:BATCH_WORDS="3"` after a test word)
-   3) `python 2_download_audio.py`
-   4) `python 3_download_images.py`
-   5) `python 4_create_anki_tsv.py`
-- Import `FluentForever_{Language}_Perfect/ANKI_IMPORT.tsv` into Anki, then copy `audio/` and `images/` files into Anki media folder.
-
-### Step 0: Select Your Language (One-Time Setup)
-
-```bash
-python 0_select_language.py
-```
-
-Choose from **109 languages**. The system will:
-- Load the pre-made frequency word list
-- Create `language_config.txt` with your language settings
+**Happy learning! 🌍📚🎵**
 - Create output folder: `FluentForever_{Language}_Perfect/`
 
 **Example:**
