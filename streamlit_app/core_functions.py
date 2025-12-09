@@ -516,9 +516,9 @@ async def generate_audio_async(
         rate_pct = int((rate - 1.0) * 100)
         rate_str = f"{rate_pct:+d}%"
 
-        # Edge TTS pitch: avoid invalid "+0%"; omit when near-zero
-        pitch_clamped = max(-20, min(20, pitch))
-        pitch_str = None if abs(pitch_clamped) < 0.1 else f"{int(pitch_clamped)}%"
+        # Edge TTS pitch format: use Hz, not percentage; avoid invalid "+0Hz"; omit when near-zero
+        pitch_clamped = max(-20, min(20, pitch))  # Clamp to safe range (-20Hz to +20Hz)
+        pitch_str = None if abs(pitch_clamped) < 0.1 else f"{int(pitch_clamped):+d}Hz"
 
         kwargs = {"text": text, "voice": voice, "rate": rate_str}
         if pitch_str:

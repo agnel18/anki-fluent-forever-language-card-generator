@@ -101,7 +101,7 @@ if "track_progress" not in st.session_state:
 if "audio_speed" not in st.session_state:
     st.session_state.audio_speed = 0.8
 if "audio_pitch" not in st.session_state:
-    st.session_state.audio_pitch = 0
+    st.session_state.audio_pitch = 0  # in Hz, range: -20 to +20
 if "selected_voice" not in st.session_state:
     st.session_state.selected_voice = None
 if "selected_voice_display" not in st.session_state:
@@ -283,8 +283,9 @@ elif st.session_state.page == "main":
     
     # Step 2: Select words (batch + list combined)
     st.markdown("## 📚 Step 2: Select Your Words")
+    st.markdown("**We pull from frequency lists so you start with the most useful words first.**")
     
-    # Info about frequency lists - moved right after title
+    # Info about frequency lists - moved right after description
     with st.expander("📖 What is a Frequency List?", expanded=False):
         st.markdown("""
         A **Frequency List** contains the most commonly used words in a language, ranked by how often they appear in real conversations, books, movies, and other sources.
@@ -296,8 +297,6 @@ elif st.session_state.page == "main":
         
         **Example:** In Spanish, "the" (el/la) is word #1, "and" (y) is word #2, "to" (a) is word #3, etc.
         """)
-    
-    st.markdown("**We pull from frequency lists so you start with the most useful words first.**")
     st.info("For your first run, try 1 word. After that, keep batches around 5–10 to respect rate limits.")
     
     # Initialize page tracking
@@ -601,7 +600,7 @@ elif st.session_state.page == "main":
             max_value=20,
             value=st.session_state.audio_pitch,
             step=1,
-            help="Negative = lower pitch, positive = higher pitch (percent change)."
+            help="Pitch in Hz. Negative = lower, positive = higher (-20Hz to +20Hz)."
         )
         st.session_state.audio_pitch = audio_pitch
     
@@ -660,6 +659,16 @@ elif st.session_state.page == "main":
             use_container_width=True,
             disabled=len(selected_words) == 0
         ):
+            # Show API estimates
+            st.info(f"""
+            📊 **API Usage Estimate:**
+            - **Groq API calls:** ~{len(selected_words)} (1 per word for sentences)
+            - **Pixabay API calls:** ~{len(selected_words) * st.session_state.sentences_per_word} (1 per sentence)
+            - **Total images:** {len(selected_words) * st.session_state.sentences_per_word}
+            
+            Generation will begin in a moment...
+            """)
+            st.info("Scroll down to see the progress log.")
             st.session_state.page = "generating"
             st.session_state.selected_lang = selected_lang
             st.session_state.selected_words = selected_words
@@ -676,8 +685,8 @@ elif st.session_state.page == "main":
 
 elif st.session_state.page == "generating":
     
-    # Auto-scroll to top of page
-    st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
+    # Auto-scroll to top of page with smooth animation
+    st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
     
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
@@ -699,23 +708,21 @@ elif st.session_state.page == "generating":
         num_words = len(st.session_state.selected_words)
         total_sentences = num_words * st.session_state.sentences_per_word
         
-        # Progress callback function
-        progress_messages = []
-        last_step = [0]  # Track last step to avoid duplicates
+        # Progress callback function - maintain cumulative log without repetition
+        progress_log = []
+        steps_completed = set()  # Track which steps have been logged
         
         def update_progress(step: int, message: str, details: str = ""):
-            # Only add new step messages, skip sub-progress duplicates
-            if step > last_step[0]:
-                entry = f"✓ Step {step}/5: {message}"
-                progress_messages.append(entry)
-                last_step[0] = step
+            # Only add step once to log
+            if step not in steps_completed:
+                progress_log.append(f"✓ Step {step}/5: {message}")
+                steps_completed.add(step)
+                # Display cumulative log
                 with messages_container:
-                    st.write("\n".join(progress_messages))
-                status_text.info(f"**Step {step}/5:** {message}")
-            else:
-                # For same step, just update the status and details without repeating log
-                status_text.info(f"**Step {step}/5:** {message}")
+                    st.write("\n".join(progress_log))
             
+            # Always update status and details
+            status_text.info(f"**Step {step}/5:** {message}")
             if step <= 5:
                 progress_pct = min(0.95, (step / 5.0))
                 progress_bar.progress(progress_pct)
@@ -798,8 +805,11 @@ elif st.session_state.page == "generating":
         status_text.success("✅ **Deck generation complete!**")
         detail_text.markdown(f"Created {num_words} notes with {num_words * 3} cards (3 cards per word)")
         
-        # Scroll to top after generation completes
-        st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
+        # Celebrate! Show balloons
+        st.balloons()
+        
+        # Scroll to top after generation completes with smooth animation
+        st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
 
         st.session_state.first_run_complete = True
 
