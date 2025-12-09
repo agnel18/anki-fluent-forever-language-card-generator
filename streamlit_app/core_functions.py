@@ -1,6 +1,6 @@
 """
 Core functions for Anki card generation.
-Handles: Groq sentences, Edge TTS audio (with Google fallback), Pixabay images, TSV export, ZIP creation.
+Handles: Groq sentences, Edge TTS audio, Pixabay images, TSV export, ZIP creation.
 """
 
 import os
@@ -17,16 +17,75 @@ from groq import Groq
 import logging
 import re
 from typing import Optional, List
+import genanki
+import random
 
 logger = logging.getLogger(__name__)
 
-# Try to import hybrid TTS
-try:
-    from tts_hybrid import generate_audio_hybrid_async
-    HAS_HYBRID_TTS = True
-except ImportError:
-    HAS_HYBRID_TTS = False
-    logger.warning("Hybrid TTS module not available, using Edge TTS only")
+# ============================================================================
+# IPA GENERATION (HYBRID APPROACH)
+# ============================================================================
+
+def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
+    """
+    Generate IPA transcription using hybrid approach:
+    1. Try AI-generated IPA first
+    2. Fall back to epitran library if AI IPA is empty
+    
+    Args:
+        text: Text to transcribe
+        language: Language name (e.g., "Spanish", "Arabic")
+        ai_ipa: IPA from AI (may be empty)
+        
+    Returns:
+        IPA transcription string
+    """
+    # If AI provided IPA, use it
+    if ai_ipa and ai_ipa.strip():
+        return ai_ipa.strip()
+    
+    # Language code mapping for epitran
+    lang_codes = {
+        "Spanish": "spa-Latn",
+        "French": "fra-Latn",
+        "German": "deu-Latn",
+        "Italian": "ita-Latn",
+        "Portuguese": "por-Latn",
+        "Russian": "rus-Cyrl",
+        "Arabic": "ara-Arab",
+        "Hindi": "hin-Deva",
+        "Turkish": "tur-Latn",
+        "Polish": "pol-Latn",
+        "Dutch": "nld-Latn",
+        "Swedish": "swe-Latn",
+        "Czech": "ces-Latn",
+        "Romanian": "ron-Latn",
+        "Vietnamese": "vie-Latn",
+        "Indonesian": "ind-Latn",
+        "Malay": "msa-Latn",
+        "Tagalog": "tgl-Latn",
+        "Swahili": "swa-Latn",
+        "Uzbek": "uzb-Latn",
+        "Amharic": "amh-Ethi",
+    }
+    
+    epitran_code = lang_codes.get(language)
+    
+    if epitran_code:
+        try:
+            import epitran
+            epi = epitran.Epitran(epitran_code)
+            ipa = epi.transliterate(text)
+            return ipa if ipa else ""
+        except Exception as e:
+            logger.warning(f"Epitran failed for {language}: {e}")
+            return ""
+    
+    # If language not supported by epitran, return empty
+    logger.warning(f"IPA generation not available for {language}")
+    return ""
+
+
 # ============================================================================
 # WORD MEANING GENERATION (Groq)
 # ============================================================================
@@ -132,10 +191,20 @@ Requirements:
   * Tenses/moods (when applicable to {language})
 
 Format: Return ONLY a valid JSON array with NO additional text. Each item must have:
-{{"sentence": "{language} sentence", "english_translation": "English translation", "context": "context type"}}
+{{
+  "sentence": "{language} sentence",
+  "english_translation": "English translation",
+  "context": "context type",
+  "ipa": "IPA phonetic transcription of the {language} sentence (use proper IPA symbols)",
+  "image_keywords": "2-3 keywords for image search (comma-separated, e.g., 'cat, sleeping, couch')"
+}}
 
-IMPORTANT: Return ONLY valid JSON, nothing else. No markdown, no code blocks, no explanation."""
-
+IMPORTANT: 
+- Return ONLY valid JSON, nothing else. No markdown, no code blocks, no explanation.
+- IPA must use proper IPA symbols (e.g., /həˈloʊ/ for hello)
+- Image keywords should be concrete nouns/actions that can be visualized
+"""
+    
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -162,6 +231,8 @@ IMPORTANT: Return ONLY valid JSON, nothing else. No markdown, no code blocks, no
                     "sentence": s["sentence"],
                     "english_translation": s["english_translation"],
                     "context": s.get("context", "general"),
+                    "ipa": s.get("ipa", ""),
+                    "image_keywords": s.get("image_keywords", ""),
                     "word": word,
                     "meaning": meaning,
                 })
@@ -245,6 +316,7 @@ def generate_complete_deck(
     audio_speed: float = 0.8,
     voice: Optional[str] = None,
     all_words: Optional[list] = None,
+    progress_callback: Optional[callable] = None,
 ) -> dict:
     """
     Complete workflow: Generate sentences, audio, images, and create Anki TSV.
@@ -260,6 +332,7 @@ def generate_complete_deck(
         max_length: Maximum words per sentence
         difficulty: Sentence complexity level
         audio_speed: Audio playback speed
+        progress_callback: Callback function for progress updates: callback(step, message, details)
         
     Returns:
         Dict with keys: success, tsv_path, audio_dir, image_dir, error
@@ -276,6 +349,9 @@ def generate_complete_deck(
         
         # Step 1: Generate sentences
         logger.info(f"Generating sentences for {len(words)} words...")
+        if progress_callback:
+            progress_callback(1, "📝 Generating sentences with AI...", f"Starting batch generation for {len(words)} words...")
+        
         sentences_batch = generate_sentences_batch(
             words=words,
             language=language,
@@ -286,8 +362,11 @@ def generate_complete_deck(
             groq_api_key=groq_api_key,
         )
         
-        # Step 2-4: Per-sentence audio, images, TSV rows
+        # Step 2: Per-sentence audio, images, TSV rows
         logger.info("Generating audio and images per sentence, then building TSV rows...")
+        if progress_callback:
+            progress_callback(2, "🎵 Generating audio files...", f"Creating audio for {len(words)} words...")
+        
         words_data = []
         voice = voice or _voice_for_language(language)
 
@@ -299,12 +378,16 @@ def generate_complete_deck(
                     return len(all_words) + 1
             return words.index(word) + 1
 
-        for word in words:
+        for word_idx, word in enumerate(words, 1):
             safe_word = _sanitize_word(word)
             sents = sentences_batch.get(word, [])
             sentence_texts = [s.get("sentence", "") for s in sents]
 
             rank = rank_for_word(word)
+            
+            # Progress update for this word
+            if progress_callback:
+                progress_callback(2, "🎵 Generating audio files...", f"Processing word {word_idx}/{len(words)}: {word} ({len(sentence_texts)} sentences)")
 
             # Build per-sentence base names
             base_names = [f"{rank}_{safe_word}_{j:03d}" for j in range(1, len(sentence_texts) + 1)]
@@ -320,10 +403,21 @@ def generate_complete_deck(
                 language=language,
             )
 
-            # Images per sentence with exact filenames (using English translations for better results)
-            english_translations = [s.get("english_translation", "") for s in sents]
+            # Images per sentence with exact filenames (using keywords for better results)
+            if progress_callback:
+                progress_callback(3, "🖼️ Downloading images...", f"Finding images for word {word_idx}/{len(words)}: {word}")
+            
+            image_queries = []
+            for s in sents:
+                # Use image_keywords if available, otherwise fall back to English translation
+                keywords = s.get("image_keywords", "").strip()
+                if keywords:
+                    image_queries.append(keywords)
+                else:
+                    image_queries.append(s.get("english_translation", ""))
+            
             image_files = generate_images_pixabay(
-                queries=english_translations,
+                queries=image_queries,
                 output_dir=str(media_dir),
                 batch_name="unused",
                 num_images=1,
@@ -336,15 +430,24 @@ def generate_complete_deck(
                 file_base = base_names[idx_sent] if idx_sent < len(base_names) else f"{rank}_{safe_word}_{idx_sent+1:03d}"
                 audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
                 image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
+                
+                # Generate IPA with hybrid approach
+                ai_ipa = sent.get("ipa", "")
+                final_ipa = generate_ipa_hybrid(
+                    text=sent.get("sentence", ""),
+                    language=language,
+                    ai_ipa=ai_ipa
+                )
 
                 words_data.append({
                     "file_name": file_base,
                     "word": word,
                     "meaning": sent.get("meaning", word),
                     "sentence": sent.get("sentence", ""),
-                    "ipa": sent.get("ipa", ""),
+                    "ipa": final_ipa,
                     "english": sent.get("english_translation", ""),
                     "context": sent.get("context", ""),
+                    "image_keywords": sent.get("image_keywords", ""),
                     "audio": f"[sound:{audio_name}]" if audio_name else "",
                     "image": f"<img src=\"{image_name}\">" if image_name else "",
                     "tags": "",
@@ -418,8 +521,7 @@ def generate_audio(
     language: str = "English",
 ) -> list[str]:
     """
-    Batch generate audio files synchronously.
-    Tries Edge TTS first, falls back to Google Cloud TTS if available.
+    Batch generate audio files synchronously using Edge TTS.
     
     Args:
         sentences: List of sentences to synthesize
@@ -428,7 +530,7 @@ def generate_audio(
         batch_name: Prefix for filenames
         rate: Playback speed
         exact_filenames: Custom filenames for each sentence
-        language: Language name (for Google fallback)
+        language: Language name (kept for API compatibility)
         
     Returns:
         List of generated file paths
@@ -442,13 +544,8 @@ def generate_audio(
             filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
             output_path = Path(output_dir) / filename
             
-            # Use hybrid TTS if available, otherwise use basic Edge TTS
-            if HAS_HYBRID_TTS:
-                tasks.append(generate_audio_hybrid_async(
-                    sentence, voice, language, str(output_path), rate, use_google_fallback=True
-                ))
-            else:
-                tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
+            # Use Edge TTS
+            tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
         
         results = await asyncio.gather(*tasks)
         return results
@@ -627,6 +724,7 @@ def create_anki_tsv(
             "English Translation",
             "Sound",
             "Image",
+            "Image Keywords",
             "Tags",
         ]
 
@@ -641,6 +739,7 @@ def create_anki_tsv(
                 "English Translation": r.get("english", ""),
                 "Sound": r.get("audio", ""),
                 "Image": r.get("image", ""),
+                "Image Keywords": r.get("image_keywords", ""),
                 "Tags": r.get("tags", ""),
             })
 
@@ -682,20 +781,20 @@ def create_zip_export(
                 shutil.copytree(media_dir, deck_dir / "media")
             
             # Create instructions file
-            instructions = """HOW TO IMPORT TO ANKI
+            instructions = r"""HOW TO IMPORT TO ANKI
 =====================================
 1. Extract this ZIP to a folder
-2. Open Anki → File → Import
+2. Open Anki > File > Import
 3. Select ANKI_IMPORT.tsv
 4. Choose the note type and deck
-5. Copy all files from the media/ folder to Anki's collection.media folder
+5. Copy all files from the media/ folder to Anki collection.media folder
 6. Start learning!
 
-Finding Anki's Media Folder:
-  Easy way: In Anki, go to Main Menu → Tools → Check Media → View Files
+Finding Anki Media Folder:
+  Easy way: In Anki, go to Main Menu > Tools > Check Media > View Files
   
   Manual locations:
-  Windows: C:\\Users\\<YourUsername>\\AppData\\Roaming\\Anki2\\User 1\\collection.media
+  Windows: C:\Users\<YourUsername>\AppData\Roaming\Anki2\User 1\collection.media
   Mac: ~/Library/Application Support/Anki2/User 1/collection.media
   Linux: ~/.local/share/Anki2/User 1/collection.media
 """
@@ -708,6 +807,204 @@ Finding Anki's Media Folder:
             
     except Exception as e:
         logger.error(f"ZIP creation error: {e}")
+        return False
+
+
+def create_apkg_export(
+    rows: list[dict],
+    media_dir: str,
+    output_apkg: str,
+    language: str,
+    deck_name: str = "Language Learning",
+) -> bool:
+    """
+    Create .apkg file (Anki deck package) with 3-card template.
+    
+    Args:
+        rows: List of card data dicts
+        media_dir: Path to media folder (contains audio + images)
+        output_apkg: Path to save .apkg file
+        language: Target language name (e.g., "Spanish")
+        deck_name: Name of the Anki deck
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        # Create note model with 9 fields and 3 card templates
+        model_id = random.randrange(1 << 30, 1 << 31)
+        
+        model = genanki.Model(
+            model_id,
+            'Fluent Forever Language Learning',
+            fields=[
+                {'name': 'File Name'},
+                {'name': 'What is the Word?'},
+                {'name': 'Meaning of the Word'},
+                {'name': 'Sentence'},
+                {'name': 'IPA Transliteration'},
+                {'name': 'English Translation'},
+                {'name': 'Sound'},
+                {'name': 'Image'},
+                {'name': 'Image Keywords'},
+            ],
+            templates=[
+                {
+                    'name': 'Card 1: Listening',
+                    'qfmt': '''<div class="hint">🎧 Listen and understand</div>
+<div class="sound">{{Sound}}</div>''',
+                    'afmt': '''{{FrontSide}}
+<hr id="answer">
+<div class="sentence">{{Sentence}}</div>
+<div class="image">{{Image}}</div>
+<div class="english">{{English Translation}}</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="ipa">{{IPA Transliteration}}</div>
+<div class="keywords">Keywords: {{Image Keywords}}</div>''',
+                },
+                {
+                    'name': 'Card 2: Production',
+                    'qfmt': '''<div class="hint">💬 Say this in ''' + language + ''':</div>
+<div class="english-prompt">{{English Translation}}</div>''',
+                    'afmt': '''{{FrontSide}}
+<hr id="answer">
+<div class="sentence">{{Sentence}}</div>
+<div class="sound">{{Sound}}</div>
+<div class="image">{{Image}}</div>
+<div class="ipa">{{IPA Transliteration}}</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="keywords">Keywords: {{Image Keywords}}</div>''',
+                },
+                {
+                    'name': 'Card 3: Reading',
+                    'qfmt': '''<div class="hint">📖 Read and understand:</div>
+<div class="sentence">{{Sentence}}</div>''',
+                    'afmt': '''{{FrontSide}}
+<hr id="answer">
+<div class="sound">{{Sound}}</div>
+<div class="image">{{Image}}</div>
+<div class="english">{{English Translation}}</div>
+<div class="ipa">{{IPA Transliteration}}</div>
+<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>
+<div class="keywords">Keywords: {{Image Keywords}}</div>''',
+                },
+            ],
+            css='''.card {
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: var(--text-fg, black);
+    background-color: var(--bg, white);
+}
+
+.hint {
+    font-size: 16px;
+    color: var(--subtle-fg, #666);
+    margin: 10px;
+    font-style: italic;
+}
+
+.sentence {
+    font-size: 32px;
+    color: var(--accent, #0066cc);
+    margin: 20px;
+    font-weight: bold;
+}
+
+.english-prompt {
+    font-size: 28px;
+    color: var(--accent-2, #009900);
+    margin: 20px;
+    font-weight: bold;
+}
+
+.sound {
+    margin: 20px;
+}
+
+.english {
+    font-size: 22px;
+    color: var(--accent-2, #009900);
+    margin: 15px;
+}
+
+.ipa {
+    font-size: 16px;
+    color: var(--subtle-fg, #666);
+    font-family: "Charis SIL", "Doulos SIL", serif;
+    margin: 10px;
+}
+
+.word-info {
+    font-size: 14px;
+    color: var(--fg, #333);
+    margin: 15px;
+}
+
+.keywords {
+    font-size: 12px;
+    color: var(--subtle-fg, #999);
+    margin: 10px;
+    font-style: italic;
+}
+
+.image {
+    margin: 20px;
+}
+
+.image img {
+    max-width: 500px;
+    max-height: 400px;
+}'''
+        )
+        
+        # Create deck
+        deck_id = random.randrange(1 << 30, 1 << 31)
+        deck = genanki.Deck(deck_id, deck_name)
+        
+        # Add notes
+        media_files = []
+        for row in rows:
+            # Extract audio and image filenames
+            audio_match = re.search(r'\[sound:(.*?)\]', row.get('audio', ''))
+            audio_file = audio_match.group(1) if audio_match else ''
+            
+            image_match = re.search(r'src="(.*?)"', row.get('image', ''))
+            image_file = image_match.group(1) if image_match else ''
+            
+            # Add media files to list
+            if audio_file:
+                media_files.append(os.path.join(media_dir, audio_file))
+            if image_file:
+                media_files.append(os.path.join(media_dir, image_file))
+            
+            # Create note
+            note = genanki.Note(
+                model=model,
+                fields=[
+                    row.get('file_name', ''),
+                    row.get('word', ''),
+                    row.get('meaning', ''),
+                    row.get('sentence', ''),
+                    row.get('ipa', ''),
+                    row.get('english', ''),
+                    row.get('audio', ''),
+                    row.get('image', ''),
+                    row.get('image_keywords', ''),
+                ]
+            )
+            deck.add_note(note)
+        
+        # Create package
+        package = genanki.Package(deck)
+        package.media_files = media_files
+        package.write_to_file(output_apkg)
+        
+        logger.info(f"Created .apkg file with {len(rows)} notes at {output_apkg}")
+        return True
+        
+    except Exception as e:
+        logger.error(f".apkg creation error: {e}")
         return False
 
 

@@ -1,7 +1,6 @@
 # Core dependencies for language learning card generator
 google-generativeai>=0.3.0  # Gemini API for sentence generation
 groq>=0.9.0                 # Groq API client
-google-cloud-texttospeech>=2.14.0  # Google Cloud TTS (service account auth)
 pandas>=2.0.0               # Data manipulation
 openpyxl>=3.1.0             # Excel file support
 python-dotenv>=1.0.0        # Environment variable management

@@ -8,8 +8,8 @@ top_5:
     edge_tts_voice: "en-US-AvaNeural"
     flag: "🇬🇧"
     
-  - code: "zh"
-    name: "Mandarin Chinese"
+  - code: "zh-CN"
+    name: "Chinese (Simplified)"
     speakers: "1.1B"
     edge_tts_voice: "zh-CN-XiaoxiaoNeural"
     flag: "🇨🇳"
@@ -70,9 +70,13 @@ all_languages:
     name: "Korean"
     edge_tts_voice: "ko-KR-SunHiNeural"
     
-  - code: "zh"
-    name: "Mandarin Chinese"
+  - code: "zh-CN"
+    name: "Chinese (Simplified)"
     edge_tts_voice: "zh-CN-XiaoxiaoNeural"
+
+  - code: "zh-TW"
+    name: "Chinese (Traditional)"
+    edge_tts_voice: "zh-TW-HsiaoChenNeural"
     
   - code: "ar"
     name: "Arabic"

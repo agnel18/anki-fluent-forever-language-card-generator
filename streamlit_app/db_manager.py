@@ -72,9 +72,11 @@ def import_excel_to_db(excel_dir: Path = None):
     """
     One-time import: Load all Excel files into SQLite.
     Only runs if database is empty.
+    Uses most-common-words-multilingual source data.
     """
     if excel_dir is None:
-        excel_dir = Path(__file__).parent.parent / "109 Languages Frequency Word Lists"
+        # Use the official most-common-words-multilingual source
+        excel_dir = Path("D:/Language Learning/most-common-words-multilingual-main/most-common-words-multilingual-main/data/xlsx")
     
     if not excel_dir.exists():
         logger.warning(f"Excel directory not found: {excel_dir}")
@@ -98,10 +100,17 @@ def import_excel_to_db(excel_dir: Path = None):
         # Process all Excel files
         for excel_file in sorted(excel_dir.glob("*.xlsx")):
             try:
-                # Extract language name from filename
+                # Extract language name from filename (keep full name including Simplified/Traditional)
                 filename = excel_file.stem
-                # Format: "Spanish (es)" → "Spanish"
-                language = filename.split(" (")[0]
+                # Format: "Spanish (ES)" → "Spanish", "Chinese (Simplified) (ZH-CN)" → "Chinese (Simplified)"
+                # Extract everything before the last occurrence of " ("
+                if filename.count(" (") > 1:
+                    # Multiple parentheses: keep text before the last one (e.g., "Chinese (Simplified)" from "Chinese (Simplified) (ZH-CN)")
+                    parts = filename.rsplit(" (", 1)
+                    language = parts[0]
+                else:
+                    # Single parentheses: remove it (e.g., "Spanish" from "Spanish (ES)")
+                    language = filename.split(" (")[0]
                 
                 logger.info(f"Importing {language}...")
                 
@@ -389,6 +398,35 @@ def log_generation(session_id: str, language: str, words_count: int, sentences_c
         
     except Exception as e:
         logger.error(f"Error logging generation: {e}")
+    finally:
+        conn.close()
+
+
+def get_word_rank(language: str, word: str) -> int:
+    """
+    Get the frequency rank of a word.
+    
+    Args:
+        language: Language name
+        word: Word to look up
+        
+    Returns:
+        Rank (1-based), or None if word not found
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT rank FROM words WHERE language = ? AND word = ? COLLATE NOCASE",
+            (language, word)
+        )
+        result = cursor.fetchone()
+        return result[0] if result else None
+        
+    except Exception as e:
+        logger.error(f"Error getting word rank: {e}")
+        return None
     finally:
         conn.close()
 

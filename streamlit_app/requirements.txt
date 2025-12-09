@@ -12,7 +12,6 @@ groq>=0.9.0
 
 # Text-to-Speech
 edge-tts==7.0.0  # Fixed version (7.0.0 works, newer versions have Microsoft endpoint issues)
-google-cloud-texttospeech>=2.14.0  # Backup TTS option
 
 # Image generation
 Pillow>=10.0.0
@@ -21,7 +20,13 @@ Pillow>=10.0.0
 firebase-admin>=6.0.0
 
 # File handling
-openpyxl>=3.10.0
+openpyxl>=3.0.0
+
+# Anki deck generation
+genanki>=0.13.0
+
+# IPA/Phonetic transcription
+epitran>=1.24
 
 # Utilities
 python-dotenv>=1.0.0

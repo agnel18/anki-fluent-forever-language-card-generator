@@ -11,6 +11,7 @@ import pandas as pd
 from core_functions import (
     generate_complete_deck,
     create_zip_export,
+    create_apkg_export,
 )
 from frequency_utils import (
     get_available_frequency_lists,
@@ -18,6 +19,8 @@ from frequency_utils import (
     BATCH_PRESETS,
     validate_word_list,
     get_csv_template,
+    parse_uploaded_word_file,
+    get_words_with_ranks,
 )
 from db_manager import (
     get_words_paginated,
@@ -188,65 +191,6 @@ if st.session_state.page == "api_setup":
     
     st.divider()
     
-    st.markdown("### 🎵 Google Cloud TTS (Optional Fallback)")
-    
-    # Check if Google TTS credentials exist
-    creds_file = Path(__file__).parent.parent / "languagelearning-480303-93748916f7bd.json"
-    google_tts_ready = creds_file.exists()
-    
-    if google_tts_ready:
-        st.success("✅ Google Cloud TTS is configured! (Will auto-use as fallback if Edge TTS fails)")
-    else:
-        with st.expander("📖 Setup Google Cloud TTS (Optional but Recommended)", expanded=False):
-            st.markdown("""
-            **What it's for:** Backup audio generation if Edge TTS fails
-            
-            **Why optional?** Edge TTS usually works fine. Google TTS is just a safety net.
-            
-            **Setup Instructions (5 minutes):**
-            
-            1. **Create Google Cloud Account**
-               - Go to https://console.cloud.google.com
-               - Click "Create Project"
-               - Name it: "Language Learning" (or anything)
-               - Click Create
-            
-            2. **Enable Text-to-Speech API**
-               - Search for "Text-to-Speech API" in the search bar
-               - Click on it
-               - Click "ENABLE"
-               - Wait 30 seconds for it to activate
-            
-            3. **Create Service Account**
-               - Go to https://console.cloud.google.com/iam-admin/serviceaccounts
-               - Click "Create Service Account"
-               - Name: `language-learning-tts`
-               - Click "Create and Continue"
-               - Click "Continue" again (skip optional steps)
-               - Click "Done"
-            
-            4. **Create JSON Key**
-               - You'll see your service account listed
-               - Click on it (the email address)
-               - Click "KEYS" tab at the top
-               - Click "Add Key" → "Create new key"
-               - Choose "JSON"
-               - Click "Create"
-               - A file will download: `service-account-key.json`
-            
-            5. **Rename & Place File**
-               - Rename the downloaded file to: `languagelearning-480303-93748916f7bd.json`
-               - Move it to the main project folder
-               - Location should be: `d:\\Language Learning\\LanguagLearning\\languagelearning-480303-93748916f7bd.json`
-               - **Then restart the app** (refresh this page)
-            
-            **That's it!** Google TTS will auto-activate as fallback.
-            
-            **Cost:** Free tier includes 1 million characters/month. Usually enough unless generating thousands of decks.
-            """)
-    
-    st.divider()
-    
     if st.button("🚀 Let's Go!", use_container_width=True):
         if not groq_key:
             st.error("❌ Please enter your Groq API key")
@@ -348,97 +292,280 @@ elif st.session_state.page == "main":
     # Step 3: Select words
     st.markdown("## 📚 Step 3: Select Your Words")
     
-    # Load words from database
+    # Initialize page tracking
     if selected_lang not in st.session_state.current_page:
         st.session_state.current_page[selected_lang] = 1
     
-    # Get completed words
+    # Get completed words and stats
     completed = get_completed_words(selected_lang)
     stats = get_word_stats(selected_lang)
     
+    # Display stats
     col1, col2, col3 = st.columns(3)
     col1.metric("Total words", stats.get("total", 0))
     col2.metric("Completed", stats.get("completed", 0))
     col3.metric("Remaining", stats.get("remaining", 0))
     
-    # Pagination
-    page_size = 20
-    current_page = st.session_state.current_page[selected_lang]
-    words_page, total_words = get_words_paginated(selected_lang, page=current_page, page_size=page_size)
-    total_pages = (total_words + page_size - 1) // page_size
-    
-    # Page navigation
-    col1, col2, col3, col4 = st.columns([1, 1, 2, 1])
-    
-    with col1:
-        if st.button("⬅️ Previous", key="prev_page"):
-            if current_page > 1:
-                st.session_state.current_page[selected_lang] -= 1
-                st.rerun()
-    
-    with col2:
-        if st.button("Next ➡️", key="next_page"):
-            if current_page < total_pages:
-                st.session_state.current_page[selected_lang] += 1
-                st.rerun()
-    
-    with col3:
-        st.markdown(f"**Page {current_page} of {total_pages}** | Words {(current_page-1)*page_size+1}-{min(current_page*page_size, total_words)} of {total_words}")
-    
-    # Jump to page
-    with col4:
-        if total_pages > 1:
-            jump_page = st.number_input("Go to page", min_value=1, max_value=total_pages, value=current_page, key="jump_page")
-            if jump_page != current_page:
-                st.session_state.current_page[selected_lang] = jump_page
-                st.rerun()
-    
     st.divider()
     
-    # Search
-    st.markdown("### 🔍 Or search for specific words")
-    search_term = st.text_input("Search words:", placeholder="e.g., 'water', 'love', 'cat'...", key="word_search")
+    # ========================================================================
+    # FREQUENCY LIST INFORMATION & CUSTOM IMPORT
+    # ========================================================================
     
-    if search_term:
-        search_results = search_words(selected_lang, search_term, limit=50)
-        if search_results:
-            st.markdown(f"**Found {len(search_results)} matching words:**")
-            words_page = search_results
-            words_title = "Search Results"
-        else:
-            st.info("No words found matching your search")
-            words_page = []
-    else:
-        words_title = f"Page {current_page}"
+    # Info about frequency lists
+    with st.expander("📖 What is a Frequency List?", expanded=False):
+        st.markdown("""
+        A **Frequency List** contains the most commonly used words in a language, ranked by how often they appear in real conversations, books, movies, and other sources.
+        
+        **Why use it?**
+        - Focus on words you'll actually encounter
+        - Learn vocabulary efficiently (top 1,000 words = ~80% of everyday language)
+        - Build a strong foundation for real communication
+        
+        **Example:** In Spanish, "the" (el/la) is word #1, "and" (y) is word #2, "to" (a) is word #3, etc.
+        """)
     
-    st.divider()
+    st.markdown("### Pick from **Top Words Used in** " + selected_lang)
     
-    # Word selection
-    selected_words = []
+    # Create tabs: Frequency List vs Custom Import
+    tab_frequency, tab_custom = st.tabs(["📊 Frequency List", "📥 Import Your Own Words"])
     
-    if words_page:
-        st.markdown(f"### {words_title}")
-        cols = st.columns(5)
-        for idx, word in enumerate(words_page):
-            with cols[idx % 5]:
-                is_completed = word in completed
-                checkbox_label = f"{word}"
-                if is_completed:
-                    checkbox_label += " ✓"
+    with tab_frequency:
+        # Pagination settings
+        page_size = 25
+        current_page = st.session_state.current_page[selected_lang]
+        
+        # Get words with ranks
+        words_df, total_words = get_words_with_ranks(selected_lang, page=current_page, page_size=page_size)
+        total_pages = (total_words + page_size - 1) // page_size
+        
+        # Display words in a clean table with checkboxes
+        st.markdown("#### Select words to include in your deck:")
+        
+        # Create columns for display
+        col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+        
+        with col_rank:
+            st.write("**Rank**")
+        with col_word:
+            st.write("**Word**")
+        with col_select:
+            st.write("**Select**")
+        with col_status:
+            st.write("**Status**")
+        
+        st.divider()
+        
+        selected_words = []
+        
+        # Display each word with checkbox
+        for idx, row in words_df.iterrows():
+            col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+            
+            with col_rank:
+                st.write(f"#{row['Rank']}")
+            
+            with col_word:
+                st.write(row['Word'])
+            
+            with col_select:
+                is_selected = st.checkbox(
+                    "Select",
+                    key=f"word_select_{selected_lang}_{row['Word']}_{idx}",
+                    label_visibility="collapsed"
+                )
+                if is_selected:
+                    selected_words.append(row['Word'])
+            
+            with col_status:
+                if row['Completed']:
+                    st.write("✅")
+        
+        st.divider()
+        
+        # Pagination controls (below word table)
+        start_rank = (current_page - 1) * page_size + 1
+        end_rank = min(current_page * page_size, total_words)
+        st.markdown(f"**Top {start_rank}–{end_rank}** | Page {current_page} of {total_pages}")
+        
+        col_prev, col_next, col_jump = st.columns([1, 1, 2])
+        
+        with col_prev:
+            if st.button("⬅️ Previous", key="prev_page"):
+                if current_page > 1:
+                    st.session_state.current_page[selected_lang] -= 1
+                    st.rerun()
+        
+        with col_next:
+            if st.button("Next ➡️", key="next_page"):
+                if current_page < total_pages:
+                    st.session_state.current_page[selected_lang] += 1
+                    st.rerun()
+        
+        with col_jump:
+            if total_pages > 1:
+                jump_page = st.number_input("Jump to page", min_value=1, max_value=total_pages, value=current_page, key="jump_page")
+                if jump_page != current_page:
+                    st.session_state.current_page[selected_lang] = jump_page
+                    st.rerun()
+        
+        # Search within frequency list
+        st.divider()
+        st.markdown("#### 🔍 Search for specific words:")
+        search_term = st.text_input("Search", placeholder="e.g., 'water', 'love', 'cat'...", key="word_search")
+        
+        if search_term:
+            search_results = search_words(selected_lang, search_term, limit=50)
+            if search_results:
+                st.markdown(f"**Found {len(search_results)} matching words:**")
                 
-                if st.checkbox(checkbox_label, key=f"word_{selected_lang}_{word}_{idx}"):
-                    selected_words.append(word)
-    else:
-        st.info("📝 No words available for this page")
+                # Build dataframe for search results with ranks
+                search_data = []
+                for word in search_results:
+                    # Get rank from database
+                    from db_manager import get_word_rank
+                    rank = get_word_rank(selected_lang, word)
+                    search_data.append({
+                        'Rank': rank,
+                        'Word': word,
+                        'Completed': '✓' if word in completed else ''
+                    })
+                
+                search_df = pd.DataFrame(search_data)
+                
+                # Display search results
+                col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+                
+                with col_rank:
+                    st.write("**Rank**")
+                with col_word:
+                    st.write("**Word**")
+                with col_select:
+                    st.write("**Select**")
+                with col_status:
+                    st.write("**Status**")
+                
+                st.divider()
+                
+                for idx, row in search_df.iterrows():
+                    col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+                    
+                    with col_rank:
+                        st.write(f"#{row['Rank']}" if row['Rank'] else "—")
+                    
+                    with col_word:
+                        st.write(row['Word'])
+                    
+                    with col_select:
+                        is_selected = st.checkbox(
+                            "Select",
+                            key=f"word_search_select_{selected_lang}_{row['Word']}_{idx}",
+                            label_visibility="collapsed"
+                        )
+                        if is_selected:
+                            selected_words.append(row['Word'])
+                    
+                    with col_status:
+                        if row['Completed']:
+                            st.write("✅")
+            else:
+                st.info("No words found matching your search")
     
-    # Summary
+    # ========================================================================
+    # CUSTOM WORD IMPORT TAB
+    # ========================================================================
+    
+    with tab_custom:
+        st.markdown("""
+        **Import your own list of words** for exams, specific topics, or custom learning needs.
+        
+        **Example use cases:**
+        - 🇨🇳 HSK Word Lists (Chinese proficiency test)
+        - 📚 Exam prep (DELF, DELE, etc.)
+        - 🎯 Domain-specific vocabulary (medical, business, etc.)
+        - 📋 Custom topic lists
+        """)
+        
+        st.divider()
+        
+        # Template download
+        csv_template = get_csv_template()
+        st.download_button(
+            label="📥 Download CSV Template",
+            data=csv_template,
+            file_name="word_list_template.csv",
+            mime="text/csv",
+            help="Download and fill in with your own words"
+        )
+        
+        st.markdown("**Expected format:** One word per line (plain text, CSV, or XLSX)")
+        st.code("\n".join(csv_template.split('\n')[0:4]), language="text")
+        
+        st.divider()
+        
+        # File uploader
+        st.markdown("**Upload your word list:**")
+        uploaded_file = st.file_uploader(
+            "Choose CSV or XLSX file",
+            type=['csv', 'xlsx', 'xls'],
+            key="custom_words_upload",
+            help="First column will be used as word list"
+        )
+        
+        if uploaded_file:
+            custom_words, parse_msg = parse_uploaded_word_file(uploaded_file)
+            st.info(parse_msg)
+            
+            if custom_words:
+                is_valid, validation_msg = validate_word_list(custom_words)
+                st.info(validation_msg)
+                
+                if is_valid:
+                    st.markdown(f"#### Words from custom list ({len(custom_words)})")
+                    
+                    # Display custom words with selection
+                    col_rank, col_word, col_select = st.columns([0.8, 1.5, 1.2])
+                    
+                    with col_rank:
+                        st.write("**#**")
+                    with col_word:
+                        st.write("**Word**")
+                    with col_select:
+                        st.write("**Select**")
+                    
+                    st.divider()
+                    
+                    for custom_idx, word in enumerate(custom_words, 1):
+                        col_rank, col_word, col_select = st.columns([0.8, 1.5, 1.2])
+                        
+                        with col_rank:
+                            st.write(f"{custom_idx}")
+                        
+                        with col_word:
+                            st.write(word)
+                        
+                        with col_select:
+                            is_selected = st.checkbox(
+                                "Select",
+                                key=f"custom_word_select_{word}_{custom_idx}",
+                                label_visibility="collapsed"
+                            )
+                            if is_selected:
+                                if word not in selected_words:
+                                    selected_words.append(word)
+    
+    # ========================================================================
+    # SELECTION SUMMARY
+    # ========================================================================
+    
     st.divider()
+    
     if selected_words:
         st.success(f"✅ Selected: **{len(selected_words)} words**")
         with st.expander("View selected words"):
             st.write(", ".join(selected_words))
     else:
-        st.info(f"📝 Select words from one of the tabs above")
+        st.info("📝 Select words from the frequency list or import your own")
     
     st.divider()
     
@@ -504,7 +631,7 @@ elif st.session_state.page == "main":
     # Step 5: Generate
     st.markdown("## ✨ Step 5: Generate Your Deck")
     
-    col1, col2, col3 = st.columns([2, 1, 1])
+    col1, col2 = st.columns([3, 1])
     
     with col1:
         if st.button(
@@ -518,11 +645,6 @@ elif st.session_state.page == "main":
             st.rerun()
     
     with col2:
-        if st.button("📥 Upload CSV", use_container_width=True):
-            st.session_state.page = "upload"
-            st.rerun()
-    
-    with col3:
         if st.button("ℹ️ Help", use_container_width=True):
             st.session_state.page = "help"
             st.rerun()
@@ -533,22 +655,48 @@ elif st.session_state.page == "main":
 
 elif st.session_state.page == "generating":
     
+    # Auto-scroll to top of page
+    st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
+    
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
     
-    progress_bar = st.progress(0, text="Starting generation...")
-    status_text = st.empty()
+    # Progress indicators - these will update in real-time
+    progress_container = st.container()
+    with progress_container:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        detail_text = st.empty()
+        messages_container = st.container()
     
     try:
         # Create output directory
         import tempfile
         output_dir = tempfile.mkdtemp(prefix="anki_deck_")
         
-        # Run complete deck generation
-        status_text.info("🚀 **Starting deck generation...**")
-        st.write("This will generate sentences, audio, images, and create your Anki deck.")
+        num_words = len(st.session_state.selected_words)
+        total_sentences = num_words * st.session_state.sentences_per_word
         
+        # Progress callback function
+        progress_messages = []
+        
+        def update_progress(step: int, message: str, details: str = ""):
+            progress_messages.append(f"✓ {message}")
+            with messages_container:
+                st.write("\n".join(progress_messages))
+            if step <= 5:
+                progress_pct = min(0.95, (step / 5.0))
+                progress_bar.progress(progress_pct)
+            status_text.info(f"**Step {step}/5:** {message}")
+            if details:
+                detail_text.markdown(details)
+        
+        # Step 1: Generate sentences
+        update_progress(1, "📝 Generating sentences with AI...", 
+                       f"Processing {num_words} words, {st.session_state.sentences_per_word} sentences each...")
+        
+        # Run complete deck generation with progress callback
         result = generate_complete_deck(
             words=st.session_state.selected_words,
             language=st.session_state.selected_lang,
@@ -562,28 +710,59 @@ elif st.session_state.page == "generating":
             audio_speed=st.session_state.audio_speed,
             voice=st.session_state.selected_voice,
             all_words=st.session_state.loaded_words.get(st.session_state.selected_lang, []),
+            progress_callback=update_progress,
         )
         
         if not result["success"]:
             raise Exception(result["error"])
         
-        # Update progress
-        progress_bar.progress(90, text="Finalizing ZIP file...")
-        status_text.info("📦 **Step 4/4:** Creating final ZIP export...")
+        # Step 4: Generate IPA transcriptions
+        update_progress(4, "🔤 Adding phonetic transcriptions (IPA)...",
+                       "Generating pronunciation guides (AI + epitran fallback)")
         
-        # Create ZIP file
-        zip_output = Path(output_dir) / "AnkiDeck.zip"
-        create_zip_export(
-            tsv_path=result["tsv_path"],
+        # Step 5: Create .apkg file
+        update_progress(5, "📦 Creating Anki deck package (.apkg)...",
+                       "Packaging cards with 3 learning modes (Listening, Production, Reading)")
+        
+        # Read TSV to get rows for .apkg
+        import pandas as pd
+        from core_functions import create_apkg_export
+        
+        df = pd.read_csv(
+            result["tsv_path"],
+            sep="\t",
+            header=None,
+            names=["file_name", "word", "meaning", "sentence", "ipa", "english", "audio", "image", "image_keywords", "tags"]
+        )
+        
+        rows_for_apkg = []
+        for _, row in df.iterrows():
+            rows_for_apkg.append({
+                "file_name": row["file_name"],
+                "word": row["word"],
+                "meaning": row["meaning"],
+                "sentence": row["sentence"],
+                "ipa": row["ipa"],
+                "english": row["english"],
+                "audio": row["audio"],
+                "image": row["image"],
+                "image_keywords": row["image_keywords"],
+            })
+        
+        # Create .apkg file
+        apkg_output = Path(output_dir) / f"{st.session_state.selected_lang}_Deck.apkg"
+        create_apkg_export(
+            rows=rows_for_apkg,
             media_dir=result["media_dir"],
-            output_zip=str(zip_output),
+            output_apkg=str(apkg_output),
+            language=st.session_state.selected_lang,
+            deck_name=f"{st.session_state.selected_lang} - Fluent Forever"
         )
         
         # Complete
-        progress_bar.progress(100, text="Complete!")
-        status_text.empty()
-        
-        st.success("✅ **Your Anki deck is ready!**")
+        progress_bar.progress(1.0)
+        status_text.success("✅ **Deck generation complete!**")
+        detail_text.markdown(f"Created {num_words} notes with {num_words * 3} cards (3 cards per word)")
 
         # Track progress if enabled (save to database and Firebase)
         if st.session_state.track_progress and st.session_state.selected_lang != "Custom":
@@ -607,9 +786,13 @@ elif st.session_state.page == "generating":
                 len(st.session_state.selected_words) * st.session_state.sentences_per_word
             )
         
-        # Read and store ZIP for download
-        with open(zip_output, "rb") as f:
-            st.session_state.zip_file = f.read()
+        # Read and store .apkg for download
+        with open(apkg_output, "rb") as f:
+            st.session_state.apkg_file = f.read()
+            st.session_state.apkg_filename = apkg_output.name
+        
+        # Scroll to download section
+        st.markdown('<script>window.scrollTo(0, document.body.scrollHeight);</script>', unsafe_allow_html=True)
         
         st.session_state.page = "complete"
         st.rerun()
@@ -629,39 +812,54 @@ elif st.session_state.page == "generating":
 elif st.session_state.page == "complete":
     
     st.markdown("# ✅ Your Anki Deck is Ready!")
-    st.markdown(f"**{len(st.session_state.selected_words)} words** • **{len(st.session_state.selected_words) * 10} sentences** • **Ready to import**")
+    total_cards = len(st.session_state.selected_words) * 3  # 3 cards per word
+    st.markdown(f"**{len(st.session_state.selected_words)} words** • **{total_cards} cards** (3 learning modes per word) • **Ready to import!**")
     st.divider()
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### 📥 Download")
+        st.markdown("### 📥 Download Your Deck")
         st.markdown("""
-        Your ZIP file contains:
-        - ✅ ANKI_IMPORT.tsv
-        - ✅ Audio files (MP3s)
-        - ✅ Images (JPGs)
+        Your .apkg file includes:
+        - ✅ All flashcards with 3 card types each
+        - ✅ Audio files (embedded)
+        - ✅ Images (embedded)
+        - ✅ IPA transcriptions
+        - ✅ Image search keywords
+        
+        **3 Card Types:**
+        1. 🎧 **Listening**: Hear → Understand
+        2. 💬 **Production**: English → Speak target language
+        3. 📖 **Reading**: Read → Comprehend
         """)
         
-        if "zip_file" in st.session_state and st.session_state.zip_file:
+        if "apkg_file" in st.session_state and st.session_state.apkg_file:
             st.download_button(
-                label="⬇️ Download Anki Deck",
-                data=st.session_state.zip_file,
-                file_name=f"{st.session_state.selected_lang.replace(' ', '_')}_deck.zip",
-                mime="application/zip",
+                label="⬇️ Download Anki Deck (.apkg)",
+                data=st.session_state.apkg_file,
+                file_name=st.session_state.get("apkg_filename", f"{st.session_state.selected_lang.replace(' ', '_')}_deck.apkg"),
+                mime="application/octet-stream",
                 use_container_width=True
             )
     
     with col2:
         st.markdown("### 📖 How to Import")
-        st.markdown("""
+        st.markdown(f"""
+        **Super Easy! Just 2 steps:**
+        
+        1. **Double-click** the downloaded .apkg file
+        2. Anki opens and imports automatically! ✨
+        
+        **Or manually:**
         1. Open Anki
         2. File → Import...
-        3. Select ANKI_IMPORT.tsv
+        3. Select the .apkg file
         4. Click Import
-        5. Your deck appears! ✨
         
-        Images & audio auto-import.
+        **All done!** Your {st.session_state.selected_lang} deck with {total_cards} cards is ready to study.
+        
+        Cards include audio, images, and phonetic guides (IPA) for pronunciation.
         """)
     
     st.divider()

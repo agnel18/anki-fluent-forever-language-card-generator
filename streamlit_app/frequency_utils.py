@@ -7,7 +7,9 @@ import os
 from pathlib import Path
 from typing import List, Dict, Tuple
 import pandas as pd
-from db_manager import get_words_paginated, search_words, get_languages
+
+# Lazy imports to avoid circular dependencies
+# from db_manager import get_words_paginated, search_words, get_languages
 
 # Batch size presets with time/complexity estimates
 BATCH_PRESETS = {
@@ -53,6 +55,7 @@ def get_available_frequency_lists() -> Dict[str, int]:
     Get available frequency word lists from SQLite database.
     Returns dict of {language: word_count}
     """
+    from db_manager import get_languages
     return get_languages()
 
 
@@ -67,6 +70,8 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
     Returns:
         List of words in frequency order
     """
+    from db_manager import get_words_paginated
+    
     # Mapping from UI names to database names
     language_mapping = {
         "Mandarin Chinese": "Chinese (Simplified)",
@@ -97,7 +102,6 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
     except Exception as e:
         print(f"Error loading {language} frequency list from database: {e}")
         return []
-
 
 def get_batch_info(batch_size: int) -> Dict:
     """Get information about a batch size."""
@@ -189,3 +193,69 @@ def validate_word_list(words: List[str]) -> Tuple[bool, str]:
         return True, f"⚠️ Warning: {duplicates} duplicate words will be removed"
     
     return True, f"✅ Valid list: {len(unique_words)} unique words"
+
+
+def parse_uploaded_word_file(uploaded_file) -> Tuple[List[str], str]:
+    """
+    Parse CSV or XLSX file uploaded by user.
+    
+    Args:
+        uploaded_file: Streamlit UploadedFile object
+        
+    Returns:
+        (list of words, status message)
+    """
+    try:
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(uploaded_file)
+        else:
+            return [], "❌ Only CSV and XLSX files are supported"
+        
+        # Get first column (assumes word list)
+        if df.empty:
+            return [], "❌ File is empty"
+        
+        words = df.iloc[:, 0].tolist()
+        words = [str(w).strip() for w in words if w and str(w).strip()]
+        
+        if not words:
+            return [], "❌ No words found in file"
+        
+        return words, f"✅ Loaded {len(words)} words"
+        
+    except Exception as e:
+        return [], f"❌ Error reading file: {str(e)}"
+
+
+def get_words_with_ranks(language: str, page: int = 1, page_size: int = 25) -> Tuple[pd.DataFrame, int]:
+    """
+    Get paginated words with their frequency ranks for display.
+    
+    Args:
+        language: Language name
+        page: Page number (1-indexed)
+        page_size: Number of words per page
+        
+    Returns:
+        (DataFrame with columns ['Rank', 'Word', 'Completed'], total_word_count)
+    """
+    from db_manager import get_words_paginated, get_completed_words
+    
+    words, total_count = get_words_paginated(language, page=page, page_size=page_size)
+    completed = get_completed_words(language)
+    
+    # Build dataframe with rank and completion status
+    start_rank = (page - 1) * page_size + 1
+    data = []
+    
+    for idx, word in enumerate(words, start=start_rank):
+        data.append({
+            'Rank': idx,
+            'Word': word,
+            'Completed': '✓' if word in completed else ''
+        })
+    
+    df = pd.DataFrame(data)
+    return df, total_count
