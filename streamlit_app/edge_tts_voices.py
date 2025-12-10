@@ -2,6 +2,10 @@
 # For full list, see: https://github.com/rany2/edge-tts/blob/main/edge_tts/data/voices.json
 # Format: language: [(voice_code, gender, display_name)]
 EDGE_TTS_VOICES = {
+        "Italian": [
+            ("it-IT-IsabellaNeural", "Female", "Isabella"),
+            ("it-IT-GianniNeural", "Male", "Gianni"),
+        ],
     "Hindi": [
         ("hi-IN-SwaraNeural", "Female", "Swara"),
         ("hi-IN-MadhurNeural", "Male", "Madhur"),

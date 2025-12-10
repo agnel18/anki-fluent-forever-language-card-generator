@@ -6,6 +6,7 @@ Production-ready with full generation workflow
 import streamlit as st
 import yaml
 import os
+from edge_tts_voices import EDGE_TTS_VOICES
 from pathlib import Path
 import pandas as pd
 from core_functions import (
@@ -30,23 +31,7 @@ from db_manager import (
     get_word_stats,
     log_generation,
 )
-from firebase_manager import (
-    get_session_id,
-    sync_progress_to_firebase,
-    load_progress_from_firebase,
-    save_settings_to_firebase,
-    log_generation_to_firebase,
-)
-
-# ============================================================================
-# PAGE CONFIG & STYLING
-# ============================================================================
-
-st.set_page_config(
-    page_title="Fluent Forever Anki Generator",
-    page_icon="🌍",
-    layout="wide",
-)
+from firebase_manager import get_session_id, sync_progress_to_firebase, log_generation_to_firebase
 
 st.markdown("""
 <style>
@@ -69,7 +54,7 @@ st.markdown("""
 # ============================================================================
 
 if "page" not in st.session_state:
-    st.session_state.page = "api_setup"
+    st.session_state.page = "login"
 if "groq_api_key" not in st.session_state:
     st.session_state.groq_api_key = ""
 if "pixabay_api_key" not in st.session_state:
@@ -108,11 +93,19 @@ if "selected_voice_display" not in st.session_state:
 if "first_run_complete" not in st.session_state:
     st.session_state.first_run_complete = False
 
+from firebase_manager import load_settings_from_firebase, save_settings_to_firebase
 # Database and Firebase
 if "session_id" not in st.session_state:
     st.session_state.session_id = get_session_id()
 if "current_page" not in st.session_state:
     st.session_state.current_page = {}
+
+# Auto-load API keys from Firebase for logged-in users
+if not st.session_state.get("is_guest", True):
+    firebase_settings = load_settings_from_firebase(st.session_state.session_id)
+    if firebase_settings:
+        st.session_state.groq_api_key = firebase_settings.get("groq_api_key", "")
+        st.session_state.pixabay_api_key = firebase_settings.get("pixabay_api_key", "")
 
 config_path = Path(__file__).parent / "languages.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
@@ -127,28 +120,53 @@ def get_secret(key: str, default: str = "") -> str:
         return os.getenv(key, default)
 
 # ============================================================================
+# ============================================================================
+# STEP 0: LOGIN / GUEST MODE
+# ============================================================================
+
+if st.session_state.page == "login":
+    st.markdown("# 🔐 Login to Language Card Generator")
+    st.markdown("""
+    - **Sign in with Google for full access and persistent stats**  
+    - Or continue as guest (limited, no cloud sync)
+    """)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Sign in with Google", use_container_width=True):
+            st.session_state.page = "api_setup"
+            st.session_state.is_guest = False
+            st.rerun()
+    with col2:
+        if st.button("Continue as Guest", use_container_width=True):
+            st.session_state.page = "api_setup"
+            st.session_state.is_guest = True
+            st.rerun()
+
+# ============================================================================
 # PAGE 1: API SETUP
 # ============================================================================
 
-if st.session_state.page == "api_setup":
+elif st.session_state.page == "api_setup":
     st.markdown("# 🌍 Language Learning Anki Deck Generator")
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     st.markdown("## 🔐 API Keys Setup")
-    st.markdown("""
-    **How it works:**
-    1. You enter your API keys in this form
-    2. They stay in your browser's temporary memory (session only)
-    3. We use them ONLY to make API calls on YOUR behalf
-    4. Your keys are NEVER stored anywhere
-    5. When you close this tab, keys are automatically deleted
-    
-    **Important privacy notes:**
-    - ✅ Your API keys are YOUR responsibility
-    - ✅ Your data stays with you (nothing uploaded)
-    - ✅ You control API usage and costs
-    - ✅ You can regenerate keys anytime
-    """)
+    st.markdown(
+        """
+**How it works:**
+1. You enter your API keys in this form
+2. They stay in your browser\'s temporary memory (session only)
+3. We use them ONLY to make API calls on YOUR behalf
+4. Your keys are NEVER stored anywhere
+5. When you close this tab, keys are automatically deleted
+
+**Important privacy notes:**
+- ✅ Your API keys are YOUR responsibility
+- ✅ Your data stays with you (nothing uploaded)
+- ✅ You control API usage and costs
+- ✅ You can regenerate keys anytime
+"""
+    )
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
@@ -161,7 +179,7 @@ if st.session_state.page == "api_setup":
         3. Generate new API key
         4. Copy & paste below
         """)
-        groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...")
+        groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...", key="groq_api_key_input")
     with col2:
         st.markdown("### 🖼️ Pixabay API Key")
         st.markdown("""
@@ -172,7 +190,7 @@ if st.session_state.page == "api_setup":
         3. Find API key in dashboard
         4. Copy & paste below
         """)
-        pixabay_key = st.text_input("Pixabay API Key", type="password", placeholder="53606933-...")
+        pixabay_key = st.text_input("Pixabay API Key", type="password", placeholder="53606933-...", key="pixabay_api_key_input")
     st.divider()
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
@@ -189,6 +207,16 @@ if st.session_state.page == "api_setup":
         else:
             st.session_state.groq_api_key = groq_key
             st.session_state.pixabay_api_key = pixabay_key
+            # Save API keys to Firebase if not guest
+            if not st.session_state.get("is_guest", True):
+                try:
+                    from firebase_manager import save_settings_to_firebase
+                    save_settings_to_firebase(st.session_state.session_id, {
+                        "groq_api_key": groq_key,
+                        "pixabay_api_key": pixabay_key
+                    })
+                except Exception as e:
+                    st.warning(f"Could not save API keys to cloud: {e}")
             st.session_state.page = "language_select"
             st.session_state.scroll_to_top = True
             st.rerun()
@@ -304,12 +332,69 @@ elif st.session_state.page == "word_select":
 
 elif st.session_state.page == "settings":
     st.markdown("# 🌍 Step 3: Settings")
-    # Restore full settings UI
-    st.markdown("## ⚙️ Audio Settings")
-    col_speed, col_voice = st.columns(2)
+    # --- Difficulty Settings ---
+    st.markdown("## 🧠 Difficulty Settings")
+    st.session_state.difficulty = st.radio(
+        "Select difficulty:",
+        [
+            "beginner",
+            "intermediate",
+            "advanced"
+        ],
+        index=["beginner", "intermediate", "advanced"].index(st.session_state.difficulty),
+        format_func=lambda x: {
+            "beginner": "Beginner (Short, simple sentences and basic vocabulary)",
+            "intermediate": "Intermediate (Moderately complex sentences and vocabulary)",
+            "advanced": "Advanced (Long, complex sentences and advanced vocabulary)"
+        }[x],
+    )
+
+    # --- Sentence Settings ---
+    st.markdown("---")
+    st.markdown("## ✍️ Sentence Settings")
+    col_len, col_sent = st.columns(2)
+    with col_len:
+        st.session_state.sentence_length_range = st.slider(
+            "Sentence length (words)",
+            min_value=4,
+            max_value=30,
+            value=st.session_state.sentence_length_range,
+            step=1,
+            help="Min and max words per sentence."
+        )
+    with col_sent:
+        st.session_state.sentences_per_word = st.slider(
+            "Sentences per word",
+            min_value=3,
+            max_value=15,
+            value=st.session_state.sentences_per_word,
+            step=1,
+            help="How many sentences to generate for each word."
+        )
+
+    # --- Audio Settings ---
+    st.markdown("---")
+    st.markdown("## 🎵 Audio Settings")
+    col_voice, col_speed = st.columns(2)
+    with col_voice:
+        lang = st.session_state.selected_language
+        if lang in EDGE_TTS_VOICES:
+            voice_options = [f"{v[0]} ({v[1]}, {v[2]})" for v in EDGE_TTS_VOICES[lang]]
+            selected_voice_idx = voice_options.index(st.session_state.selected_voice_display) if st.session_state.selected_voice_display in voice_options else 0
+            selected_voice_display = st.selectbox(
+                "Voice",
+                options=voice_options,
+                index=selected_voice_idx,
+                help="Choose the voice for audio generation."
+            )
+            st.session_state.selected_voice_display = selected_voice_display
+            st.session_state.selected_voice = EDGE_TTS_VOICES[lang][voice_options.index(selected_voice_display)][0]
+        else:
+            st.session_state.selected_voice_display = "en-US-AvaNeural (Female, Ava)"
+            st.session_state.selected_voice = "en-US-AvaNeural"
     with col_speed:
         audio_speed = st.slider(
-            "🎵 Audio Speed",
+            "Audio Speed",
             min_value=0.5,
             max_value=1.5,
             value=st.session_state.audio_speed,
@@ -317,22 +402,10 @@ elif st.session_state.page == "settings":
             help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
         )
         st.session_state.audio_speed = audio_speed
-    with col_voice:
-        voice_options = {
-            "Hindi": ["hi-IN-SwaraNeural (Female)", "hi-IN-MadhurNeural (Male)"]
-        }
-        available_voices = voice_options.get(st.session_state.selected_language, ["Auto-detect"])
-        selected_voice_display = st.selectbox(
-            "🎤 Voice",
-            options=available_voices,
-            help="Select the voice for audio generation"
-        )
-        selected_voice = selected_voice_display.split(" (")[0] if "(" in selected_voice_display else None
-        st.session_state.selected_voice_display = selected_voice_display
-        st.session_state.selected_voice = selected_voice
-    st.caption(
-        f"Audio: **{st.session_state.audio_speed}x**, Voice: **{st.session_state.selected_voice_display}**"
-    )
+
+    # --- Summary ---
+    st.markdown("---")
+    st.markdown(f"**Audio:** {st.session_state.audio_speed}x, **Voice:** {st.session_state.selected_voice_display}")
     st.divider()
     if st.button("Next: Generate Deck", use_container_width=True):
         st.session_state.page = "generate"
@@ -852,27 +925,9 @@ elif st.session_state.page == "generating":
         steps_completed = set()  # Track which steps have been logged
         
         def update_progress(step: int, message: str, details: str = ""):
-            # Always keep only one entry per step, in order
-            # Update or add the step message (one per step)
-            step_found = False
-            for i, log in enumerate(progress_log):
-                if log.startswith(f"✓ Step {step}/5:"):
-                    progress_log[i] = f"✓ Step {step}/5: {message}"
-                    step_found = True
-                    break
-            if not step_found:
-                progress_log.append(f"✓ Step {step}/5: {message}")
-            # Only show each step once, in order
-            unique_steps = []
-            seen = set()
-            for log in progress_log:
-                step_num = log.split(":")[0]
-                if step_num not in seen:
-                    unique_steps.append(log)
-                    seen.add(step_num)
+            # Only show the latest progress step
             with messages_container:
-                st.write("\n".join(unique_steps))
-            # Always update status and details
+                st.write(f"✓ Step {step}/5: {message}")
             status_text.info(f"**Step {step}/5:** {message}")
             if step <= 5:
                 progress_pct = min(0.95, (step / 5.0))
@@ -990,10 +1045,10 @@ elif st.session_state.page == "generating":
         with open(apkg_output, "rb") as f:
             st.session_state.apkg_file = f.read()
             st.session_state.apkg_filename = apkg_output.name
-        
+
         # Scroll to download section
         st.markdown('<script>window.scrollTo(0, document.body.scrollHeight);</script>', unsafe_allow_html=True)
-        
+
         st.session_state.page = "complete"
         st.rerun()
         

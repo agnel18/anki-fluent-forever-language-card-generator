@@ -8,40 +8,38 @@ Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel
 
 ---
 
-## ⚡ Quick Start (5 Minutes)
+## ⚡ Quick Start
 
-### 1. Install (1 min)
+### 1. Install
 ```bash
 cd LanguagLearning
 pip install -r requirements.txt
 ```
 
-### 2. Get 2 Free API Keys (2 min)
+### 2. Get Free API Keys
 - **Groq** (AI sentences): https://console.groq.com/keys
 - **Pixabay** (images): https://pixabay.com/api/docs/
 
-### 3. Run (1 min)
+### 3. Run
 ```bash
 streamlit run streamlit_app/app_v3.py
 ```
 
-### 4. Generate Your First Deck (1 min)
+### 4. Generate Your First Deck
 1. Paste your API keys
 2. Pick a language
-3. Select 1 word (test)
+3. Select 1+ words
 4. Hit "Generate"
 5. Download & import to Anki ✅
 
 ---
 
 ## ✨ Features
-
 - **109 Languages** — frequency-sorted word lists
 - **AI Sentences** — Groq generates 10 contextual examples per word
-- **Native Audio** — Edge TTS (200+ voices, adjustable pitch & speed)
+- **Native Audio** — Edge TTS (200+ voices, adjustable speed)
 - **Smart Images** — Pixabay auto-matched via keyword extraction
 - **3 Card Types** — Listening, Production, Reading (Fluent Forever format)
-- **Rate Limit Monitor** — warns on unsafe batch sizes
 - **Progress Tracking** — SQLite database saves your progress
 - **Zero Coding** — GUI handles everything
 - **Direct Anki Import** — `.apkg` files ready to use
@@ -58,6 +56,43 @@ LanguagLearning/
 │   ├── frequency_utils.py     # Word lists & search
 │   ├── db_manager.py          # Progress tracking (SQLite)
 │   ├── languages.yaml         # 109 languages config
+│   ├── edge_tts_voices.py     # Voice options for Edge TTS
+│   ├── firebase_manager.py    # (Optional) Firebase integration
+│   └── ...
+├── 109 Languages Frequency Word Lists/  # Word lists (Excel)
+├── requirements.txt           # Python dependencies
+└── README.md                  # This file
+```
+
+---
+
+## 📝 How It Works
+1. **Select a language and words** from the frequency list.
+2. **Configure settings**: difficulty, sentence length, audio speed, voice, etc.
+3. **Generate deck**: AI creates sentences, audio, images, and IPA.
+4. **Download the .apkg** and import into Anki.
+
+---
+
+## 🛠️ Development & Contribution
+- Main app: `streamlit_app/app_v3.py`
+- Add voices: `streamlit_app/edge_tts_voices.py`
+- Add languages: `streamlit_app/languages.yaml`
+- Word lists: `109 Languages Frequency Word Lists/`
+
+---
+
+## 📄 License
+MIT License. Not affiliated with Fluent Forever or Anki.
+
+---
+
+## 🙏 Credits
+- [Fluent Forever](https://fluent-forever.com/)
+- [Groq](https://groq.com/)
+- [Pixabay](https://pixabay.com/)
+- [Edge TTS](https://github.com/rany2/edge-tts)
+- [genanki](https://github.com/kerrickstaley/genanki)
 │   ├── requirements.txt       # Dependencies
 │   └── README.md              # App-specific docs
 │
@@ -78,7 +113,7 @@ LanguagLearning/
 1. **API Keys**: Paste Groq + Pixabay keys (appears on start)
 2. **Language**: Pick one (e.g., Spanish)
 3. **Words**: Select 1 word from the list
-4. **Settings**: Keep defaults (0.8x speed, 0% pitch)
+4. **Settings**: Keep defaults (0.8x speed)
 5. **Generate**: Watch progress, download `.apkg`
 6. **Import**: Double-click in Anki (will auto-import)
 
@@ -104,7 +139,6 @@ LanguagLearning/
 
 ### Audio Settings (Step 3)
 - **Speed**: 0.5x (very slow) → 1.5x (fast) — *0.8x recommended for learners*
-- **Pitch**: -20% to +20% tone adjustment
 - **Voice**: Auto-detected by language (200+ available)
 
 ---
@@ -184,7 +218,6 @@ streamlit run streamlit_app/app_v3.py
 
 ### Audio sounds strange
 - ✅ Try different voice (many available)
-- ✅ Adjust pitch (-10% to +10% usually best)
 - ✅ Adjust speed (0.7x–0.9x for learners)
 
 ### Generation takes forever
@@ -230,14 +263,12 @@ Professional card design with:
 
 ✨ **Major Changes**:
 - Unified GUI (all steps in one app)
-- Pitch control for audio tone
 - Rate limit warnings
 - Combined word selection (Steps 2&3)
 - Real-time progress logging
 - Auto-scroll between pages
 
 🐛 **Fixes**:
-- Fixed Edge TTS pitch errors
 - Fixed .apkg FileNotFoundError
 - Fixed duplicate progress messages
 - Fixed scroll positioning

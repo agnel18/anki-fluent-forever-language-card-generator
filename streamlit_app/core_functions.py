@@ -669,18 +669,26 @@ def generate_complete_deck(
                     ai_ipa=ai_ipa
                 )
 
+                def safe_str(val):
+                    if val is None:
+                        return ""
+                    if isinstance(val, float):
+                        if pd.isna(val):
+                            return ""
+                        return str(val)
+                    return str(val)
                 words_data.append({
-                    "file_name": file_base,
-                    "word": word,
-                    "meaning": sent.get("meaning", word),
-                    "sentence": sent.get("sentence", ""),
-                    "ipa": final_ipa,
-                    "english": sent.get("english_translation", ""),
-                    "context": sent.get("context", ""),
-                    "image_keywords": sent.get("image_keywords", ""),
-                    "role_of_word": sent.get("role_of_word", ""),
-                    "audio": f"[sound:{audio_name}]" if audio_name else "",
-                    "image": f"<img src=\"{image_name}\">" if image_name else "",
+                    "file_name": safe_str(file_base),
+                    "word": safe_str(word),
+                    "meaning": safe_str(sent.get("meaning", word)),
+                    "sentence": safe_str(sent.get("sentence", "")),
+                    "ipa": safe_str(final_ipa),
+                    "english": safe_str(sent.get("english_translation", "")),
+                    "context": safe_str(sent.get("context", "")),
+                    "image_keywords": safe_str(sent.get("image_keywords", "")),
+                    "role_of_word": safe_str(sent.get("role_of_word", "")),
+                    "audio": safe_str(f"[sound:{audio_name}]" if audio_name else ""),
+                    "image": safe_str(f"<img src=\"{image_name}\">" if image_name else ""),
                     "tags": "",
                 })
 
@@ -1139,8 +1147,15 @@ def create_apkg_export(
             else:
                 logger.warning(f"Missing image file, skipping: {image_path}")
         # Create note
+        import math
         def _s(val):
-            return "" if val is None else str(val)
+            if val is None:
+                return ""
+            if isinstance(val, float):
+                if math.isnan(val):
+                    return ""
+                return str(val)
+            return str(val)
         note = genanki.Note(
             model=model,
             fields=[
