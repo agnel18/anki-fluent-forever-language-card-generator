@@ -35,11 +35,7 @@ streamlit run streamlit_app/app_v3.py
 ---
 
 ## ✨ Features
-- **109 Languages** — frequency-sorted word lists
-- **AI Sentences** — Groq generates 10 contextual examples per word
-- **Native Audio** — Edge TTS (200+ voices, adjustable speed)
-- **Smart Images** — Pixabay auto-matched via keyword extraction
-- **3 Card Types** — Listening, Production, Reading (Fluent Forever format)
+**Native Audio** — Edge TTS (fully mapped voices for all 109 languages, adjustable speed)
 - **Progress Tracking** — SQLite database saves your progress
 - **Zero Coding** — GUI handles everything
 - **Direct Anki Import** — `.apkg` files ready to use
