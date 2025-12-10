@@ -100,8 +100,7 @@ if "track_progress" not in st.session_state:
     st.session_state.track_progress = True
 if "audio_speed" not in st.session_state:
     st.session_state.audio_speed = 0.8
-if "audio_pitch" not in st.session_state:
-    st.session_state.audio_pitch = 0  # in Hz, range: -20 to +20
+## Pitch feature removed
 if "selected_voice" not in st.session_state:
     st.session_state.selected_voice = None
 if "selected_voice_display" not in st.session_state:
@@ -135,7 +134,6 @@ if st.session_state.page == "api_setup":
     st.markdown("# 🌍 Language Learning Anki Deck Generator")
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
-    
     st.markdown("## 🔐 API Keys Setup")
     st.markdown("""
     **How it works:**
@@ -151,16 +149,12 @@ if st.session_state.page == "api_setup":
     - ✅ You control API usage and costs
     - ✅ You can regenerate keys anytime
     """)
-    
     st.divider()
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("### 🤖 Groq API Key")
         st.markdown("""
         **What it's for:** Generate sentences in your language
-        
         **Get free key:**
         1. https://console.groq.com/keys
         2. Create account (free)
@@ -168,12 +162,10 @@ if st.session_state.page == "api_setup":
         4. Copy & paste below
         """)
         groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...")
-    
     with col2:
         st.markdown("### 🖼️ Pixabay API Key")
         st.markdown("""
         **What it's for:** Download images for each word
-        
         **Get free key:**
         1. https://pixabay.com/api/docs/
         2. Create account (free)
@@ -181,21 +173,15 @@ if st.session_state.page == "api_setup":
         4. Copy & paste below
         """)
         pixabay_key = st.text_input("Pixabay API Key", type="password", placeholder="53606933-...")
-    
     st.divider()
-    
-    # Check for environment variables
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
-    
     if groq_env and pixabay_env and not groq_key:
         st.info("ℹ️ **Development Mode Detected** - Your API keys were auto-loaded from .env file")
         groq_key = groq_env
         pixabay_key = pixabay_env
-    
     st.divider()
-    
-    if st.button("🚀 Let's Go!", use_container_width=True):
+    if st.button("🚀 Next: Select Language", use_container_width=True):
         if not groq_key:
             st.error("❌ Please enter your Groq API key")
         elif not pixabay_key:
@@ -203,7 +189,7 @@ if st.session_state.page == "api_setup":
         else:
             st.session_state.groq_api_key = groq_key
             st.session_state.pixabay_api_key = pixabay_key
-            st.session_state.page = "main"
+            st.session_state.page = "language_select"
             st.session_state.scroll_to_top = True
             st.rerun()
 
@@ -211,14 +197,172 @@ if st.session_state.page == "api_setup":
 # PAGE 2: MAIN APP
 # ============================================================================
 
-elif st.session_state.page == "main":
+elif st.session_state.page == "language_select":
+    st.markdown("# 🌍 Step 1: Select Language")
+    lang_names = [lang["name"] for lang in all_languages]
+    selected_lang = st.selectbox("Which language do you want to learn?", lang_names)
+    available_lists = get_available_frequency_lists()
+    max_words = available_lists.get(selected_lang, 5000)
+    st.metric("Available", f"{max_words:,} words")
+    if st.button("Next: Select Words", use_container_width=True):
+        st.session_state.selected_language = selected_lang
+        st.session_state.page = "word_select"
+        st.session_state.scroll_to_top = True
+        st.rerun()
 
-    # Force scroll to top when landing on main page (Step 1 header)
-    st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
-    
-    # Ensure we start at the top after navigating from the API screen
+elif st.session_state.page == "word_select":
+    st.markdown(f"# 🌍 Step 2: Select Words for {st.session_state.get('selected_language', '')}")
+    st.info(f"DEBUG: session_state.selected_language = {st.session_state.get('selected_language', None)}")
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = {}
+    if st.session_state.get('selected_language', None) and st.session_state.get('selected_language') not in st.session_state.current_page:
+        st.session_state.current_page[st.session_state.get('selected_language')] = 1
+    st.info(f"DEBUG: session_state.current_page = {st.session_state.get('current_page', None)}")
+    try:
+        from frequency_utils import get_words_with_ranks
+        words_df, total_words = get_words_with_ranks(st.session_state.get('selected_language', ''), page=st.session_state.current_page[st.session_state.get('selected_language', '')], page_size=25)
+        st.info(f"DEBUG: total_words from get_words_with_ranks = {total_words}")
+    except Exception as e:
+        st.error(f"DEBUG: Error in get_words_with_ranks: {e}")
+
+    # Restore main Step 2 UI logic
+    if total_words > 0:
+        st.markdown("### Pick from **Top Words Used in** " + st.session_state.get('selected_language', ''))
+        tab_frequency, tab_custom = st.tabs(["📊 Frequency List", "📥 Import Your Own Words"])
+        with tab_frequency:
+            page_size = 25
+            current_page = st.session_state.current_page[st.session_state.get('selected_language', '')]
+            total_pages = (total_words + page_size - 1) // page_size
+            st.markdown("#### Select words to include in your deck:")
+            col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+            with col_rank:
+                st.write("**Rank**")
+            with col_word:
+                st.write("**Word**")
+            with col_select:
+                st.write("**Select**")
+            with col_status:
+                st.write("**Status**")
+            st.divider()
+            selected_words = []
+            for idx, row in words_df.iterrows():
+                col_rank, col_word, col_select, col_status = st.columns([0.8, 1.5, 1.2, 0.8])
+                with col_rank:
+                    st.write(f"#{row['Rank']}")
+                with col_word:
+                    st.write(row['Word'])
+                with col_select:
+                    is_selected = st.checkbox(
+                        "Select",
+                        key=f"word_select_{st.session_state.get('selected_language', '')}_{row['Word']}_{idx}",
+                        label_visibility="collapsed"
+                    )
+                    if is_selected:
+                        selected_words.append(row['Word'])
+                with col_status:
+                    if row['Completed']:
+                        st.write("✅")
+            st.divider()
+            start_rank = (current_page - 1) * page_size + 1
+            end_rank = min(current_page * page_size, total_words)
+            st.markdown(f"**Top {start_rank}–{end_rank}** | Page {current_page} of {total_pages}")
+            col_prev, col_next, col_jump = st.columns([1, 1, 2])
+            with col_prev:
+                if st.button("⬅️ Previous", key="prev_page"):
+                    if current_page > 1:
+                        st.session_state.current_page[st.session_state.get('selected_language', '')] -= 1
+                        st.rerun()
+            with col_next:
+                if st.button("Next ➡️", key="next_page"):
+                    if current_page < total_pages:
+                        st.session_state.current_page[st.session_state.get('selected_language', '')] += 1
+                        st.rerun()
+            with col_jump:
+                if total_pages > 1:
+                    jump_page = st.number_input("Jump to page", min_value=1, max_value=total_pages, value=current_page, key="jump_page")
+                    if jump_page != current_page:
+                        st.session_state.current_page[st.session_state.get('selected_language', '')] = jump_page
+                        st.rerun()
+        with tab_custom:
+            st.markdown("**Import your own list of words** for exams, specific topics, or custom learning needs.")
+            st.divider()
+            st.markdown("**Expected format:** One word per line (plain text, CSV, or XLSX)")
+            uploaded_file = st.file_uploader(
+                "Choose CSV or XLSX file",
+                type=['csv', 'xlsx', 'xls'],
+                key="custom_words_upload",
+                help="First column will be used as word list"
+            )
+            if uploaded_file:
+                st.info("Custom word import detected.")
+    # Add navigation button
+    if st.button("Next: Settings", use_container_width=True):
+        st.session_state.selected_words = selected_words
+        st.session_state.page = "settings"
+        st.session_state.scroll_to_top = True
+        st.rerun()
+
+elif st.session_state.page == "settings":
+    st.markdown("# 🌍 Step 3: Settings")
+    # Restore full settings UI
+    st.markdown("## ⚙️ Audio Settings")
+    col_speed, col_voice = st.columns(2)
+    with col_speed:
+        audio_speed = st.slider(
+            "🎵 Audio Speed",
+            min_value=0.5,
+            max_value=1.5,
+            value=st.session_state.audio_speed,
+            step=0.1,
+            help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
+        )
+        st.session_state.audio_speed = audio_speed
+    with col_voice:
+        voice_options = {
+            "Hindi": ["hi-IN-SwaraNeural (Female)", "hi-IN-MadhurNeural (Male)"]
+        }
+        available_voices = voice_options.get(st.session_state.selected_language, ["Auto-detect"])
+        selected_voice_display = st.selectbox(
+            "🎤 Voice",
+            options=available_voices,
+            help="Select the voice for audio generation"
+        )
+        selected_voice = selected_voice_display.split(" (")[0] if "(" in selected_voice_display else None
+        st.session_state.selected_voice_display = selected_voice_display
+        st.session_state.selected_voice = selected_voice
+    st.caption(
+        f"Audio: **{st.session_state.audio_speed}x**, Voice: **{st.session_state.selected_voice_display}**"
+    )
+    st.divider()
+    if st.button("Next: Generate Deck", use_container_width=True):
+        st.session_state.page = "generate"
+        st.session_state.scroll_to_top = True
+        st.rerun()
+
+elif st.session_state.page == "generate":
+    st.markdown("# 🌍 Step 4: Generate & Download Deck")
+    st.markdown("## ✨ Ready to Generate!")
+    # Get selected words from previous step
+    selected_words = st.session_state.get('selected_words', [])
+    selected_lang = st.session_state.get('selected_language', '')
+    st.info(f"Selected words: {len(selected_words)}")
+    if st.button("Generate Deck", use_container_width=True):
+        st.session_state.selected_lang = selected_lang
+        st.session_state.selected_words = selected_words
+        st.session_state.page = "generating"
+        st.session_state.scroll_to_top = True
+        st.rerun()
+    if st.button("Back to Start", use_container_width=True):
+        st.session_state.page = "api_setup"
+        st.session_state.scroll_to_top = True
+        st.rerun()
+
+elif st.session_state.page == "help":
+    # ...existing help/FAQ code...
+
+    # Only scroll to top if requested (after button click)
     if st.session_state.get('scroll_to_top', False):
-        st.markdown('<script>window.scrollTo(0, 0);</script>', unsafe_allow_html=True)
+        st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
         st.session_state.scroll_to_top = False
     
     col1, col2, col3 = st.columns([4, 1, 1])
@@ -583,7 +727,7 @@ elif st.session_state.page == "main":
     # Step 3: Audio Settings
     st.markdown("## ⚙️ Step 3: Audio Settings")
     
-    col_speed, col_pitch, col_voice = st.columns(3)
+    col_speed, col_voice = st.columns(2)
     
     with col_speed:
         audio_speed = st.slider(
@@ -596,16 +740,7 @@ elif st.session_state.page == "main":
         )
         st.session_state.audio_speed = audio_speed
 
-    with col_pitch:
-        audio_pitch = st.slider(
-            "🎚️ Pitch",
-            min_value=-20,
-            max_value=20,
-            value=st.session_state.audio_pitch,
-            step=1,
-            help="Pitch in Hz. Negative = lower, positive = higher (-20Hz to +20Hz)."
-        )
-        st.session_state.audio_pitch = audio_pitch
+    # Pitch UI removed
     
     with col_voice:
         # Get available voices for the language
@@ -645,7 +780,7 @@ elif st.session_state.page == "main":
     st.caption(
         f"Difficulty: **{st.session_state.difficulty}**, Sentences/word: **{st.session_state.sentences_per_word}**, "
         f"Length: **{st.session_state.sentence_length_range[0]}-{st.session_state.sentence_length_range[1]} words**, "
-        f"Audio: **{st.session_state.audio_speed}x, {st.session_state.audio_pitch:+d}% pitch**, "
+        f"Audio: **{st.session_state.audio_speed}x**, "
         f"Tracking: {'On' if st.session_state.track_progress else 'Off'}"
     )
     
@@ -717,14 +852,26 @@ elif st.session_state.page == "generating":
         steps_completed = set()  # Track which steps have been logged
         
         def update_progress(step: int, message: str, details: str = ""):
-            # Only add step once to log
-            if step not in steps_completed:
+            # Always keep only one entry per step, in order
+            # Update or add the step message (one per step)
+            step_found = False
+            for i, log in enumerate(progress_log):
+                if log.startswith(f"✓ Step {step}/5:"):
+                    progress_log[i] = f"✓ Step {step}/5: {message}"
+                    step_found = True
+                    break
+            if not step_found:
                 progress_log.append(f"✓ Step {step}/5: {message}")
-                steps_completed.add(step)
-                # Display cumulative log
-                with messages_container:
-                    st.write("\n".join(progress_log))
-            
+            # Only show each step once, in order
+            unique_steps = []
+            seen = set()
+            for log in progress_log:
+                step_num = log.split(":")[0]
+                if step_num not in seen:
+                    unique_steps.append(log)
+                    seen.add(step_num)
+            with messages_container:
+                st.write("\n".join(unique_steps))
             # Always update status and details
             status_text.info(f"**Step {step}/5:** {message}")
             if step <= 5:
@@ -749,7 +896,7 @@ elif st.session_state.page == "generating":
             max_length=st.session_state.sentence_length_range[1],
             difficulty=st.session_state.difficulty,
             audio_speed=st.session_state.audio_speed,
-            pitch=st.session_state.audio_pitch,
+            # pitch removed
             voice=st.session_state.selected_voice,
             all_words=st.session_state.loaded_words.get(st.session_state.selected_lang, []),
             progress_callback=update_progress,
@@ -1003,36 +1150,34 @@ elif st.session_state.page == "help":
     with col2:
         if st.button("← Back"):
             st.session_state.page = "main"
-            st.rerun()
-    
-    st.divider()
-    
-    st.markdown("""
+            st.markdown("""
     ## What does this app do?
-    
-    Creates custom Anki decks by:
-    1. **Selecting words** from frequency lists
-    2. **Generating sentences** in your language (Groq AI)
-    3. **Creating audio** at 0.8x speed (learner-friendly)
-    4. **Downloading images** (Pixabay)
-    5. **Creating Anki files** ready to import
-    
+
+    - Creates custom Anki decks for language learning:
+        - Select words from frequency lists
+        - Generate natural sentences (Groq AI)
+        - Create native audio at 0.8x speed (learner-friendly)
+        - Download relevant images (Pixabay)
+        - Export ready-to-import Anki files
+
     ## Cost?
-    **Completely FREE!**
-    - Groq: Free tier
-    - Pixabay: Free tier (5,000 images/day)
-    
-    ## How long?
-    - 5 words: 5-10 min
-    - 10 words: 10-15 min
-    - 20 words: 20-30 min
-    
-    ## Privacy?
-    Your data stays with you, nothing stored on our servers.
-    
-    ## Errors?
-    1. Check API keys
-    2. Check internet
-    3. Try 3-5 words first
-    4. Refresh & try again
-    """)
+    - 100% FREE for personal use
+        - Groq: Free tier (AI sentences)
+        - Pixabay: Free tier (5,000 images/day)
+
+    ## How long does it take?
+    - 5 words: 5–10 min
+    - 10 words: 10–15 min
+    - 20 words: 20–30 min
+
+    ## Privacy
+    - Your data and API keys stay on your device
+    - Nothing is stored or sent to external servers
+
+    ## Troubleshooting
+    - Double-check API keys
+    - Ensure internet connection
+    - Start with 3–5 words to test
+    - Refresh the page and try again if errors occur
+            """)
+    # End of Help & FAQ section
