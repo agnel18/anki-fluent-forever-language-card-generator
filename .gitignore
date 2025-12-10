@@ -28,6 +28,7 @@ env/
 
 # Sensitive Files
 .env
+firebase_config.json
 
 # Generated outputs (keep local, do not commit)
 FluentForever_*_Perfect/ANKI_IMPORT.tsv
