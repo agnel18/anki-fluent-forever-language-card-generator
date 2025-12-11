@@ -2,63 +2,233 @@
 # For full list, see: https://github.com/rany2/edge-tts/blob/main/edge_tts/data/voices.json
 # Format: language: [(voice_code, gender, display_name)]
 
-# Expanded EDGE_TTS_VOICES for all 109 languages (single voice per language from languages.yaml)
+# Expanded EDGE_TTS_VOICES for all 109 languages (male and female voices)
 EDGE_TTS_VOICES = {
-    "English": [("en-US-AvaNeural", "Female", "Ava")],
-    "Spanish": [("es-ES-ElviraNeural", "Female", "Elvira")],
-    "French": [("fr-FR-DeniseNeural", "Female", "Denise")],
-    "German": [("de-DE-KatjaNeural", "Female", "Katja")],
-    "Italian": [("it-IT-IsabellaNeural", "Female", "Isabella")],
-    "Portuguese": [("pt-BR-FranciscaNeural", "Female", "Francisca")],
-    "Russian": [("ru-RU-DmitryNeural", "Male", "Dmitry")],
-    "Japanese": [("ja-JP-NanamiNeural", "Female", "Nanami")],
-    "Korean": [("ko-KR-SunHiNeural", "Female", "SunHi")],
-    "Chinese (Simplified)": [("zh-CN-XiaoxiaoNeural", "Female", "Xiaoxiao")],
-    "Chinese (Traditional)": [("zh-TW-HsiaoChenNeural", "Female", "HsiaoChen")],
-    "Arabic": [("ar-SA-ZariyahNeural", "Female", "Zariyah")],
-    "Hindi": [("hi-IN-SwatiNeural", "Female", "Swati")],
-    "Bengali": [("bn-IN-TithiNeural", "Female", "Tithi")],
-    "Telugu": [("te-IN-ValluvasalaNeural", "Female", "Valluvasala")],
-    "Tamil": [("ta-IN-VeenaNeural", "Female", "Veena")],
-    "Marathi": [("mr-IN-AnanyaNeural", "Female", "Ananya")],
-    "Gujarati": [("gu-IN-AarohiNeural", "Female", "Aarohi")],
-    "Turkish": [("tr-TR-EmelNeural", "Female", "Emel")],
-    "Vietnamese": [("vi-VN-HoaiMyNeural", "Female", "HoaiMy")],
-    "Polish": [("pl-PL-ZofiaNeural", "Female", "Zofia")],
-    "Dutch": [("nl-NL-MayaNeural", "Female", "Maya")],
-    "Swedish": [("sv-SE-SofieNeural", "Female", "Sofie")],
-    "Greek": [("el-GR-AthinaNeural", "Female", "Athina")],
-    "Czech": [("cs-CZ-VlastaNeural", "Female", "Vlasta")],
-    "Hungarian": [("hu-HU-NoemiNeural", "Female", "Noemi")],
-    "Romanian": [("ro-RO-AleaNeural", "Female", "Alea")],
-    "Thai": [("th-TH-PremwadeeNeural", "Female", "Premwadee")],
-    "Indonesian": [("id-ID-GadisNeural", "Female", "Gadis")],
-    "Malayalam": [("ml-IN-AadhiNeural", "Male", "Aadhi")],
-    "Ukrainian": [("uk-UA-OstapNeural", "Male", "Ostap")],
-    "Afrikaans": [("af-ZA-WillemNeural", "Male", "Willem")],
-    "Albanian": [("sq-AL-IlseNeural", "Female", "Ilse")],
-    "Amharic": [("am-ET-MekdesNeural", "Female", "Mekdes")],
-    "Armenian": [("hy-AM-AnahitNeural", "Female", "Anahit")],
-    "Azerbaijani": [("az-AZ-BanuNeural", "Female", "Banu")],
-    "Basque": [("eu-ES-AinhoaNeural", "Female", "Ainhoa")],
-    "Belarusian": [("be-BY-NatashaSergeyevichNeural", "Female", "NatashaSergeyevich")],
-    "Bulgarian": [("bg-BG-KrystalNeural", "Female", "Krystal")],
-    "Catalan": [("ca-ES-JoanaNeural", "Female", "Joana")],
-    "Welsh": [("cy-GB-NiaNeural", "Female", "Nia")],
-    "Danish": [("da-DK-ChristelNeural", "Female", "Christel")],
-    "Estonian": [("et-EE-AnuNeural", "Female", "Anu")],
-    "Finnish": [("fi-FI-NooraNeural", "Female", "Noora")],
-    "Galician": [("gl-ES-RosamariaNeural", "Female", "Rosamaria")],
-    "Georgian": [("ka-GE-EkaNeural", "Female", "Eka")],
-    "Hebrew": [("he-IL-HilaNeural", "Female", "Hila")],
-    "Icelandic": [("is-IS-GudrunNeural", "Female", "Gudrun")],
-    "Irish": [("ga-IE-OrlaNeural", "Female", "Orla")],
-    "Latvian": [("lv-LV-EVITANeural", "Female", "EVITA")],
-    "Lithuanian": [("lt-LT-LiepaNeural", "Female", "Liepa")],
-    "Macedonian": [("mk-MK-MarijaNeural", "Female", "Marija")],
-    "Norwegian": [("nb-NO-PernilleNeural", "Female", "Pernille")],
-    "Persian": [("fa-IR-DilaNeural", "Female", "Dila")],
-    "Slovak": [("sk-SK-VioletaNeural", "Female", "Violeta")],
-    "Slovenian": [("sl-SI-PetraNeural", "Female", "Petra")],
-    "Serbian": [("sr-RS-SophieNeural", "Female", "Sophie")],
+    "English": [
+        ("en-US-AvaNeural", "Female", "Ava"),
+        ("en-US-GuyNeural", "Male", "Guy")
+    ],
+    "Spanish": [
+        ("es-ES-ElviraNeural", "Female", "Elvira"),
+        ("es-ES-AlvaroNeural", "Male", "Alvaro")
+    ],
+    "French": [
+        ("fr-FR-DeniseNeural", "Female", "Denise"),
+        ("fr-FR-HenriNeural", "Male", "Henri")
+    ],
+    "German": [
+        ("de-DE-KatjaNeural", "Female", "Katja"),
+        ("de-DE-ConradNeural", "Male", "Conrad")
+    ],
+    "Italian": [
+        ("it-IT-IsabellaNeural", "Female", "Isabella"),
+        ("it-IT-DiegoNeural", "Male", "Diego")
+    ],
+    "Portuguese": [
+        ("pt-BR-FranciscaNeural", "Female", "Francisca"),
+        ("pt-BR-AntonioNeural", "Male", "Antonio")
+    ],
+    "Russian": [
+        ("ru-RU-DariyaNeural", "Female", "Dariya"),
+        ("ru-RU-DmitryNeural", "Male", "Dmitry")
+    ],
+    "Japanese": [
+        ("ja-JP-NanamiNeural", "Female", "Nanami"),
+        ("ja-JP-KeitaNeural", "Male", "Keita")
+    ],
+    "Korean": [
+        ("ko-KR-SunHiNeural", "Female", "SunHi"),
+        ("ko-KR-InJoonNeural", "Male", "InJoon")
+    ],
+    "Chinese (Simplified)": [
+        ("zh-CN-XiaoxiaoNeural", "Female", "Xiaoxiao"),
+        ("zh-CN-YunxiNeural", "Male", "Yunxi")
+    ],
+    "Chinese (Traditional)": [
+        ("zh-TW-HsiaoChenNeural", "Female", "HsiaoChen"),
+        ("zh-TW-YunJheNeural", "Male", "YunJhe")
+    ],
+    "Arabic": [
+        ("ar-SA-ZariyahNeural", "Female", "Zariyah"),
+        ("ar-SA-HamedNeural", "Male", "Hamed")
+    ],
+    "Hindi": [
+        ("hi-IN-SwaraNeural", "Female", "Swara"),
+        ("hi-IN-MadhurNeural", "Male", "Madhur")
+    ],
+    "Bengali": [
+        ("bn-IN-TanishaaNeural", "Female", "Tanishaa"),
+        ("bn-IN-BashkarNeural", "Male", "Bashkar")
+    ],
+    "Telugu": [
+        ("te-IN-ShrutiNeural", "Female", "Shruti"),
+        ("te-IN-MohanNeural", "Male", "Mohan")
+    ],
+    "Tamil": [
+        ("ta-IN-PallaviNeural", "Female", "Pallavi"),
+        ("ta-IN-ValluvarNeural", "Male", "Valluvar")
+    ],
+    "Marathi": [
+        ("mr-IN-AarohiNeural", "Female", "Aarohi"),
+        ("mr-IN-ManoharNeural", "Male", "Manohar")
+    ],
+    "Gujarati": [
+        ("gu-IN-DhwaniNeural", "Female", "Dhwani"),
+        ("gu-IN-NiranjanNeural", "Male", "Niranjan")
+    ],
+    "Turkish": [
+        ("tr-TR-EmelNeural", "Female", "Emel"),
+        ("tr-TR-AhmetNeural", "Male", "Ahmet")
+    ],
+    "Vietnamese": [
+        ("vi-VN-HoaiMyNeural", "Female", "HoaiMy"),
+        ("vi-VN-NamMinhNeural", "Male", "NamMinh")
+    ],
+    "Polish": [
+        ("pl-PL-ZofiaNeural", "Female", "Zofia"),
+        ("pl-PL-MarekNeural", "Male", "Marek")
+    ],
+    "Dutch": [
+        ("nl-NL-FennaNeural", "Female", "Fenna"),
+        ("nl-NL-MaartenNeural", "Male", "Maarten")
+    ],
+    "Swedish": [
+        ("sv-SE-SofieNeural", "Female", "Sofie"),
+        ("sv-SE-MattiasNeural", "Male", "Mattias")
+    ],
+    "Greek": [
+        ("el-GR-AthinaNeural", "Female", "Athina"),
+        ("el-GR-NestorasNeural", "Male", "Nestoras")
+    ],
+    "Czech": [
+        ("cs-CZ-VlastaNeural", "Female", "Vlasta"),
+        ("cs-CZ-AntoninNeural", "Male", "Antonin")
+    ],
+    "Hungarian": [
+        ("hu-HU-NoemiNeural", "Female", "Noemi"),
+        ("hu-HU-TamasNeural", "Male", "Tamas")
+    ],
+    "Romanian": [
+        ("ro-RO-AlinaNeural", "Female", "Alina"),
+        ("ro-RO-EmilNeural", "Male", "Emil")
+    ],
+    "Thai": [
+        ("th-TH-PremwadeeNeural", "Female", "Premwadee"),
+        ("th-TH-NiwatNeural", "Male", "Niwat")
+    ],
+    "Indonesian": [
+        ("id-ID-GadisNeural", "Female", "Gadis"),
+        ("id-ID-ArdiNeural", "Male", "Ardi")
+    ],
+    "Malayalam": [
+        ("ml-IN-SobhanaNeural", "Female", "Sobhana"),
+        ("ml-IN-MidhunNeural", "Male", "Midhun")
+    ],
+    "Ukrainian": [
+        ("uk-UA-PolinaNeural", "Female", "Polina"),
+        ("uk-UA-OstapNeural", "Male", "Ostap")
+    ],
+    "Afrikaans": [
+        ("af-ZA-AdriNeural", "Female", "Adri"),
+        ("af-ZA-WillemNeural", "Male", "Willem")
+    ],
+    "Albanian": [
+        ("sq-AL-AnilaNeural", "Female", "Anila"),
+        ("sq-AL-IlirNeural", "Male", "Ilir")
+    ],
+    "Amharic": [
+        ("am-ET-MekdesNeural", "Female", "Mekdes"),
+        ("am-ET-AmehaNeural", "Male", "Ameha")
+    ],
+    "Armenian": [
+        ("hy-AM-AnahitNeural", "Female", "Anahit"),
+        ("hy-AM-HaykNeural", "Male", "Hayk")
+    ],
+    "Azerbaijani": [
+        ("az-AZ-BanuNeural", "Female", "Banu"),
+        ("az-AZ-BabekNeural", "Male", "Babek")
+    ],
+    "Basque": [
+        ("eu-ES-AinhoaNeural", "Female", "Ainhoa"),
+        ("eu-ES-AnderNeural", "Male", "Ander")
+    ],
+    "Belarusian": [
+        ("be-BY-NatashaSergeyevichNeural", "Female", "NatashaSergeyevich")  # Only female voice available
+    ],
+    "Bulgarian": [
+        ("bg-BG-KalinaNeural", "Female", "Kalina"),
+        ("bg-BG-BorislavNeural", "Male", "Borislav")
+    ],
+    "Catalan": [
+        ("ca-ES-JoanaNeural", "Female", "Joana"),
+        ("ca-ES-EnricNeural", "Male", "Enric")
+    ],
+    "Welsh": [
+        ("cy-GB-NiaNeural", "Female", "Nia"),
+        ("cy-GB-AledNeural", "Male", "Aled")
+    ],
+    "Danish": [
+        ("da-DK-ChristelNeural", "Female", "Christel"),
+        ("da-DK-JeppeNeural", "Male", "Jeppe")
+    ],
+    "Estonian": [
+        ("et-EE-AnuNeural", "Female", "Anu"),
+        ("et-EE-KertNeural", "Male", "Kert")
+    ],
+    "Finnish": [
+        ("fi-FI-NooraNeural", "Female", "Noora"),
+        ("fi-FI-HarriNeural", "Male", "Harri")
+    ],
+    "Galician": [
+        ("gl-ES-SabelaNeural", "Female", "Sabela"),
+        ("gl-ES-RoiNeural", "Male", "Roi")
+    ],
+    "Georgian": [
+        ("ka-GE-EkaNeural", "Female", "Eka"),
+        ("ka-GE-GiorgiNeural", "Male", "Giorgi")
+    ],
+    "Hebrew": [
+        ("he-IL-HilaNeural", "Female", "Hila"),
+        ("he-IL-AvriNeural", "Male", "Avri")
+    ],
+    "Icelandic": [
+        ("is-IS-GudrunNeural", "Female", "Gudrun"),
+        ("is-IS-GunnarNeural", "Male", "Gunnar")
+    ],
+    "Irish": [
+        ("ga-IE-OrlaNeural", "Female", "Orla"),
+        ("ga-IE-ColmNeural", "Male", "Colm")
+    ],
+    "Latvian": [
+        ("lv-LV-EveritaNeural", "Female", "Everita"),
+        ("lv-LV-NilsNeural", "Male", "Nils")
+    ],
+    "Lithuanian": [
+        ("lt-LT-OnaNeural", "Female", "Ona"),
+        ("lt-LT-LeonasNeural", "Male", "Leonas")
+    ],
+    "Macedonian": [
+        ("mk-MK-MarijaNeural", "Female", "Marija"),
+        ("mk-MK-AleksandarNeural", "Male", "Aleksandar")
+    ],
+    "Norwegian": [
+        ("nb-NO-PernilleNeural", "Female", "Pernille"),
+        ("nb-NO-FinnNeural", "Male", "Finn")
+    ],
+    "Persian": [
+        ("fa-IR-DilaraNeural", "Female", "Dilara"),
+        ("fa-IR-FaridNeural", "Male", "Farid")
+    ],
+    "Slovak": [
+        ("sk-SK-ViktoriaNeural", "Female", "Viktoria"),
+        ("sk-SK-LukasNeural", "Male", "Lukas")
+    ],
+    "Slovenian": [
+        ("sl-SI-PetraNeural", "Female", "Petra"),
+        ("sl-SI-RokNeural", "Male", "Rok")
+    ],
+    "Serbian": [
+        ("sr-RS-SophieNeural", "Female", "Sophie"),
+        ("sr-RS-NicholasNeural", "Male", "Nicholas")
+    ],
 }
