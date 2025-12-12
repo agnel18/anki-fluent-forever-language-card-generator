@@ -1,3 +1,75 @@
+# Main orchestrator: generates sentences, audio, images, and exports deck
+import shutil
+import tempfile
+from pathlib import Path
+def generate_complete_deck(
+    words,
+    language,
+    groq_api_key,
+    pixabay_api_key,
+    output_dir,
+    num_sentences=10,
+    min_length=5,
+    max_length=20,
+    difficulty="intermediate",
+    audio_speed=0.8,
+    voice=None,
+    all_words=None,
+    progress_callback=None,
+):
+    """
+    Main orchestrator for deck generation. Returns dict with success, tsv_path, media_dir, output_dir, error.
+    """
+    try:
+        # Create temp output dir if not exists
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        media_dir = output_path / "media"
+        media_dir.mkdir(exist_ok=True)
+        words_data = []
+        audio_files = []
+        image_files = []
+        for idx, word in enumerate(words):
+            if progress_callback:
+                progress_callback(idx / max(1, len(words)), f"Generating for '{word}'", "Generating sentences...")
+            # 1. Generate sentences
+            meaning = generate_word_meaning(word, language, groq_api_key)
+            sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key)
+            # 2. Generate audio
+            v = voice or _voice_for_language(language)
+            audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed)
+            audio_files.extend(audio_filenames)
+            # 3. Generate images
+            image_filenames = generate_images_pixabay([s.get('image_keywords', word) for s in sentences], str(media_dir), batch_name=word, num_images=1, pixabay_api_key=pixabay_api_key)
+            image_files.extend(image_filenames)
+            # 4. Build TSV rows
+            for idx_sent, sent in enumerate(sentences):
+                file_base = f"{word}_{idx_sent+1:02d}"
+                _build_tsv_row(idx_sent, audio_filenames, image_filenames, sent, word, file_base, language, words_data)
+        # 5. Create TSV
+        tsv_path = output_path / "ANKI_IMPORT.tsv"
+        if not create_anki_tsv(words_data, str(tsv_path)):
+            raise Exception("Failed to create TSV file")
+        return {
+            "success": True,
+            "tsv_path": str(tsv_path),
+            "media_dir": str(media_dir),
+            "output_dir": str(output_path),
+            "error": None,
+        }
+    except Exception as e:
+        logger.error(f"Complete deck generation error: {e}")
+        return {
+            "success": False,
+            "tsv_path": None,
+            "media_dir": None,
+            "output_dir": None,
+            "error": str(e),
+        }
+# Temporary stub for IPA generation (replace with real implementation as needed)
+def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
+    """Stub: Returns the provided ai_ipa or an empty string."""
+    return ai_ipa or ""
 """
 Core functions for Anki card generation.
 Handles: Groq sentences, Edge TTS audio, Pixabay images, TSV export, ZIP creation.
@@ -21,82 +93,89 @@ import genanki
 import random
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-console.setFormatter(formatter)
-if not logger.hasHandlers():
-    logger.addHandler(console)
-
-# ============================================================================
-# IPA GENERATION (HYBRID APPROACH)
-# ============================================================================
-
-def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
+def generate_sentences(
+    word: str,
+    meaning: str,
+    language: str,
+    num_sentences: int = 10,
+    min_length: int = 5,
+    max_length: int = 20,
+    difficulty: str = "intermediate",
+    groq_api_key: str = None,
+) -> list[dict]:
     """
-    Generate IPA transcription using hybrid approach:
-    1. Try AI-generated IPA first
-    2. Fall back to epitran library if AI IPA is empty
+    Generate sentences using optimized 2-pass architecture:
+    1. PASS 1: Generate raw sentences (high quality, plain text, no JSON)
+    2. PASS 2: Batch validate + enrich ALL sentences in ONE API call
+    
+    This approach:
+    - Reduces token usage from ~2000 to ~400 per word (5× cheaper than 3-pass)
+    - Maintains high quality through separate generation and validation
+    - Processes ~250 words/month on 100k free tokens (vs ~50 with 3-pass)
     
     Args:
-        text: Text to transcribe
-        language: Language name (e.g., "Spanish", "Arabic")
-        ai_ipa: IPA from AI (may be empty)
-        
+        word: Target language word
+        meaning: English meaning
+        language: Language name (e.g., "Spanish", "Hindi")
+        num_sentences: Number of sentences to generate (1-20)
+        min_length: Minimum sentence length in words
+        max_length: Maximum sentence length in words
+        difficulty: "beginner", "intermediate", "advanced"
+        groq_api_key: Groq API key
+    
     Returns:
-        IPA transcription string
+        List of dicts with keys: sentence, english_translation, ipa, context, image_keywords, role_of_word, word, meaning
     """
-    # If AI provided IPA, use it
-    if ai_ipa and ai_ipa.strip():
-        return ai_ipa.strip()
-    
-    # Language code mapping for epitran
-    lang_codes = {
-        "Spanish": "spa-Latn",
-        "French": "fra-Latn",
-        "German": "deu-Latn",
-        "Italian": "ita-Latn",
-        "Portuguese": "por-Latn",
-        "Russian": "rus-Cyrl",
-        "Arabic": "ara-Arab",
-        "Hindi": "hin-Deva",
-        "Turkish": "tur-Latn",
-        "Polish": "pol-Latn",
-        "Dutch": "nld-Latn",
-        "Swedish": "swe-Latn",
-        "Czech": "ces-Latn",
-        "Romanian": "ron-Latn",
-        "Vietnamese": "vie-Latn",
-        "Indonesian": "ind-Latn",
-        "Malay": "msa-Latn",
-        "Tagalog": "tgl-Latn",
-        "Swahili": "swa-Latn",
-        "Uzbek": "uzb-Latn",
-        "Amharic": "amh-Ethi",
-    }
-    
-    epitran_code = lang_codes.get(language)
-    
-    if epitran_code:
-        try:
-            import epitran
-            epi = epitran.Epitran(epitran_code)
-            ipa = epi.transliterate(text)
-            return ipa if ipa else ""
-        except Exception as e:
-            logger.warning(f"Epitran failed for {language}: {e}")
-            return ""
-    
-    # If language not supported by epitran, return empty
-    logger.warning(f"IPA generation not available for {language}")
-    return ""
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+
+    try:
+        # PASS 1: Generate raw sentences (plain text, no JSON)
+        logger.info(f"PASS 1: Generating {num_sentences} raw sentences for '{word}' ({language})...")
+        raw_sentences = _generate_sentences_pass1(
+            word=word,
+            meaning=meaning,
+            language=language,
+            num_sentences=num_sentences,
+            min_length=min_length,
+            max_length=max_length,
+            difficulty=difficulty,
+            groq_api_key=groq_api_key,
+        )
+
+        # PASS 2: Batch validate + enrich all sentences in ONE call
+        logger.info(f"PASS 2: Batch validating + enriching {len(raw_sentences)} sentences...")
+        enriched_results = _validate_and_enrich_batch_pass2(
+            sentences=raw_sentences,
+            word=word,
+            language=language,
+            groq_api_key=groq_api_key,
+        )
+
+        # Combine with word/meaning metadata
+        final_sentences = []
+        for result in enriched_results:
+            final_sentences.append({
+                "sentence": result.get("sentence", ""),
+                "english_translation": result.get("english_translation", ""),
+                "context": result.get("context", "general"),
+                "ipa": result.get("ipa", ""),
+                "image_keywords": result.get("image_keywords", ""),
+                "role_of_word": result.get("role_of_word", ""),
+                "word": word,
+                "meaning": meaning,
+            })
+
+        logger.info(f"✓ Completed 2-pass generation for '{word}': {len(final_sentences)} sentences")
+        return final_sentences
+    except Exception as exc:
+        logger.error(f"2-pass sentence generation error: {exc}")
+        return []
 
 
 # ============================================================================
 # WORD MEANING GENERATION (Groq)
 # ============================================================================
-
 def generate_word_meaning(
     word: str,
     language: str,
@@ -115,13 +194,13 @@ def generate_word_meaning(
     """
     if not groq_api_key:
         raise ValueError("Groq API key required")
-    
+
     client = Groq(api_key=groq_api_key)
-    
-    prompt = f"""Provide a brief English meaning for the {language} word "{word}".
+
+    prompt = f"""Provide a brief English meaning for the {language} word \"{word}\".
 
 Format: Return ONLY a single line with the meaning and a brief explanation in parentheses.
-Example: "house (a building where people live)" or "he (male pronoun, used as subject)"
+Example: \"house (a building where people live)\" or \"he (male pronoun, used as subject)\"
 
 IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanation, no JSON."""
 
@@ -132,14 +211,26 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
             temperature=0.3,  # Lower temperature for consistency
             max_tokens=100,
         )
-        
+        # --- API USAGE TRACKING ---
+        try:
+            import streamlit as st
+            if "groq_api_calls" not in st.session_state:
+                st.session_state.groq_api_calls = 0
+            if "groq_tokens_used" not in st.session_state:
+                st.session_state.groq_tokens_used = 0
+            st.session_state.groq_api_calls += 1
+            # Estimate tokens used (prompt+completion)
+            st.session_state.groq_tokens_used += 100  # rough estimate, adjust if needed
+        except Exception:
+            pass
+        # ------------------------- 
         meaning = response.choices[0].message.content.strip()
-        
+
         # Clean up any quotes
         meaning = meaning.strip('"\'')
-        
+
         return meaning if meaning else word
-        
+
     except Exception as e:
         logger.error(f"Error generating meaning for '{word}': {e}")
         return word  # Fallback to word itself
@@ -163,33 +254,15 @@ def _generate_sentences_pass1(
     difficulty: str = "intermediate",
     groq_api_key: str = None,
 ) -> list[str]:
-    """
-    PASS 1: Generate raw sentences using Groq.
-    Returns plain text sentences (one per line), no JSON.
     
-    Args:
-        word: Target language word
-        meaning: English meaning
-        language: Language name
-        num_sentences: Number of sentences
-        min_length: Minimum sentence length (words)
-        max_length: Maximum sentence length (words)
-        difficulty: "beginner", "intermediate", "advanced"
-        groq_api_key: Groq API key
-        
-    Returns:
-        List of raw sentence strings
-    """
-    if not groq_api_key:
-        raise ValueError("Groq API key required")
-    
-    client = Groq(api_key=groq_api_key)
-
-    prompt = f"""
+    try:
+        from groq import Groq
+        client = Groq(api_key=groq_api_key)
+        prompt = f"""
 You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
 Your task:
-Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} for the word "{word}" ({meaning}).
+Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} for the word \"{word}\" ({meaning}).
 
 ===========================
 QUALITY RULES (STRICT)
@@ -197,12 +270,12 @@ QUALITY RULES (STRICT)
 - Every sentence must sound like it was written by an educated native speaker. Native speakers should NOT cringe at the sentence.
 - Absolutely no unnatural, robotic, or literal-translation phrasing.
 - Grammar, syntax, spelling, diacritics, gender agreement, case, politeness level, and punctuation must all be correct.
-- The target word "{word}" MUST:
+- The target word \"{word}\" MUST:
     * be used correctly in context,
     * match its real meaning,
     * NOT be forced into an unnatural construction.
-- If the word cannot be used naturally, do NOT use it. Instead, create a sentence that clearly conveys the meaning of "{word}" in context, even if the word itself isn’t used.
-- Avoid rare or archaic vocabulary (unless difficulty="advanced").
+- If the word cannot be used naturally, do NOT use it. Instead, create a sentence that clearly conveys the meaning of \"{word}\" in context, even if the word itself isn’t used.
+- Avoid rare or archaic vocabulary (unless difficulty=\"advanced\").
 - All sentences must be semantically meaningful (no filler templates).
 - No repeated sentence structures or patterns — each sentence must be unique.
 
@@ -232,25 +305,19 @@ IMPORTANT
 - NO extra text.
 - Each line = ONE sentence only.
 """
-    
-    try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1200,
         )
-        
         response_text = response.choices[0].message.content.strip()
-        
         # Split by newlines and filter empty lines
         sentences = [s.strip() for s in response_text.split("\n") if s.strip()]
-        
         return sentences[:num_sentences]
-        
     except Exception as e:
         logger.error(f"PASS 1 (sentence generation) error: {e}")
-        raise
+        return []
 
 
 # ============================================================================
@@ -387,356 +454,55 @@ IMPORTANT:
 # MAIN: OPTIMIZED 2-PASS SENTENCE GENERATION
 # ============================================================================
 
-def generate_sentences(
-    word: str,
-    meaning: str,
-    language: str,
-    num_sentences: int = 10,
-    min_length: int = 5,
-    max_length: int = 20,
-    difficulty: str = "intermediate",
-    groq_api_key: str = None,
-) -> list[dict]:
-    """
-    Generate sentences using optimized 2-pass architecture:
-    1. PASS 1: Generate raw sentences (high quality, plain text, no JSON)
-    2. PASS 2: Batch validate + enrich ALL sentences in ONE API call
-    
-    This approach:
-    - Reduces token usage from ~2000 to ~400 per word (5× cheaper than 3-pass)
-    - Maintains high quality through separate generation and validation
-    - Processes ~250 words/month on 100k free tokens (vs ~50 with 3-pass)
-    
-    Args:
-        word: Target language word
-        meaning: English meaning
-        language: Language name (e.g., "Spanish", "Hindi")
-        num_sentences: Number of sentences to generate (1-20)
-        min_length: Minimum sentence length in words
-        max_length: Maximum sentence length in words
-        difficulty: "beginner", "intermediate", "advanced"
-        groq_api_key: Groq API key
-        
-    Returns:
-        List of dicts with keys: sentence, english_translation, ipa, context, image_keywords, role_of_word, word, meaning
-    """
-    if not groq_api_key:
-        raise ValueError("Groq API key required")
-    
-    try:
-        # PASS 1: Generate raw sentences (plain text, no JSON)
-        logger.info(f"PASS 1: Generating {num_sentences} raw sentences for '{word}' ({language})...")
-        raw_sentences = _generate_sentences_pass1(
-            word=word,
-            meaning=meaning,
-            language=language,
-            num_sentences=num_sentences,
-            min_length=min_length,
-            max_length=max_length,
-            difficulty=difficulty,
-            groq_api_key=groq_api_key,
-        )
-        
-        if not raw_sentences:
-            logger.warning(f"PASS 1 returned no sentences for '{word}'")
-            return []
-        
-        # PASS 2: Batch validate + enrich all sentences in ONE call
-        logger.info(f"PASS 2: Batch validating + enriching {len(raw_sentences)} sentences...")
-        enriched_results = _validate_and_enrich_batch_pass2(
-            sentences=raw_sentences,
-            word=word,
-            language=language,
-            groq_api_key=groq_api_key,
-        )
-        
-        # Combine with word/meaning metadata
-        final_sentences = []
-        for result in enriched_results:
-            final_sentences.append({
-                "sentence": result.get("sentence", ""),
-                "english_translation": result.get("english_translation", ""),
-                "context": result.get("context", "general"),
-                "ipa": result.get("ipa", ""),
-                "image_keywords": result.get("image_keywords", ""),
-                "role_of_word": result.get("role_of_word", ""),
-                "word": word,
-                "meaning": meaning,
-            })
-        
-        logger.info(f"✓ Completed 2-pass generation for '{word}': {len(final_sentences)} sentences")
-        return final_sentences
-        
-    except Exception as e:
-        logger.error(f"2-pass sentence generation error: {e}")
-        raise
 
-
-def generate_sentences_batch(
-    words: list,
-    language: str,
-    num_sentences: int = 10,
-    min_length: int = 5,
-    max_length: int = 20,
-    difficulty: str = "intermediate",
-    groq_api_key: str = None,
-) -> dict:
-    """
-    Generate sentences and meanings for multiple words.
-    
-    Args:
-        words: List of target language words
-        language: Language name
-        num_sentences: Sentences per word
-        min_length: Minimum sentence length (words)
-        max_length: Maximum sentence length (words)
-        difficulty: Sentence complexity level
-        groq_api_key: Groq API key
-        
-    Returns:
-        Dict with structure: {word: [sentence_dicts]}
-    """
-    all_sentences = {}
-    
-    for word in words:
-        try:
-            # Step 1: Generate meaning for this word
-            logger.info(f"Generating meaning for '{word}'...")
-            meaning = generate_word_meaning(
-                word=word,
-                language=language,
-                groq_api_key=groq_api_key,
-            )
-            
-            # Step 2: Generate sentences using the meaning
-            logger.info(f"Generating sentences for '{word}'...")
-            sentences = generate_sentences(
-                word=word,
-                meaning=meaning,
-                language=language,
-                num_sentences=num_sentences,
-                min_length=min_length,
-                max_length=max_length,
-                difficulty=difficulty,
-                groq_api_key=groq_api_key,
-            )
-            all_sentences[word] = sentences
-        except Exception as e:
-            logger.error(f"Error generating for '{word}': {e}")
-            all_sentences[word] = []
-    
-    return all_sentences
-
-
-def generate_complete_deck(
-    words: list,
-    language: str,
-    groq_api_key: str,
-    pixabay_api_key: str,
-    output_dir: str = "./output",
-    num_sentences: int = 10,
-    min_length: int = 5,
-    max_length: int = 20,
-    difficulty: str = "intermediate",
-    audio_speed: float = 0.8,
-    # pitch: float = 0.0,  # Removed pitch parameter
-    voice: Optional[str] = None,
-    all_words: Optional[list] = None,
-    progress_callback: Optional[callable] = None,
-) -> dict:
-    """
-    Complete workflow: Generate sentences, audio, images, and create Anki TSV.
-    
-    Args:
-        words: List of words to process
-        language: Language name
-        groq_api_key: Groq API key
-        pixabay_api_key: Pixabay API key
-        output_dir: Output directory
-        num_sentences: Sentences per word
-        min_length: Minimum words per sentence
-        max_length: Maximum words per sentence
-        difficulty: Sentence complexity level
-        audio_speed: Audio playback speed
-        # pitch: Audio pitch adjustment (percent, -50 to +50) [REMOVED]
-        progress_callback: Callback function for progress updates: callback(step, message, details)
-        
-    Returns:
-        Dict with keys: success, tsv_path, audio_dir, image_dir, error
-    """
-    import tempfile
-    from pathlib import Path
-    
-    try:
-        # Create temp directories (single media folder)
-        output_path = Path(output_dir)
-        output_path.mkdir(parents=True, exist_ok=True)
-        media_dir = output_path / "media"
-        media_dir.mkdir(exist_ok=True)
-        
-        # Step 1: Generate sentences
-        logger.info(f"Generating sentences for {len(words)} words...")
-        if progress_callback:
-            progress_callback(1, "Generating sentences with AI", f"Creating {num_sentences} example sentences for {len(words)} word(s)...")
-        
-        sentences_batch = generate_sentences_batch(
-            words=words,
-            language=language,
-            num_sentences=num_sentences,
-            min_length=min_length,
-            max_length=max_length,
-            difficulty=difficulty,
-            groq_api_key=groq_api_key,
-        )
-        
-        # Step 2: Per-sentence audio, images, TSV rows
-        logger.info("Generating audio and images per sentence, then building TSV rows...")
-        if progress_callback:
-            progress_callback(2, "Generating audio with Edge TTS", f"Creating {len(words) * num_sentences} audio files (speed: {audio_speed}x)...")
-        
-        words_data = []
-        voice = voice or _voice_for_language(language)
-
-        def rank_for_word(word: str) -> int:
-            if all_words:
-                try:
-                    return all_words.index(word) + 1
-                except ValueError:
-                    return len(all_words) + 1
-            return words.index(word) + 1
-
-        for word_idx, word in enumerate(words, 1):
-            safe_word = _sanitize_word(word)
-            sents = sentences_batch.get(word, [])
-            sentence_texts = [s.get("sentence", "") if isinstance(s.get("sentence", ""), str) else str(s.get("sentence", "")) for s in sents]
-
-            rank = rank_for_word(word)
-
-            # Progress update for this word
-            if progress_callback:
-                progress_callback(2, "🎵 Generating audio files...", f"Processing word {word_idx}/{len(words)}: {word} ({len(sentence_texts)} sentences)")
-
-            # Build per-sentence base names
-            base_names = [f"{rank}_{safe_word}_{j:03d}" for j in range(1, len(sentence_texts) + 1)]
-
-            # Audio per sentence with exact filenames
-            audio_files = generate_audio(
-                sentences=sentence_texts,
-                voice=voice,
-                output_dir=str(media_dir),
-                batch_name="unused",
-                rate=audio_speed,
-                exact_filenames=[f"{b}.mp3" for b in base_names],
-                language=language,
-            )
-
-            # Images per sentence with exact filenames (using keywords for better results)
-            if progress_callback and word_idx == 1:
-                progress_callback(3, "Downloading images from Pixabay", f"Finding relevant images for {len(words)} word(s)...")
-
-            def ensure_str(val):
-                if val is None:
-                    return ""
-                if isinstance(val, float):
-                    if pd.isna(val):
-                        return ""
-                    return str(val)
-                return str(val)
-
-            image_queries = []
-            for s in sents:
-                # Use image_keywords if available, otherwise fall back to English translation
-                keywords = ensure_str(s.get("image_keywords", "")).strip()
-                if keywords:
-                    image_queries.append(keywords)
-                else:
-                    image_queries.append(ensure_str(s.get("english_translation", "")))
-
-            image_files = generate_images_pixabay(
-                queries=image_queries,
-                output_dir=str(media_dir),
-                batch_name="unused",
-                num_images=1,
-                pixabay_api_key=pixabay_api_key,
-                exact_filenames=[f"{b}.jpg" for b in base_names],
-            )
-
-            # Build TSV rows (one per sentence)
-            for idx_sent, sent in enumerate(sents):
-                file_base = base_names[idx_sent] if idx_sent < len(base_names) else f"{rank}_{safe_word}_{idx_sent+1:03d}"
-                audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
-                image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
-                
-                # DEBUG: Log what's in the sent dict
-                logger.debug(f"Building TSV row {idx_sent+1} for word '{word}': sent dict keys = {sent.keys()}")
-                logger.debug(f"  sent['meaning'] = {sent.get('meaning', 'KEY_NOT_FOUND')}")
-                logger.debug(f"  sent['word'] = {sent.get('word', 'KEY_NOT_FOUND')}")
-                
-                # Generate IPA with hybrid approach
-                ai_ipa = sent.get("ipa", "")
-                final_ipa = generate_ipa_hybrid(
-                    text=sent.get("sentence", ""),
-                    language=language,
-                    ai_ipa=ai_ipa
-                )
-
-                def safe_str(val):
-                    if val is None:
-                        return ""
-                    if isinstance(val, float):
-                        if pd.isna(val):
-                            return ""
-                        return str(val)
-                    return str(val)
-                words_data.append({
-                    "file_name": safe_str(file_base),
-                    "word": safe_str(word),
-                    "meaning": safe_str(sent.get("meaning", word)),
-                    "sentence": safe_str(sent.get("sentence", "")),
-                    "ipa": safe_str(final_ipa),
-                    "english": safe_str(sent.get("english_translation", "")),
-                    "context": safe_str(sent.get("context", "")),
-                    "image_keywords": safe_str(sent.get("image_keywords", "")),
-                    "role_of_word": safe_str(sent.get("role_of_word", "")),
-                    "audio": safe_str(f"[sound:{audio_name}]" if audio_name else ""),
-                    "image": safe_str(f"<img src=\"{image_name}\">" if image_name else ""),
-                    "tags": "",
-                })
-
-        # Step 5: Create TSV
-        tsv_path = output_path / "ANKI_IMPORT.tsv"
-        if not create_anki_tsv(words_data, str(tsv_path)):
-            raise Exception("Failed to create TSV file")
-        
-        return {
-            "success": True,
-            "tsv_path": str(tsv_path),
-            "media_dir": str(media_dir),
-            "output_dir": str(output_path),
-            "error": None,
-        }
-        
-    except Exception as e:
-        logger.error(f"Complete deck generation error: {e}")
-        return {
-            "success": False,
-            "tsv_path": None,
-            "media_dir": None,
-            "output_dir": None,
-            "error": str(e),
-        }
+def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, language, words_data):
+    audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
+    image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
+    # DEBUG: Log what's in the sent dict
+    logger.debug(f"Building TSV row {idx_sent+1} for word '{word}': sent dict keys = {sent.keys()}")
+    logger.debug(f"  sent['meaning'] = {sent.get('meaning', 'KEY_NOT_FOUND')}")
+    logger.debug(f"  sent['word'] = {sent.get('word', 'KEY_NOT_FOUND')}")
+    # Generate IPA with hybrid approach
+    ai_ipa = sent.get("ipa", "")
+    final_ipa = generate_ipa_hybrid(
+        text=sent.get("sentence", ""),
+        language=language,
+        ai_ipa=ai_ipa
+    )
+    def safe_str(val):
+        if val is None:
+            return ""
+        if isinstance(val, float):
+            if pd.isna(val):
+                return ""
+            return str(val)
+        return str(val)
+    words_data.append({
+        "file_name": safe_str(file_base),
+        "word": safe_str(word),
+        "meaning": safe_str(sent.get("meaning", word)),
+        "sentence": safe_str(sent.get("sentence", "")),
+        "ipa": safe_str(final_ipa),
+        "english": safe_str(sent.get("english_translation", "")),
+        "context": safe_str(sent.get("context", "")),
+        "image_keywords": safe_str(sent.get("image_keywords", "")),
+        "role_of_word": safe_str(sent.get("role_of_word", "")),
+        "audio": safe_str(f"[sound:{audio_name}]" if audio_name else ""),
+        "image": safe_str(f"<img src=\"{image_name}\">" if image_name else ""),
+        "tags": "",
+    })
 
 
 # ============================================================================
 # AUDIO GENERATION (Edge TTS)
 # ============================================================================
 
+
 async def generate_audio_async(
     text: str,
     voice: str,
     output_path: str,
     rate: float = 0.8,  # Playback speed for learners
-    # pitch: float = 0.0,  # Removed pitch parameter
 ) -> bool:
     """
     Generate audio asynchronously using Edge TTS.
@@ -746,7 +512,7 @@ async def generate_audio_async(
         voice: Edge TTS voice code (e.g., "en-US-AvaNeural")
         output_path: Path to save MP3 file
         rate: Playback speed (0.5-2.0; 0.8 is learner-friendly)
-        
+    
     Returns:
         True if successful, False otherwise
     """
@@ -760,8 +526,8 @@ async def generate_audio_async(
         communicate = edge_tts.Communicate(**kwargs)
         await communicate.save(output_path)
         return True
-    except Exception as e:
-        logger.error(f"Edge TTS error for {voice}: {e}")
+    except Exception as exc:
+        logger.error(f"Edge TTS error for {voice}: {exc}")
         return False
 
 
@@ -878,12 +644,21 @@ def generate_images_pixabay(
     """
     if not pixabay_api_key:
         raise ValueError("Pixabay API key required")
-    
+
     os.makedirs(output_dir, exist_ok=True)
     generated = []
-    
+
     for i, query in enumerate(queries):
         try:
+            # --- API USAGE TRACKING ---
+            try:
+                import streamlit as st
+                if "pixabay_api_calls" not in st.session_state:
+                    st.session_state.pixabay_api_calls = 0
+                st.session_state.pixabay_api_calls += 1
+            except Exception:
+                pass
+            # -------------------------
             # Search Pixabay
             params = {
                 "key": pixabay_api_key,
@@ -892,36 +667,36 @@ def generate_images_pixabay(
                 "image_type": "photo",
                 "category": "people,places,nature",
             }
-            
+
             response = requests.get("https://pixabay.com/api/", params=params, timeout=10)
             response.raise_for_status()
-            
+
             data = response.json()
             hits = data.get("hits", [])
-            
+
             if not hits:
                 logger.warning(f"No images found for query: {query}")
                 continue
-            
+
             # Select image (randomize from top 3 or use first)
             import random
             img_idx = random.randint(0, min(2, len(hits)-1)) if randomize else 0
             image_url = hits[img_idx]["webformatURL"]
-            
+
             # Download image
             img_response = requests.get(image_url, timeout=10)
             img_response.raise_for_status()
-            
+
             filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.jpg"
             output_path = Path(output_dir) / filename
             with open(output_path, "wb") as f:
                 f.write(img_response.content)
             generated.append(filename)
-            
+
         except Exception as e:
             logger.error(f"Pixabay error for query '{query}': {e}")
             continue
-    
+
     return generated
 
 
@@ -1129,7 +904,7 @@ def create_apkg_export(
                 'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
             }
         ],
-        css='''.card {\n    font-family: arial;\n    font-size: 20px;\n    text-align: center;\n    color: var(--text-fg, black);\n    background-color: var(--bg, white);\n}\n\n.hint {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    margin: 10px;\n    font-style: italic;\n}\n\n.sentence {\n    font-size: 32px;\n    color: var(--accent, #0066cc);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.english-prompt {\n    font-size: 28px;\n    color: var(--accent-2, #009900);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.sound {\n    margin: 20px;\n}\n\n.english {\n    font-size: 22px;\n    color: var(--accent-2, #009900);\n    margin: 15px;\n}\n\n.ipa {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    font-family: "Charis SIL", "Doulos SIL", serif;\n    margin: 10px;\n}\n\n.word-info {\n    font-size: 14px;\n    color: var(--fg, #333);\n    margin: 15px;\n}\n\n.keywords {\n    font-size: 12px;\n    color: var(--subtle-fg, #999);\n    margin: 10px;\n    font-style: italic;\n}\n\n.image {\n    margin: 20px;\n}\n\n.image img {\n    max-width: 500px;\n    max-height: 400px;\n}'''
+        css='''.card {\n    font-family: arial;\n    font-size: 20px;\n    text-align: center;\n    color: var(--text-fg, black);\n    background-color: var(--bg, white);\n}\n\n.hint {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    margin: 10px;\n    font-style: italic;\n}\n\n.sentence {\n    font-size: 32px;\n    color: var(--accent, #0066cc);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.english-prompt {\n    font-size: 28px;\n    color: var(--accent-2, #009900);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.sound {\n    margin: 20px;\n}\n\n.english {\n    font-size: 22px;\n    color: var(--accent-2, #009900);\n    margin: 15px;\n}\n\n.ipa {\n    font-size: 16px;\n    color: var(--subtle-fg, #666);\n    font-family: "Charis SIL", "Doulos SIL", serif;\n    margin: 10px;\n}\n\n.word-info {\n    font-size: 14px;\n    color: var(--fg, #333);\n    margin: 15px;\n}\n\n.keywords {\n    font-size: 12px;\n    color: var(--subtle-fg, #999);\n    margin: 10px;\n    font-style: italic;\n}\n\n.image {\n    margin: 20px auto;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.image img {\n    display: block;\n    margin: 0 auto;\n    max-width: 95vw;\n    max-height: 40vh;\n    width: auto;\n    height: auto;\n    object-fit: contain;\n    border-radius: 10px;\n    box-shadow: 0 2px 12px #0002;\n}'''
     )
 
     # Create deck

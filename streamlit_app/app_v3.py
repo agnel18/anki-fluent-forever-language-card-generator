@@ -6,6 +6,7 @@ Production-ready with full generation workflow
 import streamlit as st
 import yaml
 import os
+import datetime
 from edge_tts_voices import EDGE_TTS_VOICES
 from pathlib import Path
 import pandas as pd
@@ -42,9 +43,52 @@ st.markdown("""
         font-size: 1.1rem !important;
         padding: 0.75rem 1.5rem !important;
         font-weight: bold !important;
+        border-radius: 6px !important;
     }
     .stProgress > div > div > div > div {
         background-color: #58a6ff !important;
+    }
+
+    /* Responsive adjustments for mobile */
+    @media (max-width: 700px) {
+        html, body {
+            font-size: 15px !important;
+        }
+        .stButton > button {
+            font-size: 1rem !important;
+            padding: 0.7rem 1rem !important;
+        }
+        .stMetric, .stMarkdown, .stTextInput, .stSelectbox, .stSlider, .stFileUploader {
+            font-size: 0.98rem !important;
+        }
+        .stColumn {
+            min-width: 100% !important;
+            flex-basis: 100% !important;
+            max-width: 100% !important;
+        }
+        .stTabs {
+            flex-direction: column !important;
+        }
+        .stMarkdown h1 {
+            font-size: 1.5rem !important;
+        }
+        .stMarkdown h2 {
+            font-size: 1.2rem !important;
+        }
+        .stMarkdown h3 {
+            font-size: 1rem !important;
+        }
+        .lang-card-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .lang-card {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        .stDownloadButton > button {
+            font-size: 1rem !important;
+            padding: 0.7rem 1rem !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -84,15 +128,63 @@ if "learned_languages" not in st.session_state:
 # PAGE NAVIGATION: SIDEBAR
 # ============================================================================
 
-# Only show sidebar if not on login page
-if st.session_state.get("page", "login") != "login":
+
+
+if "page" not in st.session_state:
+    st.session_state.page = "login"
+# Only show sidebar if not on login or api_setup page
+if st.session_state.get("page", "login") not in ["login", "api_setup"]:
     with st.sidebar:
         st.markdown("## ⚙️ Settings")
         if st.button("Open Settings", key="sidebar_settings_btn"):
             st.session_state.page = "settings"
             st.rerun()
         st.markdown("---")
+        # Basic API usage summary (no details)
+        st.markdown("### API Usage (Session)")
+        # Groq: 1000 calls/day (typical free tier), 3,000,000 tokens/month (example)
+        groq_calls = st.session_state.get("groq_api_calls", 0)
+        groq_tokens = st.session_state.get("groq_tokens_used", 0)
+        pixabay_calls = st.session_state.get("pixabay_api_calls", 0)
+        # These limits can be adjusted to match actual API tier
+        GROQ_CALL_LIMIT = 1000  # per day (example)
+        GROQ_TOKEN_LIMIT = 3000000  # per month (example)
+        PIXABAY_CALL_LIMIT = 5000  # per day (free tier)
+        def fmt_num(n):
+            if n >= 1_000_000:
+                return f"{n//1_000_000}M"
+            elif n >= 100_000:
+                return f"{n//1_000}k"
+            elif n >= 10_000:
+                return f"{n/1000:.1f}k"
+            return str(n)
+        st.metric("Groq Calls", f"{fmt_num(groq_calls)} / {fmt_num(GROQ_CALL_LIMIT)}")
+        st.metric("Groq Tokens", f"{fmt_num(groq_tokens)} / {fmt_num(GROQ_TOKEN_LIMIT)}")
+        st.metric("Pixabay Calls", f"{fmt_num(pixabay_calls)} / {fmt_num(PIXABAY_CALL_LIMIT)}")
+        st.caption("See more details → Usage Statistics page. Limits are approximate—check your API dashboard for exact quotas.")
+        if st.button("📊 Usage Statistics", key="sidebar_stats_btn"):
+            st.session_state.page = "statistics"
+            st.rerun()
+        st.markdown("---")
         st.markdown("[Project README](../README.md)")
+        st.markdown("---")
+# ============================================================================
+# STATISTICS PAGE
+# ============================================================================
+
+if st.session_state.get("page", "login") == "statistics":
+    st.title("📊 Usage Statistics & Progress Tracking")
+    st.markdown("---")
+    st.markdown("### API Usage (Session)")
+    st.metric("Groq Calls", st.session_state.get("groq_api_calls", 0))
+    st.metric("Groq Tokens", st.session_state.get("groq_tokens_used", 0))
+    st.metric("Pixabay Calls", st.session_state.get("pixabay_api_calls", 0))
+    st.caption("Counts update live as you generate decks. Tracks only this session.")
+    st.markdown("---")
+    # Add more progress/statistics here as needed
+    if st.button("⬅️ Back", key="stats_back_btn"):
+        st.session_state.page = "language_select" if st.session_state.get("first_run_complete", False) else "login"
+        st.rerun()
 
 
 if "page" not in st.session_state:
@@ -184,22 +276,6 @@ if st.session_state.page == "settings":
         st.markdown(f"**Name:** {mock_user['name']}")
         st.markdown(f"**Email:** {mock_user['email']}")
         st.caption("(Firebase integration coming soon)")
-    st.markdown("---")
-    st.markdown("### 📊 Usage Statistics & Progress Tracking")
-    # Mocked local stats (replace with persistent storage later)
-    stats = {
-        "Decks Generated": 12,
-        "Cards Created": 320,
-        "Languages Learned": 3,
-        "Total Time Spent (min)": 145,
-        "Words Mastered": 87
-    }
-    stat_cols = st.columns(len(stats))
-    for i, (label, value) in enumerate(stats.items()):
-        with stat_cols[i]:
-            st.metric(label, value)
-    st.progress(0.65, text="Overall Progress: 65% Complete")
-    st.caption("(Stats are local only; cloud sync coming soon)")
     st.markdown("---")
     st.markdown("### 🌟 Favorite Languages (Pinned for Quick Access)")
     st.info("Your favorite languages appear first in all dropdowns for faster selection.")
@@ -314,7 +390,7 @@ if st.session_state.page == "settings":
         with col2:
             if st.button("👁️" if not st.session_state.get(f"reveal_{key}", False) else "🙈", key=f"revealbtn_{key}"):
                 st.session_state[f"reveal_{key}"] = not st.session_state.get(f"reveal_{key}", False)
-                st.experimental_rerun()
+                st.rerun()
         with col3:
             if st.session_state.get(f"reveal_{key}", False):
                 if st.button("💾 Save", key=f"save_{key}"):
@@ -1295,7 +1371,8 @@ elif st.session_state.page == "generating":
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
-    # Progress indicators and terminal-style log
+
+    # --- NEW: Stepwise, live-updating generation logic ---
     progress_container = st.container()
     with progress_container:
         progress_bar = st.progress(0)
@@ -1303,80 +1380,255 @@ elif st.session_state.page == "generating":
         detail_text = st.empty()
         messages_container = st.container()
 
-    # Clear log at start
-    st.session_state['generation_log'] = []
+    # Initialize or resume stepwise generation state
+    if 'generation_progress' not in st.session_state:
+        st.session_state['generation_progress'] = {
+            'step': 0,
+            'words_data': [],
+            'audio_files': [],
+            'image_files': [],
+            'error': None,
+            'apkg_ready': False,
+            'apkg_path': None,
+            'media_dir': None,
+            'tsv_path': None,
+        }
+        st.session_state['generation_log'] = []
+        st.session_state['generation_log_active'] = True
 
+    # Helper to log and update UI
     def log_message(msg):
-        # Clear previous messages before displaying new one
-        st.session_state['generation_log'] = [msg]
+        st.session_state['generation_log'].append(msg)
         with messages_container:
-            st.markdown('<div style="background:#fff;color:#222;font-family:inherit;font-size:16px;padding:8px 12px;max-height:300px;overflow-y:auto;">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
+            st.markdown('<div style="background:#23272e;color:#f3f6fa;font-family:monospace,monospace;font-size:16px;padding:10px 14px;max-height:300px;overflow-y:auto;border-radius:8px;border:1px solid #30363d;">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
 
-    def progress_callback(step, message, details):
-        progress = min(step / 6, 1.0)  # 6 steps in total for progress bar
-        progress_bar.progress(progress)
-        status_text.info(message)
-        detail_text.write(details)
-        log_message(f"{message} - {details}")
+    # Stepwise generation logic (scaffold)
+    # 0: Not started, 1: Generating per word, 2: Exporting, 3: Done
+    step = st.session_state['generation_progress']['step']
+    selected_words = st.session_state.selected_words
+    selected_lang = st.session_state.selected_lang
+    groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
+    pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
+    num_sentences = st.session_state.sentences_per_word
+    min_length, max_length = st.session_state.sentence_length_range
+    difficulty = st.session_state.difficulty
+    audio_speed = st.session_state.audio_speed
+    voice = st.session_state.selected_voice
+    output_dir = str(Path("./output"))
 
-    try:
-        # Gather all required parameters
-        selected_words = st.session_state.selected_words
-        selected_lang = st.session_state.selected_lang
-        groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
-        pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
-        num_sentences = st.session_state.sentences_per_word
-        min_length, max_length = st.session_state.sentence_length_range
-        difficulty = st.session_state.difficulty
-        audio_speed = st.session_state.audio_speed
-        voice = st.session_state.selected_voice
-        output_dir = str(Path("./output"))
 
-        # Call the real deck generation function
-        result = generate_complete_deck(
-            words=selected_words,
-            language=selected_lang,
-            groq_api_key=groq_api_key,
-            pixabay_api_key=pixabay_api_key,
-            output_dir=output_dir,
-            num_sentences=num_sentences,
-            min_length=min_length,
-            max_length=max_length,
-            difficulty=difficulty,
-            audio_speed=audio_speed,
-            voice=voice,
-            all_words=None,
-            progress_callback=progress_callback,
-        )
+    # Stepwise generation logic
+    progress = st.session_state['generation_progress']
+    word_idx = progress.get('word_idx', 0)
+    substep = progress.get('substep', 0)  # 0: meaning, 1: sentences, 2: audio, 3: images, 4: tsv/export
+    words_data = progress['words_data']
+    audio_files = progress['audio_files']
+    image_files = progress['image_files']
+    error = progress['error']
+    apkg_ready = progress['apkg_ready']
+    apkg_path = progress['apkg_path']
+    media_dir = progress['media_dir']
+    tsv_path = progress['tsv_path']
 
-        if not result["success"]:
-            raise Exception(result["error"] or "Unknown error during deck generation.")
+    total_words = len(selected_words)
+    # Progress bar: (word_idx + substep/5) / total_words
+    progress_bar.progress(min((word_idx + substep/5) / max(1, total_words), 1.0))
 
-        # Create .apkg file for download
-        tsv_path = result["tsv_path"]
-        media_dir = result["media_dir"]
-        # Read TSV rows for apkg export
-        import pandas as pd
-        df = pd.read_csv(tsv_path, sep='\t', header=None, encoding='utf-8')
-        columns = [
-            "file_name", "word", "meaning", "sentence", "ipa", "english", "audio", "image", "image_keywords", "tags"
-        ]
-        rows = [dict(zip(columns, row)) for row in df.values]
-        apkg_success = create_apkg_export(rows, media_dir, selected_lang + ".apkg", selected_lang, deck_name="Language Learning")
-        if not apkg_success:
-            raise Exception("Failed to create .apkg file for Anki deck export.")
-        apkg_path = selected_lang + ".apkg"
-        with open(apkg_path, "rb") as f:
-            st.session_state.apkg_file = f.read()
-        st.session_state.apkg_filename = apkg_path
-        st.session_state.page = "complete"
-        st.rerun()
-    except Exception as e:
-        log_message(f"<b>❌ ERROR:</b> {str(e)}")
-        st.error(f"❌ **Error:** {str(e)}")
-        st.error(f"**Details:** {type(e).__name__}")
+    # If error, show and stop
+    if error:
+        status_text.error("❌ Error during generation")
+        detail_text.write(error)
+        log_message(f"<b>❌ ERROR:</b> {error}")
+        st.session_state['generation_log_active'] = False
         if st.button("← Back to Main"):
             st.session_state.page = "main"
+            st.rerun()
+        st.stop()
+
+    # If done, move to export step
+    if word_idx >= total_words:
+        # TODO: Export logic (TSV, APKG, etc.)
+        log_message("<b>✅ All words processed. Exporting deck...</b>")
+        status_text.success("All words processed. Exporting deck...")
+        # (Export logic will be added in next step)
+        # For now, mark as done and move to complete page
+        st.session_state['generation_log_active'] = False
+        st.session_state.page = "complete"
+        st.rerun()
+
+    # Stepwise per-word logic
+    word = selected_words[word_idx]
+    if substep == 0:
+        # Generate meaning
+        log_message(f"<b>Step 1/5</b> Generating meaning for '<b>{word}</b>'...")
+        status_text.info(f"Generating meaning for '{word}'...")
+        try:
+            from core_functions import generate_word_meaning
+            meaning = generate_word_meaning(word, selected_lang, groq_api_key)
+            # Store in progress
+            progress['current_word'] = {'word': word, 'meaning': meaning}
+            progress['substep'] = 1
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+        except Exception as e:
+            progress['error'] = f"Error generating meaning for '{word}': {e}"
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+    elif substep == 1:
+        # Generate sentences
+        log_message(f"<b>Step 2/5</b> Generating sentences for '<b>{word}</b>'...")
+        status_text.info(f"Generating sentences for '{word}'...")
+        try:
+            from core_functions import generate_sentences
+            meaning = progress['current_word']['meaning']
+            sentences = generate_sentences(word, meaning, selected_lang, num_sentences, min_length, max_length, difficulty, groq_api_key)
+            progress['current_word']['sentences'] = sentences
+            progress['substep'] = 2
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+        except Exception as e:
+            progress['error'] = f"Error generating sentences for '{word}': {e}"
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+    elif substep == 2:
+        # Generate audio
+        log_message(f"<b>Step 3/5</b> Generating audio for '<b>{word}</b>'...")
+        status_text.info(f"Generating audio for '{word}'...")
+        try:
+            from core_functions import generate_audio, _sanitize_word
+            sentences = progress['current_word']['sentences']
+            # Extract only the sentence text if sentences are dicts
+            sentence_texts = [s["sentence"] if isinstance(s, dict) and "sentence" in s else str(s) for s in sentences]
+            # Prepare output dir and filenames
+            audio_output_dir = str(Path(output_dir) / "audio" / _sanitize_word(word))
+            os.makedirs(audio_output_dir, exist_ok=True)
+            audio_filenames = [f"{_sanitize_word(word)}_{i+1:02d}.mp3" for i in range(len(sentence_texts))]
+            generated_files = generate_audio(
+                sentences=sentence_texts,
+                voice=voice,
+                output_dir=audio_output_dir,
+                batch_name=_sanitize_word(word),
+                rate=audio_speed,
+                exact_filenames=audio_filenames,
+                language=selected_lang
+            )
+            # Store audio file paths in current_word
+            progress['current_word']['audio_files'] = [str(Path(audio_output_dir) / fname) for fname in generated_files]
+            progress['substep'] = 3
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+        except Exception as e:
+            progress['error'] = f"Error generating audio for '{word}': {e}"
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+    elif substep == 3:
+        # Download images
+        log_message(f"<b>Step 4/5</b> Downloading images for '<b>{word}</b>'...")
+        status_text.info(f"Downloading images for '{word}'...")
+        try:
+            from core_functions import generate_images_pixabay, _sanitize_word
+            sentences = progress['current_word']['sentences']
+            image_output_dir = str(Path(output_dir) / "images" / _sanitize_word(word))
+            os.makedirs(image_output_dir, exist_ok=True)
+            image_filenames = [f"{_sanitize_word(word)}_{i+1:02d}.jpg" for i in range(len(sentences))]
+            # Use each sentence as a query for image search
+            generated_images = generate_images_pixabay(
+                queries=sentences,
+                output_dir=image_output_dir,
+                batch_name=_sanitize_word(word),
+                num_images=1,
+                pixabay_api_key=pixabay_api_key,
+                randomize=True,
+                exact_filenames=image_filenames
+            )
+            progress['current_word']['image_files'] = [str(Path(image_output_dir) / fname) for fname in generated_images]
+            progress['substep'] = 4
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+        except Exception as e:
+            progress['error'] = f"Error downloading images for '{word}': {e}"
+            st.session_state['generation_progress'] = progress
+            st.rerun()
+    elif substep == 4:
+        # Export TSV and APKG
+        log_message(f"<b>Step 5/5</b> Exporting deck for '<b>{word}</b>'...")
+        status_text.info(f"Exporting deck for '{word}'...")
+        try:
+            from core_functions import create_apkg_export, _sanitize_word
+            # Collect all data for this word
+            if 'words_data' not in progress or not isinstance(progress['words_data'], list):
+                progress['words_data'] = []
+            # Assemble card dicts for each sentence
+            current = progress['current_word']
+            sentences = current.get('sentences', [])
+            audio_files = current.get('audio_files', [])
+            image_files = current.get('image_files', [])
+            for i, s in enumerate(sentences):
+                # s may be dict or str
+                if isinstance(s, dict):
+                    sentence = s.get('sentence', str(s))
+                    english = s.get('english_translation', '')
+                    ipa = s.get('ipa', '')
+                    image_keywords = s.get('image_keywords', '')
+                else:
+                    sentence = str(s)
+                    english = ''
+                    ipa = ''
+                    image_keywords = ''
+                audio = f"[sound:{os.path.basename(audio_files[i])}]" if i < len(audio_files) and audio_files[i] else ''
+                image = f'<img src="{os.path.basename(image_files[i])}">' if i < len(image_files) and image_files[i] else ''
+                card = {
+                    'file_name': f"{current['word']}_{i+1:02d}",
+                    'word': current['word'],
+                    'meaning': current.get('meaning', ''),
+                    'sentence': sentence,
+                    'english': english,
+                    'ipa': ipa,
+                    'audio': audio,
+                    'image': image,
+                    'image_keywords': image_keywords,
+                    'tags': '',
+                }
+                progress['words_data'].append(card)
+            # If last word, export deck
+            if word_idx + 1 >= total_words:
+                # Prepare export paths
+                export_dir = str(Path(output_dir) / "export")
+                os.makedirs(export_dir, exist_ok=True)
+                apkg_filename = f"{_sanitize_word(selected_lang)}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.apkg"
+                apkg_path = str(Path(export_dir) / apkg_filename)
+                # Use all words_data for export
+                rows = progress['words_data']
+                # Media dir: use output_dir (audio/images are inside)
+                media_dir = str(Path(output_dir))
+                # Export APKG
+                success = create_apkg_export(
+                    rows=rows,
+                    media_dir=media_dir,
+                    output_apkg=apkg_path,
+                    language=selected_lang,
+                    deck_name=f"{selected_lang} Deck"
+                )
+                if not success:
+                    raise Exception("APKG export failed")
+                progress['apkg_ready'] = True
+                progress['apkg_path'] = apkg_path
+                st.session_state['apkg_file'] = open(apkg_path, "rb").read()
+                st.session_state['apkg_filename'] = apkg_filename
+                log_message(f"<b>✅ Deck exported: {apkg_filename}</b>")
+                status_text.success(f"Deck exported: {apkg_filename}")
+                st.session_state['generation_log_active'] = False
+                st.session_state.page = "complete"
+                st.rerun()
+            else:
+                # Move to next word
+                progress['word_idx'] = word_idx + 1
+                progress['substep'] = 0
+                st.session_state['generation_progress'] = progress
+                st.rerun()
+        except Exception as e:
+            progress['error'] = f"Error exporting deck for '{word}': {e}"
+            st.session_state['generation_progress'] = progress
             st.rerun()
 
 # ============================================================================
@@ -1559,3 +1811,20 @@ elif st.session_state.page == "help":
     - Refresh the page and try again if errors occur
             """)
     # End of Help & FAQ section
+
+
+# =============================
+# API USAGE TRACKING COUNTERS
+# =============================
+if "groq_api_calls" not in st.session_state:
+    st.session_state.groq_api_calls = 0
+if "groq_tokens_used" not in st.session_state:
+    st.session_state.groq_tokens_used = 0
+if "pixabay_api_calls" not in st.session_state:
+    st.session_state.pixabay_api_calls = 0
+
+# Reset API usage counters when starting a new deck generation session
+if st.session_state.page == "language_select":
+    st.session_state.groq_api_calls = 0
+    st.session_state.groq_tokens_used = 0
+    st.session_state.pixabay_api_calls = 0
