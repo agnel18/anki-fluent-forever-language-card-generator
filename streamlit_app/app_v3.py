@@ -1554,6 +1554,7 @@ elif st.session_state.page == "generating":
         log_message(f"<b>Step 5/5</b> Exporting deck for '<b>{word}</b>'...")
         status_text.info(f"Exporting deck for '{word}'...")
         try:
+            import shutil
             from core_functions import create_apkg_export, _sanitize_word
             # Collect all data for this word
             if 'words_data' not in progress or not isinstance(progress['words_data'], list):
@@ -1563,6 +1564,30 @@ elif st.session_state.page == "generating":
             sentences = current.get('sentences', [])
             audio_files = current.get('audio_files', [])
             image_files = current.get('image_files', [])
+            # Prepare flat media dir
+            media_dir = str(Path(output_dir) / "media")
+            os.makedirs(media_dir, exist_ok=True)
+            flat_audio_files = []
+            flat_image_files = []
+            # Copy audio files to flat media dir
+            for af in audio_files:
+                if af and os.path.exists(af):
+                    dest = os.path.join(media_dir, os.path.basename(af))
+                    if not os.path.exists(dest):
+                        shutil.copy2(af, dest)
+                    flat_audio_files.append(os.path.basename(af))
+                else:
+                    flat_audio_files.append("")
+            # Copy image files to flat media dir
+            for imf in image_files:
+                if imf and os.path.exists(imf):
+                    dest = os.path.join(media_dir, os.path.basename(imf))
+                    if not os.path.exists(dest):
+                        shutil.copy2(imf, dest)
+                    flat_image_files.append(os.path.basename(imf))
+                else:
+                    flat_image_files.append("")
+            used_images = set()
             for i, s in enumerate(sentences):
                 # s may be dict or str
                 if isinstance(s, dict):
@@ -1575,8 +1600,14 @@ elif st.session_state.page == "generating":
                     english = ''
                     ipa = ''
                     image_keywords = ''
-                audio = f"[sound:{os.path.basename(audio_files[i])}]" if i < len(audio_files) and audio_files[i] else ''
-                image = f'<img src="{os.path.basename(image_files[i])}">' if i < len(image_files) and image_files[i] else ''
+                audio = f"[sound:{flat_audio_files[i]}]" if i < len(flat_audio_files) and flat_audio_files[i] else ''
+                # Ensure each image is unique per sentence
+                img_name = flat_image_files[i] if i < len(flat_image_files) else ''
+                if img_name and img_name not in used_images:
+                    image = f'<img src="{img_name}">' 
+                    used_images.add(img_name)
+                else:
+                    image = ''
                 card = {
                     'file_name': f"{current['word']}_{i+1:02d}",
                     'word': current['word'],
@@ -1599,8 +1630,7 @@ elif st.session_state.page == "generating":
                 apkg_path = str(Path(export_dir) / apkg_filename)
                 # Use all words_data for export
                 rows = progress['words_data']
-                # Media dir: use output_dir (audio/images are inside)
-                media_dir = str(Path(output_dir))
+                # Media dir: use flat media dir
                 # Export APKG
                 success = create_apkg_export(
                     rows=rows,
