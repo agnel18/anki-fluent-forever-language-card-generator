@@ -30,6 +30,10 @@ env/
 .env
 firebase_config.json
 
+# Local user secrets and state (never commit)
+streamlit_app/user_secrets.json
+streamlit_app/user_full_state.json
+
 # Generated outputs (keep local, do not commit)
 FluentForever_*_Perfect/ANKI_IMPORT.tsv
 FluentForever_*_Perfect/working_data.xlsx
