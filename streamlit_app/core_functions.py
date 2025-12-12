@@ -648,8 +648,14 @@ def generate_images_pixabay(
     os.makedirs(output_dir, exist_ok=True)
     generated = []
 
+
+    used_image_urls = set()
+
+    import logging
+    logger = logging.getLogger("pixabay_download")
     for i, query in enumerate(queries):
         try:
+            logger.info(f"Pixabay search for query: {query}")
             # --- API USAGE TRACKING ---
             try:
                 import streamlit as st
@@ -658,14 +664,16 @@ def generate_images_pixabay(
                 st.session_state.pixabay_api_calls += 1
             except Exception:
                 pass
-            # -------------------------
+            # ------------------------- 
             # Search Pixabay
+            # Convert comma-separated keywords to space-separated for Pixabay
+            search_query = " ".join(query.split(",")).strip()
             params = {
                 "key": pixabay_api_key,
-                "q": query,
-                "per_page": 3,  # Only get top 3 results instead of 5
+                "q": search_query,
+                "per_page": 7,  # Get top 7 results
                 "image_type": "photo",
-                "category": "people,places,nature",
+                # Removed invalid category parameter (Pixabay only allows one category)
             }
 
             response = requests.get("https://pixabay.com/api/", params=params, timeout=10)
@@ -674,15 +682,25 @@ def generate_images_pixabay(
             data = response.json()
             hits = data.get("hits", [])
 
+            logger.info(f"Pixabay hits for '{query}': {len(hits)}")
             if not hits:
                 logger.warning(f"No images found for query: {query}")
                 continue
 
-            # Select image (randomize from top 3 or use first)
-            import random
-            img_idx = random.randint(0, min(2, len(hits)-1)) if randomize else 0
-            image_url = hits[img_idx]["webformatURL"]
+            # Try to pick a unique image from the top 7
+            image_url = None
+            for hit in hits:
+                url = hit.get("webformatURL")
+                if url and url not in used_image_urls:
+                    image_url = url
+                    used_image_urls.add(url)
+                    break
+            # If all top 7 are used, pick the first one (allow duplicate as fallback)
+            if not image_url:
+                image_url = hits[0].get("webformatURL")
+                used_image_urls.add(image_url)
 
+            logger.info(f"Downloading image: {image_url}")
             # Download image
             img_response = requests.get(image_url, timeout=10)
             img_response.raise_for_status()
@@ -691,6 +709,7 @@ def generate_images_pixabay(
             output_path = Path(output_dir) / filename
             with open(output_path, "wb") as f:
                 f.write(img_response.content)
+            logger.info(f"Saved image to {output_path}")
             generated.append(filename)
 
         except Exception as e:

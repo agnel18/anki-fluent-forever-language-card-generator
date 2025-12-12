@@ -3,6 +3,9 @@ Fluent Forever Anki Card Generator - Streamlit GUI (v3)
 Production-ready with full generation workflow
 """
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 import streamlit as st
 import yaml
 import os
@@ -1365,9 +1368,10 @@ elif st.session_state.page == "help":
 
 elif st.session_state.page == "generating":
 
+
     # Force scroll to top when entering generating page
     st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
-    
+
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
@@ -1379,6 +1383,27 @@ elif st.session_state.page == "generating":
         status_text = st.empty()
         detail_text = st.empty()
         messages_container = st.container()
+
+    # --- Clear output image/media directories ONLY at the very start of the generation process ---
+    import shutil, os
+    from pathlib import Path
+    output_dir = str(Path("./output"))
+    media_dir = str(Path(output_dir) / "media")
+    images_dir = str(Path(output_dir) / "images")
+    if 'output_dirs_cleared' not in st.session_state:
+        # Remove media directory if it exists
+        if os.path.exists(media_dir):
+            try:
+                shutil.rmtree(media_dir)
+            except Exception as e:
+                print(f"Warning: Could not clear media dir: {e}")
+        # Remove images directory if it exists
+        if os.path.exists(images_dir):
+            try:
+                shutil.rmtree(images_dir)
+            except Exception as e:
+                print(f"Warning: Could not clear images dir: {e}")
+        st.session_state['output_dirs_cleared'] = True
 
     # Initialize or resume stepwise generation state
     if 'generation_progress' not in st.session_state:
@@ -1533,7 +1558,7 @@ elif st.session_state.page == "generating":
             image_filenames = [f"{_sanitize_word(word)}_{i+1:02d}.jpg" for i in range(len(sentences))]
             # Use each sentence as a query for image search
             generated_images = generate_images_pixabay(
-                queries=sentences,
+                queries=[s.get('image_keywords', '') if isinstance(s, dict) else str(s) for s in sentences],
                 output_dir=image_output_dir,
                 batch_name=_sanitize_word(word),
                 num_images=1,
@@ -1580,12 +1605,22 @@ elif st.session_state.page == "generating":
                     flat_audio_files.append("")
             # Copy image files to flat media dir
             for imf in image_files:
+                import logging
+                logger = logging.getLogger("image_copy")
+                if imf:
+                    logger.info(f"Checking image file: {imf}")
                 if imf and os.path.exists(imf):
                     dest = os.path.join(media_dir, os.path.basename(imf))
+                    logger.info(f"Copying image {imf} to {dest}")
                     if not os.path.exists(dest):
-                        shutil.copy2(imf, dest)
+                        try:
+                            shutil.copy2(imf, dest)
+                            logger.info(f"Copied image {imf} to {dest}")
+                        except Exception as e:
+                            logger.error(f"Failed to copy image {imf} to {dest}: {e}")
                     flat_image_files.append(os.path.basename(imf))
                 else:
+                    logger.warning(f"Image file missing or not found: {imf}")
                     flat_image_files.append("")
             used_images = set()
             for i, s in enumerate(sentences):
@@ -1603,10 +1638,18 @@ elif st.session_state.page == "generating":
                 audio = f"[sound:{flat_audio_files[i]}]" if i < len(flat_audio_files) and flat_audio_files[i] else ''
                 # Ensure each image is unique per sentence
                 img_name = flat_image_files[i] if i < len(flat_image_files) else ''
+                import logging
+                logger = logging.getLogger("image_export")
+                if img_name:
+                    logger.info(f"Assigning image to card: {img_name}")
                 if img_name and img_name not in used_images:
                     image = f'<img src="{img_name}">' 
                     used_images.add(img_name)
                 else:
+                    if not img_name:
+                        logger.warning(f"No image assigned for card {i+1} of word {current['word']}")
+                    else:
+                        logger.warning(f"Duplicate image skipped for card {i+1} of word {current['word']}: {img_name}")
                     image = ''
                 card = {
                     'file_name': f"{current['word']}_{i+1:02d}",
