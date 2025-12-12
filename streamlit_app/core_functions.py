@@ -608,10 +608,10 @@ def generate_complete_deck(
         for word_idx, word in enumerate(words, 1):
             safe_word = _sanitize_word(word)
             sents = sentences_batch.get(word, [])
-            sentence_texts = [s.get("sentence", "") for s in sents]
+            sentence_texts = [s.get("sentence", "") if isinstance(s.get("sentence", ""), str) else str(s.get("sentence", "")) for s in sents]
 
             rank = rank_for_word(word)
-            
+
             # Progress update for this word
             if progress_callback:
                 progress_callback(2, "🎵 Generating audio files...", f"Processing word {word_idx}/{len(words)}: {word} ({len(sentence_texts)} sentences)")
@@ -633,16 +633,25 @@ def generate_complete_deck(
             # Images per sentence with exact filenames (using keywords for better results)
             if progress_callback and word_idx == 1:
                 progress_callback(3, "Downloading images from Pixabay", f"Finding relevant images for {len(words)} word(s)...")
-            
+
+            def ensure_str(val):
+                if val is None:
+                    return ""
+                if isinstance(val, float):
+                    if pd.isna(val):
+                        return ""
+                    return str(val)
+                return str(val)
+
             image_queries = []
             for s in sents:
                 # Use image_keywords if available, otherwise fall back to English translation
-                keywords = s.get("image_keywords", "").strip()
+                keywords = ensure_str(s.get("image_keywords", "")).strip()
                 if keywords:
                     image_queries.append(keywords)
                 else:
-                    image_queries.append(s.get("english_translation", ""))
-            
+                    image_queries.append(ensure_str(s.get("english_translation", "")))
+
             image_files = generate_images_pixabay(
                 queries=image_queries,
                 output_dir=str(media_dir),

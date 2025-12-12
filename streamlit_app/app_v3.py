@@ -58,6 +58,28 @@ if "settings" not in st.session_state:
 if "settings_dirty" not in st.session_state:
     st.session_state.settings_dirty = False
 
+# Always initialize learned_languages with top 5 most spoken if not set
+if "learned_languages" not in st.session_state:
+    # Try to load from user_settings.json if available
+    user_settings_path = Path(__file__).parent / "user_settings.json"
+    loaded = False
+    if user_settings_path.exists():
+        import json
+        with open(user_settings_path, "r", encoding="utf-8") as f:
+            per_lang_settings = json.load(f)
+        if "learned_languages" in per_lang_settings:
+            st.session_state.learned_languages = per_lang_settings["learned_languages"]
+            loaded = True
+    if not loaded:
+        # Fallback: use top 5 most spoken
+        config_path = Path(__file__).parent / "languages.yaml"
+        import yaml
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        st.session_state.learned_languages = [
+            {"name": lang["name"], "usage": 0, "pinned": True} for lang in config["top_5"]
+        ]
+
 # ============================================================================
 # PAGE NAVIGATION: SIDEBAR
 # ============================================================================
@@ -179,8 +201,10 @@ if st.session_state.page == "settings":
     st.progress(0.65, text="Overall Progress: 65% Complete")
     st.caption("(Stats are local only; cloud sync coming soon)")
     st.markdown("---")
-    st.markdown("### 🌐 Languages Being Learned")
-    # Mocked language learning data (replace with persistent storage later)
+    st.markdown("### 🌟 Favorite Languages (Pinned for Quick Access)")
+    st.info("Your favorite languages appear first in all dropdowns for faster selection.")
+    # Add favorite language
+    all_lang_names = [lang["name"] for lang in all_languages]
     if "learned_languages" not in st.session_state:
         st.session_state.learned_languages = [
             {"name": "Spanish", "usage": 42, "pinned": True},
@@ -189,35 +213,76 @@ if st.session_state.page == "settings":
             {"name": "German", "usage": 19, "pinned": False},
             {"name": "Italian", "usage": 12, "pinned": False},
         ]
-    all_lang_names = [lang["name"] for lang in all_languages]
-    # Add language
-    st.markdown("#### Add a language you are learning:")
-    add_col1, add_col2 = st.columns([3,1])
+    st.markdown("Add a favorite language:")
+    add_col1, add_col2 = st.columns([4,1])
     with add_col1:
-        new_lang = st.selectbox("Select language", [l for l in all_lang_names if l not in [x["name"] for x in st.session_state.learned_languages]], key="add_lang_select")
+        available_langs = [l for l in all_lang_names if l not in [x["name"] for x in st.session_state.learned_languages]]
+        new_lang = st.selectbox("Select language", available_langs, key="add_lang_select", disabled=len(st.session_state.learned_languages) >= 5)
     with add_col2:
-        if st.button("Add", key="add_lang_btn") and new_lang:
-            st.session_state.learned_languages.append({"name": new_lang, "usage": 0, "pinned": False})
+        if st.button("Add", key="add_lang_btn") and new_lang and len(st.session_state.learned_languages) < 5:
+            st.session_state.learned_languages.append({"name": new_lang, "usage": 0})
             st.success(f"Added {new_lang}")
-            st.experimental_rerun()
-    st.markdown("---")
-    # Sort: pinned first, then by usage desc
-    langs_sorted = sorted(st.session_state.learned_languages, key=lambda x: (-int(x["pinned"]), -x["usage"]))
-    st.markdown("#### Your Languages:")
-    for i, lang in enumerate(langs_sorted):
-        lang_col1, lang_col2 = st.columns([6,2])
-        with lang_col1:
-            st.markdown(f"<span style='font-size:1.1em;font-weight:bold;'>{lang['name']}</span> <span style='color:#888;'>Usage: {lang['usage']}</span>", unsafe_allow_html=True)
-            pin_label = "📌 Unpin" if lang["pinned"] else "Pin"
-            pin_icon = "📌" if lang["pinned"] else "📍"
-            if st.button(f"{pin_icon} {pin_label}", key=f"pin_{lang['name']}"):
-                lang["pinned"] = not lang["pinned"]
+            st.rerun()
+
+    # --- Favorite Languages List ---
+    st.markdown("Your Favorites:")
+    st.markdown("""
+    <style>
+    .lang-card-grid {display: flex; flex-direction: column; gap: 18px; margin-bottom: 16px;}
+    .lang-card {background: #181a20; color: #e0e0e0; border-radius: 12px; box-shadow: 0 2px 8px #0002; padding: 18px 22px 14px 22px; min-width: 180px; max-width: 320px; display: flex; flex-direction: row; align-items: center; position: relative; transition: box-shadow 0.2s;}
+    .lang-card .lang-title {font-size: 1.15em; font-weight: 600; margin-bottom: 6px;}
+    .lang-card .lang-usage {font-size: 0.98em; color: #aaa; margin-bottom: 8px;}
+    .lang-card .lang-actions {margin-left: auto; display: flex; gap: 4px;}
+    .lang-card .stButton>button {background: none !important; color: #ff5555 !important; font-size: 1.2em !important; border: none !important; box-shadow: none !important; padding: 0 8px !important;}
+    .lang-card .stButton>button:hover {color: #fff !important; background: #ff5555 !important; border-radius: 50% !important;}
+    .lang-card .arrow-btn .stButton>button {color: #58a6ff !important; font-size: 1.1em !important;}
+    .lang-card .arrow-btn .stButton>button:hover {color: #fff !important; background: #58a6ff !important; border-radius: 50% !important;}
+    </style>
+    <div class='lang-card-grid'>
+    """, unsafe_allow_html=True)
+    for idx, lang in enumerate(st.session_state.learned_languages):
+        card_cols = st.columns([8,1,1,1])
+        with card_cols[0]:
+            st.markdown(f"<div class='lang-card'><span class='lang-title'>{lang['name']}</span><span class='lang-usage'>Usage: {lang['usage']}</span></div>", unsafe_allow_html=True)
+        with card_cols[1]:
+            if idx > 0:
+                if st.button("↑", key=f"moveup_{lang['name']}_{idx}", help=f"Move {lang['name']} up"):
+                    st.session_state.learned_languages[idx-1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx-1]
+                    st.rerun()
+        with card_cols[2]:
+            if idx < len(st.session_state.learned_languages)-1:
+                if st.button("↓", key=f"movedown_{lang['name']}_{idx}", help=f"Move {lang['name']} down"):
+                    st.session_state.learned_languages[idx+1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx+1]
+                    st.rerun()
+        with card_cols[3]:
+            if st.button("❌", key=f"remove_{lang['name']}_{idx}", help=f"Remove {lang['name']}"):
+                st.session_state.learned_languages = [l for i, l in enumerate(st.session_state.learned_languages) if i != idx]
                 st.rerun()
-            if st.button("❌ Remove", key=f"remove_{lang['name']}"):
-                st.session_state.learned_languages = [l for l in st.session_state.learned_languages if l["name"] != lang["name"]]
-                st.rerun()
-    st.caption("Top 5 pinned or most used languages appear at the top for convenience.")
+    st.caption("Reorder with arrows. Remove with ❌. Max 5.")
+    # Save Order button
+    user_settings_path = Path(__file__).parent / "user_settings.json"
+    if st.button("💾 Save Order", key="save_lang_order"):
+        import json
+        # Save the current order to user_settings.json
+        if user_settings_path.exists():
+            with open(user_settings_path, "r", encoding="utf-8") as f:
+                per_lang_settings = json.load(f)
+        else:
+            per_lang_settings = {}
+        per_lang_settings["learned_languages"] = st.session_state.learned_languages
+        with open(user_settings_path, "w", encoding="utf-8") as f:
+            json.dump(per_lang_settings, f, indent=2)
+        st.success("Order saved!")
     st.markdown("---")
+
+    # Handle pin/unpin/remove actions via query params
+    import streamlit as stmod
+    query_params = stmod.query_params
+    if "remove" in query_params:
+        lang_name = query_params["remove"]
+        st.session_state.learned_languages = [l for l in st.session_state.learned_languages if l["name"] != lang_name]
+        stmod.query_params.clear()
+        st.rerun()
     st.markdown("### 🔑 API Keys")
     import json
     secrets_path = Path(__file__).parent / "user_secrets.json"
@@ -319,40 +384,16 @@ if st.session_state.page == "settings":
         }
         with open(user_settings_path, "w", encoding="utf-8") as f:
             json.dump(per_lang_settings, f, indent=2)
+        st.session_state["show_save_defaults_msg"] = True
+    st.markdown("---")
+    # Show confirmation if just saved defaults
+    if st.session_state.get("show_save_defaults_msg"):
         st.success(f"Defaults saved for {selected_lang}!")
-        st.rerun()
-    st.markdown("---")
-    st.markdown("---")
-    st.markdown("### 🌟 Default Language for Step 1")
-    # Load user_settings.json if not already loaded
-    import json
-    user_settings_path = Path(__file__).parent / "user_settings.json"
-    if user_settings_path.exists():
-        with open(user_settings_path, "r", encoding="utf-8") as f:
-            per_lang_settings = json.load(f)
-    else:
-        per_lang_settings = {}
-
-    learned_langs = [l["name"] for l in st.session_state.learned_languages]
-    default_lang = per_lang_settings.get("default_language", learned_langs[0] if learned_langs else "")
-    new_default_lang = st.selectbox(
-        "Choose your default language for deck generation:",
-        options=learned_langs,
-        index=learned_langs.index(default_lang) if default_lang in learned_langs else 0,
-        key="default_language_select"
-    )
-    if st.button("Save Default Language", key="save_default_language"):
-        per_lang_settings["default_language"] = new_default_lang
-        with open(user_settings_path, "w", encoding="utf-8") as f:
-            json.dump(per_lang_settings, f, indent=2)
-        st.success(f"Default language set to {new_default_lang}!")
-        st.rerun()
-    st.markdown("---")
+        st.session_state["show_save_defaults_msg"] = False
     st.markdown("---")
     if st.button("⬅️ Back", key="settings_back_btn"):
         st.session_state.page = "language_select" if st.session_state.get("first_run_complete", False) else "login"
         st.rerun()
-    st.stop()
 
 
 if st.session_state.page == "login":
@@ -464,8 +505,8 @@ elif st.session_state.page == "api_setup":
 
 elif st.session_state.page == "language_select":
     st.markdown("# 🌍 Step 1: Select Language")
-    lang_names = [lang["name"] for lang in all_languages]
-    # Try to load default language from user_settings.json
+    st.info("Your favorite languages are pinned to the top for quick access. You can change their order in Settings → Favorite Languages.")
+    # --- Preferred order: learned_languages at top, divider, then all others ---
     import json
     user_settings_path = Path(__file__).parent / "user_settings.json"
     if user_settings_path.exists():
@@ -473,9 +514,60 @@ elif st.session_state.page == "language_select":
             per_lang_settings = json.load(f)
         default_lang = per_lang_settings.get("default_language", None)
     else:
+        per_lang_settings = {}
         default_lang = None
-    default_idx = lang_names.index(default_lang) if default_lang in lang_names else 0
-    selected_lang = st.selectbox("Which language do you want to learn?", lang_names, index=default_idx)
+
+    # Get user's learned languages (in preferred order)
+    learned_langs = [l["name"] for l in st.session_state.get("learned_languages", [])]
+    # All language names
+    all_lang_names = [lang["name"] for lang in all_languages]
+    # Languages not in learned list
+    other_langs = [l for l in all_lang_names if l not in learned_langs]
+
+    # Build options: learned (pinned) + divider + others
+    options = []
+    for l in learned_langs:
+        options.append({"name": l, "section": "pinned"})
+    if learned_langs and other_langs:
+        options.append({"name": "──────────────", "section": "divider"})
+    for l in other_langs:
+        options.append({"name": l, "section": "other"})
+
+    # Find default selection
+    if default_lang and any(opt["name"] == default_lang for opt in options if opt["section"] != "divider"):
+        default_idx = [i for i, opt in enumerate(options) if opt["name"] == default_lang][0]
+    elif learned_langs:
+        default_idx = 0
+    else:
+        default_idx = next((i for i, opt in enumerate(options) if opt["section"] != "divider"), 0)
+
+    def format_func(opt):
+        if opt["section"] == "divider":
+            return opt["name"]
+        elif opt["section"] == "pinned":
+            # Show rank (1-based) for pinned
+            rank = learned_langs.index(opt["name"]) + 1 if opt["name"] in learned_langs else ""
+            return f"{rank}. {opt['name']} ★"
+        else:
+            return opt["name"]
+
+    selected_opt = st.selectbox(
+        "Which language do you want to learn?",
+        options,
+        index=default_idx,
+        format_func=format_func,
+        key="main_language_select"
+    )
+    # If divider is selected, auto-select first real language
+    if selected_opt["section"] == "divider":
+        # Pick first after divider, or first pinned
+        next_idx = options.index(selected_opt) + 1
+        if next_idx < len(options):
+            selected_opt = options[next_idx]
+        else:
+            selected_opt = options[0]
+
+    selected_lang = selected_opt["name"]
     available_lists = get_available_frequency_lists()
     max_words = available_lists.get(selected_lang, 5000)
     st.metric("Available", f"{max_words:,} words")
@@ -1270,9 +1362,13 @@ elif st.session_state.page == "generating":
             "file_name", "word", "meaning", "sentence", "ipa", "english", "audio", "image", "image_keywords", "tags"
         ]
         rows = [dict(zip(columns, row)) for row in df.values]
-        apkg_bytes, apkg_filename = create_apkg_export(rows, media_dir, selected_lang + ".apkg", selected_lang, deck_name="Language Learning")
-        st.session_state.apkg_file = apkg_bytes
-        st.session_state.apkg_filename = apkg_filename
+        apkg_success = create_apkg_export(rows, media_dir, selected_lang + ".apkg", selected_lang, deck_name="Language Learning")
+        if not apkg_success:
+            raise Exception("Failed to create .apkg file for Anki deck export.")
+        apkg_path = selected_lang + ".apkg"
+        with open(apkg_path, "rb") as f:
+            st.session_state.apkg_file = f.read()
+        st.session_state.apkg_filename = apkg_path
         st.session_state.page = "complete"
         st.rerun()
     except Exception as e:
@@ -1345,7 +1441,11 @@ elif st.session_state.page == "complete":
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("🔄 Generate Another", use_container_width=True):
-            st.session_state.page = "main"
+            # Only reset state relevant to generation, not the whole session
+            for key in ["selected_words", "selected_lang", "apkg_file", "apkg_filename"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.session_state.page = "language_select"
             st.rerun()
     with col2:
         if st.button("🔐 Change Keys", use_container_width=True):
