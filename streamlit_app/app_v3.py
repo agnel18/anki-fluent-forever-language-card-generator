@@ -1,4 +1,3 @@
-
 """
 Fluent Forever Anki Card Generator - Streamlit GUI (v3)
 Production-ready with full generation workflow
@@ -608,13 +607,13 @@ elif st.session_state.page == "word_select":
                                     if word not in selected_words:
                                         selected_words.append(word)
     # Add navigation button
-    if st.button("Next: Audio Settings", use_container_width=True):
+    if st.button("Next: Sentence Settings", use_container_width=True):
         st.session_state.selected_words = selected_words
-        st.session_state.page = "audio_settings"
+        st.session_state.page = "sentence_settings"
         st.session_state.scroll_to_top = True
         st.rerun()
 
-elif st.session_state.page == "audio_settings":
+elif st.session_state.page == "sentence_settings":
     # Persist all settings and progress to local file (JSON)
     persist_path = Path(__file__).parent / "user_full_state.json"
     full_state = {k: v for k, v in st.session_state.items() if not k.startswith("_")}
@@ -700,6 +699,10 @@ elif st.session_state.page == "audio_settings":
     st.markdown("---")
     st.markdown(f"**Audio:** {st.session_state.audio_speed}x, **Voice:** {st.session_state.selected_voice_display}")
     st.divider()
+    # Add Back button to settings step
+    if st.button("⬅️ Back", key="back_from_settings"):
+        st.session_state.page = "language_select"
+        st.rerun()
     if st.button("Next: Generate Deck", use_container_width=True):
         st.session_state.page = "generate"
         st.session_state.scroll_to_top = True
@@ -708,7 +711,7 @@ elif st.session_state.page == "audio_settings":
 elif st.session_state.page == "generate":
     # Back button
     if st.button("⬅️ Back", key="back_from_generate"):
-        st.session_state.page = "settings"
+        st.session_state.page = "sentence_settings"
         st.rerun()
     st.markdown("# 🌍 Step 4: Generate & Download Deck")
     st.markdown("## ✨ Ready to Generate!")
@@ -721,22 +724,6 @@ elif st.session_state.page == "generate":
         st.session_state.selected_words = selected_words
         st.session_state.page = "generating"
         st.session_state.scroll_to_top = True
-        st.rerun()
-
-    # 'Generate More' returns to step 1 with default language
-    if st.button("Generate More", key="generate_more_btn"):
-        # Reload default language from user_settings.json
-        user_settings_path = Path(__file__).parent / "user_settings.json"
-        if user_settings_path.exists():
-            with open(user_settings_path, "r", encoding="utf-8") as f:
-                import json
-                per_lang_settings = json.load(f)
-            default_lang = per_lang_settings.get("default_language", None)
-        else:
-            default_lang = None
-        st.session_state.page = "language_select"
-        if default_lang:
-            st.session_state.selected_language = default_lang
         st.rerun()
     if st.button("Back to Start", use_container_width=True):
         st.session_state.page = "api_setup"
@@ -1216,22 +1203,80 @@ elif st.session_state.page == "generating":
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
-    
-    # Progress indicators - these will update in real-time
+    # Progress indicators and terminal-style log
     progress_container = st.container()
     with progress_container:
         progress_bar = st.progress(0)
         status_text = st.empty()
         detail_text = st.empty()
         messages_container = st.container()
-    
+
+    # Clear log at start
+    st.session_state['generation_log'] = []
+
+    def log_message(msg):
+        # Clear previous messages before displaying new one
+        st.session_state['generation_log'] = [msg]
+        with messages_container:
+            st.markdown('<div style="background:#fff;color:#222;font-family:inherit;font-size:16px;padding:8px 12px;max-height:300px;overflow-y:auto;">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
+
+    def progress_callback(step, message, details):
+        progress = min(step / 6, 1.0)  # 6 steps in total for progress bar
+        progress_bar.progress(progress)
+        status_text.info(message)
+        detail_text.write(details)
+        log_message(f"{message} - {details}")
+
     try:
-        # ...existing code...
-        # (No changes needed for status messages or progress logic)
-        # ...existing code...
+        # Gather all required parameters
+        selected_words = st.session_state.selected_words
+        selected_lang = st.session_state.selected_lang
+        groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
+        pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
+        num_sentences = st.session_state.sentences_per_word
+        min_length, max_length = st.session_state.sentence_length_range
+        difficulty = st.session_state.difficulty
+        audio_speed = st.session_state.audio_speed
+        voice = st.session_state.selected_voice
+        output_dir = str(Path("./output"))
+
+        # Call the real deck generation function
+        result = generate_complete_deck(
+            words=selected_words,
+            language=selected_lang,
+            groq_api_key=groq_api_key,
+            pixabay_api_key=pixabay_api_key,
+            output_dir=output_dir,
+            num_sentences=num_sentences,
+            min_length=min_length,
+            max_length=max_length,
+            difficulty=difficulty,
+            audio_speed=audio_speed,
+            voice=voice,
+            all_words=None,
+            progress_callback=progress_callback,
+        )
+
+        if not result["success"]:
+            raise Exception(result["error"] or "Unknown error during deck generation.")
+
+        # Create .apkg file for download
+        tsv_path = result["tsv_path"]
+        media_dir = result["media_dir"]
+        # Read TSV rows for apkg export
+        import pandas as pd
+        df = pd.read_csv(tsv_path, sep='\t', header=None, encoding='utf-8')
+        columns = [
+            "file_name", "word", "meaning", "sentence", "ipa", "english", "audio", "image", "image_keywords", "tags"
+        ]
+        rows = [dict(zip(columns, row)) for row in df.values]
+        apkg_bytes, apkg_filename = create_apkg_export(rows, media_dir, selected_lang + ".apkg", selected_lang, deck_name="Language Learning")
+        st.session_state.apkg_file = apkg_bytes
+        st.session_state.apkg_filename = apkg_filename
         st.session_state.page = "complete"
         st.rerun()
     except Exception as e:
+        log_message(f"<b>❌ ERROR:</b> {str(e)}")
         st.error(f"❌ **Error:** {str(e)}")
         st.error(f"**Details:** {type(e).__name__}")
         if st.button("← Back to Main"):

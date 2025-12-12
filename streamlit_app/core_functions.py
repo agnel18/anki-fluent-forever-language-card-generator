@@ -184,31 +184,33 @@ def _generate_sentences_pass1(
         raise ValueError("Groq API key required")
     
     client = Groq(api_key=groq_api_key)
-    
-    prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
+
+    prompt = f"""
+You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
 Your task:
-Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} using the word "{word}" ({meaning}).
+Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} for the word "{word}" ({meaning}).
 
 ===========================
 QUALITY RULES (STRICT)
 ===========================
-- Every sentence must sound like it was written by an educated native speaker.
+- Every sentence must sound like it was written by an educated native speaker. Native speakers should NOT cringe at the sentence.
 - Absolutely no unnatural, robotic, or literal-translation phrasing.
 - Grammar, syntax, spelling, diacritics, gender agreement, case, politeness level, and punctuation must all be correct.
 - The target word "{word}" MUST:
-  * be used correctly in context,
-  * match its real meaning,
-  * NOT be forced into an unnatural construction.
+    * be used correctly in context,
+    * match its real meaning,
+    * NOT be forced into an unnatural construction.
+- If the word cannot be used naturally, do NOT use it. Instead, create a sentence that clearly conveys the meaning of "{word}" in context, even if the word itself isn’t used.
 - Avoid rare or archaic vocabulary (unless difficulty="advanced").
 - All sentences must be semantically meaningful (no filler templates).
 - No repeated sentence structures or patterns — each sentence must be unique.
 
 - Each sentence must be {min_length}-{max_length} words long.
-- Difficulty level:
-  beginner → simple vocabulary, mostly present tense
-  intermediate → mixed tenses, richer but still natural
-  advanced → complex structures, nuanced vocabulary
+- Difficulty: {difficulty}
+    - beginner: Use only simple vocabulary and grammar, mostly present tense.
+    - intermediate: Use mixed tenses, richer but still natural language.
+    - advanced: Use complex structures, nuanced vocabulary, and advanced grammar.
 
 ===========================
 VARIETY REQUIREMENTS
@@ -216,7 +218,7 @@ VARIETY REQUIREMENTS
 Across the {num_sentences} sentences:
 - Use different tenses (if applicable to {language}).
 - Use different sentence types: declarative, interrogative, imperative.
-- Use the target word in different grammatical roles.
+- Use the target word in different grammatical roles if possible.
 - Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions.
 
 ===========================
