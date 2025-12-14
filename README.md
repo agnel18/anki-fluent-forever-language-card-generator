@@ -35,10 +35,24 @@ streamlit run streamlit_app/app_v3.py
 ---
 
 ## ✨ Features
-**Native Audio** — Edge TTS (fully mapped voices for all 109 languages, adjustable speed)
+
+### Core Functionality
+- **AI Sentences** — Groq llama-3.3-70b generates 10 contextual sentences per word
+- **Native Audio** — Edge TTS (200+ voices, adjustable speed & pitch)
+- **Beautiful Images** — Pixabay API with keyword extraction
+- **3-Card Anki Template** — Listening, Production, Reading cards
+- **Direct Anki Import** — `.apkg` files ready to use
 - **Progress Tracking** — SQLite database saves your progress
 - **Zero Coding** — GUI handles everything
-- **Direct Anki Import** — `.apkg` files ready to use
+
+### Advanced Features
+- **109 Languages** — Pre-built frequency word lists
+- **Custom Word Lists** — Upload your own CSV files
+- **Audio Controls** — Speed (0.5x-1.5x) and pitch (-20% to +20%)
+- **Rate Limit Monitoring** — Smart warnings for API limits
+- **Error Recovery** — Graceful handling of API failures
+- **Cloud Sync** — Optional Firebase integration
+- **Mobile Friendly** — Responsive web interface
 
 ---
 
@@ -49,14 +63,18 @@ LanguagLearning/
 ├── streamlit_app/              # Main application
 │   ├── app_v3.py              # ← START HERE (GUI entry point)
 │   ├── core_functions.py      # Generation pipeline
+│   ├── page_modules/          # UI pages (language_select, generating, etc.)
+│   ├── languages.yaml         # 109 languages config
 │   ├── frequency_utils.py     # Word lists & search
 │   ├── db_manager.py          # Progress tracking (SQLite)
-│   ├── languages.yaml         # 109 languages config
 │   ├── edge_tts_voices.py     # Voice options for Edge TTS
 │   ├── firebase_manager.py    # (Optional) Firebase integration
-│   └── ...
+│   ├── cache_manager.py       # Request caching
+│   ├── state_manager.py       # Session management
+│   └── requirements.txt       # Python dependencies
 ├── 109 Languages Frequency Word Lists/  # Word lists (Excel)
-├── requirements.txt           # Python dependencies
+├── output/                    # Generated decks & media
+├── .env                       # API keys (local only, not committed)
 └── README.md                  # This file
 ```
 
@@ -193,6 +211,11 @@ Sync your progress across devices (laptop, phone, tablet):
 
 ## 🛠️ Troubleshooting
 
+### "Images show as filenames instead of pictures"
+- ✅ **Fixed in v3.1** — Images now display properly in Anki
+- ✅ Verify you're using the latest version (`app_v3.py`)
+- ✅ Check that media files exist in the `output/media/` folder
+
 ### "Invalid API key"
 - ✅ Check for typos (extra spaces, wrong key)
 - ✅ Verify on provider website (https://console.groq.com/keys)
@@ -215,11 +238,17 @@ streamlit run streamlit_app/app_v3.py
 ### Audio sounds strange
 - ✅ Try different voice (many available)
 - ✅ Adjust speed (0.7x–0.9x for learners)
+- ✅ Adjust pitch (-10% to +10% for better clarity)
 
 ### Generation takes forever
 - ✅ Reduce batch size (try 3 words instead of 10)
 - ✅ Check internet connection
 - ✅ Verify API keys are working
+
+### Images not downloading
+- ✅ Check Pixabay API key is valid
+- ✅ Verify internet connection
+- ✅ Try different words (some may not have images)
 
 ---
 
@@ -245,29 +274,40 @@ Professional card design with:
 - Dark/light mode support
 - 3 card types (Listening, Production, Reading)
 - Audio playback with controls
-- Image display with captions
-- Phonetic transcriptions
+- **Fixed image display** - Images now show properly in cards
+- Phonetic transcriptions (IPA)
+- Responsive design for all screen sizes
 
 ### Documentation
 - [ANKI_SETUP.md](./ANKI_SETUP.md) — Import & study tips
 - [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) — Cloud sync (optional)
-- [streamlit_app/README.md](./streamlit_app/README.md) — App internals
+- [COMPLETION_DASHBOARD.md](./COMPLETION_DASHBOARD.md) — Project status
+- [PROJECT_COMPLETION_REPORT.md](./PROJECT_COMPLETION_REPORT.md) — Technical details
+- [RELEASE_NOTES_V3.md](./RELEASE_NOTES_V3.md) — Version history
 
 ---
 
-## 🚀 What's New (v3 - Dec 2024)
+## 🚀 What's New (v3.1 - Dec 2025)
 
-✨ **Major Changes**:
-- Unified GUI (all steps in one app)
-- Rate limit warnings
-- Combined word selection (Steps 2&3)
-- Real-time progress logging
-- Auto-scroll between pages
+✨ **Major Improvements**:
+- **Fixed Image Display** — Images now properly display in Anki cards (HTML img tags in TSV)
+- **Repository Cleanup** — Removed 30+ obsolete files (test files, old app versions, documentation)
+- **Enhanced Error Recovery** — Better handling of API failures and media generation
+- **Improved Media Embedding** — All audio and images properly embedded in .apkg files
+- **Code Optimization** — Streamlined codebase with better maintainability
 
-🐛 **Fixes**:
-- Fixed .apkg FileNotFoundError
-- Fixed duplicate progress messages
-- Fixed scroll positioning
+🐛 **Critical Fixes**:
+- Fixed images showing as filenames instead of actual images in Anki
+- Fixed inconsistent image data types (URLs vs filenames vs NaN)
+- Fixed media files not being properly embedded in .apkg packages
+- Improved duplicate image avoidance across word batches
+- Enhanced logging and debugging capabilities
+
+🔧 **Technical Improvements**:
+- Updated Anki template to use proper HTML image tags
+- Improved TSV generation with consistent data formatting
+- Better media file collection and validation
+- Enhanced progress tracking and error reporting
 
 ---
 

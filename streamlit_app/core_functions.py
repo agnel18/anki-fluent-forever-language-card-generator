@@ -2,61 +2,175 @@
 import shutil
 import tempfile
 from pathlib import Path
+from typing import List, Dict, Optional, Callable, Any, Tuple
+import logging
+import random
+import re
+import pandas as pd
+import requests
+
+# Import genanki for APKG creation
+try:
+    import genanki
+except ImportError:
+    genanki = None
+
+# Import cache manager and error recovery
+from cache_manager import get_cache_manager, cached_api_call
+from error_recovery import (
+    resilient_groq_call, resilient_pixabay_call, resilient_audio_generation,
+    with_fallback, graceful_degradation, APIError, NetworkError, APIQuotaError,
+    APIAuthError, APIServerError, create_error_summary
+)
 def generate_complete_deck(
-    words,
-    language,
-    groq_api_key,
-    pixabay_api_key,
-    output_dir,
-    num_sentences=10,
-    min_length=5,
-    max_length=20,
-    difficulty="intermediate",
-    audio_speed=0.8,
-    voice=None,
-    all_words=None,
-    progress_callback=None,
-):
+    words: List[str],
+    language: str,
+    groq_api_key: str,
+    pixabay_api_key: str,
+    output_dir: str,
+    num_sentences: int = 10,
+    min_length: int = 5,
+    max_length: int = 20,
+    difficulty: str = "intermediate",
+    audio_speed: float = 0.8,
+    voice: Optional[str] = None,
+    all_words: Optional[List[str]] = None,
+    progress_callback: Optional[Callable[[float, str, str], None]] = None,
+) -> Dict[str, Any]:
     """
     Main orchestrator for deck generation. Returns dict with success, tsv_path, media_dir, output_dir, error.
+    Implements comprehensive error recovery and graceful degradation.
     """
     try:
+        # Initialize error tracking
+        errors = []
+        partial_success = True
+
         # Create temp output dir if not exists
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
         media_dir = output_path / "media"
         media_dir.mkdir(exist_ok=True)
+
         words_data = []
         audio_files = []
         image_files = []
+        used_image_urls = set()  # Track used URLs across all words
+
         for idx, word in enumerate(words):
             if progress_callback:
                 progress_callback(idx / max(1, len(words)), f"Generating for '{word}'", "Generating sentences...")
-            # 1. Generate sentences
-            meaning = generate_word_meaning(word, language, groq_api_key)
-            sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key)
-            # 2. Generate audio
-            v = voice or _voice_for_language(language)
-            audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed)
-            audio_files.extend(audio_filenames)
-            # 3. Generate images
-            image_filenames = generate_images_pixabay([s.get('image_keywords', word) for s in sentences], str(media_dir), batch_name=word, num_images=1, pixabay_api_key=pixabay_api_key)
-            image_files.extend(image_filenames)
-            # 4. Build TSV rows
-            for idx_sent, sent in enumerate(sentences):
-                file_base = f"{word}_{idx_sent+1:02d}"
-                _build_tsv_row(idx_sent, audio_filenames, image_filenames, sent, word, file_base, language, words_data)
+
+            try:
+                # 1. Generate sentences (with error recovery)
+                meaning = generate_word_meaning(word, language, groq_api_key)
+                if not meaning or meaning == word:
+                    errors.append({
+                        "component": f"Meaning generation for '{word}'",
+                        "error": "Failed to generate meaning, using word as fallback",
+                        "critical": False
+                    })
+
+                sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key)
+                if sentences is None:
+                    sentences = []
+                if not sentences:
+                    errors.append({
+                        "component": f"Sentence generation for '{word}'",
+                        "error": "Failed to generate sentences",
+                        "critical": True
+                    })
+                    continue  # Skip this word entirely
+
+                # 2. Generate audio (with graceful degradation)
+                try:
+                    v = voice or _voice_for_language(language)
+                    audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed)
+                    audio_files.extend(audio_filenames)
+                except Exception as e:
+                    errors.append({
+                        "component": f"Audio generation for '{word}'",
+                        "error": f"Audio generation failed: {e}",
+                        "critical": False
+                    })
+                    logger.warning(f"Continuing without audio for '{word}': {e}")
+                    # Create empty audio filenames to maintain structure
+                    audio_filenames = ["" for _ in sentences]
+
+                # 3. Generate images (with graceful degradation)
+                try:
+                    image_filenames, used_image_urls = generate_images_pixabay(
+                        [s.get('image_keywords', word) for s in sentences], 
+                        str(media_dir), 
+                        batch_name=word, 
+                        num_images=1, 
+                        pixabay_api_key=pixabay_api_key,
+                        used_image_urls=used_image_urls  # Pass the global set
+                    )
+                    image_files.extend(image_filenames)
+                except Exception as e:
+                    errors.append({
+                        "component": f"Image generation for '{word}'",
+                        "error": f"Image generation failed: {e}",
+                        "critical": False
+                    })
+                    logger.warning(f"Continuing without images for '{word}': {e}")
+                    # Create empty image filenames to maintain structure
+                    image_filenames = ["" for _ in sentences]
+
+                # 4. Build TSV rows
+                for idx_sent, sent in enumerate(sentences):
+                    file_base = f"{word}_{idx_sent+1:02d}"
+                    _build_tsv_row(idx_sent, audio_filenames, image_filenames, sent, word, file_base, language, words_data)
+
+            except Exception as e:
+                errors.append({
+                    "component": f"Processing word '{word}'",
+                    "error": f"Unexpected error: {e}",
+                    "critical": True
+                })
+                logger.error(f"Failed to process word '{word}': {e}")
+                partial_success = False
+                continue
+
         # 5. Create TSV
         tsv_path = output_path / "ANKI_IMPORT.tsv"
         if not create_anki_tsv(words_data, str(tsv_path)):
-            raise Exception("Failed to create TSV file")
-        return {
-            "success": True,
+            errors.append({
+                "component": "TSV creation",
+                "error": "Failed to create TSV file",
+                "critical": True
+            })
+            return {
+                "success": False,
+                "tsv_path": None,
+                "media_dir": None,
+                "output_dir": None,
+                "error": "Failed to create TSV file",
+                "errors": errors,
+                "error_summary": create_error_summary(errors)
+            }
+
+        # Check for critical errors
+        critical_errors = [e for e in errors if e.get('critical', False)]
+        success = len(critical_errors) == 0
+
+        result = {
+            "success": success,
             "tsv_path": str(tsv_path),
             "media_dir": str(media_dir),
             "output_dir": str(output_path),
-            "error": None,
+            "error": None if success else f"Completed with {len(critical_errors)} critical errors",
+            "errors": errors,
+            "error_summary": create_error_summary(errors),
+            "partial_success": partial_success
         }
+
+        if errors:
+            logger.warning(f"Deck generation completed with {len(errors)} issues: {create_error_summary(errors)}")
+
+        return result
+
     except Exception as e:
         logger.error(f"Complete deck generation error: {e}")
         return {
@@ -65,6 +179,9 @@ def generate_complete_deck(
             "media_dir": None,
             "output_dir": None,
             "error": str(e),
+            "errors": [{"component": "General", "error": str(e), "critical": True}],
+            "error_summary": f"Critical error: {e}",
+            "partial_success": False
         }
 # Temporary stub for IPA generation (replace with real implementation as needed)
 def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
@@ -102,7 +219,8 @@ def generate_sentences(
     max_length: int = 20,
     difficulty: str = "intermediate",
     groq_api_key: str = None,
-) -> list[dict]:
+    topics: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
     """
     Generate sentences using optimized 2-pass architecture:
     1. PASS 1: Generate raw sentences (high quality, plain text, no JSON)
@@ -122,6 +240,7 @@ def generate_sentences(
         max_length: Maximum sentence length in words
         difficulty: "beginner", "intermediate", "advanced"
         groq_api_key: Groq API key
+        topics: List of topics to focus sentence generation around (optional)
     
     Returns:
         List of dicts with keys: sentence, english_translation, ipa, context, image_keywords, role_of_word, word, meaning
@@ -141,6 +260,7 @@ def generate_sentences(
             max_length=max_length,
             difficulty=difficulty,
             groq_api_key=groq_api_key,
+            topics=topics,
         )
 
         # PASS 2: Batch validate + enrich all sentences in ONE call
@@ -176,6 +296,9 @@ def generate_sentences(
 # ============================================================================
 # WORD MEANING GENERATION (Groq)
 # ============================================================================
+@cached_api_call("groq_meaning", ttl_seconds=86400)  # Cache for 24 hours
+@resilient_groq_call(max_retries=3)
+@with_fallback(fallback_value=lambda word, **kwargs: word)  # Fallback to word itself
 def generate_word_meaning(
     word: str,
     language: str,
@@ -244,6 +367,9 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
 # PASS 1: SENTENCE GENERATION (Raw sentences, no JSON)
 # ============================================================================
 
+@cached_api_call("groq_sentences_pass1", ttl_seconds=86400)  # Cache for 24 hours
+@resilient_groq_call(max_retries=3)
+@with_fallback(fallback_value=lambda **kwargs: [])  # Fallback to empty list
 def _generate_sentences_pass1(
     word: str,
     meaning: str,
@@ -252,19 +378,31 @@ def _generate_sentences_pass1(
     min_length: int = 5,
     max_length: int = 20,
     difficulty: str = "intermediate",
-    groq_api_key: str = None,
-) -> list[str]:
+    groq_api_key: Optional[str] = None,
+    topics: Optional[List[str]] = None,
+) -> List[str]:
     
     try:
         from groq import Groq
         client = Groq(api_key=groq_api_key)
+        
+        # Build topic section if topics are provided
+        topic_section = ""
+        if topics:
+            topic_section = """===========================
+TOPIC FOCUS
+===========================
+Focus the sentences around these topics: """ + ', '.join(topics) + """
+Ensure the sentences are relevant to these topics while maintaining natural language use.
+"""
+        
         prompt = f"""
 You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
 Your task:
 Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} for the word \"{word}\" ({meaning}).
 
-===========================
+{topic_section}===========================
 QUALITY RULES (STRICT)
 ===========================
 - Every sentence must sound like it was written by an educated native speaker. Native speakers should NOT cringe at the sentence.
@@ -324,12 +462,25 @@ IMPORTANT
 # PASS 2: BATCH VALIDATION + ENRICHMENT (All sentences in one call)
 # ============================================================================
 
+@cached_api_call("groq_sentences_pass2", ttl_seconds=86400)  # Cache for 24 hours
+@resilient_groq_call(max_retries=3)
+@with_fallback(fallback_value=lambda sentences, **kwargs: [
+    {
+        "sentence": s,
+        "valid": True,  # Assume valid if API fails
+        "english_translation": "",
+        "ipa": "",
+        "context": "general",
+        "image_keywords": "",
+        "role_of_word": "",
+    } for s in sentences
+])  # Fallback with basic structure
 def _validate_and_enrich_batch_pass2(
-    sentences: list[str],
+    sentences: List[str],
     word: str,
     language: str,
-    groq_api_key: str = None,
-) -> list[dict]:
+    groq_api_key: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """
     PASS 2: Validate and enrich ALL sentences in a single batched API call.
     This is 5× more efficient than separate validation + enrichment per sentence.
@@ -488,7 +639,7 @@ def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, la
         "image_keywords": safe_str(sent.get("image_keywords", "")),
         "role_of_word": safe_str(sent.get("role_of_word", "")),
         "audio": safe_str(f"[sound:{audio_name}]" if audio_name else ""),
-        "image": safe_str(f"<img src=\"{image_name}\">" if image_name else ""),
+        "image": safe_str(f'<img src="{image_name}">') if image_name else "",
         "tags": "",
     })
 
@@ -531,8 +682,10 @@ async def generate_audio_async(
         return False
 
 
+@graceful_degradation("Audio generation", continue_on_failure=True)
+@resilient_audio_generation(max_retries=1)
 def generate_audio(
-    sentences: list[str],
+    sentences: List[str],
     voice: str,
     output_dir: str,
     batch_name: str = "batch",
@@ -540,7 +693,7 @@ def generate_audio(
     # pitch: float = 0.0,  # Removed pitch parameter
     exact_filenames: Optional[List[str]] = None,
     language: str = "English",
-) -> list[str]:
+) -> List[str]:
     """
     Batch generate audio files synchronously using Edge TTS.
     
@@ -619,15 +772,17 @@ def _voice_for_language(language: str) -> str:
 # IMAGE GENERATION (Pixabay)
 # ============================================================================
 
+@graceful_degradation("Image generation", continue_on_failure=True)
 def generate_images_pixabay(
-    queries: list[str],
+    queries: List[str],
     output_dir: str,
     batch_name: str = "batch",
     num_images: int = 1,
-    pixabay_api_key: str = None,
+    pixabay_api_key: Optional[str] = None,
     randomize: bool = True,
     exact_filenames: Optional[List[str]] = None,
-) -> list[str]:
+    used_image_urls: Optional[set[str]] = None,
+) -> Tuple[List[str], set[str]]:
     """
     Download images from Pixabay.
     
@@ -638,9 +793,11 @@ def generate_images_pixabay(
         num_images: Number of images per query (usually 1 for Anki)
         pixabay_api_key: Pixabay API key
         randomize: Randomize from top 3 results
+        exact_filenames: Optional list of exact filenames to use
+        used_image_urls: Set of already used image URLs to avoid duplicates
         
     Returns:
-        List of generated file paths
+        Tuple of (list of generated file paths, updated used_image_urls set)
     """
     if not pixabay_api_key:
         raise ValueError("Pixabay API key required")
@@ -648,8 +805,9 @@ def generate_images_pixabay(
     os.makedirs(output_dir, exist_ok=True)
     generated = []
 
-
-    used_image_urls = set()
+    # Initialize or use provided used URLs set
+    if used_image_urls is None:
+        used_image_urls = set()
 
     import logging
     logger = logging.getLogger("pixabay_download")
@@ -664,16 +822,16 @@ def generate_images_pixabay(
                 st.session_state.pixabay_api_calls += 1
             except Exception:
                 pass
-            # ------------------------- 
+            # -------------------------
             # Search Pixabay
             # Convert comma-separated keywords to space-separated for Pixabay
             search_query = " ".join(query.split(",")).strip()
+
             params = {
                 "key": pixabay_api_key,
                 "q": search_query,
-                "per_page": 7,  # Get top 7 results
+                "per_page": 10,  # Get top 10 results for fallback
                 "image_type": "photo",
-                # Removed invalid category parameter (Pixabay only allows one category)
             }
 
             response = requests.get("https://pixabay.com/api/", params=params, timeout=10)
@@ -687,18 +845,31 @@ def generate_images_pixabay(
                 logger.warning(f"No images found for query: {query}")
                 continue
 
-            # Try to pick a unique image from the top 7
             image_url = None
-            for hit in hits:
+            # 1. Try to pick a unique image from the top 3
+            for hit in hits[:3]:
                 url = hit.get("webformatURL")
                 if url and url not in used_image_urls:
                     image_url = url
                     used_image_urls.add(url)
+                    logger.info(f"Selected image from top 3: {image_url}")
                     break
-            # If all top 7 are used, pick the first one (allow duplicate as fallback)
+
+            # 2. If all top 3 are used, expand to top 10
+            if not image_url:
+                for hit in hits[:10]:
+                    url = hit.get("webformatURL")
+                    if url and url not in used_image_urls:
+                        image_url = url
+                        used_image_urls.add(url)
+                        logger.info(f"Selected image from top 10: {image_url}")
+                        break
+
+            # 3. If all top 10 are used, fallback to first (allow duplicate)
             if not image_url:
                 image_url = hits[0].get("webformatURL")
                 used_image_urls.add(image_url)
+                logger.info(f"Fallback to first image: {image_url}")
 
             logger.info(f"Downloading image: {image_url}")
             # Download image
@@ -716,14 +887,15 @@ def generate_images_pixabay(
             logger.error(f"Pixabay error for query '{query}': {e}")
             continue
 
-    return generated
+    return generated, used_image_urls
 
 
 def generate_images_batch(
-    words: list,
+    words: List[str],
     output_dir: str,
     pixabay_api_key: str,
-) -> dict:
+    used_image_urls: Optional[set[str]] = None,
+) -> Tuple[Dict[str, List[str]], set[str]]:
     """
     Generate images for batch of words.
     
@@ -731,28 +903,34 @@ def generate_images_batch(
         words: List of words to get images for
         output_dir: Base output directory
         pixabay_api_key: Pixabay API key
+        used_image_urls: Set of already used image URLs to avoid duplicates
         
     Returns:
-        Dict with {word: [image_filenames]}
+        Tuple of (dict with {word: [image_filenames]}, updated used_image_urls set)
     """
     images_output = {}
+    
+    # Initialize or use provided used URLs set
+    if used_image_urls is None:
+        used_image_urls = set()
     
     for word in words:
         word_image_dir = Path(output_dir) / word.replace(" ", "_")
         word_image_dir.mkdir(parents=True, exist_ok=True)
         
         # Download one image per word
-        image_files = generate_images_pixabay(
+        image_files, used_image_urls = generate_images_pixabay(
             queries=[word],
             output_dir=str(word_image_dir),
             batch_name=word.replace(" ", "_"),
             num_images=1,
             pixabay_api_key=pixabay_api_key,
+            used_image_urls=used_image_urls,
         )
         
         images_output[word] = image_files
     
-    return images_output
+    return images_output, used_image_urls
 
 
 # ============================================================================
@@ -861,8 +1039,88 @@ Finding Anki Media Folder:
         return False
 
 
+def read_tsv_rows(tsv_path: str) -> List[Dict[str, Any]]:
+    """
+    Read TSV file and convert to rows format expected by create_apkg_export.
+    
+    Args:
+        tsv_path: Path to the TSV file
+        
+    Returns:
+        List of dicts with keys: file_name, word, meaning, sentence, ipa, english, audio, image, image_keywords, tags
+    """
+    try:
+        df = pd.read_csv(tsv_path, sep='\t', header=None, 
+                        names=['file_name', 'word', 'meaning', 'sentence', 'ipa', 'english', 'audio', 'image', 'image_keywords', 'tags'],
+                        encoding='utf-8')
+        
+        rows = []
+        for _, row in df.iterrows():
+            rows.append({
+                'file_name': str(row.get('file_name', '')),
+                'word': str(row.get('word', '')),
+                'meaning': str(row.get('meaning', '')),
+                'sentence': str(row.get('sentence', '')),
+                'ipa': str(row.get('ipa', '')),
+                'english': str(row.get('english', '')),
+                'audio': str(row.get('audio', '')),
+                'image': str(row.get('image', '')),
+                'image_keywords': str(row.get('image_keywords', '')),
+                'tags': str(row.get('tags', ''))
+            })
+        
+        return rows
+        
+    except Exception as e:
+        logger.error(f"Error reading TSV file {tsv_path}: {e}")
+        return []
+
+
 def create_apkg_export(
-    rows: list[dict],
+    deck_name: str,
+    tsv_path: str,
+    media_dir: str,
+    output_dir: str,
+    language: str = "English"
+) -> str:
+    """
+    Create .apkg file (Anki deck package) from TSV data.
+    
+    Args:
+        deck_name: Name of the Anki deck
+        tsv_path: Path to the TSV file
+        media_dir: Path to media folder (contains audio + images)
+        output_dir: Directory to save .apkg file
+        language: Target language name
+        
+    Returns:
+        Path to created .apkg file, or empty string if failed
+    """
+    try:
+        # Read TSV data
+        rows = read_tsv_rows(tsv_path)
+        if not rows:
+            logger.error(f"No data found in TSV file: {tsv_path}")
+            return ""
+        
+        # Create output path
+        output_apkg = str(Path(output_dir) / f"{deck_name.replace(' ', '_')}.apkg")
+        
+        # Call the original function with correct parameters
+        success = _create_apkg_from_rows(rows, media_dir, output_apkg, language, deck_name)
+        
+        if success:
+            return output_apkg
+        else:
+            return ""
+            
+    except Exception as e:
+        logger.error(f"Error creating APKG export: {e}")
+        return ""
+
+
+def _create_apkg_from_rows(
+    rows: List[Dict[str, Any]],
     media_dir: str,
     output_apkg: str,
     language: str,
@@ -881,6 +1139,10 @@ def create_apkg_export(
     Returns:
         True if successful, False otherwise
     """
+    if genanki is None:
+        logger.error("genanki library not available. Cannot create APKG file.")
+        return False
+        
     logger.info(f"Preparing to create .apkg at: {output_apkg}")
     output_path = Path(output_apkg)
     if not output_path.parent.exists():
@@ -888,7 +1150,7 @@ def create_apkg_export(
         output_path.parent.mkdir(parents=True, exist_ok=True)
     if not output_path.parent.exists():
         logger.error(f"Failed to create output parent directory: {output_path.parent}")
-        raise FileNotFoundError(f"Could not create output directory: {output_path.parent}")
+        return False
 
     # Create note model with 10 fields and 3 card templates
     model_id = random.randrange(1 << 30, 1 << 31)
@@ -936,21 +1198,36 @@ def create_apkg_export(
         # Extract audio and image filenames
         audio_match = re.search(r'\[sound:(.*?)\]', row.get('audio', ''))
         audio_file = audio_match.group(1) if audio_match else ''
-        image_match = re.search(r'src="(.*?)"', row.get('image', ''))
-        image_file = image_match.group(1) if image_match else ''
+        
+        # Handle image field - could be HTML <img src="file"> or just filename
+        image_field = row.get('image', '').strip()
+        if image_field.startswith('<img src="') and image_field.endswith('">'):
+            # Extract from HTML
+            image_match = re.search(r'src="(.*?)"', image_field)
+            image_file = image_match.group(1) if image_match else ''
+        else:
+            # Assume it's just the filename
+            image_file = image_field
         # Add media files to list
         if audio_file:
             audio_path = os.path.join(media_dir, audio_file)
             if os.path.exists(audio_path):
                 media_files.append(audio_path)
+                logger.debug(f"Added audio media file: {audio_path}")
             else:
                 logger.warning(f"Missing audio file, skipping: {audio_path}")
         if image_file:
             image_path = os.path.join(media_dir, image_file)
             if os.path.exists(image_path):
                 media_files.append(image_path)
+                logger.debug(f"Added image media file: {image_path}")
             else:
                 logger.warning(f"Missing image file, skipping: {image_path}")
+    
+    logger.info(f"Collected {len(media_files)} media files for .apkg package")
+    
+    # Create notes
+    for row in rows:
         # Create note
         import math
         def _s(val):
@@ -981,6 +1258,7 @@ def create_apkg_export(
     try:
         package = genanki.Package(deck)
         package.media_files = media_files
+        logger.info(f"Set {len(media_files)} media files in package: {[os.path.basename(f) for f in media_files]}")
         package.write_to_file(str(output_path))
         logger.info(f"Created .apkg file with {len(rows)} notes at {output_apkg}")
         return True

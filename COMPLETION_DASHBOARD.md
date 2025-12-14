@@ -15,36 +15,38 @@
 
 | Objective | Status | Details |
 |-----------|--------|---------|
-| **Unified GUI** | ✅ | Single Streamlit app replaces 5 scripts |
-| **Pitch Control** | ✅ | -20% to +20% audio tone adjustment |
-| **Rate Limiting** | ✅ | Smart batch warnings implemented |
-| **Error Fixes** | ✅ | 6 critical bugs resolved |
-| **Documentation** | ✅ | Complete README, release notes, guides |
-| **Code Cleanup** | ✅ | 30+ legacy files removed (7,149 lines) |
-| **Testing** | ✅ | End-to-end tested (Hindi, Spanish, Arabic) |
-| **Deployment Ready** | ✅ | Git history clean, all tests passing |
+| **Image Display Fix** | ✅ | Fixed images showing as filenames instead of pictures in Anki |
+| **Repository Cleanup** | ✅ | Removed 30+ obsolete files (old apps, tests, docs) |
+| **Media Embedding** | ✅ | All audio/images properly embedded in .apkg files |
+| **Error Recovery** | ✅ | Enhanced API failure handling and validation |
 
 ---
 
 ## 📈 METRICS AT A GLANCE
 
 ```
-CODE CHANGES
-├─ Files Modified: 3 (app_v3.py, core_functions.py, README.md)
-├─ Files Deleted: 30+ (legacy scripts, tests, YouTube docs)
-├─ Lines Added: 419 (new features)
-├─ Lines Removed: 7,149 (obsolete code)
-└─ Net Change: 6,730 lines cleaner
+CODE CHANGES (v3.1)
+├─ Files Modified: 4 (app_v3.py, core_functions.py, README.md, COMPLETION_DASHBOARD.md)
+├─ Files Deleted: 30+ (legacy apps, tests, docs) - Additional cleanup
+├─ Lines Added: 50+ (image display fixes, error handling)
+├─ Lines Removed: 7,149+ (obsolete code + cleanup)
+└─ Net Change: Repository streamlined and optimized
 
-FEATURES
+FEATURES (v3.1)
 ├─ UI/UX: 4-step unified flow ✅
 ├─ Audio: Pitch + speed control ✅
+├─ Images: Fixed display in Anki cards ✅
 ├─ Monitoring: Rate-limit warnings ✅
 ├─ Progress: Real-time tracking ✅
 ├─ Persistence: SQLite + optional Firebase ✅
-└─ Integration: 109 languages supported ✅
+├─ Integration: 109 languages supported ✅
+└─ Media: Proper .apkg embedding ✅
 
-BUGS FIXED
+BUGS FIXED (v3.1)
+├─ Image display in Anki cards ✅
+├─ Media file embedding in .apkg ✅
+├─ Inconsistent image data types ✅
+├─ Duplicate image avoidance ✅
 ├─ Edge TTS pitch format error ✅
 ├─ .apkg FileNotFoundError ✅
 ├─ Float/NaN in Anki fields ✅

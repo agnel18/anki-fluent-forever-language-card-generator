@@ -1,0 +1,146 @@
+# pages/language_select.py - Language selection page for the language learning app
+
+import streamlit as st
+import json
+from pathlib import Path
+from frequency_utils import get_available_frequency_lists
+
+
+def render_language_select_page():
+    """Render the language selection page."""
+    with st.container():
+        st.markdown("# 🌍 **SELECT YOUR LANGUAGE**")
+        st.markdown("Choose your target language for learning. Your favorite languages appear first.")
+        
+        # Progress indicator
+        st.markdown("**Progress:** Step 1 of 5")
+        st.progress(0.2)
+
+        st.markdown("---")
+
+        st.info("💡 **Tip:** Your favorite languages are pinned to the top for quick access. You can change their order in Settings → Favorite Languages.")
+
+    # Get languages configuration from session state
+    all_languages = st.session_state.get("all_languages", [])
+
+    # --- Preferred order: learned_languages at top, divider, then all others ---
+    user_settings_path = Path(__file__).parent.parent / "user_settings.json"
+    if user_settings_path.exists():
+        with open(user_settings_path, "r", encoding="utf-8") as f:
+            per_lang_settings = json.load(f)
+        default_lang = per_lang_settings.get("default_language", None)
+    else:
+        per_lang_settings = {}
+        default_lang = None
+
+    # Get user's learned languages (in preferred order)
+    learned_langs = [l["name"] for l in st.session_state.get("learned_languages", [])]
+    # All language names
+    all_lang_names = [lang["name"] for lang in all_languages]
+    # Languages not in learned list
+    other_langs = [l for l in all_lang_names if l not in learned_langs]
+
+    # Build options: learned (pinned) + divider + others
+    options = []
+    for l in learned_langs:
+        options.append({"name": l, "section": "pinned"})
+    if learned_langs and other_langs:
+        options.append({"name": "──────────────", "section": "divider"})
+    for l in other_langs:
+        options.append({"name": l, "section": "other"})
+
+    # Find default selection
+    if default_lang and any(opt["name"] == default_lang for opt in options if opt["section"] != "divider"):
+        default_idx = [i for i, opt in enumerate(options) if opt["name"] == default_lang][0]
+    elif learned_langs:
+        default_idx = 0
+    else:
+        default_idx = next((i for i, opt in enumerate(options) if opt["section"] != "divider"), 0)
+
+    def format_func(opt):
+        if opt["section"] == "divider":
+            return opt["name"]
+        elif opt["section"] == "pinned":
+            # Show rank (1-based) for pinned
+            rank = learned_langs.index(opt["name"]) + 1 if opt["name"] in learned_langs else ""
+            return f"{rank}. {opt['name']} ★"
+        else:
+            return opt["name"]
+
+    # Enhanced language selection - more prominent
+    with st.container():
+        st.markdown("### 🎯 **Which language do you want to learn?**")
+        st.markdown("*Choose your target language from the dropdown below*")
+
+        # Make the selectbox more prominent with larger styling
+        st.markdown("""
+        <style>
+        .language-select-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .language-select-label {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        with st.container():
+            # Large, prominent selectbox
+            selected_opt = st.selectbox(
+                "🌍 Select Your Language:",
+                options,
+                index=default_idx,
+                format_func=format_func,
+                key="main_language_select",
+                help="Choose the language you want to create Anki decks for"
+            )
+
+            # Add visual feedback for selection
+            if selected_opt["section"] != "divider":
+                st.success(f"🎉 **{selected_opt['name']}** selected! Ready to continue.")
+    # If divider is selected, auto-select first real language
+    if selected_opt["section"] == "divider":
+        # Pick first after divider, or first pinned
+        next_idx = options.index(selected_opt) + 1
+        if next_idx < len(options):
+            selected_opt = options[next_idx]
+        else:
+            selected_opt = options[0]
+
+    selected_lang = selected_opt["name"]
+    available_lists = get_available_frequency_lists()
+    max_words = available_lists.get(selected_lang, 5000)
+
+    # Show language stats in a nice metric layout
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Available Words", f"{max_words:,}")
+    with col2:
+        st.metric("Your Favorites", len(learned_langs))
+    with col3:
+        st.metric("Total Languages", len(all_languages))
+
+    st.markdown("---")
+
+    # Navigation buttons at bottom
+    with st.container():
+        col_back, col_next, col_progress = st.columns([1, 1, 2])
+        with col_back:
+            if st.button("← Back to Main", key="lang_back"):
+                st.session_state.page = "main"
+                st.rerun()
+        with col_next:
+            if st.button("Next: Select Words →", use_container_width=True, type="primary"):
+                st.session_state.selected_language = selected_lang
+                st.session_state.page = "word_select"
+                st.session_state.scroll_to_top = True
+                st.rerun()
+        with col_progress:
+            st.caption("Step 1 of 5: Language Selection")

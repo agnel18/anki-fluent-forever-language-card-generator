@@ -1,8 +1,6 @@
-"""
-Firebase Manager for Language Learning App
-Handles user sessions, progress sync, and statistics persistence
-Supports anonymous authentication and Firestore data storage
-"""
+# ============================================================================
+# IMPORTS
+# ============================================================================
 
 import logging
 import os
@@ -13,6 +11,91 @@ from datetime import datetime
 import uuid
 
 logger = logging.getLogger(__name__)
+
+# ============================================================================
+# USAGE STATS PERSISTENCE
+# ============================================================================
+
+def update_usage_stats_to_firebase(session_id: str, stats_delta: Dict, language: Optional[str] = None) -> bool:
+    """
+    Incrementally update persistent usage stats for a user in Firebase.
+    Args:
+        session_id: User/session ID
+        stats_delta: Dict of fields to increment (e.g., {"groq_calls": 2, "pixabay_calls": 1})
+        language: If provided, also update per-language stats
+    Returns:
+        True if successful, False otherwise
+    """
+    if not firebase_initialized:
+        return False
+    try:
+        db = firestore.client()
+        user_ref = db.collection("users").document(session_id)
+        updates = {}
+        # Top-level usage_stats
+        for k, v in stats_delta.items():
+            updates[f"usage_stats.{k}"] = firestore.Increment(v)
+        # Per-language usage_stats
+        if language:
+            for k, v in stats_delta.items():
+                updates[f"usage_stats.per_language.{language}.{k}"] = firestore.Increment(v)
+        updates["usage_stats.last_updated"] = datetime.now().isoformat()
+        user_ref.set(updates, merge=True)
+        return True
+    except Exception as e:
+        logger.error(f"Error updating usage stats: {e}")
+        return False
+
+# ============================================================================
+# USAGE STATS LOAD & MERGE
+# ============================================================================
+def load_usage_stats_from_firebase(session_id: str) -> Optional[Dict]:
+    """
+    Load persistent usage stats for a user from Firebase.
+    Returns the usage_stats dict or None if not found.
+    """
+    if not firebase_initialized:
+        return None
+    try:
+        db = firestore.client()
+        doc = db.collection("users").document(session_id).get()
+        if doc.exists:
+            return doc.to_dict().get("usage_stats", {})
+        return None
+    except Exception as e:
+        logger.error(f"Error loading usage stats: {e}")
+        return None
+
+def merge_guest_stats_to_firebase(session_id: str, guest_stats: Dict) -> bool:
+    """
+    Merge guest session stats into persistent usage stats in Firebase.
+    Adds guest_stats values to existing persistent stats.
+    """
+    if not firebase_initialized or not guest_stats:
+        return False
+    try:
+        db = firestore.client()
+        user_ref = db.collection("users").document(session_id)
+        updates = {}
+        for k, v in guest_stats.items():
+            if isinstance(v, int):
+                updates[f"usage_stats.{k}"] = firestore.Increment(v)
+            elif isinstance(v, dict):
+                # For per_language dicts
+                for lang, lang_stats in v.items():
+                    for lk, lv in lang_stats.items():
+                        updates[f"usage_stats.per_language.{lang}.{lk}"] = firestore.Increment(lv)
+        updates["usage_stats.last_updated"] = datetime.now().isoformat()
+        user_ref.set(updates, merge=True)
+        return True
+    except Exception as e:
+        logger.error(f"Error merging guest stats: {e}")
+        return False
+"""
+Firebase Manager for Language Learning App
+Handles user sessions, progress sync, and statistics persistence
+Supports anonymous authentication and Firestore data storage
+"""
 
 # Firebase will be initialized on demand
 firebase_initialized = False
@@ -49,6 +132,12 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
         return False
     
     if firebase_initialized:
+        return True
+    
+    # Check if Firebase app already exists
+    if firebase_admin._apps:
+        firebase_initialized = True
+        logger.info("✅ Firebase already initialized")
         return True
     
     try:

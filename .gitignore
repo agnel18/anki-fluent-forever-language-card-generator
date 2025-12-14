@@ -26,34 +26,72 @@ venv/
 ENV/
 env/
 
-# Sensitive Files
+# Sensitive Files & Secrets (NEVER COMMIT)
 .env
+.env.local
+.env.*.local
+*.env
 firebase_config.json
+user_data.db
+user_secrets.json
+user_full_state.json
+user_settings.json
 
-# Local user secrets and state (never commit)
-streamlit_app/user_secrets.json
-streamlit_app/user_full_state.json
+# Streamlit secrets
+.streamlit/secrets.toml
+.streamlit/secrets.json
 
-# Generated outputs (keep local, do not commit)
-FluentForever_*_Perfect/ANKI_IMPORT.tsv
-FluentForever_*_Perfect/working_data.xlsx
-FluentForever_*_Perfect/audio/
-FluentForever_*_Perfect/images/
+# All user data and state files
+streamlit_app/user_*.json
+streamlit_app/user_*.db
+**/user_*.json
+**/user_*.db
 
-# Excel temporary files
-~$*.xlsx
-~$*.xls
+# API Keys and credentials
+*_key.txt
+*_keys.txt
+api_keys.*
+credentials.*
+secrets.*
 
-# IDE
+# Generated outputs and media (keep local)
+output/
+**/output/
+**/media/
+**/audio/
+**/ANKI_IMPORT.tsv
+**/*.apkg
+
+# Cache files
+cache/
+**/cache/
+**/*.cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
 Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+~$*.xlsx
+~$*.xls
+
+# Logs
+*.log
+logs/
+**/*.log
 
 # Note: Sample output files are included for demonstration
 # Users should delete these before adapting for their own use:
