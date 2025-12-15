@@ -76,30 +76,33 @@ def render_language_select_page():
         st.markdown("""
         <style>
         .language-select-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin: 25px 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
         .language-select-label {
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         </style>
         """, unsafe_allow_html=True)
 
         with st.container():
-            # Large, prominent selectbox
+            # Prominent header above dropdown
+            st.markdown("### 🌍 Select Your Language")
+            # Large, prominent selectbox (label removed)
             selected_opt = st.selectbox(
-                "🌍 Select Your Language:",
+                "Language Selection",
                 options,
                 index=default_idx,
                 format_func=format_func,
                 key="main_language_select",
-                help="Choose the language you want to create Anki decks for"
+                help="Choose the language you want to create Anki decks for",
+                label_visibility="hidden"
             )
 
             # Add visual feedback for selection
@@ -129,18 +132,18 @@ def render_language_select_page():
 
     st.markdown("---")
 
-    # Navigation buttons at bottom
+    # Navigation buttons and progress in single row
     with st.container():
-        col_back, col_next, col_progress = st.columns([1, 1, 2])
+        col_back, col_progress, col_next = st.columns([1, 2, 1])
         with col_back:
             if st.button("← Back to Main", key="lang_back"):
                 st.session_state.page = "main"
                 st.rerun()
+        with col_progress:
+            st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)
         with col_next:
             if st.button("Next: Select Words →", use_container_width=True, type="primary"):
                 st.session_state.selected_language = selected_lang
                 st.session_state.page = "word_select"
                 st.session_state.scroll_to_top = True
                 st.rerun()
-        with col_progress:
-            st.caption("Step 1 of 5: Language Selection")

@@ -2,6 +2,7 @@
 
 import streamlit as st
 import re
+import time
 from frequency_utils import get_words_with_ranks, parse_uploaded_word_file, validate_word_list
 
 
@@ -63,7 +64,7 @@ def render_word_select_page():
             **Type or paste your own words below.**
             - Separate words with commas, spaces, or new lines.
             - Example: `apple, banana, orange` or one word per line.
-            - Max 100 words per batch. Duplicates will be removed.
+            - Max 10 words per batch. Recommended: 5-10 words for optimal processing. Duplicates will be removed.
             """)
             # Text area for manual word input
             # Use a flag to control clearing instead of modifying session state directly
@@ -82,25 +83,24 @@ def render_word_select_page():
                 key="typed_words_input"
             )
 
-            # Add Process Words button when there's input
-            if typed_words_raw.strip():
-                if st.button("🔍 Process Words", key="process_typed_words", type="secondary", use_container_width=True):
-                    # Process the words
-                    import re
-                    typed_words_list = re.split(r'[\s,\n]+', typed_words_raw)
-                    typed_words_list = [w.strip() for w in typed_words_list if w.strip()]
-                    typed_words_list = list(dict.fromkeys(typed_words_list))[:100]  # Remove duplicates and limit
+            # Process Words button always visible, disabled when no content
+            if st.button("🔍 Process Words", key="process_typed_words", type="secondary", use_container_width=True, disabled=not typed_words_raw.strip()):
+                # Process the words
+                import re
+                typed_words_list = re.split(r'[\s,\n]+', typed_words_raw)
+                typed_words_list = [w.strip() for w in typed_words_list if w.strip()]
+                typed_words_list = list(dict.fromkeys(typed_words_list))[:10]  # Remove duplicates and limit
 
-                    if typed_words_list:
-                        st.success(f"✅ **{len(typed_words_list)} word(s) processed!** Ready to add to your selection.")
-                        st.session_state.processed_words = typed_words_list
-                    else:
-                        st.warning("No valid words found. Please enter some words.")
-                        st.session_state.processed_words = []
-                elif 'processed_words' in st.session_state and st.session_state.processed_words:
-                    typed_words_list = st.session_state.processed_words
+                if typed_words_list:
+                    st.success(f"✅ **{len(typed_words_list)} word(s) processed!** Ready to add to your selection.")
+                    st.session_state.processed_words = typed_words_list
                 else:
-                    typed_words_list = []
+                    st.warning("No valid words found. Please enter some words.")
+                    st.session_state.processed_words = []
+
+            # Check if words are processed
+            if 'processed_words' in st.session_state and st.session_state.processed_words:
+                typed_words_list = st.session_state.processed_words
             else:
                 typed_words_list = []
 
@@ -122,17 +122,28 @@ def render_word_select_page():
                         existing_words = set(st.session_state.selected_words)
                         new_words = [w for w in typed_words_list if w not in existing_words]
                         st.session_state.selected_words.extend(new_words)
-                        st.success(f"✅ Added {len(new_words)} new word(s) to your selection!")
-                        # Clear the text area using flag instead of direct session state modification
-                        st.session_state.clear_typed_words_input = True
-                        st.rerun()
+                        # Detailed confirmation
+                        if new_words:
+                            st.success(f"✅ Successfully added {len(new_words)} new word(s): {', '.join(new_words)}")
+                            time.sleep(2)  # Keep the success message visible for 2 seconds
+                            # Clear the text area using flag instead of direct session state modification
+                            st.session_state.clear_typed_words_input = True
+                        else:
+                            st.info("All words were already in your selection.")
+                            time.sleep(2)  # Keep the info message visible for 2 seconds
+                            # Clear the text area using flag instead of direct session state modification
+                            st.session_state.clear_typed_words_input = True
                 
                 with col_clear:
                     if st.button("🗑️ Clear Text", key="clear_typed_words", use_container_width=True):
                         st.session_state.clear_typed_words_input = True
-                        st.rerun()
             else:
                 st.info("Enter some words above to see them here.")
+
+            # Handle text area clearing with rerun
+            if st.session_state.get('clear_typed_words_input', False):
+                st.session_state.clear_typed_words_input = False
+                st.rerun()
 
         with tab_frequency:
             page_size = 20  # Reduced to 20 for API cost control
@@ -250,8 +261,8 @@ def render_word_select_page():
                 words = re.split(r'[\s,\n]+', typed_words_raw)
                 words_to_use = [w.strip() for w in words if w.strip()]
             
-            # Remove duplicates and limit to 100 words
-            words_to_use = list(dict.fromkeys(words_to_use))[:100]
+            # Remove duplicates and limit to 10 words
+            words_to_use = list(dict.fromkeys(words_to_use))[:10]
             st.session_state.selected_words = words_to_use
             
             if not words_to_use:

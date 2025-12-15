@@ -170,21 +170,9 @@ all_languages:
     name: "Amharic"
     edge_tts_voice: "am-ET-MekdesNeural"
     
-  - code: "hy"
-    name: "Armenian"
-    edge_tts_voice: "hy-AM-AnahitNeural"
-    
   - code: "az"
     name: "Azerbaijani"
     edge_tts_voice: "az-AZ-BanuNeural"
-    
-  - code: "eu"
-    name: "Basque"
-    edge_tts_voice: "eu-ES-AinhoaNeural"
-    
-  - code: "be"
-    name: "Belarusian"
-    edge_tts_voice: "be-BY-NatashaSergeyevichNeural"
     
   - code: "bg"
     name: "Bulgarian"
@@ -221,10 +209,6 @@ all_languages:
   - code: "he"
     name: "Hebrew"
     edge_tts_voice: "he-IL:HilaNeural"
-    
-  - code: "hu"
-    name: "Hungarian"
-    edge_tts_voice: "hu-HU:NoemiNeural"
     
   - code: "is"
     name: "Icelandic"
@@ -266,6 +250,86 @@ all_languages:
     name: "Serbian"
     edge_tts_voice: "sr-RS:SophieNeural"
 
+  - code: "bs"
+    name: "Bosnian"
+    edge_tts_voice: "bs-BA-GoranNeural"
+    
+  - code: "my"
+    name: "Burmese"
+    edge_tts_voice: "my-MM-NilarNeural"
+    
+  - code: "hr"
+    name: "Croatian"
+    edge_tts_voice: "hr-HR-GabrijelaNeural"
+    
+  - code: "kn"
+    name: "Kannada"
+    edge_tts_voice: "kn-IN-GaganNeural"
+    
+  - code: "kk"
+    name: "Kazakh"
+    edge_tts_voice: "kk-KZ-AigulNeural"
+    
+  - code: "km"
+    name: "Khmer"
+    edge_tts_voice: "km-KH-PisethNeural"
+    
+  - code: "lo"
+    name: "Lao"
+    edge_tts_voice: "lo-LA-ChanthavongNeural"
+    
+  - code: "ms"
+    name: "Malay"
+    edge_tts_voice: "ms-MY-OsmanNeural"
+    
+  - code: "mt"
+    name: "Maltese"
+    edge_tts_voice: "mt-MT-GraceNeural"
+    
+  - code: "mn"
+    name: "Mongolian"
+    edge_tts_voice: "mn-MN-BataaNeural"
+    
+  - code: "ne"
+    name: "Nepali"
+    edge_tts_voice: "ne-NP-HemkalaNeural"
+    
+  - code: "ps"
+    name: "Pashto"
+    edge_tts_voice: "ps-AF-GulNawazNeural"
+    
+  - code: "si"
+    name: "Sinhala"
+    edge_tts_voice: "si-LK-SameeraNeural"
+    
+  - code: "so"
+    name: "Somali"
+    edge_tts_voice: "so-SO-MuuseNeural"
+    
+  - code: "su"
+    name: "Sundanese"
+    edge_tts_voice: "su-ID-JajangNeural"
+    
+  - code: "sw"
+    name: "Swahili"
+    edge_tts_voice: "sw-KE-RafikiNeural"
+    
+  - code: "ur"
+    name: "Urdu"
+    edge_tts_voice: "ur-IN-GulNeural"
+    
+  - code: "uz"
+    name: "Uzbek"
+    edge_tts_voice: "uz-UZ-MadinaNeural"
+    
+  - code: "zu"
+    name: "Zulu"
+    edge_tts_voice: "zu-ZA-ThandoNeural"
+    
+  - code: "jv"
+    name: "Javanese"
+    edge_tts_voice: "jv-ID-DimasNeural"
+
 # Map language codes to frequency list file names
 frequency_list_map:
   en: "English (EN).xlsx"
@@ -301,10 +365,7 @@ frequency_list_map:
   af: "Afrikaans (AF).xlsx"
   sq: "Albanian (SQ).xlsx"
   am: "Amharic (AM).xlsx"
-  hy: "Armenian (HY).xlsx"
   az: "Azerbaijani (AZ).xlsx"
-  eu: "Basque (EU).xlsx"
-  be: "Belarusian (BE).xlsx"
   bg: "Bulgarian (BG).xlsx"
   ca: "Catalan (CA).xlsx"
   cy: "Welsh (CY).xlsx"
@@ -324,6 +385,26 @@ frequency_list_map:
   sk: "Slovak (SK).xlsx"
   sl: "Slovenian (SL).xlsx"
   sr: "Serbian (SR).xlsx"
+  bs: "Bosnian (BS).xlsx"
+  my: "Burmese (MY).xlsx"
+  hr: "Croatian (HR).xlsx"
+  kn: "Kannada (KN).xlsx"
+  kk: "Kazakh (KK).xlsx"
+  km: "Khmer (KM).xlsx"
+  lo: "Lao (LO).xlsx"
+  ms: "Malay (MS).xlsx"
+  mt: "Maltese (MT).xlsx"
+  mn: "Mongolian (MN).xlsx"
+  ne: "Nepali (NE).xlsx"
+  ps: "Pashto (PS).xlsx"
+  si: "Sinhala (SI).xlsx"
+  so: "Somali (SO).xlsx"
+  su: "Sundanese (SU).xlsx"
+  sw: "Swahili (SW).xlsx"
+  ur: "Urdu (UR).xlsx"
+  uz: "Uzbek (UZ).xlsx"
+  zu: "Zulu (ZU).xlsx"
+  jv: "Javanese (JW).xlsx"
 
 # UI strings for 5 languages (English, Spanish, French, Hindi, Mandarin)
 ui_strings:

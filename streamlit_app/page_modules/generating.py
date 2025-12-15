@@ -13,6 +13,25 @@ from core_functions import generate_complete_deck, create_apkg_export
 def render_generating_page():
     """Render the deck generation page with comprehensive error recovery."""
 
+    # Add minimal CSS to ensure visibility without overriding theme
+    st.markdown("""
+    <style>
+    /* Ensure log container is visible */
+    .log-container {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 14px;
+        margin: 10px 0;
+        color: var(--text-color);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # Force scroll to top when entering generating page
     st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
 
@@ -35,41 +54,48 @@ def render_generating_page():
         enable_topics = st.session_state.get("enable_topics", False)
         selected_topics = st.session_state.get("selected_topics", [])
         
-        # Create summary columns
-        col1, col2 = st.columns(2)
+        # Main settings overview
+        col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.markdown("### 📝 **Language & Words**")
-            st.info(f"**Language:** {selected_lang}")
-            st.info(f"**Words Selected:** {len(selected_words)}")
-            if selected_words:
-                # Show first few words as preview
-                preview_words = selected_words[:5] if len(selected_words) > 5 else selected_words
-                preview_text = ", ".join(preview_words)
-                if len(selected_words) > 5:
-                    preview_text += f" ... (+{len(selected_words) - 5} more)"
-                st.caption(f"Preview: {preview_text}")
+            st.markdown("### 🌍 **Language**")
+            st.info(f"**{selected_lang}**")
             
-            st.markdown("### ⚙️ **Sentence Settings**")
-            st.info(f"**Sentences per Word:** {num_sentences}")
-            st.info(f"**Sentence Length:** {min_length}-{max_length} words")
-            st.info(f"**Difficulty:** {difficulty.capitalize()}")
-        
+            st.markdown("### 📝 **Words Selected**")
+            st.info(f"**{len(selected_words)} words**")
+            
         with col2:
-            st.markdown("### 🔊 **Audio Settings**")
-            st.info(f"**Voice:** {voice}")
-            st.info(f"**Speed:** {audio_speed}x")
+            st.markdown("### ⚙️ **Sentences per Word**")
+            st.info(f"**{num_sentences} sentences**")
             
-            st.markdown("### 🎯 **Topics**")
+            st.markdown("### 🔊 **Audio Voice**")
+            st.info(f"**{voice}**")
+            
+        with col3:
+            st.markdown("### 🎵 **Audio Speed**")
+            st.info(f"**{audio_speed}x**")
+            
+            st.markdown("### 🎯 **Topics Selected**")
             if enable_topics and selected_topics:
-                st.info(f"**Topics Enabled:** {len(selected_topics)} selected")
-                # Show selected topics
+                st.info(f"**{len(selected_topics)} topics**")
                 topics_text = ", ".join(selected_topics)
-                if len(topics_text) > 100:
-                    topics_text = topics_text[:97] + "..."
-                st.caption(f"Selected: {topics_text}")
+                if len(topics_text) > 80:
+                    topics_text = topics_text[:77] + "..."
+                st.caption(f"{topics_text}")
             else:
-                st.info("**Topics:** Disabled (general vocabulary)")
+                st.info("**No topics**")
+        
+        # Separate section for viewing selected words
+        st.markdown("---")
+        st.markdown("### 👀 **View Selected Words**")
+        if selected_words:
+            with st.expander("Click to view all selected words", expanded=False):
+                # Display words in a nice grid
+                cols = st.columns(4)
+                for i, word in enumerate(selected_words):
+                    cols[i % 4].write(f"• {word}")
+        else:
+            st.warning("No words selected!")
         
         st.markdown("---")
 
@@ -117,7 +143,7 @@ def render_generating_page():
     def log_message_local(msg):
         st.session_state['generation_log'].append(msg)
         with messages_container:
-            st.markdown('<div style="background:#23272e;color:#f3f6fa;font-family:monospace,monospace;font-size:16px;padding:10px 14px;max-height:300px;overflow-y:auto;border-radius:8px;border:1px solid #30363d;">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
+            st.markdown('<div class="log-container">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
         # Write to backend log stream for download
         st.session_state['log_stream'].write(msg + '\n')
         st.session_state['log_stream'].flush()
@@ -148,18 +174,23 @@ def render_generating_page():
             try:
                 shutil.rmtree(media_dir)
                 log_message_local(f"<b>🧹 Cleared existing media directory:</b> {media_dir}")
+                log_message(f"[DEBUG] Cleared media directory: {media_dir}")
             except Exception as e:
                 log_message_local(f"<b>⚠️ Could not clear media directory:</b> {e}")
+                log_message(f"[WARNING] Could not clear media directory {media_dir}: {e}")
 
         images_dir = str(Path(output_dir) / "images")
         if os.path.exists(images_dir):
             try:
                 shutil.rmtree(images_dir)
                 log_message_local(f"<b>🧹 Cleared existing images directory:</b> {images_dir}")
+                log_message(f"[DEBUG] Cleared images directory: {images_dir}")
             except Exception as e:
                 log_message_local(f"<b>⚠️ Could not clear images directory:</b> {e}")
+                log_message(f"[WARNING] Could not clear images directory {images_dir}: {e}")
 
         st.session_state['output_dirs_cleared'] = True
+        log_message(f"[DEBUG] Output directories cleared. Media: {media_dir}, Images: {images_dir}")
 
     # Generation logic with comprehensive error recovery
     step = st.session_state['generation_progress']['step']
@@ -185,12 +216,32 @@ def render_generating_page():
         detail_text.markdown("*This process includes error recovery - if any component fails, we'll continue with the rest...*")
 
         try:
-            # Progress callback for UI updates
+            # Progress callback for UI updates and detailed logging
             def progress_callback(progress_pct, current_word, status):
                 progress_bar.progress(progress_pct)
                 detail_text.markdown(f"*{status}*")
                 status_text.info(f"⚙️ {current_word}: {status}")
+                
+                # Add detailed technical logs for debugging
+                log_message_local(f"[DEBUG] Progress: {progress_pct:.1%} - Word: '{current_word}' - Status: {status}")
+                log_message(f"[DEBUG] Progress: {progress_pct:.1%} - Word: '{current_word}' - Status: {status}")
 
+            # Call the comprehensive generation function with error recovery
+            log_message_local(f"[DEBUG] Starting generate_complete_deck with params:")
+            log_message_local(f"[DEBUG] - Words: {selected_words}")
+            log_message_local(f"[DEBUG] - Language: {selected_lang}")
+            log_message_local(f"[DEBUG] - Output dir: {output_dir}")
+            log_message_local(f"[DEBUG] - Sentences per word: {num_sentences}")
+            log_message_local(f"[DEBUG] - Sentence length range: {min_length}-{max_length}")
+            log_message_local(f"[DEBUG] - Difficulty: {difficulty}")
+            log_message_local(f"[DEBUG] - Audio speed: {audio_speed}")
+            log_message_local(f"[DEBUG] - Voice: {voice}")
+            log_message_local(f"[DEBUG] - API keys present: Groq={bool(groq_api_key)}, Pixabay={bool(pixabay_api_key)}")
+            
+            log_message(f"[DEBUG] Starting generate_complete_deck with {len(selected_words)} words")
+            log_message(f"[DEBUG] Language: {selected_lang}, Output dir: {output_dir}")
+            log_message(f"[DEBUG] API keys configured: Groq={'YES' if groq_api_key else 'NO'}, Pixabay={'YES' if pixabay_api_key else 'NO'}")
+            
             # Call the comprehensive generation function with error recovery
             result = generate_complete_deck(
                 words=selected_words,
@@ -219,8 +270,17 @@ def render_generating_page():
             progress['output_dir'] = result.get('output_dir')
             progress['partial_success'] = result.get('partial_success', False)
 
+            # Log detailed results
+            log_message_local(f"[DEBUG] Generation result: success={result.get('success', False)}")
+            log_message_local(f"[DEBUG] Result details: {result}")
+            log_message(f"[DEBUG] Generation completed. Success: {result.get('success', False)}")
+            log_message(f"[DEBUG] TSV path: {result.get('tsv_path')}")
+            log_message(f"[DEBUG] Media dir: {result.get('media_dir')}")
+            log_message(f"[DEBUG] Errors: {len(result.get('errors', []))}")
+
             if result.get('success'):
                 log_message_local("<b>✅ Deck generation completed successfully!</b>")
+                log_message("[SUCCESS] Deck generation completed successfully!")
                 progress_bar.progress(1.0)
                 current_status.markdown("🎉 **Deck generation completed!**")
                 step_indicator.markdown("✅ **Success!**")
@@ -228,6 +288,9 @@ def render_generating_page():
                 detail_text.markdown("*Your Anki deck is ready. Moving to export...*")
 
                 # Create APKG file
+                log_message_local("<b>📦 Creating APKG file...</b>")
+                log_message("[DEBUG] Starting APKG creation")
+                
                 try:
                     apkg_path = create_apkg_export(
                         deck_name=f"{selected_lang} Learning Deck",
@@ -237,6 +300,8 @@ def render_generating_page():
                     )
                     progress['apkg_path'] = apkg_path
                     progress['apkg_ready'] = True
+                    
+                    log_message(f"[DEBUG] APKG creation result: {apkg_path}")
                     log_message_local(f"<b>📦 APKG file created:</b> {apkg_path}")
                     
                     # Read APKG file and store in session state for download
@@ -245,12 +310,15 @@ def render_generating_page():
                             st.session_state.apkg_file = f.read()
                         st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_deck.apkg"
                         log_message_local(f"<b>📁 APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
+                        log_message(f"[DEBUG] APKG file loaded: {len(st.session_state.apkg_file)} bytes, filename: {st.session_state.apkg_filename}")
                     else:
                         log_message_local(f"<b>⚠️ APKG file not found at path:</b> {apkg_path}")
+                        log_message(f"[ERROR] APKG file not found at path: {apkg_path}")
                         progress['apkg_ready'] = False
                         
                 except Exception as e:
                     log_message_local(f"<b>⚠️ APKG creation failed:</b> {e}")
+                    log_message(f"[ERROR] APKG creation failed: {e}")
                     progress['apkg_ready'] = False
 
                 progress['step'] = 2  # Move to completion
@@ -261,8 +329,23 @@ def render_generating_page():
                 # Handle errors
                 error_msg = result.get('error', 'Unknown error occurred')
                 error_summary = result.get('error_summary', '')
+                errors = result.get('errors', [])
 
                 log_message_local(f"<b>❌ Deck generation completed with errors:</b> {error_msg}")
+                log_message(f"[ERROR] Deck generation failed: {error_msg}")
+                log_message(f"[ERROR] Error summary: {error_summary}")
+                log_message(f"[ERROR] Total errors: {len(errors)}")
+                
+                if error_summary:
+                    log_message_local(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
+                    log_message(f"[ERROR] Details: {error_summary}")
+                
+                # Log individual errors
+                for i, error in enumerate(errors):
+                    log_message(f"[ERROR #{i+1}] {error.get('component', 'Unknown')}: {error.get('error', 'Unknown error')}")
+                    if error.get('critical'):
+                        log_message(f"[CRITICAL] {error.get('component', 'Unknown')} failed critically")
+
                 if error_summary:
                     log_message_local(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
 
@@ -274,6 +357,7 @@ def render_generating_page():
 
                 # Still try to create APKG if we have partial results
                 if result.get('tsv_path') and result.get('partial_success'):
+                    log_message("[DEBUG] Attempting partial APKG creation")
                     try:
                         apkg_path = create_apkg_export(
                             deck_name=f"{selected_lang} Learning Deck (Partial)",
@@ -284,6 +368,7 @@ def render_generating_page():
                         progress['apkg_path'] = apkg_path
                         progress['apkg_ready'] = True
                         log_message_local(f"<b>📦 Partial APKG file created:</b> {apkg_path}")
+                        log_message(f"[SUCCESS] Partial APKG created: {apkg_path}")
                         detail_text.markdown("*Despite errors, a partial deck was created and is available for download.*")
                         
                         # Read APKG file and store in session state for download
@@ -292,14 +377,18 @@ def render_generating_page():
                                 st.session_state.apkg_file = f.read()
                             st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_deck_partial.apkg"
                             log_message_local(f"<b>📁 Partial APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
+                            log_message(f"[DEBUG] Partial APKG loaded: {len(st.session_state.apkg_file)} bytes")
                         else:
                             log_message_local(f"<b>⚠️ Partial APKG file not found at path:</b> {apkg_path}")
+                            log_message(f"[ERROR] Partial APKG not found: {apkg_path}")
                             progress['apkg_ready'] = False
                             
                     except Exception as e:
                         log_message_local(f"<b>❌ APKG creation also failed:</b> {e}")
+                        log_message(f"[ERROR] Partial APKG creation failed: {e}")
                         progress['apkg_ready'] = False
                 else:
+                    log_message("[DEBUG] No partial success - skipping APKG creation")
                     progress['apkg_ready'] = False
 
                 progress['step'] = 2  # Move to completion
@@ -312,6 +401,10 @@ def render_generating_page():
             progress['step'] = 2  # Move to completion with error
             st.session_state['generation_progress'] = progress
             log_message_local(f"<b>💥 Critical error:</b> {e}")
+            log_message(f"[CRITICAL] Unexpected error during generation: {e}")
+            log_message(f"[CRITICAL] Error type: {type(e).__name__}")
+            import traceback
+            log_message(f"[CRITICAL] Traceback: {traceback.format_exc()}")
             st.rerun()
 
     elif step == 2:

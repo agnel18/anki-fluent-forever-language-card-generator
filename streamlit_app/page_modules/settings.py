@@ -32,6 +32,32 @@ def render_settings_page():
         st.caption("(Firebase integration coming soon)")
     st.markdown("---")
 
+    # --- Theme Toggle Section ---
+    st.markdown("### 🎨 Theme")
+    st.info("Choose your preferred theme for the application interface.")
+
+    # Initialize theme if not set
+    if "theme" not in st.session_state:
+        st.session_state.theme = "dark"
+
+    theme_options = ["Light", "Dark"]
+    current_theme = st.session_state.theme.capitalize()
+
+    selected_theme = st.selectbox(
+        "Select Theme",
+        theme_options,
+        index=theme_options.index(current_theme),
+        key="theme_select",
+        help="Switch between light and dark themes"
+    )
+
+    if selected_theme.lower() != st.session_state.theme:
+        st.session_state.theme = selected_theme.lower()
+        st.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
+        st.rerun()
+
+    st.markdown("---")
+
     # --- API Keys Section (Single) ---
     st.markdown("### 🔑 API Keys")
     st.info("Your API keys are securely stored in your account (never in the cloud for guests). Changes are saved automatically.")
@@ -83,14 +109,14 @@ def render_settings_page():
     st.markdown("""
     <style>
     .lang-card-grid {display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;}
-    .lang-card {background: #181a20; color: #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px #0002; padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; position: relative; transition: box-shadow 0.2s;}
+    .lang-card {background: var(--card-bg); color: var(--text-color); border: 1px solid var(--card-border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; position: relative; transition: box-shadow 0.2s;}
     .lang-card .lang-title {font-size: 1.1em; font-weight: 600; margin-bottom: 4px;}
-    .lang-card .lang-usage {font-size: 0.9em; color: #aaa; margin-bottom: 8px;}
+    .lang-card .lang-usage {font-size: 0.9em; color: var(--text-color); opacity: 0.7; margin-bottom: 8px;}
     .lang-card .lang-actions {display: flex; justify-content: space-between; align-items: center;}
-    .lang-card .stButton>button {background: none !important; color: #ff5555 !important; font-size: 1.2em !important; border: none !important; box-shadow: none !important; padding: 4px 8px !important;}
-    .lang-card .stButton>button:hover {color: #fff !important; background: #ff5555 !important; border-radius: 50% !important;}
-    .lang-card .arrow-btn .stButton>button {color: #58a6ff !important; font-size: 1.1em !important;}
-    .lang-card .arrow-btn .stButton>button:hover {color: #fff !important; background: #58a6ff !important; border-radius: 50% !important;}
+    .lang-card .stButton>button {background: none !important; color: var(--error-bg) !important; font-size: 1.2em !important; border: none !important; box-shadow: none !important; padding: 4px 8px !important;}
+    .lang-card .stButton>button:hover {color: #fff !important; background: var(--error-bg) !important; border-radius: 50% !important;}
+    .lang-card .arrow-btn .stButton>button {color: var(--primary-color) !important; font-size: 1.1em !important;}
+    .lang-card .arrow-btn .stButton>button:hover {color: #fff !important; background: var(--primary-color) !important; border-radius: 50% !important;}
     @media (max-width: 768px) {
         .lang-card {padding: 10px 12px;}
         .lang-card .lang-title {font-size: 1em;}

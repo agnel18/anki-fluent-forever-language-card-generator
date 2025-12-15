@@ -2,7 +2,7 @@
 
 **Generate professional language learning Anki decks in minutes.**
 
-Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 109 languages**. Built with Groq, Edge TTS, Pixabay, and genanki.
+Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 74 languages**. Built with Groq, Edge TTS, Pixabay, and genanki.
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized context, and multi-sensory learning.
 
@@ -46,13 +46,15 @@ streamlit run streamlit_app/app_v3.py
 - **Zero Coding** — GUI handles everything
 
 ### Advanced Features
-- **109 Languages** — Pre-built frequency word lists
+- **74 Languages** — Pre-built frequency word lists
 - **Custom Word Lists** — Upload your own CSV files
 - **Audio Controls** — Speed (0.5x-1.5x) and pitch (-20% to +20%)
 - **Rate Limit Monitoring** — Smart warnings for API limits
 - **Error Recovery** — Graceful handling of API failures
 - **Cloud Sync** — Optional Firebase integration
 - **Mobile Friendly** — Responsive web interface
+- **Theme Toggle** — Light/dark mode support
+- **Enhanced Debugging** — Detailed logging for troubleshooting
 
 ---
 
@@ -64,7 +66,7 @@ LanguagLearning/
 │   ├── app_v3.py              # ← START HERE (GUI entry point)
 │   ├── core_functions.py      # Generation pipeline
 │   ├── page_modules/          # UI pages (language_select, generating, etc.)
-│   ├── languages.yaml         # 109 languages config
+│   ├── languages.yaml         # 74 languages config
 │   ├── frequency_utils.py     # Word lists & search
 │   ├── db_manager.py          # Progress tracking (SQLite)
 │   ├── edge_tts_voices.py     # Voice options for Edge TTS
@@ -72,7 +74,7 @@ LanguagLearning/
 │   ├── cache_manager.py       # Request caching
 │   ├── state_manager.py       # Session management
 │   └── requirements.txt       # Python dependencies
-├── 109 Languages Frequency Word Lists/  # Word lists (Excel)
+├── 74 Languages Frequency Word Lists/  # Word lists (Excel)
 ├── output/                    # Generated decks & media
 ├── .env                       # API keys (local only, not committed)
 └── README.md                  # This file
@@ -92,7 +94,7 @@ LanguagLearning/
 - Main app: `streamlit_app/app_v3.py`
 - Add voices: `streamlit_app/edge_tts_voices.py`
 - Add languages: `streamlit_app/languages.yaml`
-- Word lists: `109 Languages Frequency Word Lists/`
+- Word lists: `74 Languages Frequency Word Lists/`
 
 ---
 
@@ -110,7 +112,7 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 │   ├── requirements.txt       # Dependencies
 │   └── README.md              # App-specific docs
 │
-├── 109 Languages Frequency Word Lists/  # Pre-built word data
+├── 74 Languages Frequency Word Lists/  # Pre-built word data
 ├── Anki Language Template/    # Template for reference
 ├── ANKI_SETUP.md             # How to import .apkg files
 ├── FIREBASE_SETUP.md         # Optional cloud sync
@@ -264,7 +266,7 @@ streamlit run streamlit_app/app_v3.py
 
 ## 📦 What's Included
 
-### Word Lists (109 Languages)
+### Word Lists (74 Languages)
 Pre-compiled frequency word lists ranked by usage:
 - Top 1,000 words cover ~80% of everyday speech
 - Supported languages: Spanish, French, German, Mandarin, Arabic, Hindi, Japanese, Korean, and 101 more

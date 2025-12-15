@@ -676,7 +676,14 @@ async def generate_audio_async(
 
         communicate = edge_tts.Communicate(**kwargs)
         await communicate.save(output_path)
-        return True
+        
+        # Check if file was actually created and has content
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            return True
+        else:
+            logger.warning(f"Edge TTS save completed but file not created or empty: {output_path}")
+            return False
+            
     except Exception as exc:
         logger.error(f"Edge TTS error for {voice}: {exc}")
         return False
@@ -711,7 +718,6 @@ def generate_audio(
         List of generated file paths
     """
     os.makedirs(output_dir, exist_ok=True)
-    generated = []
     
     async def batch_generate():
         tasks = []
@@ -734,12 +740,16 @@ def generate_audio(
     
     results = loop.run_until_complete(batch_generate())
     
+    # Maintain correct indices even for failed generations
+    generated_files = []
     for i, success in enumerate(results):
         if success:
             filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
-            generated.append(filename)
+            generated_files.append(filename)
+        else:
+            generated_files.append("")  # Empty string for failed generations
     
-    return generated
+    return generated_files
 
 
 def _sanitize_word(word: str) -> str:

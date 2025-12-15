@@ -27,7 +27,7 @@ def usage_bar(val: int, limit: int) -> str:
     """Generate HTML for a usage progress bar."""
     pct = min(val / limit, 1.0)
     color = USAGE_BAR_GREEN if pct < 0.8 else (USAGE_BAR_YELLOW if pct < 0.9 else USAGE_BAR_RED)
-    bar = f'''<div style="background:#222;width:100%;height:12px;border-radius:6px;overflow:hidden;margin-bottom:6px;">
+    bar = f'''<div style="background:var(--card-bg);width:100%;height:12px;border-radius:6px;overflow:hidden;margin-bottom:6px;border:1px solid var(--card-border);">
         <div style="background:{color};width:{pct*100:.1f}%;height:100%;transition:width 0.3s;"></div></div>'''
     return bar
 

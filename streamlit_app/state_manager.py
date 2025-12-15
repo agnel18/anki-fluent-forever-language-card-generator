@@ -98,6 +98,10 @@ def initialize_session_state():
         log_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s'))
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.INFO)
+
+    # Theme settings
+    if "theme" not in st.session_state:
+        st.session_state.theme = "dark"
         # Remove existing handlers to avoid duplicate logs
         for h in root_logger.handlers[:]:
             root_logger.removeHandler(h)

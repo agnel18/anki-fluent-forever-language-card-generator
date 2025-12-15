@@ -19,30 +19,54 @@ def render_generate_page():
 
     selected_words = st.session_state.get('selected_words', [])
     selected_lang = st.session_state.get('selected_language', '')
+    num_sentences = st.session_state.get('sentences_per_word', 10)
+    audio_speed = st.session_state.get('audio_speed', 0.8)
+    voice = st.session_state.get('selected_voice_display', 'Default')
+    enable_topics = st.session_state.get("enable_topics", False)
+    selected_topics = st.session_state.get("selected_topics", [])
 
-    col1, col2 = st.columns(2)
+    # Main settings overview
+    col1, col2, col3 = st.columns(3)
+    
     with col1:
-        st.markdown("**Language:**")
-        st.info(selected_lang if selected_lang else "Not selected")
-
-        st.markdown("**Words Selected:**")
-        st.info(f"{len(selected_words)} words")
-
-        if selected_words:
-            with st.expander("View Selected Words"):
-                st.write(", ".join(selected_words[:20]))
-                if len(selected_words) > 20:
-                    st.write(f"... and {len(selected_words) - 20} more")
-
+        st.markdown("### 🌍 **Language**")
+        st.info(f"**{selected_lang}**")
+        
+        st.markdown("### 📝 **Words Selected**")
+        st.info(f"**{len(selected_words)} words**")
+        
     with col2:
-        st.markdown("**Sentences per Word:**")
-        st.info(f"{st.session_state.get('sentences_per_word', 10)}")
-
-        st.markdown("**Audio Voice:**")
-        st.info(st.session_state.get('selected_voice_display', 'Default'))
-
-        st.markdown("**Audio Speed:**")
-        st.info(f"{st.session_state.get('audio_speed', 0.8)}x")
+        st.markdown("### ⚙️ **Sentences per Word**")
+        st.info(f"**{num_sentences} sentences**")
+        
+        st.markdown("### 🔊 **Audio Voice**")
+        st.info(f"**{voice}**")
+        
+    with col3:
+        st.markdown("### 🎵 **Audio Speed**")
+        st.info(f"**{audio_speed}x**")
+        
+        st.markdown("### 🎯 **Topics Selected**")
+        if enable_topics and selected_topics:
+            st.info(f"**{len(selected_topics)} topics**")
+            topics_text = ", ".join(selected_topics)
+            if len(topics_text) > 80:
+                topics_text = topics_text[:77] + "..."
+            st.caption(f"{topics_text}")
+        else:
+            st.info("**No topics**")
+    
+    # Separate section for viewing selected words
+    st.markdown("---")
+    st.markdown("### 👀 **View Selected Words**")
+    if selected_words:
+        with st.expander("Click to view all selected words", expanded=False):
+            # Display words in a nice grid
+            cols = st.columns(4)
+            for i, word in enumerate(selected_words):
+                cols[i % 4].write(f"• {word}")
+    else:
+        st.warning("No words selected!")
 
     st.markdown("---")
     st.markdown("### Ready to Generate!")
@@ -79,7 +103,47 @@ def render_generate_page():
                 if not selected_words:
                     st.error("No words selected. Please go back and select some words.")
                 else:
-                    # Set loading state
+                    # Show full-screen loading overlay to hide previous content
+                    st.markdown("""
+                    <style>
+                    .loading-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(var(--bg-color-rgb, 255, 255, 255), 0.95);
+                        z-index: 9999;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        flex-direction: column;
+                    }
+                    .loading-spinner {
+                        border: 4px solid #f3f3f3;
+                        border-top: 4px solid #3498db;
+                        border-radius: 50%;
+                        width: 50px;
+                        height: 50px;
+                        animation: spin 2s linear infinite;
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                    </style>
+                    <div class="loading-overlay">
+                        <div class="loading-spinner"></div>
+                        <h2 style="color: #3498db; margin-top: 20px;">🚀 Starting Deck Generation...</h2>
+                        <p style="color: #666;">Please wait while we prepare your personalized Anki deck</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Small delay to show loading overlay
+                    import time
+                    time.sleep(1)
+                    
+                    # Set loading state and transition
                     st.session_state.generating_deck = True
                     st.session_state.selected_lang = selected_lang
                     st.session_state.selected_words = selected_words

@@ -12,117 +12,237 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Add custom CSS for better desktop layout
-st.markdown("""
+# Initialize theme if not set (fallback)
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+# Theme-aware CSS with CSS variables
+is_dark = st.session_state.theme == "dark"
+
+st.markdown(f"""
 <style>
+    :root {{
+        --bg-color: {'#0e1117' if is_dark else '#ffffff'};
+        --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
+        --text-color: {'#e6edf3' if is_dark else '#0c0c0c'};
+        --primary-color: {'#58a6ff' if is_dark else '#0969da'};
+        --secondary-color: {'#79c0ff' if is_dark else '#218bff'};
+        --tertiary-color: {'#a5d6ff' if is_dark else '#79c0ff'};
+        --button-bg: {'#238636' if is_dark else '#238636'};
+        --button-border: {'#3fb950' if is_dark else '#3fb950'};
+        --button-hover-bg: {'#2ea043' if is_dark else '#2ea043'};
+        --button-hover-border: {'#56d364' if is_dark else '#56d364'};
+        --info-bg: {'#0550ae' if is_dark else '#ddf4ff'};
+        --info-border: {'#79c0ff' if is_dark else '#218bff'};
+        --success-bg: {'#1f6feb' if is_dark else '#ddf4ff'};
+        --success-border: {'#58a6ff' if is_dark else '#0969da'};
+        --warning-bg: {'#8b4513' if is_dark else '#fff3cd'};
+        --warning-border: {'#d9a040' if is_dark else '#bf8700'};
+        --error-bg: {'#da3633' if is_dark else '#ffebe9'};
+        --error-border: {'#f85149' if is_dark else '#cf222e'};
+        --card-bg: {'#161b22' if is_dark else '#f6f8fa'};
+        --card-border: {'#30363d' if is_dark else '#d0d7de'};
+        --base-font-size: 16px;
+    }}
+    
+    body {{
+        font-size: var(--base-font-size);
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }}
+    
+    /* High contrast colors */
+    .stTitle {{
+        font-size: 2.5rem !important;
+        font-weight: bold;
+        color: var(--primary-color);
+    }}
+    
+    .stMarkdown h1 {{
+        font-size: 2.2rem !important;
+        color: var(--primary-color);
+    }}
+    
+    .stMarkdown h2 {{
+        font-size: 1.8rem !important;
+        color: var(--secondary-color);
+    }}
+    
+    .stMarkdown h3 {{
+        font-size: 1.4rem !important;
+        color: var(--tertiary-color);
+    }}
+    
+    .stButton > button {{
+        font-size: 1.1rem !important;
+        padding: 0.8rem 1.6rem !important;
+        background-color: var(--button-bg) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        border: 2px solid var(--button-border) !important;
+    }}
+    
+    .stButton > button:hover {{
+        background-color: var(--button-hover-bg) !important;
+        border-color: var(--button-hover-border) !important;
+    }}
+    
+    .stSelectbox, .stSlider, .stFileUploader, .stTextInput {{
+        font-size: 1.05rem !important;
+    }}
+    
+    .stInfo, .stSuccess, .stWarning, .stError {{
+        font-size: 1.1rem !important;
+        padding: 1.2rem !important;
+    }}
+    
+    /* Accessible colors for colorblind users */
+    .stInfo {{
+        background-color: var(--info-bg) !important;
+        border-color: var(--info-border) !important;
+        color: var(--text-color) !important;
+    }}
+    
+    .stSuccess {{
+        background-color: var(--success-bg) !important;
+        border-color: var(--success-border) !important;
+        color: var(--text-color) !important;
+    }}
+    
+    .stWarning {{
+        background-color: var(--warning-bg) !important;
+        border-color: var(--warning-border) !important;
+        color: var(--text-color) !important;
+    }}
+    
+    .stError {{
+        background-color: var(--error-bg) !important;
+        border-color: var(--error-border) !important;
+        color: var(--text-color) !important;
+    }}
+    
+    .stTooltip {{
+        font-size: 0.95rem !important;
+    }}
+    
+    .metric-box {{
+        background-color: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 8px;
+        padding: 1.2rem;
+        margin: 0.8rem 0;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }}
+
 /* Center content and limit width on desktop */
-@media (min-width: 1024px) {
-    .main .block-container {
+@media (min-width: 1024px) {{
+    .main .block-container {{
         max-width: 900px;
         margin: 0 auto;
         padding-left: 2rem;
         padding-right: 2rem;
-    }
-}
+    }}
+}}
 
 /* Improve spacing and readability */
-.main .block-container {
+.main .block-container {{
     padding-top: 2rem;
     padding-bottom: 2rem;
-}
+}}
 
 /* Better button spacing and animations */
-.stButton>button {
+.stButton>button {{
     margin: 0.25rem 0;
     transition: all 0.2s ease-in-out;
     border-radius: 8px;
-}
+}}
 
-.stButton>button:hover {
+.stButton>button:hover {{
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+}}
 
-.stButton>button:active {
+.stButton>button:active {{
     transform: translateY(0);
     transition: all 0.1s ease-in-out;
-}
+}}
 
 /* Primary button special styling */
-.stButton>button[data-testid*="primary"] {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.stButton>button[data-testid*="primary"] {{
+    background: var(--button-bg) !important;
     border: none;
     color: white;
     font-weight: 600;
-}
+}}
 
-.stButton>button[data-testid*="primary"]:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
-}
+.stButton>button[data-testid*="primary"]:hover {{
+    background: var(--button-hover-bg) !important;
+    box-shadow: 0 6px 12px rgba(35, 134, 54, 0.3);
+}}
 
 /* Improve expander appearance */
-.streamlit-expanderHeader {
+.streamlit-expanderHeader {{
     font-weight: 600;
-}
+}}
 
 /* Hamburger menu for sidebar toggle */
-[data-testid="collapsedControl"] {
+[data-testid="collapsedControl"] {{
     background: none !important;
     border: none !important;
-}
+}}
 
-[data-testid="collapsedControl"]::before {
+[data-testid="collapsedControl"]::before {{
     content: "☰";
     font-size: 18px;
-    color: #666;
+    color: var(--text-color);
     display: block;
     width: 20px;
     height: 20px;
     text-align: center;
     line-height: 20px;
-}
+}}
 
-[data-testid="collapsedControl"]:hover::before {
-    color: #000;
-}
+[data-testid="collapsedControl"]:hover::before {{
+    color: var(--primary-color);
+}}
 
 /* Loading animations */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
+@keyframes pulse {{
+    0% {{ opacity: 1; }}
+    50% {{ opacity: 0.5; }}
+    100% {{ opacity: 1; }}
+}}
 
-.loading-pulse {
+.loading-pulse {{
     animation: pulse 2s infinite;
-}
+}}
 
 /* Progress bar enhancements */
-.stProgress > div > div {
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+.stProgress > div > div {{
+    background: var(--primary-color);
     border-radius: 10px;
-}
+}}
 
 /* Success message styling */
-.stSuccess {
-    border-left: 4px solid #28a745;
-    background-color: #d4edda;
-    color: #155724;
+.stSuccess {{
+    border-left: 4px solid var(--button-bg);
+    background-color: var(--success-bg);
+    color: var(--text-color);
     padding: 1rem;
     border-radius: 8px;
     margin: 1rem 0;
-}
+}}
 
 /* Info message styling */
-.stInfo {
-    border-left: 4px solid #17a2b8;
-    background-color: #d1ecf1;
-    color: #0c5460;
+.stInfo {{
+    border-left: 4px solid var(--info-border);
+    background-color: var(--info-bg);
+    color: var(--text-color);
     padding: 1rem;
     border-radius: 8px;
     margin: 1rem 0;
-}
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -249,6 +369,25 @@ if current_page != "login":
     )
 
     st.sidebar.caption("Limits are approximate—check your API dashboard for exact quotas.")
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🎨 Theme")
+
+    theme_options = ["Light", "Dark"]
+    current_theme = st.session_state.theme.capitalize()
+
+    selected_theme = st.sidebar.selectbox(
+        "Select Theme",
+        theme_options,
+        index=theme_options.index(current_theme),
+        key="theme_select_sidebar",
+        help="Switch between light and dark themes"
+    )
+
+    if selected_theme.lower() != st.session_state.theme:
+        st.session_state.theme = selected_theme.lower()
+        st.sidebar.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
+        st.rerun()
 
     # Show generation status if in progress
     if st.session_state.get('page') == 'generating':

@@ -165,7 +165,7 @@ LanguagLearning/
 ├── streamlit_app/core_functions.py      # Generation pipeline
 ├── streamlit_app/frequency_utils.py     # Word selection & search
 ├── streamlit_app/db_manager.py          # SQLite progress
-├── streamlit_app/languages.yaml         # 109 languages config
+├── streamlit_app/languages.yaml         # 74 languages config
 ├── README.md                            # Quick start guide
 ├── ANKI_SETUP.md                        # Anki import help
 ├── FIREBASE_SETUP.md                    # Cloud sync (optional)
@@ -221,7 +221,7 @@ streamlit run streamlit_app/app_v3.py
 
 ### Frontend Tests (✅ All Passed)
 - ✅ **API key entry**: Validation, persistence, retry on error
-- ✅ **Language selection**: All 109 languages load correctly
+- ✅ **Language selection**: All 74 languages load correctly
 - ✅ **Word list**: Pagination, search, frequency sorting
 - ✅ **Audio settings**: Pitch/speed sliders save correctly
 - ✅ **Generate flow**: Progress updates real-time, no hangs

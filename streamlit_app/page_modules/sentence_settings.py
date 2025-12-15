@@ -92,6 +92,16 @@ def render_sentence_settings_page():
             if "custom_topics" not in st.session_state:
                 st.session_state.custom_topics = []
             
+            # Topic limit
+            TOPIC_LIMIT = 5
+            current_topic_count = len(st.session_state.selected_topics)
+            limit_reached = current_topic_count >= TOPIC_LIMIT
+            
+            if limit_reached:
+                st.warning(f"⚠️ **Topic limit reached:** You've selected the maximum of {TOPIC_LIMIT} topics. Unselect some topics to choose different ones.")
+            else:
+                st.info(f"📊 **Topic selection:** {current_topic_count}/{TOPIC_LIMIT} topics selected")
+            
             # Curated topics selection
             st.markdown("### 📚 Curated Topics")
             col1, col2 = st.columns(2)
@@ -103,12 +113,17 @@ def render_sentence_settings_page():
             
             with col1:
                 for topic in left_topics:
+                    is_selected = topic in st.session_state.selected_topics
+                    # Disable checkbox if limit reached and topic not already selected
+                    disabled = limit_reached and not is_selected
+                    
                     if st.checkbox(
                         topic, 
-                        value=topic in st.session_state.selected_topics,
-                        key=f"curated_{topic}"
+                        value=is_selected,
+                        key=f"curated_{topic}",
+                        disabled=disabled
                     ):
-                        if topic not in st.session_state.selected_topics:
+                        if topic not in st.session_state.selected_topics and not limit_reached:
                             st.session_state.selected_topics.append(topic)
                     else:
                         if topic in st.session_state.selected_topics:
@@ -116,12 +131,17 @@ def render_sentence_settings_page():
             
             with col2:
                 for topic in right_topics:
+                    is_selected = topic in st.session_state.selected_topics
+                    # Disable checkbox if limit reached and topic not already selected
+                    disabled = limit_reached and not is_selected
+                    
                     if st.checkbox(
                         topic, 
-                        value=topic in st.session_state.selected_topics,
-                        key=f"curated_{topic}"
+                        value=is_selected,
+                        key=f"curated_{topic}",
+                        disabled=disabled
                     ):
-                        if topic not in st.session_state.selected_topics:
+                        if topic not in st.session_state.selected_topics and not limit_reached:
                             st.session_state.selected_topics.append(topic)
                     else:
                         if topic in st.session_state.selected_topics:
@@ -136,10 +156,11 @@ def render_sentence_settings_page():
                     "Add custom topic:",
                     placeholder="e.g., Gardening, Photography",
                     key="new_topic_input",
-                    max_chars=50
+                    max_chars=50,
+                    disabled=limit_reached
                 )
                 
-                if st.button("➕ Add Topic", key="add_custom_topic"):
+                if st.button("➕ Add Topic", key="add_custom_topic", disabled=limit_reached):
                     if new_topic.strip():
                         # Validate input
                         clean_topic = new_topic.strip()

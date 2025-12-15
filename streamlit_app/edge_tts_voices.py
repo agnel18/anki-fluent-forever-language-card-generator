@@ -231,4 +231,88 @@ EDGE_TTS_VOICES = {
         ("sr-RS-SophieNeural", "Female", "Sophie"),
         ("sr-RS-NicholasNeural", "Male", "Nicholas")
     ],
+    "Bosnian": [
+        ("bs-BA-GoranNeural", "Male", "Goran"),
+        ("bs-BA-VesnaNeural", "Female", "Vesna")
+    ],
+    "Burmese": [
+        ("my-MM-NilarNeural", "Female", "Nilar"),
+        ("my-MM-ThihaNeural", "Male", "Thiha")
+    ],
+    "Croatian": [
+        ("hr-HR-GabrijelaNeural", "Female", "Gabrijela"),
+        ("hr-HR-SreckoNeural", "Male", "Srecko")
+    ],
+    "Kannada": [
+        ("kn-IN-GaganNeural", "Male", "Gagan"),
+        ("kn-IN-SapnaNeural", "Female", "Sapna")
+    ],
+    "Kazakh": [
+        ("kk-KZ-AigulNeural", "Female", "Aigul"),
+        ("kk-KZ-DauletNeural", "Male", "Daulet")
+    ],
+    "Khmer": [
+        ("km-KH-PisethNeural", "Male", "Piseth"),
+        ("km-KH-SreymomNeural", "Female", "Sreymom")
+    ],
+    "Lao": [
+        ("lo-LA-ChanthavongNeural", "Male", "Chanthavong"),
+        ("lo-LA-KeomanyNeural", "Female", "Keomany")
+    ],
+    "Malay": [
+        ("ms-MY-OsmanNeural", "Male", "Osman"),
+        ("ms-MY-YasminNeural", "Female", "Yasmin")
+    ],
+    "Maltese": [
+        ("mt-MT-GraceNeural", "Female", "Grace"),
+        ("mt-MT-JosephNeural", "Male", "Joseph")
+    ],
+    "Mongolian": [
+        ("mn-MN-BataaNeural", "Male", "Bataa"),
+        ("mn-MN-YesuiNeural", "Female", "Yesui")
+    ],
+    "Nepali": [
+        ("ne-NP-HemkalaNeural", "Female", "Hemkala"),
+        ("ne-NP-SagarNeural", "Male", "Sagar")
+    ],
+    "Pashto": [
+        ("ps-AF-GulNawazNeural", "Male", "GulNawaz"),
+        ("ps-AF-LatifaNeural", "Female", "Latifa")
+    ],
+    "Sinhala": [
+        ("si-LK-SameeraNeural", "Male", "Sameera"),
+        ("si-LK-ThiliniNeural", "Female", "Thilini")
+    ],
+    "Somali": [
+        ("so-SO-MuuseNeural", "Male", "Muuse"),
+        ("so-SO-UbaxNeural", "Female", "Ubax")
+    ],
+    "Sundanese": [
+        ("su-ID-JajangNeural", "Male", "Jajang"),
+        ("su-ID-TutiNeural", "Female", "Tuti")
+    ],
+    "Swahili": [
+        ("sw-KE-RafikiNeural", "Male", "Rafiki"),
+        ("sw-KE-ZuriNeural", "Female", "Zuri"),
+        ("sw-TZ-DaudiNeural", "Male", "Daudi"),
+        ("sw-TZ-RehemaNeural", "Female", "Rehema")
+    ],
+    "Urdu": [
+        ("ur-IN-GulNeural", "Female", "Gul"),
+        ("ur-IN-SalmanNeural", "Male", "Salman"),
+        ("ur-PK-AsadNeural", "Male", "Asad"),
+        ("ur-PK-UzmaNeural", "Female", "Uzma")
+    ],
+    "Uzbek": [
+        ("uz-UZ-MadinaNeural", "Female", "Madina"),
+        ("uz-UZ-SardorNeural", "Male", "Sardor")
+    ],
+    "Zulu": [
+        ("zu-ZA-ThandoNeural", "Female", "Thando"),
+        ("zu-ZA-ThembaNeural", "Male", "Themba")
+    ],
+    "Javanese": [
+        ("jv-ID-DimasNeural", "Male", "Dimas"),
+        ("jv-ID-SitiNeural", "Female", "Siti")
+    ],
 }

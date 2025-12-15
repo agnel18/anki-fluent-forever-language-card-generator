@@ -1,5 +1,0 @@
-language_name=Malayalam
-language_code=ML
-google_tts_code=ml
-frequency_file=D:\Language Learning\LanguagLearning\109 Languages Frequency Word Lists\Malayalam (ML).xlsx
-output_dir=FluentForever_Malayalam_Perfect
