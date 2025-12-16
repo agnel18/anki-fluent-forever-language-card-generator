@@ -484,7 +484,13 @@ if "learned_languages" not in st.session_state:
     ]
 
 # Determine which section to show based on session state
-current_page = st.session_state.get("page", "main")
+current_page = st.session_state.get("page")
+
+# If no page is set, determine default based on API key availability
+if current_page is None:
+    has_api_keys = bool(st.session_state.get("groq_api_key") and st.session_state.get("pixabay_api_key"))
+    current_page = "api_setup" if not has_api_keys else "main"
+    st.session_state.page = current_page
 
 # Add sidebar navigation (except on login page)
 if current_page != "login":
