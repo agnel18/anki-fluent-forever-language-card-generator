@@ -10,6 +10,7 @@ from constants import PAGE_LANGUAGE_SELECT
 def render_api_setup_page():
     """Render the API keys setup page."""
     st.write("🔧 API Setup Page Loaded")  # Debug message
+    st.markdown("### Please enter your API keys below:")
     
     # Check if we have real API keys (not fallback keys)
     groq_key = st.session_state.get("groq_api_key", "")
