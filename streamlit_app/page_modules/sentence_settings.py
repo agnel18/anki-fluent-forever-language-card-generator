@@ -1,7 +1,10 @@
 # pages/sentence_settings.py - Sentence settings page for the language learning app
 
 import streamlit as st
-from edge_tts_voices import EDGE_TTS_VOICES
+try:
+    from edge_tts_voices import EDGE_TTS_VOICES
+except ImportError:
+    EDGE_TTS_VOICES = {}  # Fallback empty dict
 from constants import CURATED_TOPICS
 
 

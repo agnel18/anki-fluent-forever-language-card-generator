@@ -25,15 +25,57 @@ import datetime
 from pathlib import Path
 
 # Import constants and functions from local modules
-from edge_tts_voices import EDGE_TTS_VOICES
-from frequency_utils import get_available_frequency_lists, get_csv_template, get_words_with_ranks, validate_word_list, parse_uploaded_word_file
-from db_manager import get_completed_words, get_word_stats
-from firebase_manager import get_session_id
+try:
+    from edge_tts_voices import EDGE_TTS_VOICES
+except ImportError:
+    EDGE_TTS_VOICES = {}  # Fallback empty dict
+    print("Warning: Could not import EDGE_TTS_VOICES, using empty fallback")
+
+try:
+    from frequency_utils import get_available_frequency_lists, get_csv_template, get_words_with_ranks, validate_word_list, parse_uploaded_word_file
+except ImportError as e:
+    print(f"Warning: Could not import frequency_utils: {e}")
+    # Define fallback functions
+    def get_available_frequency_lists(): return []
+    def get_csv_template(): return ""
+    def get_words_with_ranks(): return []
+    def validate_word_list(): return True
+    def parse_uploaded_word_file(): return []
+
+try:
+    from db_manager import get_completed_words, get_word_stats
+except ImportError as e:
+    print(f"Warning: Could not import db_manager: {e}")
+    def get_completed_words(): return []
+    def get_word_stats(): return {}
+
+try:
+    from firebase_manager import get_session_id
+except ImportError as e:
+    print(f"Warning: Could not import firebase_manager: {e}")
+    def get_session_id(): return None
 
 # Import our new modular components
-from constants import *
-from utils import log_message, fmt_num, usage_bar
-from state_manager import initialize_session_state, initialize_languages_config, initialize_firebase_settings
+try:
+    from constants import *
+except ImportError as e:
+    print(f"Warning: Could not import constants: {e}")
+
+try:
+    from utils import log_message, fmt_num, usage_bar
+except ImportError as e:
+    print(f"Warning: Could not import utils: {e}")
+    def log_message(msg): print(msg)
+    def fmt_num(n): return str(n)
+    def usage_bar(current, max_val): return ""
+
+try:
+    from state_manager import initialize_session_state, initialize_languages_config, initialize_firebase_settings
+except ImportError as e:
+    print(f"Warning: Could not import state_manager: {e}")
+    def initialize_session_state(): pass
+    def initialize_languages_config(): pass
+    def initialize_firebase_settings(): pass
 
 # Initialize session state and languages config (only if in Streamlit context)
 try:
