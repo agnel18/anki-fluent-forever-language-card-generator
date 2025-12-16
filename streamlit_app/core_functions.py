@@ -36,6 +36,7 @@ def generate_complete_deck(
     voice: Optional[str] = None,
     all_words: Optional[List[str]] = None,
     progress_callback: Optional[Callable[[float, str, str], None]] = None,
+    topics: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Main orchestrator for deck generation. Returns dict with success, tsv_path, media_dir, output_dir, error.
@@ -71,7 +72,7 @@ def generate_complete_deck(
                         "critical": False
                     })
 
-                sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key)
+                sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics)
                 if sentences is None:
                     sentences = []
                 if not sentences:

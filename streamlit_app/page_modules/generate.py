@@ -107,47 +107,7 @@ def render_generate_page():
                 if not selected_words:
                     st.error("No words selected. Please go back and select some words.")
                 else:
-                    # Show full-screen loading overlay to hide previous content
-                    st.markdown("""
-                    <style>
-                    .loading-overlay {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(var(--bg-color-rgb, 255, 255, 255), 0.95);
-                        z-index: 9999;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        flex-direction: column;
-                    }
-                    .loading-spinner {
-                        border: 4px solid #f3f3f3;
-                        border-top: 4px solid #3498db;
-                        border-radius: 50%;
-                        width: 50px;
-                        height: 50px;
-                        animation: spin 2s linear infinite;
-                    }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    </style>
-                    <div class="loading-overlay">
-                        <div class="loading-spinner"></div>
-                        <h2 style="color: #3498db; margin-top: 20px;">🚀 Starting Deck Generation...</h2>
-                        <p style="color: #666;">Please wait while we prepare your personalized Anki deck</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Small delay to show loading overlay
-                    import time
-                    time.sleep(1)
-                    
-                    # Set loading state and transition
+                    # Set loading state and transition immediately
                     st.session_state.generating_deck = True
                     st.session_state.selected_lang = selected_lang
                     st.session_state.selected_words = selected_words

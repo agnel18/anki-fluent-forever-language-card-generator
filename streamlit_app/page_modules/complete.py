@@ -84,10 +84,14 @@ def render_complete_page():
         if "apkg_file" in st.session_state and st.session_state.apkg_file:
             # Add download button with enhanced styling
             st.markdown("**Ready to download!** 📥")
-            download_col1, download_col2 = st.columns([3, 1])
-            with download_col1:
+            # Calculate file size in KB
+            file_size_kb = round(len(st.session_state.apkg_file) / 1024)
+            
+            # Create consistent button layout
+            button_col1, button_col2 = st.columns(2)
+            with button_col1:
                 st.download_button(
-                    label="⬇️ Download Anki Deck (.apkg)",
+                    label=f"⬇️ Download Anki Deck (.apkg) ({file_size_kb} KB)",
                     data=st.session_state.apkg_file,
                     file_name=st.session_state.get("apkg_filename", f"{st.session_state.selected_lang.replace(' ', '_')}_deck.apkg"),
                     mime="application/octet-stream",
@@ -95,23 +99,23 @@ def render_complete_page():
                     key="apkg_download_complete",
                     type="primary"
                 )
-            with download_col2:
-                st.markdown(f"**{len(st.session_state.apkg_file):,} bytes**")
+            with button_col2:
+                # Show log file download button in the same column layout
+                if "log_file_path" in st.session_state and st.session_state['log_file_path'] and os.path.exists(st.session_state['log_file_path']):
+                    with open(st.session_state['log_file_path'], "rb") as f:
+                        st.download_button(
+                            label="⬇️ Download Generation Log (TXT)",
+                            data=f.read(),
+                            file_name="generation_log.txt",
+                            mime="text/plain",
+                            use_container_width=True,
+                            key="log_download_complete"
+                        )
+                else:
+                    # Empty space to maintain layout if no log file
+                    st.write("")
         else:
             st.warning("⚠️ Deck file not found. Please try regenerating your deck.")
-        # Show log file download button next to .apkg
-        if "log_file_path" in st.session_state and st.session_state['log_file_path'] and os.path.exists(st.session_state['log_file_path']):
-            with open(st.session_state['log_file_path'], "rb") as f:
-                st.download_button(
-                    label="⬇️ Download Generation Log (TXT)",
-                    data=f.read(),
-                    file_name="generation_log.txt",
-                    mime="text/plain",
-                    use_container_width=True,
-                    key="log_download_complete"
-                )
-            # Don't delete the log file immediately - let user download it
-            # File will be cleaned up when session ends or user creates new deck
 
     with col2:
         st.markdown("### 📖 How to Import")
@@ -141,6 +145,10 @@ def render_complete_page():
             # Reset generation progress when going back
             if 'generation_progress' in st.session_state:
                 st.session_state['generation_progress']['step'] = 0
+            # Clear the apkg_file and related state since we're going back to regenerate
+            for key in ["apkg_file", "apkg_filename", "log_file_path", "log_stream", "output_dirs_cleared"]:
+                if key in st.session_state:
+                    del st.session_state[key]
             st.session_state.page = "generate"
             st.rerun()
     with col_new:
@@ -149,17 +157,16 @@ def render_complete_page():
             st.session_state.generating_deck = False
             
             # Clean up old files and reset state relevant to generation
-            for key in ["selected_words", "selected_lang", "apkg_file", "apkg_filename"]:
+            for key in ["selected_words", "selected_lang", "selected_language", "apkg_file", "apkg_filename", "generation_progress", "generation_log", "log_file_path", "log_stream", "output_dirs_cleared"]:
                 if key in st.session_state:
                     del st.session_state[key]
             # Clean up log file if it exists
-            if "log_file_path" in st.session_state and st.session_state['log_file_path']:
+            if "log_file_path" in st.session_state and st.session_state.get('log_file_path'):
                 try:
                     if os.path.exists(st.session_state['log_file_path']):
                         os.remove(st.session_state['log_file_path'])
                 except Exception:
                     pass
-                st.session_state['log_file_path'] = None
             st.session_state.page = "language_select"
             st.rerun()
     with col_keys:
