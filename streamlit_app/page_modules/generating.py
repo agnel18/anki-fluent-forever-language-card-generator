@@ -196,6 +196,10 @@ def render_generating_page():
     step = st.session_state['generation_progress']['step']
 
     if step == 0:
+        # Clear previous generation log for fresh UI display
+        # (detailed log stream for export is preserved)
+        st.session_state['generation_log'] = []
+        
         # Start generation
         current_status.markdown("🚀 **Starting deck generation...**")
         step_indicator.markdown("⚙️ **Initializing**")
