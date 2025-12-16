@@ -475,7 +475,11 @@ def delete_database():
 if not DB_PATH.exists():
     logger.info("Creating database...")
     init_database()
-    import_excel_to_db()
+    try:
+        import_excel_to_db()
+    except Exception as e:
+        logger.error(f"Failed to import Excel data: {e}")
+        # Continue without data - app can still function
 else:
     # Ensure schema is up to date
     init_database()
