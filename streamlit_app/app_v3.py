@@ -491,38 +491,38 @@ try:
     # Determine which section to show based on session state
     current_page = st.session_state.get("page")
 
-# If no page is set, determine default based on API key availability
-if current_page is None:
-    groq_key = st.session_state.get("groq_api_key", "")
-    pixabay_key = st.session_state.get("pixabay_api_key", "")
+    # If no page is set, determine default based on API key availability
+    if current_page is None:
+        groq_key = st.session_state.get("groq_api_key", "")
+        pixabay_key = st.session_state.get("pixabay_api_key", "")
 
-    # Check if we have real API keys (not fallback keys)
-    has_real_api_keys = (
-        groq_key and pixabay_key and
-        not groq_key.startswith("sk-fallback") and
-        not pixabay_key.startswith("fallback")
-    )
+        # Check if we have real API keys (not fallback keys)
+        has_real_api_keys = (
+            groq_key and pixabay_key and
+            not groq_key.startswith("sk-fallback") and
+            not pixabay_key.startswith("fallback")
+        )
 
-    current_page = "api_setup" if not has_real_api_keys else "main"
-    st.session_state.page = current_page
+        current_page = "api_setup" if not has_real_api_keys else "main"
+        st.session_state.page = current_page
 
-# Add sidebar navigation (except on login page)
-if current_page != "login":
-    # Create sidebar content with better mobile alignment
-    st.sidebar.markdown("## ⚙️ Quick Access")
+    # Add sidebar navigation (except on login page)
+    if current_page != "login":
+        # Create sidebar content with better mobile alignment
+        st.sidebar.markdown("## ⚙️ Quick Access")
 
-    # Quick access buttons stacked vertically
-    if st.sidebar.button("🏠 Main", key="sidebar_main", use_container_width=True):
-        st.session_state.page = "main"
-        st.rerun()
-    
-    if st.sidebar.button("⚙️ Settings", key="sidebar_settings", use_container_width=True):
-        st.session_state.page = "settings"
-        st.rerun()
+        # Quick access buttons stacked vertically
+        if st.sidebar.button("🏠 Main", key="sidebar_main", use_container_width=True):
+            st.session_state.page = "main"
+            st.rerun()
+        
+        if st.sidebar.button("⚙️ Settings", key="sidebar_settings", use_container_width=True):
+            st.session_state.page = "settings"
+            st.rerun()
 
-    # Statistics button full width
-    if st.sidebar.button("📊 Statistics", key="sidebar_stats", use_container_width=True):
-        st.session_state.page = "statistics"
+        # Statistics button full width
+        if st.sidebar.button("📊 Statistics", key="sidebar_stats", use_container_width=True):
+            st.session_state.page = "statistics"
         st.rerun()
 
     # Documentation button
@@ -592,31 +592,31 @@ if current_page != "login":
             st.sidebar.caption(f"Processing word {word_idx + 1} of {total_words}")
 
 
-# Route to the appropriate page
-st.write(f"Debug: Current page = {current_page}")
-if current_page == "api_setup":
-    render_api_setup_page()
-elif current_page == "main":
-    render_main_page()
-elif current_page == "language_select":
-    render_language_select_page()
-elif current_page == "word_select":
-    render_word_select_page()
-elif current_page == "sentence_settings":
-    render_sentence_settings_page()
-elif current_page == "generate":
-    render_generate_page()
-elif current_page == "generating":
-    render_generating_page()
-elif current_page == "complete":
-    render_complete_page()
-elif current_page == "settings":
-    render_settings_page()
-elif current_page == "statistics":
-    render_statistics_page()
-else:
-    # Default to main page
-    render_main_page()
+    # Route to the appropriate page
+    st.write(f"Debug: Current page = {current_page}")
+    if current_page == "api_setup":
+        render_api_setup_page()
+    elif current_page == "main":
+        render_main_page()
+    elif current_page == "language_select":
+        render_language_select_page()
+    elif current_page == "word_select":
+        render_word_select_page()
+    elif current_page == "sentence_settings":
+        render_sentence_settings_page()
+    elif current_page == "generate":
+        render_generate_page()
+    elif current_page == "generating":
+        render_generating_page()
+    elif current_page == "complete":
+        render_complete_page()
+    elif current_page == "settings":
+        render_settings_page()
+    elif current_page == "statistics":
+        render_statistics_page()
+    else:
+        # Default to main page
+        render_main_page()
 
 except Exception as e:
     st.error(f"App error: {e}")
