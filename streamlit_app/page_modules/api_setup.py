@@ -9,6 +9,8 @@ from constants import PAGE_LANGUAGE_SELECT
 
 def render_api_setup_page():
     """Render the API keys setup page."""
+    st.write("🔧 API Setup Page Loaded")  # Debug message
+    
     # Check if we have real API keys (not fallback keys)
     groq_key = st.session_state.get("groq_api_key", "")
     pixabay_key = st.session_state.get("pixabay_api_key", "")
