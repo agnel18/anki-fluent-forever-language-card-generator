@@ -9,8 +9,18 @@ from constants import PAGE_LANGUAGE_SELECT
 
 def render_api_setup_page():
     """Render the API keys setup page."""
-    # If API keys are already set, skip to language selection
-    if st.session_state.get("groq_api_key") and st.session_state.get("pixabay_api_key"):
+    # Check if we have real API keys (not fallback keys)
+    groq_key = st.session_state.get("groq_api_key", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+
+    has_real_api_keys = (
+        groq_key and pixabay_key and
+        not groq_key.startswith("sk-fallback") and
+        not pixabay_key.startswith("fallback")
+    )
+
+    # If API keys are already set and valid, skip to language selection
+    if has_real_api_keys:
         st.session_state.page = PAGE_LANGUAGE_SELECT
         st.rerun()
         return
@@ -62,10 +72,20 @@ def render_api_setup_page():
     st.divider()
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
-    if groq_env and pixabay_env and not groq_key:
-        st.info("ℹ️ **Development Mode Detected** - Your API keys were auto-loaded from .env file")
+
+    # Only auto-load from environment if they're real keys (not fallbacks)
+    if (groq_env and pixabay_env and not groq_key and
+        not groq_env.startswith("sk-fallback") and not pixabay_env.startswith("fallback")):
+        st.info("ℹ️ **Development Mode Detected** - Your API keys were auto-loaded from environment")
         groq_key = groq_env
         pixabay_key = pixabay_env
+        # Auto-submit if we have valid keys
+        if groq_key and pixabay_key:
+            st.session_state.groq_api_key = groq_key
+            st.session_state.pixabay_api_key = pixabay_key
+            st.session_state.page = PAGE_LANGUAGE_SELECT
+            st.rerun()
+            return
     st.divider()
     if st.button("🚀 Next: Select Language", use_container_width=True):
         if not groq_key:

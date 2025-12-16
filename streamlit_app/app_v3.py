@@ -488,8 +488,17 @@ current_page = st.session_state.get("page")
 
 # If no page is set, determine default based on API key availability
 if current_page is None:
-    has_api_keys = bool(st.session_state.get("groq_api_key") and st.session_state.get("pixabay_api_key"))
-    current_page = "api_setup" if not has_api_keys else "main"
+    groq_key = st.session_state.get("groq_api_key", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+
+    # Check if we have real API keys (not fallback keys)
+    has_real_api_keys = (
+        groq_key and pixabay_key and
+        not groq_key.startswith("sk-fallback") and
+        not pixabay_key.startswith("fallback")
+    )
+
+    current_page = "api_setup" if not has_real_api_keys else "main"
     st.session_state.page = current_page
 
 # Add sidebar navigation (except on login page)
