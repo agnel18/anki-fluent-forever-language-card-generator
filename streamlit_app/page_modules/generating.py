@@ -415,6 +415,9 @@ def render_generating_page():
         # Generation complete - show results and move to complete page
         result = st.session_state['generation_progress'].get('result', {})
 
+        # Reset generating flag since generation is complete
+        st.session_state.generating_deck = False
+
         if result.get('success'):
             st.session_state.page = "complete"
             st.rerun()

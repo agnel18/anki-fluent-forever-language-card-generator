@@ -144,6 +144,9 @@ def render_complete_page():
             st.rerun()
     with col_new:
         if st.button("🔄 Create New Deck", key="generate_another", use_container_width=True):
+            # Reset generating flag for new deck creation
+            st.session_state.generating_deck = False
+            
             # Clean up old files and reset state relevant to generation
             for key in ["selected_words", "selected_lang", "apkg_file", "apkg_filename"]:
                 if key in st.session_state:

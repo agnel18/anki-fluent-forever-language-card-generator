@@ -5,6 +5,10 @@ import streamlit as st
 
 def render_generate_page():
     """Render the generate deck page."""
+    # Reset generating flag if we're not actually generating
+    if not st.session_state.get('generation_progress', {}).get('step', 0) == 1:
+        st.session_state.generating_deck = False
+    
     st.markdown("# ⚙️ Step 4: Generate Deck")
     st.markdown("Review your settings and start generating your personalized Anki deck.")
 
