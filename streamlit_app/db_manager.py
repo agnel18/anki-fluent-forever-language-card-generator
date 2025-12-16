@@ -75,8 +75,8 @@ def import_excel_to_db(excel_dir: Path = None):
     Uses most-common-words-multilingual source data.
     """
     if excel_dir is None:
-        # Use the official most-common-words-multilingual source
-        excel_dir = Path("D:/Language Learning/most-common-words-multilingual-main/most-common-words-multilingual-main/data/xlsx")
+        # Use the local frequency word lists
+        excel_dir = Path(__file__).parent.parent / "109 Languages Frequency Word Lists"
     
     if not excel_dir.exists():
         logger.warning(f"Excel directory not found: {excel_dir}")
