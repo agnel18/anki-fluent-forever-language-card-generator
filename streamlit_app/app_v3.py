@@ -131,6 +131,12 @@ except Exception as e:
     pass
 
 try:
+    # Validate and initialize session state
+    if "page" not in st.session_state:
+        st.session_state.page = None
+    if "theme" not in st.session_state:
+        st.session_state.theme = "dark"
+
     # Determine which section to show based on session state
     current_page = st.session_state.get("page")
 
@@ -266,30 +272,40 @@ try:
 
 
     # Route to the appropriate page
-    st.write(f"Debug: Current page = {current_page}")
-    if current_page == "api_setup":
-        render_api_setup_page()
-    elif current_page == "main":
-        render_main_page()
-    elif current_page == "language_select":
-        render_language_select_page()
-    elif current_page == "word_select":
-        render_word_select_page()
-    elif current_page == "sentence_settings":
-        render_sentence_settings_page()
-    elif current_page == "generate":
-        render_generate_page()
-    elif current_page == "generating":
-        render_generating_page()
-    elif current_page == "complete":
-        render_complete_page()
-    elif current_page == "settings":
-        render_settings_page()
-    elif current_page == "statistics":
-        render_statistics_page()
-    else:
-        # Default to main page
-        render_main_page()
+    print(f"Debug: Current page = {current_page}")  # Temporary debug - remove after testing
+    try:
+        if current_page == "api_setup":
+            render_api_setup_page()
+        elif current_page == "main":
+            render_main_page()
+        elif current_page == "language_select":
+            render_language_select_page()
+        elif current_page == "word_select":
+            render_word_select_page()
+        elif current_page == "sentence_settings":
+            render_sentence_settings_page()
+        elif current_page == "generate":
+            render_generate_page()
+        elif current_page == "generating":
+            render_generating_page()
+        elif current_page == "complete":
+            render_complete_page()
+        elif current_page == "settings":
+            render_settings_page()
+        elif current_page == "statistics":
+            render_statistics_page()
+        else:
+            # Default to main page
+            print(f"Warning: Unknown page '{current_page}', defaulting to main")
+            render_main_page()
+    except Exception as page_error:
+        st.error(f"Error loading page '{current_page}': {page_error}")
+        st.write("Falling back to main page...")
+        try:
+            render_main_page()
+        except Exception as fallback_error:
+            st.error(f"Critical error: Could not load any page. {fallback_error}")
+            st.stop()
 
 except Exception as e:
     st.error(f"App error: {e}")

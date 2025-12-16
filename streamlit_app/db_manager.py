@@ -25,6 +25,12 @@ def init_database():
     cursor = conn.cursor()
     
     try:
+        # Optimize for memory and performance
+        cursor.execute("PRAGMA cache_size = -1024")  # 1MB cache
+        cursor.execute("PRAGMA synchronous = NORMAL")  # Balance performance/safety
+        cursor.execute("PRAGMA journal_mode = WAL")  # Better concurrency
+        cursor.execute("PRAGMA temp_store = MEMORY")  # Temp tables in memory
+        
         # Words table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS words (
@@ -475,11 +481,7 @@ def delete_database():
 if not DB_PATH.exists():
     logger.info("Creating database...")
     init_database()
-    try:
-        import_excel_to_db()
-    except Exception as e:
-        logger.error(f"Failed to import Excel data: {e}")
-        # Continue without data - app can still function
+    # Note: Database is pre-populated with 74 languages - no Excel import needed
 else:
     # Ensure schema is up to date
     init_database()
