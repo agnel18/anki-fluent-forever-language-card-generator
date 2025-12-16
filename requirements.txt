@@ -1,12 +1,33 @@
-# Core dependencies for language learning card generator
-google-generativeai>=0.3.0  # Gemini API for sentence generation
-groq>=0.9.0                 # Groq API client
-pandas>=2.0.0               # Data manipulation
-openpyxl>=3.1.0             # Excel file support
-python-dotenv>=1.0.0        # Environment variable management
-requests>=2.31.0            # HTTP requests (Pexels API)
+# Streamlit app
+streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
 
-# Optional: Only if using soundoftext.com fallback (no credit/debit card)
-# Uncomment these lines if you need the fallback audio script:
-# selenium>=4.0.0
-# webdriver-manager>=4.0.0
+# Core dependencies
+pandas>=2.0.0
+requests>=2.31.0
+pyyaml>=6.0
+
+# AI/ML
+groq>=0.9.0
+google-generativeai>=0.3.0
+
+# Text-to-Speech
+edge-tts==7.0.0
+
+# Image generation
+Pillow>=10.0.0
+
+# Database & Backend
+firebase-admin>=6.0.0
+
+# File handling
+openpyxl>=3.0.0
+
+# Anki deck generation
+genanki>=0.13.0
+
+# IPA/Phonetic transcription
+epitran>=1.24
+
+# Utilities
+python-dotenv>=1.0.0
