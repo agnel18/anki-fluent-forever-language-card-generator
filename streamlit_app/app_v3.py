@@ -21,7 +21,6 @@ is_dark = st.session_state.theme == "dark"
 
 st.markdown(f"""
 <style>
-    /*
     :root {{
         --bg-color: {'#0e1117' if is_dark else '#ffffff'};
         --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
@@ -45,7 +44,6 @@ st.markdown(f"""
         --card-border: {'#30363d' if is_dark else '#d0d7de'};
         --base-font-size: 16px;
     }}
-    */
     
     /*
     body {{
