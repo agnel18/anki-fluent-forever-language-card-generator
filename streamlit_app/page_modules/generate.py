@@ -100,7 +100,7 @@ def render_generate_page():
                 import time
                 time.sleep(0.5)  # Brief pause for visual feedback
         else:
-            if st.button("🚀 Generate Deck", key="generate_deck_button", use_container_width=True):
+            if st.button("🚀 Generate Deck", key="generate_deck_button", use_container_width=True, type="primary"):
                 # Get selected words from previous step
                 selected_words = st.session_state.get('selected_words', [])
                 selected_lang = st.session_state.get('selected_language', '')

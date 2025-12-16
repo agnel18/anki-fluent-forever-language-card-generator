@@ -92,7 +92,8 @@ def render_complete_page():
                     file_name=st.session_state.get("apkg_filename", f"{st.session_state.selected_lang.replace(' ', '_')}_deck.apkg"),
                     mime="application/octet-stream",
                     use_container_width=True,
-                    key="apkg_download_complete"
+                    key="apkg_download_complete",
+                    type="primary"
                 )
             with download_col2:
                 st.markdown(f"**{len(st.session_state.apkg_file):,} bytes**")
@@ -162,6 +163,6 @@ def render_complete_page():
             st.session_state.page = "language_select"
             st.rerun()
     with col_keys:
-        if st.button("🔑 API Settings", key="change_keys", use_container_width=True):
+        if st.button("🔑 API Settings", key="change_keys", use_container_width=True, type="secondary"):
             st.session_state.page = "api_setup"
             st.rerun()

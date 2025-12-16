@@ -51,7 +51,7 @@ def render_upload_page():
 
                 st.divider()
 
-                if st.button("🚀 Generate from Custom Words", use_container_width=True):
+                if st.button("🚀 Generate from Custom Words", use_container_width=True, type="primary"):
                     st.session_state.selected_lang = "Custom"
                     st.session_state.selected_words = words
                     st.session_state.page = "generating"

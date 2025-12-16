@@ -100,7 +100,7 @@ def render_settings_page():
         available_langs = [l for l in all_lang_names if l not in [x["name"] for x in st.session_state.learned_languages]]
         new_lang = st.selectbox("Select language", available_langs, key="add_lang_select", disabled=len(st.session_state.learned_languages) >= 5)
     with add_col2:
-        if st.button("Add", key="add_lang_btn") and new_lang and len(st.session_state.learned_languages) < 5:
+        if st.button("Add", key="add_lang_btn", type="secondary") and new_lang and len(st.session_state.learned_languages) < 5:
             st.session_state.learned_languages.append({"name": new_lang, "usage": 0})
             st.success(f"Added {new_lang}")
             st.rerun()
@@ -203,7 +203,7 @@ def render_settings_page():
         key="perlang_audiospeed"
     )
 
-    if st.button("Save Settings", key="perlang_save_btn"):
+    if st.button("Save Settings", key="perlang_save_btn", type="primary"):
         st.session_state.per_language_settings[selected_lang] = settings.copy()
         st.success(f"Settings saved for {selected_lang}!")
     st.markdown("---")

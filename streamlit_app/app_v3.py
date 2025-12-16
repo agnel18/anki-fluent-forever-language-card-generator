@@ -73,19 +73,203 @@ st.markdown(f"""
         color: var(--tertiary-color);
     }}
     
-    .stButton > button {{
+    /* Button color system */
+    .stButton > button {
         font-size: 1.1rem !important;
         padding: 0.8rem 1.6rem !important;
-        background-color: var(--button-bg) !important;
-        color: white !important;
         border-radius: 6px !important;
-        border: 2px solid var(--button-border) !important;
-    }}
+        border: 2px solid transparent !important;
+        transition: all 0.2s ease-in-out !important;
+    }
     
-    .stButton > button:hover {{
-        background-color: var(--button-hover-bg) !important;
-        border-color: var(--button-hover-border) !important;
-    }}
+    /* Primary Actions - Green */
+    .stButton > button[data-testid*="primary"],
+    .btn-primary {
+        background-color: #238636 !important;
+        color: white !important;
+        border-color: #3fb950 !important;
+    }
+    
+    .stButton > button[data-testid*="primary"]:hover,
+    .btn-primary:hover {
+        background-color: #2ea043 !important;
+        border-color: #56d364 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(35, 134, 54, 0.3);
+    }
+    
+    /* Secondary Actions - Blue */
+    .btn-secondary {
+        background-color: #0969da !important;
+        color: white !important;
+        border-color: #218bff !important;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #218bff !important;
+        border-color: #79c0ff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(9, 105, 218, 0.3);
+    }
+    
+    /* Navigation Actions - Gray */
+    .btn-navigation {
+        background-color: #f6f8fa !important;
+        color: #24292f !important;
+        border-color: #d0d7de !important;
+    }
+    
+    .btn-navigation:hover {
+        background-color: #f3f4f6 !important;
+        border-color: #8c959f !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Destructive Actions - Red */
+    .btn-destructive {
+        background-color: #da3633 !important;
+        color: white !important;
+        border-color: #f85149 !important;
+    }
+    
+    .btn-destructive:hover {
+        background-color: #b62324 !important;
+        border-color: #f85149 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(218, 54, 51, 0.3);
+    }
+    
+    /* Cautionary Actions - Orange */
+    .btn-caution {
+        background-color: #d29922 !important;
+        color: white !important;
+        border-color: #f2cc60 !important;
+    }
+    
+    .btn-caution:hover {
+        background-color: #bb8009 !important;
+        border-color: #f2cc60 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(210, 153, 34, 0.3);
+    }
+    
+    /* Utility Actions - Light Gray */
+    .btn-utility {
+        background-color: #f6f8fa !important;
+        color: #656d76 !important;
+        border-color: #d1d9e0 !important;
+    }
+    
+    .btn-utility:hover {
+        background-color: #f3f4f6 !important;
+        border-color: #8c959f !important;
+        color: #24292f !important;
+    }
+    
+    /* Target specific buttons by text content */
+    .stButton > button:has-text("↑"),
+    .stButton > button:has-text("↓"),
+    .stButton > button:has-text("🏠 Main"),
+    .stButton > button:has-text("⚙️ Settings"),
+    .stButton > button:has-text("📊 Statistics"),
+    .stButton > button:has-text("📖 Documentation"),
+    .stButton > button:has-text("⬇️ Download Generation Log (TXT)"),
+    .stButton > button:has-text("🔄 Create New Deck") {
+        background-color: #f6f8fa !important;
+        color: #656d76 !important;
+        border-color: #d1d9e0 !important;
+    }
+    
+    .stButton > button:has-text("↑"):hover,
+    .stButton > button:has-text("↓"):hover,
+    .stButton > button:has-text("🏠 Main"):hover,
+    .stButton > button:has-text("⚙️ Settings"):hover,
+    .stButton > button:has-text("📊 Statistics"):hover,
+    .stButton > button:has-text("📖 Documentation"):hover,
+    .stButton > button:has-text("⬇️ Download Generation Log (TXT)"):hover,
+    .stButton > button:has-text("🔄 Create New Deck"):hover {
+        background-color: #f3f4f6 !important;
+        border-color: #8c959f !important;
+        color: #24292f !important;
+    }
+    
+    /* Target destructive buttons */
+    .stButton > button:has-text("🗑️ Clear Text"),
+    .stButton > button:has-text("❌"),
+    .stButton > button:has-text("🔄 Clear All Cache") {
+        background-color: #da3633 !important;
+        color: white !important;
+        border-color: #f85149 !important;
+    }
+    
+    .stButton > button:has-text("🗑️ Clear Text"):hover,
+    .stButton > button:has-text("❌"):hover,
+    .stButton > button:has-text("🔄 Clear All Cache"):hover {
+        background-color: #b62324 !important;
+        border-color: #f85149 !important;
+    }
+    
+    /* Target caution buttons */
+    .stButton > button:has-text("🧹 Clear Expired") {
+        background-color: #d29922 !important;
+        color: white !important;
+        border-color: #f2cc60 !important;
+    }
+    
+    .stButton > button:has-text("🧹 Clear Expired"):hover {
+        background-color: #bb8009 !important;
+        border-color: #f2cc60 !important;
+    }
+    
+    /* JavaScript to add classes based on button text */
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Utility buttons
+        const utilityTexts = ['↑', '↓', '🏠 Main', '⚙️ Settings', '📊 Statistics', '📖 Documentation', '⬇️ Download Generation Log (TXT)', '🔄 Create New Deck'];
+        utilityTexts.forEach(text => {
+            const buttons = document.querySelectorAll('.stButton > button');
+            buttons.forEach(button => {
+                if (button.textContent.includes(text)) {
+                    button.classList.add('btn-utility');
+                }
+            });
+        });
+        
+        // Destructive buttons
+        const destructiveTexts = ['🗑️ Clear Text', '❌', '🔄 Clear All Cache'];
+        destructiveTexts.forEach(text => {
+            const buttons = document.querySelectorAll('.stButton > button');
+            buttons.forEach(button => {
+                if (button.textContent.includes(text)) {
+                    button.classList.add('btn-destructive');
+                }
+            });
+        });
+        
+        // Caution buttons
+        const cautionTexts = ['🧹 Clear Expired'];
+        cautionTexts.forEach(text => {
+            const buttons = document.querySelectorAll('.stButton > button');
+            buttons.forEach(button => {
+                if (button.textContent.includes(text)) {
+                    button.classList.add('btn-caution');
+                }
+            });
+        });
+        
+        // Navigation buttons (back buttons)
+        const navigationTexts = ['← Back', '⬅️ Back', '⬅️ Previous', 'Next ➡️'];
+        navigationTexts.forEach(text => {
+            const buttons = document.querySelectorAll('.stButton > button');
+            buttons.forEach(button => {
+                if (button.textContent.includes(text)) {
+                    button.classList.add('btn-navigation');
+                }
+            });
+        });
+    });
+    </script>
     
     .stSelectbox, .stSlider, .stFileUploader, .stTextInput {{
         font-size: 1.05rem !important;
