@@ -487,8 +487,9 @@ except Exception as e:
     print(f"Failed to initialize learned_languages: {e}")
     pass
 
-# Determine which section to show based on session state
-current_page = st.session_state.get("page")
+try:
+    # Determine which section to show based on session state
+    current_page = st.session_state.get("page")
 
 # If no page is set, determine default based on API key availability
 if current_page is None:
@@ -616,3 +617,7 @@ elif current_page == "statistics":
 else:
     # Default to main page
     render_main_page()
+
+except Exception as e:
+    st.error(f"App error: {e}")
+    st.write("Please refresh the page or contact support.")
