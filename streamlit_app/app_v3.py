@@ -473,15 +473,19 @@ def format_number_compact(num):
 
 # --- LOGGING CAPTURE FOR DOWNLOADABLE LOG ---
 # Restore pinned languages fallback if not set (must be after all imports)
-if "learned_languages" not in st.session_state:
-    from pathlib import Path
-    import yaml
-    config_path = Path(__file__).parent / "languages.yaml"
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    st.session_state.learned_languages = [
-        {"name": lang["name"], "usage": 0, "pinned": True} for lang in config["top_5"]
-    ]
+try:
+    if "learned_languages" not in st.session_state:
+        from pathlib import Path
+        import yaml
+        config_path = Path(__file__).parent / "languages.yaml"
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        st.session_state.learned_languages = [
+            {"name": lang["name"], "usage": 0, "pinned": True} for lang in config["top_5"]
+        ]
+except Exception as e:
+    print(f"Failed to initialize learned_languages: {e}")
+    pass
 
 # Determine which section to show based on session state
 current_page = st.session_state.get("page")
@@ -588,6 +592,7 @@ if current_page != "login":
 
 
 # Route to the appropriate page
+st.write(f"Debug: Current page = {current_page}")
 if current_page == "api_setup":
     render_api_setup_page()
 elif current_page == "main":
