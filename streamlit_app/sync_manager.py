@@ -24,14 +24,28 @@ def sync_user_data() -> bool:
         return False
     
     try:
-        # Collect data to sync
+        # Get user's sync preferences
+        sync_prefs = st.session_state.get('sync_preferences', ["API Keys", "Theme Settings", "Audio Preferences"])
+        
+        # Collect data to sync based on preferences
         sync_data = {
-            'groq_api_key': st.session_state.get('groq_api_key', ''),
-            'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
-            'theme': st.session_state.get('theme', 'dark'),
-            'audio_speed': st.session_state.get('audio_speed', 0.8),
             'last_sync': datetime.now().isoformat()
         }
+        
+        if "API Keys" in sync_prefs:
+            sync_data.update({
+                'groq_api_key': st.session_state.get('groq_api_key', ''),
+                'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
+            })
+            
+        if "Theme Settings" in sync_prefs:
+            sync_data['theme'] = st.session_state.get('theme', 'dark')
+            
+        if "Audio Preferences" in sync_prefs:
+            sync_data['audio_speed'] = st.session_state.get('audio_speed', 0.8)
+            
+        if "Usage Statistics" in sync_prefs:
+            sync_data['usage_stats'] = st.session_state.get('persistent_usage_stats', {})
         
         # Save to Firebase
         success = save_settings_to_firebase(st.session_state.session_id, sync_data)
@@ -46,7 +60,7 @@ def sync_user_data() -> bool:
             
     except Exception as e:
         logger.error(f"❌ Sync error: {e}")
-        st.session_state.sync_errors.append(str(e))
+        handle_sync_error(e)
         return False
 
 
@@ -67,16 +81,22 @@ def load_cloud_data() -> bool:
         
         if cloud_data:
             # Merge with local data (cloud takes precedence for conflicts)
-            if cloud_data.get("groq_api_key"):
-                st.session_state.groq_api_key = cloud_data["groq_api_key"]
-            if cloud_data.get("pixabay_api_key"):
-                st.session_state.pixabay_api_key = cloud_data["pixabay_api_key"]
-            if "theme" in cloud_data:
-                st.session_state.theme = cloud_data["theme"]
-            if "audio_speed" in cloud_data:
-                st.session_state.audio_speed = cloud_data["audio_speed"]
-                
-            logger.info("✅ Cloud data loaded successfully")
+            resolved_data = resolve_data_conflicts(
+                local_data={
+                    'groq_api_key': st.session_state.get('groq_api_key', ''),
+                    'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
+                    'theme': st.session_state.get('theme', 'dark'),
+                    'audio_speed': st.session_state.get('audio_speed', 0.8),
+                },
+                cloud_data=cloud_data
+            )
+            
+            # Apply resolved data
+            for key, value in resolved_data.items():
+                if value:  # Only update if there's a value
+                    st.session_state[key] = value
+                    
+            logger.info("✅ Cloud data loaded and merged successfully")
             return True
         else:
             logger.info("ℹ️ No cloud data found")
@@ -178,15 +198,19 @@ def handle_sync_error(error: Exception) -> None:
     error_msg = str(error)
     st.session_state.sync_errors.append(error_msg)
     
-    # Show user-friendly message
-    if "network" in error_msg.lower():
+    # Show user-friendly message based on error type
+    if "network" in error_msg.lower() or "connection" in error_msg.lower():
         st.warning("⚠️ Sync failed due to network issues. Will retry automatically.")
-    elif "auth" in error_msg.lower():
+    elif "auth" in error_msg.lower() or "permission" in error_msg.lower():
         st.error("🔐 Authentication expired. Please sign in again.")
         from firebase_manager import sign_out
         sign_out()
+    elif "quota" in error_msg.lower() or "limit" in error_msg.lower():
+        st.warning("⚠️ Cloud storage quota exceeded. Some data may not be synced.")
     else:
         st.error(f"☁️ Sync error: {error_msg}")
+        
+    logger.error(f"Sync error handled: {error_msg}")
 
 
 def safe_sync() -> bool:

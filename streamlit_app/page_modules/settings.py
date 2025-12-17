@@ -107,6 +107,31 @@ def render_settings_page():
         st.error(f"Account section error: {e}")
         st.info("🔄 **Local storage only** - Account features unavailable")
     
+    # Privacy Controls Section (only show if signed in or Firebase available)
+    if firebase_status in ["enabled", "available"]:
+        st.markdown("---")
+        st.markdown("### 🔒 Privacy Controls")
+        st.info("Choose exactly what data gets synced to the cloud.")
+        
+        # Initialize sync preferences if not set
+        if "sync_preferences" not in st.session_state:
+            st.session_state.sync_preferences = ["API Keys", "Theme Settings", "Audio Preferences"]
+        
+        sync_options = st.multiselect(
+            "Select data to sync:",
+            ["API Keys", "Theme Settings", "Audio Preferences", "Usage Statistics"],
+            default=st.session_state.sync_preferences,
+            help="Only selected data types will be stored in the cloud"
+        )
+        
+        if st.button("💾 Update Sync Preferences"):
+            st.session_state.sync_preferences = sync_options
+            st.success("✅ Sync preferences updated!")
+            # Trigger a sync to apply new preferences
+            if firebase_status == "enabled":
+                from sync_manager import sync_user_data
+                sync_user_data()
+    
     st.markdown("---")
 
     # --- API Keys Management Section ---

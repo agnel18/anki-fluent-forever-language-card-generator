@@ -134,6 +134,28 @@ def render_sidebar_auth_section():
         # Firebase unavailable
         st.sidebar.warning("☁️ Cloud features unavailable")
 
+def handle_auto_sync():
+    """Handle automatic sync operations."""
+    from firebase_manager import is_signed_in
+    from sync_manager import load_cloud_data, safe_sync
+    
+    # Sync on app start if signed in and not done yet
+    if is_signed_in() and not st.session_state.get('initial_sync_done'):
+        try:
+            load_cloud_data()
+            st.session_state.initial_sync_done = True
+        except Exception as e:
+            print(f"Initial sync failed: {e}")
+    
+    # Periodic sync (every 5 minutes) if signed in
+    last_sync = st.session_state.get('last_sync_time')
+    if (is_signed_in() and last_sync and 
+        (datetime.now() - last_sync).seconds > 300):  # 5 minutes
+        try:
+            safe_sync()
+        except Exception as e:
+            print(f"Periodic sync failed: {e}")
+
 # ============================================================================
 # MAIN APPLICATION - MULTI-PAGE WITH SIDEBAR NAVIGATION
 # ============================================================================
@@ -157,6 +179,13 @@ def main():
         initialize_firebase_settings()
     except Exception as e:
         print(f"Firebase initialization failed: {e}")
+        pass
+
+    # Handle automatic sync operations
+    try:
+        handle_auto_sync()
+    except Exception as e:
+        print(f"Auto sync failed: {e}")
         pass
 
     # Import the modular page functions (inside main to avoid import-time issues)
