@@ -162,6 +162,43 @@ def import_excel_to_db(excel_dir: Path = None):
         conn.close()
 
 
+def remove_unsupported_languages(unsupported_languages: List[str]):
+    """
+    Remove data for unsupported languages from the database.
+    
+    Args:
+        unsupported_languages: List of language names to remove
+    """
+    if not unsupported_languages:
+        logger.info("No languages to remove")
+        return True
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    try:
+        # Get count before removal
+        cursor.execute("SELECT COUNT(*) FROM words WHERE language IN ({})".format(','.join('?' * len(unsupported_languages))), unsupported_languages)
+        count_before = cursor.fetchone()[0]
+        
+        # Remove words for unsupported languages
+        cursor.execute("DELETE FROM words WHERE language IN ({})".format(','.join('?' * len(unsupported_languages))), unsupported_languages)
+        
+        # Remove related generation history
+        cursor.execute("DELETE FROM generation_history WHERE language IN ({})".format(','.join('?' * len(unsupported_languages))), unsupported_languages)
+        
+        conn.commit()
+        logger.info(f"✅ Removed {count_before} words for {len(unsupported_languages)} unsupported languages")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error removing unsupported languages: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
 # ============================================================================
 # WORD QUERIES
 # ============================================================================
