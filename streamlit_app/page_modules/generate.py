@@ -90,6 +90,7 @@ def render_generate_page():
     with col_back:
         if st.button("⬅️ Back to Output Settings", key="back_from_generate", use_container_width=True):
             st.session_state.page = "sentence_settings"
+            st.session_state.scroll_to_top = True
             st.rerun()
     with col_generate:
         # Add loading state for generate button

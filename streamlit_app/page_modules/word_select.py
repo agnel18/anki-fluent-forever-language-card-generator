@@ -248,6 +248,7 @@ def render_word_select_page():
     with col_back:
         if st.button("⬅️ Back to Language Selection", key="back_from_word_select", use_container_width=True):
             st.session_state.page = "language_select"
+            st.session_state.scroll_to_top = True
             st.rerun()
     with col_next:
         if st.button("Next: Adjust Output Settings ➡️", key="next_from_word_select", use_container_width=True, type="primary"):

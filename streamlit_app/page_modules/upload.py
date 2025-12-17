@@ -14,6 +14,7 @@ def render_upload_page():
     with col2:
         if st.button("← Back"):
             st.session_state.page = "main"
+            st.session_state.scroll_to_top = True
             st.rerun()
 
     st.divider()
@@ -56,6 +57,7 @@ def render_upload_page():
                         st.session_state.selected_lang = "Custom"
                         st.session_state.selected_words = words
                         st.session_state.page = "generating"
+                        st.session_state.scroll_to_top = True
                         st.rerun()
             else:
                 st.error(message)

@@ -12,6 +12,7 @@ def render_help_page():
     with col2:
         if st.button("← Back"):
             st.session_state.page = "main"
+            st.session_state.scroll_to_top = True
             st.rerun()
 
     st.markdown("""

@@ -420,6 +420,7 @@ def render_generating_page():
 
         if result.get('success'):
             st.session_state.page = "complete"
+            st.session_state.scroll_to_top = True
             st.rerun()
         else:
             # Show error details and options
@@ -437,6 +438,7 @@ def render_generating_page():
             if st.session_state['generation_progress'].get('apkg_ready'):
                 st.success("📦 Despite errors, a partial deck was created and is available for download.")
                 st.session_state.page = "complete"
+                st.session_state.scroll_to_top = True
                 st.rerun()
             else:
                 st.warning("❌ No usable deck could be created due to critical errors.")
@@ -465,4 +467,5 @@ def render_generating_page():
             with col2:
                 if st.button("⬅️ Back to Settings", use_container_width=True):
                     st.session_state.page = "generate"
+                    st.session_state.scroll_to_top = True
                     st.rerun()

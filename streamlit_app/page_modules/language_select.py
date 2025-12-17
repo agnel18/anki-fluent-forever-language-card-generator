@@ -138,6 +138,7 @@ def render_language_select_page():
         with col_back:
             if st.button("← Back to Main", key="lang_back"):
                 st.session_state.page = "main"
+                st.session_state.scroll_to_top = True
                 st.rerun()
         with col_progress:
             st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)

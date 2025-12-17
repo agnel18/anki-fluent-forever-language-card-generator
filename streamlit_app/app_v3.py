@@ -336,6 +336,15 @@ def main():
         if "custom_topics" not in st.session_state:
             st.session_state.custom_topics = []
 
+        # Handle scroll to top after page changes
+        if st.session_state.get("scroll_to_top", False):
+            st.markdown("""
+            <script>
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            </script>
+            """, unsafe_allow_html=True)
+            st.session_state.scroll_to_top = False
+
         # Route to the appropriate page
         try:
             if current_page == "api_setup":
