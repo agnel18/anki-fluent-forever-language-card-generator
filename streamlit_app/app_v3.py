@@ -73,7 +73,7 @@ try:
     if hasattr(st, 'session_state'):
         initialize_session_state()
         initialize_languages_config()
-        initialize_firebase_settings()
+        # Move firebase initialization inside main() function to avoid import-time issues
 except Exception as e:
     # If not in Streamlit context or initialization fails, skip
     print(f"Initialization skipped: {e}")
@@ -96,6 +96,13 @@ def main():
     # Initialize theme if not set (fallback)
     if "theme" not in st.session_state:
         st.session_state.theme = "dark"
+
+    # Initialize Firebase settings (moved here from module level to avoid import-time issues)
+    try:
+        initialize_firebase_settings()
+    except Exception as e:
+        print(f"Firebase initialization failed: {e}")
+        pass
 
     # Import the modular page functions (inside main to avoid import-time issues)
     from page_modules.main import render_main_page
