@@ -10,6 +10,26 @@ from constants import CURATED_TOPICS
 
 def render_sentence_settings_page():
     """Render the sentence settings page."""
+    # Initialize session state variables if not present (fallback for mobile)
+    if "sentence_length_range" not in st.session_state:
+        st.session_state.sentence_length_range = (6, 16)
+    if "sentences_per_word" not in st.session_state:
+        st.session_state.sentences_per_word = 10
+    if "difficulty" not in st.session_state:
+        st.session_state.difficulty = "intermediate"
+    if "audio_speed" not in st.session_state:
+        st.session_state.audio_speed = 0.8
+    if "selected_voice" not in st.session_state:
+        st.session_state.selected_voice = None
+    if "selected_voice_display" not in st.session_state:
+        st.session_state.selected_voice_display = None
+    if "enable_topics" not in st.session_state:
+        st.session_state.enable_topics = False
+    if "selected_topics" not in st.session_state:
+        st.session_state.selected_topics = []
+    if "custom_topics" not in st.session_state:
+        st.session_state.custom_topics = []
+
     with st.container():
         st.markdown("# ✍️ Step 3: Adjust Output Settings")
         st.markdown("Customize how your Anki cards will be generated. These settings control sentence complexity and audio pronunciation.")
@@ -25,20 +45,22 @@ def render_sentence_settings_page():
         st.markdown("## ✍️ Sentence Settings")
         col_len, col_sent = st.columns(2)
         with col_len:
+            current_length = st.session_state.sentence_length_range
             st.session_state.sentence_length_range = st.slider(
                 "Sentence length (words)",
                 min_value=4,
                 max_value=30,
-                value=st.session_state.sentence_length_range,
+                value=current_length,
                 step=1,
                 help="Min and max words per sentence."
             )
         with col_sent:
+            current_sentences = st.session_state.sentences_per_word
             st.session_state.sentences_per_word = st.slider(
                 "Sentences per word",
                 min_value=3,
                 max_value=15,
-                value=st.session_state.sentences_per_word,
+                value=current_sentences,
                 step=1,
                 help="How many sentences to generate for each word."
             )
