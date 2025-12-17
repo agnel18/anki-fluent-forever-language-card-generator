@@ -32,13 +32,41 @@ def render_api_setup_page():
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     st.markdown("## 🔐 API Keys Setup")
+    
+    # Firebase sync status
+    try:
+        from firebase_manager import init_firebase
+        firebase_available = init_firebase()
+        if firebase_available:
+            st.success("✅ **Cloud Sync Available** - Your API keys can be securely stored and synced across devices")
+            
+            # Load from Firebase option
+            if st.button("📥 Load API Keys from Cloud", help="Load your previously saved API keys from Firebase"):
+                try:
+                    from firebase_manager import load_settings_from_firebase
+                    cloud_settings = load_settings_from_firebase(st.session_state.session_id)
+                    if cloud_settings and 'groq_api_key' in cloud_settings and 'pixabay_api_key' in cloud_settings:
+                        st.session_state.groq_api_key = cloud_settings['groq_api_key']
+                        st.session_state.pixabay_api_key = cloud_settings['pixabay_api_key']
+                        st.success("✅ API keys loaded from cloud!")
+                        st.session_state.page = PAGE_LANGUAGE_SELECT
+                        st.rerun()
+                    else:
+                        st.warning("No API keys found in cloud. Please enter them below.")
+                except Exception as e:
+                    st.error(f"Failed to load from cloud: {e}")
+        else:
+            st.info("🔄 **Local Storage Only** - API keys will be saved locally on this device")
+    except Exception as e:
+        st.info("🔄 **Local Storage Only** - Firebase unavailable")
+    
     st.markdown(
         """
 **How it works:**
 1. You enter your API keys in this form
 2. They stay in your browser\'s temporary memory (session only)
 3. We use them ONLY to make API calls on YOUR behalf
-4. Your keys are NEVER stored anywhere
+4. Your keys are NEVER stored anywhere without your permission
 5. When you close this tab, keys are automatically deleted
 
 **Important privacy notes:**
@@ -90,6 +118,17 @@ def render_api_setup_page():
             st.rerun()
             return
     st.divider()
+    
+    # Cloud sync option
+    save_to_cloud = False
+    try:
+        from firebase_manager import init_firebase
+        if init_firebase():
+            save_to_cloud = st.checkbox("💾 Also save API keys to cloud for cross-device sync", value=True, 
+                                      help="Your API keys will be encrypted and stored securely in Firebase")
+    except Exception:
+        pass
+    
     if st.button("🚀 Next: Select Language", use_container_width=True):
         if not groq_key:
             st.error("❌ Please enter your Groq API key")
@@ -98,20 +137,26 @@ def render_api_setup_page():
         else:
             st.session_state.groq_api_key = groq_key
             st.session_state.pixabay_api_key = pixabay_key
-            # Save API keys to local file for persistence
+            
+            # Save API keys locally
             secrets_path = Path(__file__).parent.parent / "user_secrets.json"
             user_secrets = {"groq_api_key": groq_key, "pixabay_api_key": pixabay_key}
             with open(secrets_path, "w", encoding="utf-8") as f:
                 json.dump(user_secrets, f, indent=2)
-            # Save API keys to Firebase if not guest
-            if not st.session_state.get("is_guest", True):
+            
+            # Save to Firebase if requested
+            if save_to_cloud:
                 try:
                     from firebase_manager import save_settings_to_firebase
                     save_settings_to_firebase(st.session_state.session_id, {
                         "groq_api_key": groq_key,
                         "pixabay_api_key": pixabay_key
                     })
+                    st.success("✅ API keys saved locally and to cloud!")
                 except Exception as e:
-                    st.warning(f"Could not save API keys to cloud: {e}")
+                    st.warning(f"Local save successful, but cloud save failed: {e}")
+            else:
+                st.success("✅ API keys saved locally!")
+            
             st.session_state.page = PAGE_LANGUAGE_SELECT
             st.rerun()

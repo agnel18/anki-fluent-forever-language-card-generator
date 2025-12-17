@@ -16,23 +16,122 @@ def render_settings_page():
 
     st.markdown("---")
 
-    # --- Profile Section First ---
-    st.markdown("### 👤 Profile (Mocked Firebase)")
-    mock_user = {
-        "name": "Jane Doe",
-        "email": "jane.doe@email.com",
-        "avatar": "https://randomuser.me/api/portraits/women/44.jpg"
-    }
-    cols = st.columns([1, 4])
-    with cols[0]:
-        st.image(mock_user["avatar"], width=80)
-    with cols[1]:
-        st.markdown(f"**Name:** {mock_user['name']}")
-        st.markdown(f"**Email:** {mock_user['email']}")
-        st.caption("(Firebase integration coming soon)")
+    # --- Profile & Cloud Sync Section ---
+    st.markdown("### 👤 Profile & Cloud Sync")
+    
+    try:
+        from firebase_manager import init_firebase
+        firebase_available = init_firebase()
+        
+        if firebase_available:
+            st.success("✅ **Cloud Sync Active** - Your data is securely stored in Firebase")
+            
+            # Show session info
+            session_id = st.session_state.get("session_id", "Unknown")
+            masked_session = session_id[:8] + "..." if len(session_id) > 8 else session_id
+            st.info(f"**Session ID:** {masked_session}")
+            
+            # Cloud data management
+            st.markdown("**Cloud Data:**")
+            cloud_col1, cloud_col2 = st.columns(2)
+            
+            with cloud_col1:
+                if st.button("📊 View Cloud Stats", help="Show your usage statistics from Firebase"):
+                    try:
+                        from firebase_manager import load_usage_stats_from_firebase
+                        stats = load_usage_stats_from_firebase(session_id)
+                        if stats:
+                            with st.expander("Cloud Usage Statistics", expanded=True):
+                                st.json(stats)
+                        else:
+                            st.info("No usage statistics found in cloud")
+                    except Exception as e:
+                        st.error(f"Failed to load stats: {e}")
+            
+            with cloud_col2:
+                if st.button("🗑️ Clear Cloud Data", help="Remove all your data from Firebase"):
+                    if st.checkbox("⚠️ Confirm deletion - this cannot be undone"):
+                        try:
+                            # Note: This would require implementing a delete function
+                            st.warning("Cloud data deletion not yet implemented")
+                        except Exception as e:
+                            st.error(f"Failed to delete cloud data: {e}")
+        else:
+            st.warning("🔄 **Local Storage Only** - Firebase unavailable, data stored locally only")
+            st.info("To enable cloud sync, ensure firebase_config.json is properly configured")
+            
+    except Exception as e:
+        st.error(f"Profile section error: {e}")
+        st.info("🔄 **Local Storage Only** - Profile features unavailable")
+    
     st.markdown("---")
 
-    # --- Theme Toggle Section ---
+    # --- API Keys Management Section ---
+    st.markdown("### 🔑 API Keys Management")
+    st.info("Manage your API keys for Groq and Pixabay services.")
+    
+    # Current API keys status
+    groq_key = st.session_state.get("groq_api_key", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if groq_key:
+            masked_groq = groq_key[:8] + "..." + groq_key[-4:] if len(groq_key) > 12 else groq_key
+            st.success(f"✅ Groq Key: {masked_groq}")
+        else:
+            st.warning("❌ No Groq API key set")
+    
+    with col2:
+        if pixabay_key:
+            masked_pixabay = pixabay_key[:8] + "..." + pixabay_key[-4:] if len(pixabay_key) > 12 else pixabay_key
+            st.success(f"✅ Pixabay Key: {masked_pixabay}")
+        else:
+            st.warning("❌ No Pixabay API key set")
+    
+    # API key management options
+    st.markdown("**Manage API Keys:**")
+    manage_col1, manage_col2, manage_col3 = st.columns(3)
+    
+    with manage_col1:
+        if st.button("🔄 Update API Keys", help="Go back to API setup to change your keys"):
+            st.session_state.page = "api_setup"
+            st.rerun()
+    
+    with manage_col2:
+        if st.button("💾 Save to Cloud", help="Save current API keys to Firebase for cross-device sync"):
+            try:
+                from firebase_manager import init_firebase, save_settings_to_firebase
+                if init_firebase() and groq_key and pixabay_key:
+                    save_settings_to_firebase(st.session_state.session_id, {
+                        "groq_api_key": groq_key,
+                        "pixabay_api_key": pixabay_key
+                    })
+                    st.success("✅ API keys saved to cloud!")
+                else:
+                    st.error("❌ Firebase unavailable or missing API keys")
+            except Exception as e:
+                st.error(f"❌ Failed to save to cloud: {e}")
+    
+    with manage_col3:
+        if st.button("📥 Load from Cloud", help="Load API keys from Firebase"):
+            try:
+                from firebase_manager import init_firebase, load_settings_from_firebase
+                if init_firebase():
+                    cloud_settings = load_settings_from_firebase(st.session_state.session_id)
+                    if cloud_settings and 'groq_api_key' in cloud_settings and 'pixabay_api_key' in cloud_settings:
+                        st.session_state.groq_api_key = cloud_settings['groq_api_key']
+                        st.session_state.pixabay_api_key = cloud_settings['pixabay_api_key']
+                        st.success("✅ API keys loaded from cloud!")
+                        st.rerun()
+                    else:
+                        st.warning("No API keys found in cloud")
+                else:
+                    st.error("❌ Firebase unavailable")
+            except Exception as e:
+                st.error(f"❌ Failed to load from cloud: {e}")
+    
+    st.markdown("---")
     st.markdown("### 🎨 Theme")
     st.info("Choose your preferred theme for the application interface.")
 
