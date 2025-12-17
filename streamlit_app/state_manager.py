@@ -45,6 +45,18 @@ def initialize_session_state():
         # If loading fails, continue with empty keys
         pass
 
+    # Cloud sync state
+    if "cloud_sync_enabled" not in st.session_state:
+        st.session_state.cloud_sync_enabled = False
+    if "last_sync_time" not in st.session_state:
+        st.session_state.last_sync_time = None
+    if "sync_errors" not in st.session_state:
+        st.session_state.sync_errors = []
+    if "dismissed_cloud_prompt" not in st.session_state:
+        st.session_state.dismissed_cloud_prompt = False
+    if "initial_sync_done" not in st.session_state:
+        st.session_state.initial_sync_done = False
+
     # Batch settings
     if SESSION_CURRENT_BATCH_SIZE not in st.session_state:
         st.session_state[SESSION_CURRENT_BATCH_SIZE] = DEFAULT_BATCH_SIZE
@@ -147,16 +159,29 @@ def initialize_languages_config():
 
 def initialize_firebase_settings():
     """Initialize Firebase settings and session ID."""
-    from firebase_manager import load_settings_from_firebase, get_session_id
+    from firebase_manager import load_settings_from_firebase, get_session_id, is_signed_in
 
     if "session_id" not in st.session_state:
         st.session_state.session_id = get_session_id()
     if "current_page" not in st.session_state:
         st.session_state.current_page = {}
 
-    # Auto-load API keys for logged-in users
-    if not st.session_state.get("is_guest", True):
+    # Set default guest status
+    if "is_guest" not in st.session_state:
+        st.session_state.is_guest = True
+
+    # Auto-load settings for signed-in users
+    if is_signed_in():
+        st.session_state.is_guest = False
         firebase_settings = load_settings_from_firebase(st.session_state.session_id)
         if firebase_settings:
-            st.session_state.groq_api_key = firebase_settings.get("groq_api_key", "")
-            st.session_state.pixabay_api_key = firebase_settings.get("pixabay_api_key", "")
+            # Load settings from Firebase (cloud takes precedence for API keys)
+            if firebase_settings.get("groq_api_key"):
+                st.session_state.groq_api_key = firebase_settings["groq_api_key"]
+            if firebase_settings.get("pixabay_api_key"):
+                st.session_state.pixabay_api_key = firebase_settings["pixabay_api_key"]
+            # Load other settings if available
+            if "theme" in firebase_settings:
+                st.session_state.theme = firebase_settings["theme"]
+            if "audio_speed" in firebase_settings:
+                st.session_state.audio_speed = firebase_settings["audio_speed"]

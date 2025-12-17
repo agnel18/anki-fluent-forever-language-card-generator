@@ -51,3 +51,26 @@ def persist_api_keys() -> None:
                 "pixabay_api_key": st.session_state.get("pixabay_api_key", "")
             }
         )
+
+
+def should_show_cloud_prompt() -> bool:
+    """Determine if we should prompt for cloud features.
+    
+    Returns True if:
+    - User has generated at least 1 deck (indicating success)
+    - Not already signed in
+    - Hasn't dismissed the prompt
+    - Firebase is available
+    """
+    from firebase_manager import get_sync_status
+    
+    # Check if user has had success with the app
+    decks_generated = st.session_state.get('decks_generated', 0)
+    has_success = decks_generated >= 1
+    
+    # Check other conditions
+    not_signed_in = get_sync_status() != "enabled"
+    not_dismissed = not st.session_state.get('dismissed_cloud_prompt', False)
+    firebase_available = get_sync_status() != "unavailable"
+    
+    return has_success and not_signed_in and not_dismissed and firebase_available

@@ -421,6 +421,60 @@ def get_generation_history(session_id: str, limit: int = 10) -> List[Dict]:
 
 
 # ============================================================================
+# USER AUTHENTICATION & SYNC STATUS
+# ============================================================================
+
+def is_signed_in() -> bool:
+    """Check if user is authenticated with Firebase."""
+    try:
+        import streamlit as st
+        return st.session_state.get('user') is not None
+    except:
+        return False
+
+
+def get_sync_status() -> str:
+    """Return cloud sync status for UI display.
+    
+    Returns:
+        "enabled" - User signed in, sync active
+        "available" - Firebase available but user not signed in
+        "unavailable" - Firebase not available
+    """
+    if not firebase_available:
+        return "unavailable"
+    
+    if is_signed_in():
+        return "enabled"
+    
+    return "available"
+
+
+def sign_in_with_google():
+    """Handle Google OAuth sign-in flow."""
+    # This will be implemented in Phase 2 with proper OAuth handling
+    # For now, this is a placeholder
+    try:
+        import streamlit as st
+        st.warning("Google sign-in will be implemented in the next phase.")
+        st.info("For now, cloud sync is available through the settings page.")
+    except:
+        pass
+
+
+def sign_out():
+    """Sign out user and clear authentication state."""
+    try:
+        import streamlit as st
+        if 'user' in st.session_state:
+            del st.session_state.user
+        st.session_state.is_guest = True
+        logger.info("User signed out successfully")
+    except Exception as e:
+        logger.error(f"Error during sign out: {e}")
+
+
+# ============================================================================
 # SESSION MANAGEMENT
 # ============================================================================
 
