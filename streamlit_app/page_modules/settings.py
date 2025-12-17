@@ -17,52 +17,95 @@ def render_settings_page():
     st.markdown("---")
 
     # --- Profile & Cloud Sync Section ---
-    st.markdown("### 👤 Profile & Cloud Sync")
+    st.markdown("### 👤 Account & Cloud Sync")
     
     try:
-        from firebase_manager import init_firebase
-        firebase_available = init_firebase()
+        from firebase_manager import get_sync_status, sign_in_with_google, sign_out
+        from sync_manager import sync_user_data, load_cloud_data, export_user_data
         
-        if firebase_available:
-            st.success("✅ **Cloud Sync Active** - Your data is securely stored in Firebase")
+        firebase_status = get_sync_status()
+        
+        if firebase_status == "enabled":
+            # Signed in state
+            user = st.session_state.get('user', {})
+            user_email = user.get('email', 'User')
+            st.success(f"✅ **Signed in as {user_email}**")
+            st.info("Your settings are automatically synced to the cloud.")
             
-            # Show session info
-            session_id = st.session_state.get("session_id", "Unknown")
-            masked_session = session_id[:8] + "..." if len(session_id) > 8 else session_id
-            st.info(f"**Session ID:** {masked_session}")
+            # Account management
+            st.markdown("**Account Management:**")
+            account_col1, account_col2, account_col3 = st.columns(3)
             
-            # Cloud data management
-            st.markdown("**Cloud Data:**")
-            cloud_col1, cloud_col2 = st.columns(2)
+            with account_col1:
+                if st.button("🔄 Sync Now", help="Manually sync your data to the cloud"):
+                    if sync_user_data():
+                        st.success("✅ Data synced successfully!")
+                    else:
+                        st.error("❌ Sync failed. Check your connection.")
             
-            with cloud_col1:
-                if st.button("📊 View Cloud Stats", help="Show your usage statistics from Firebase"):
-                    try:
-                        from firebase_manager import load_usage_stats_from_firebase
-                        stats = load_usage_stats_from_firebase(session_id)
-                        if stats:
-                            with st.expander("Cloud Usage Statistics", expanded=True):
-                                st.json(stats)
-                        else:
-                            st.info("No usage statistics found in cloud")
-                    except Exception as e:
-                        st.error(f"Failed to load stats: {e}")
+            with account_col2:
+                if st.button("📤 Export Data", help="Download all your data as JSON"):
+                    data = export_user_data()
+                    if data:
+                        import json
+                        st.download_button(
+                            label="📥 Download Data",
+                            data=json.dumps(data, indent=2),
+                            file_name="language_app_data.json",
+                            mime="application/json"
+                        )
+                        st.success("✅ Data exported!")
+                    else:
+                        st.error("❌ Failed to export data.")
             
-            with cloud_col2:
-                if st.button("🗑️ Clear Cloud Data", help="Remove all your data from Firebase"):
-                    if st.checkbox("⚠️ Confirm deletion - this cannot be undone"):
-                        try:
-                            # Note: This would require implementing a delete function
-                            st.warning("Cloud data deletion not yet implemented")
-                        except Exception as e:
-                            st.error(f"Failed to delete cloud data: {e}")
+            with account_col3:
+                if st.button("🚪 Sign Out", help="Sign out and use local storage only"):
+                    sign_out()
+                    st.success("✅ Signed out successfully!")
+                    st.rerun()
+            
+            # Data deletion (with confirmation)
+            st.markdown("**Danger Zone:**")
+            with st.expander("🗑️ Delete Cloud Data", expanded=False):
+                st.warning("⚠️ This will permanently delete all your data from the cloud.")
+                st.write("This includes API keys, settings, and usage statistics.")
+                
+                if st.checkbox("I understand this cannot be undone"):
+                    if st.button("🗑️ Permanently Delete All Cloud Data", type="secondary"):
+                        # This would need implementation in firebase_manager
+                        st.error("⚠️ Cloud data deletion not yet implemented")
+                        # TODO: Implement delete_user_data in firebase_manager
+            
+        elif firebase_status == "available":
+            # Available but not signed in
+            st.info("🔐 **Enable Cloud Sync** to backup your settings across devices.")
+            
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("🚀 Sign In with Google", use_container_width=True, type="primary"):
+                    sign_in_with_google()
+                    
+            with col2:
+                st.caption("Keep using local storage only")
+                
+            st.markdown("**Benefits of Cloud Sync:**")
+            benefits = [
+                "✅ Secure backup of your API keys",
+                "✅ Access settings on any device", 
+                "✅ Never lose your configuration",
+                "✅ Automatic data synchronization"
+            ]
+            for benefit in benefits:
+                st.markdown(benefit)
+                
         else:
-            st.warning("🔄 **Local Storage Only** - Firebase unavailable, data stored locally only")
-            st.info("To enable cloud sync, ensure firebase_config.json is properly configured")
+            # Firebase unavailable
+            st.warning("☁️ **Cloud sync is currently unavailable**")
+            st.info("Your data is stored locally only. Cloud features will be available when Firebase is accessible.")
             
     except Exception as e:
-        st.error(f"Profile section error: {e}")
-        st.info("🔄 **Local Storage Only** - Profile features unavailable")
+        st.error(f"Account section error: {e}")
+        st.info("🔄 **Local storage only** - Account features unavailable")
     
     st.markdown("---")
 

@@ -452,12 +452,11 @@ def get_sync_status() -> str:
 
 def sign_in_with_google():
     """Handle Google OAuth sign-in flow."""
-    # This will be implemented in Phase 2 with proper OAuth handling
-    # For now, this is a placeholder
     try:
         import streamlit as st
-        st.warning("Google sign-in will be implemented in the next phase.")
-        st.info("For now, cloud sync is available through the settings page.")
+        # Navigate to auth handler page
+        st.session_state.page = "auth_handler"
+        st.rerun()
     except:
         pass
 
