@@ -45,7 +45,7 @@ def render_sentence_settings_page():
         st.markdown("## ✍️ Sentence Settings")
         col_len, col_sent = st.columns(2)
         with col_len:
-            current_length = st.session_state.sentence_length_range
+            current_length = st.session_state.get("sentence_length_range", (6, 16))
             st.session_state.sentence_length_range = st.slider(
                 "Sentence length (words)",
                 min_value=4,
@@ -55,7 +55,7 @@ def render_sentence_settings_page():
                 help="Min and max words per sentence."
             )
         with col_sent:
-            current_sentences = st.session_state.sentences_per_word
+            current_sentences = st.session_state.get("sentences_per_word", 10)
             st.session_state.sentences_per_word = st.slider(
                 "Sentences per word",
                 min_value=3,
@@ -86,7 +86,7 @@ def render_sentence_settings_page():
         st.session_state.difficulty = selected_difficulty
         
         # Show difficulty explanations
-        difficulty = st.session_state.difficulty
+        difficulty = st.session_state.get("difficulty", "intermediate")
         if difficulty == "beginner":
             st.info("**Beginner**: Simple vocabulary and grammar, mostly present tense. Perfect for absolute beginners learning basic sentence structures.")
         elif difficulty == "intermediate":
@@ -119,7 +119,7 @@ def render_sentence_settings_page():
             
             # Topic limit
             TOPIC_LIMIT = 5
-            current_topic_count = len(st.session_state.selected_topics)
+            current_topic_count = len(st.session_state.get("selected_topics", []))
             limit_reached = current_topic_count >= TOPIC_LIMIT
             
             if limit_reached:
