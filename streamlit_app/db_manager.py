@@ -481,7 +481,17 @@ def delete_database():
 if not DB_PATH.exists():
     logger.info("Creating database...")
     init_database()
-    # Note: Database is pre-populated with 74 languages - no Excel import needed
+    # Import Excel data if database is empty
+    import_excel_to_db()
 else:
     # Ensure schema is up to date
     init_database()
+    # Check if we need to import data
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM words")
+    count = cursor.fetchone()[0]
+    conn.close()
+    if count == 0:
+        logger.info("Database exists but is empty, importing Excel data...")
+        import_excel_to_db()
