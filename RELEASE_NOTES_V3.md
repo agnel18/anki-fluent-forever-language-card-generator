@@ -1,132 +1,34 @@
-# Release Notes: v3.1 Production Ready (Dec 2025)
+# Release Notes: v3.1 (Dec 2025)
 
-## 🎯 Overview
+## ✅ Critical Fixes
+- **Image Display**: Fixed images showing as filenames instead of pictures in Anki
+- **Media Embedding**: Improved audio/image inclusion in .apkg packages
+- **Repository Cleanup**: Removed 30+ obsolete files (~10MB saved)
 
-**Fluent Forever Anki Deck Generator v3.1** includes critical fixes for image display and repository cleanup. The app now properly displays images in Anki cards and has a streamlined codebase.
+## 🐛 Bug Fixes
+- Enhanced error handling for API failures
+- Improved logging and validation
+- Fixed Edge TTS pitch format errors
+- Resolved .apkg file generation issues
 
-**Status**: ✅ Ready for production deployment
+## 📊 Performance
+- **Image Display**: 100% success rate (was 0% for some cards)
+- **Generation Speed**: No performance impact
+- **File Size**: Reduced repository by ~10MB
 
----
+## 🔄 Migration from v2
+- **Interface**: Command-line → Web GUI
+- **Setup Time**: 30+ minutes → 2 minutes
+- **Features Added**: Pitch control, progress tracking, batch processing
 
-## ✨ What's New in v3.1
-
-### Critical Fixes
-
-#### 1. **Image Display Fix** (Major)
-- **Problem**: Images appeared as filenames (e.g., "मैं_01.jpg") instead of actual pictures in Anki
-- **Solution**: Updated TSV generation to include HTML `<img src="filename.jpg">` tags
-- **Result**: Images now display properly in all Anki card types
-
-#### 2. **Media Embedding Enhancement**
-- **Problem**: Media files weren't consistently embedded in .apkg packages
-- **Solution**: Improved media file collection and validation in genanki package creation
-- **Result**: All audio and images are properly included in generated decks
-
-#### 3. **Data Type Consistency**
-- **Problem**: Image data contained mixed types (filenames, URLs, NaN values)
-- **Solution**: Standardized image data to consistent filename format
-- **Result**: Reliable image mapping across all sentences
-
-#### 4. **Repository Cleanup**
-- **Removed**: 30+ obsolete files (old app versions, test files, documentation)
-- **Space Saved**: ~5-10MB of unnecessary files
-- **Result**: Cleaner, more maintainable codebase
-
-### Technical Improvements
-
-#### Enhanced Error Handling
-- Better validation of media file existence before .apkg creation
-- Improved logging for debugging media generation issues
-- Graceful fallback for missing images/audio
-
-#### Code Optimization
-- Streamlined media collection logic
-- Better separation of concerns in core functions
-- Improved maintainability and readability
+## 📋 Version History
+- **v3.1**: Production ready with image fixes
+- **v3.0**: Core functionality release
+- **v2.0**: UI improvements
+- **v1.0**: Initial prototype
 
 ---
-
-## 🐛 Bug Fixes in v3.1
-
-| Issue | Status | Description |
-|-------|--------|-------------|
-| Image display in Anki | ✅ Fixed | Images now show as pictures, not filenames |
-| Media embedding | ✅ Fixed | All media files properly included in .apkg |
-| Inconsistent image data | ✅ Fixed | Standardized filename format across all cards |
-| Repository bloat | ✅ Fixed | Removed obsolete files and documentation |
-| API error recovery | ✅ Improved | Better handling of Pixabay/Groq failures |
-| Logging verbosity | ✅ Improved | Enhanced debugging information |
-
----
-
-## 📊 Performance Impact
-
-- **Image Display**: 100% success rate (previously 0% for some cards)
-- **File Size**: Reduced repository size by ~10MB
-- **Generation Speed**: No impact on deck creation time
-- **Anki Import**: Improved reliability with proper media embedding
-- Progress logs: step-based tracking, no duplicates
-
----
-
-## 📊 Comparison: v2 vs v3
-
-| Feature | v2 | v3 |
-|---------|----|----|
-| **Interface** | Command-line (5 scripts) | Web GUI (single app) |
-| **Workflow Steps** | 5 separate sequential scripts | 4-step unified flow |
-| **Pitch Control** | ❌ Not supported | ✅ -20% to +20% |
-| **Rate Limit Monitor** | ❌ Manual guesswork | ✅ Built-in warnings |
-| **Progress Tracking** | ❌ Manual notes | ✅ SQLite persistent |
-| **Error Handling** | ⚠️ Basic try-catch | ✅ Comprehensive validation |
-| **Real-time Logs** | ⚠️ Generic messages | ✅ Step-specific updates |
-| **Setup Time** | 30+ minutes (coding required) | 2 minutes (GUI buttons) |
-| **Batch Generation** | Requires script modifications | One-click batch processing |
-| **Custom Words** | Via Excel editing | CSV/XLSX upload in GUI |
-
----
-
-## 🐛 Bugs Fixed
-
-### Critical
-
-1. **Edge TTS Pitch Format Error**
-   - **Symptom**: `Invalid pitch '+0%'` error
-   - **Root Cause**: API rejection of zero-pitch format
-   - **Fix**: Clamp pitch to ±20%, omit param when |pitch| < 0.1
-   - **Testing**: ✅ Verified with pitch slider across range
-
-2. **.apkg FileNotFoundError**
-   - **Symptom**: "No such file or directory" after generation
-   - **Root Cause**: Output directory didn't exist, media files missing
-   - **Fix**: `mkdir -p output_dir`, check `Path.exists()` for media before creating deck
-   - **Testing**: ✅ 1-word Hindi test generated 118KB .apkg successfully
-
-3. **Float/NaN in Anki Cards**
-   - **Symptom**: `"expected string or bytes-like object, got 'float'"`
-   - **Root Cause**: Uncoerced numeric fields in genanki
-   - **Fix**: `_s()` helper function coerces all note fields to strings
-   - **Testing**: ✅ Cards imported to Anki without errors
-
-### UX
-
-4. **Scroll Positioning**
-   - **Symptom**: Page stuck at bottom after API submit or Generate start
-   - **Root Cause**: No scroll reset on tab change
-   - **Fix**: `st.markdown('<script>window.scrollTo(0, 0);</script>')` on transition
-   - **Testing**: ✅ Auto-scroll verified on both API submit and Generate
-
-5. **Duplicate Progress Messages**
-   - **Symptom**: Progress log shows same step multiple times
-   - **Root Cause**: Progress callback fired for every update, no step-tracking
-   - **Fix**: Track `last_step`, only append message on step change
-   - **Testing**: ✅ Logs now show clean, one-per-step progression
-
-6. **Generic Progress Text**
-   - **Symptom**: "Processing..." without context
-   - **Root Cause**: No detail-level logging
-   - **Fix**: Include specific metrics (sentence count, image URLs, .apkg size)
-   - **Testing**: ✅ User sees "Step 2/5: Generated audio for 10 sentences (47 KB)"
+*For detailed technical changes, see commit history.*
 
 ---
 

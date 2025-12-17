@@ -15,7 +15,6 @@ def render_statistics_page():
     # Back button
     if st.button("← Back to Main", key="back_to_main_stats"):
         st.session_state.page = "main"
-        st.session_state.scroll_to_top = True
         st.rerun()
 
     st.markdown("---")
@@ -71,5 +70,4 @@ def render_statistics_page():
 
     if st.button("⬅️ Back", key="stats_back_btn"):
         st.session_state.page = PAGE_LANGUAGE_SELECT if st.session_state.get("first_run_complete", False) else PAGE_LOGIN
-        st.session_state.scroll_to_top = True
         st.rerun()

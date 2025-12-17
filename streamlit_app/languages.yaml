@@ -170,6 +170,10 @@ all_languages:
     name: "Amharic"
     edge_tts_voice: "am-ET-MekdesNeural"
     
+  - code: "hy"
+    name: "Armenian"
+    edge_tts_voice: "hy-AM-AnahitNeural"
+    
   - code: "az"
     name: "Azerbaijani"
     edge_tts_voice: "az-AZ-BanuNeural"
@@ -253,6 +257,14 @@ all_languages:
   - code: "bs"
     name: "Bosnian"
     edge_tts_voice: "bs-BA-GoranNeural"
+    
+  - code: "eu"
+    name: "Basque"
+    edge_tts_voice: "eu-ES-AinhoaNeural"
+    
+  - code: "be"
+    name: "Belarusian"
+    edge_tts_voice: "be-BY-NatashaSergeyevichNeural"
     
   - code: "my"
     name: "Burmese"

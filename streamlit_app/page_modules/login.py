@@ -14,13 +14,9 @@ def render_login_page():
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Sign in with Google", use_container_width=True):
-            st.session_state.page = PAGE_API_SETUP
-            st.session_state.scroll_to_top = True
-            st.session_state.is_guest = False
+            st.session_state.page = PAGE_API_SETUPst.session_state.is_guest = False
             st.rerun()
     with col2:
         if st.button("Continue as Guest", use_container_width=True):
-            st.session_state.page = PAGE_API_SETUP
-            st.session_state.scroll_to_top = True
-            st.session_state.is_guest = True
+            st.session_state.page = PAGE_API_SETUPst.session_state.is_guest = True
             st.rerun()

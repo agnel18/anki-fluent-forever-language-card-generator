@@ -81,8 +81,15 @@ def render_main_page():
                 time.sleep(0.3)  # Brief pause for visual feedback
             if has_api_keys:
                 st.session_state.page = "language_select"
-                st.session_state.scroll_to_top = True
             else:
                 st.session_state.page = "api_setup"
-                st.session_state.scroll_to_top = True
             st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

@@ -173,3 +173,12 @@ def render_complete_page():
         if st.button("🔑 API Settings", key="change_keys", use_container_width=True, type="secondary"):
             st.session_state.page = "api_setup"
             st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

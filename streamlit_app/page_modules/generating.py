@@ -32,9 +32,6 @@ def render_generating_page():
     </style>
     """, unsafe_allow_html=True)
     
-    # Force scroll to top when entering generating page
-    st.markdown('<script>window.scrollTo({top: 0, behavior: "smooth"});</script>', unsafe_allow_html=True)
-
     st.markdown("# ⚙️ Generating Your Deck")
     st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
     st.divider()
@@ -211,6 +208,32 @@ def render_generating_page():
         st.session_state['generation_progress']['step'] = 1
         st.rerun()
 
+    # Check word limit before generation
+    elif len(selected_words) > 10:
+        current_status.markdown("⚠️ **Generation Limit Exceeded**")
+        step_indicator.markdown("❌ **Too Many Words**")
+        log_message_local("<b>❌ Generation cancelled - too many words selected</b>")
+        status_text.error(f"You selected {len(selected_words)} words, but the maximum is 10 words per generation.")
+        detail_text.markdown("*This limit helps prevent API rate limits and ensures reliable generation.*")
+        
+        # Show selected words and ask user to reduce
+        with st.expander("📋 Your Selected Words (Please reduce to 10 or fewer)", expanded=True):
+            cols = st.columns(4)
+            for i, word in enumerate(selected_words):
+                cols[i % 4].write(f"• {word}")
+        
+        # Provide options
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("⬅️ Back to Word Selection", use_container_width=True):
+                st.session_state.page = "word_select"
+                st.rerun()
+        with col2:
+            if st.button("🔄 Clear Selection & Start Over", use_container_width=True):
+                st.session_state.selected_words = []
+                st.session_state.page = "word_select"
+                st.rerun()
+
     elif step == 1:
         # Perform generation using the resilient generate_complete_deck function
         current_status.markdown("⚙️ **Generating your complete deck...**")
@@ -259,7 +282,8 @@ def render_generating_page():
                 difficulty=difficulty,
                 audio_speed=audio_speed,
                 voice=voice,
-                progress_callback=progress_callback
+                progress_callback=progress_callback,
+                topics=selected_topics if enable_topics else None
             )
 
             # Store results
@@ -312,7 +336,9 @@ def render_generating_page():
                     if apkg_path and os.path.exists(apkg_path):
                         with open(apkg_path, 'rb') as f:
                             st.session_state.apkg_file = f.read()
-                        st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_deck.apkg"
+                        # Generate timestamp for unique filename
+                        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_{timestamp}_deck.apkg"
                         log_message_local(f"<b>📁 APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
                         log_message(f"[DEBUG] APKG file loaded: {len(st.session_state.apkg_file)} bytes, filename: {st.session_state.apkg_filename}")
                     else:
@@ -379,7 +405,9 @@ def render_generating_page():
                         if apkg_path and os.path.exists(apkg_path):
                             with open(apkg_path, 'rb') as f:
                                 st.session_state.apkg_file = f.read()
-                            st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_deck_partial.apkg"
+                            # Generate timestamp for unique filename
+                            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                            st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_{timestamp}_deck_partial.apkg"
                             log_message_local(f"<b>📁 Partial APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
                             log_message(f"[DEBUG] Partial APKG loaded: {len(st.session_state.apkg_file)} bytes")
                         else:
@@ -420,7 +448,6 @@ def render_generating_page():
 
         if result.get('success'):
             st.session_state.page = "complete"
-            st.session_state.scroll_to_top = True
             st.rerun()
         else:
             # Show error details and options
@@ -438,7 +465,6 @@ def render_generating_page():
             if st.session_state['generation_progress'].get('apkg_ready'):
                 st.success("📦 Despite errors, a partial deck was created and is available for download.")
                 st.session_state.page = "complete"
-                st.session_state.scroll_to_top = True
                 st.rerun()
             else:
                 st.warning("❌ No usable deck could be created due to critical errors.")
@@ -467,5 +493,13 @@ def render_generating_page():
             with col2:
                 if st.button("⬅️ Back to Settings", use_container_width=True):
                     st.session_state.page = "generate"
-                    st.session_state.scroll_to_top = True
                     st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

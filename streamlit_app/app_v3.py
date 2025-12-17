@@ -151,16 +151,20 @@ def main():
                 --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
                 --secondary-bg: {'#161b22' if is_dark else '#f6f8fa'};
                 --text-color: {'#e6edf3' if is_dark else '#0c0c0c'};
-                --subtle-text: {'#8b949e' if is_dark else '#656d76'};
+                --subtle-text: {'#8b949e' if is_dark else '#24292f'};
                 --primary-color: {'#58a6ff' if is_dark else '#0969da'};
                 --secondary-color: {'#79c0ff' if is_dark else '#218bff'};
                 --tertiary-color: {'#a5d6ff' if is_dark else '#79c0ff'};
                 --accent-color: {'#ff6b6b' if is_dark else '#d73a49'};
                 --accent-secondary: {'#4ecdc4' if is_dark else '#218bff'};
-                --button-bg: {'#238636' if is_dark else '#1a7f37'};
-                --button-border: {'#3fb950' if is_dark else '#1f883d'};
-                --button-hover-bg: {'#2ea043' if is_dark else '#218838'};
+                --button-primary-bg: {'#238636' if is_dark else '#1a7f37'};
+                --button-primary-border: {'#3fb950' if is_dark else '#1f883d'};
+                --button-primary-hover-bg: {'#2ea043' if is_dark else '#218838'};
+                --button-secondary-bg: {'#30363d' if is_dark else '#f6f8fa'};
+                --button-secondary-border: {'#8b949e' if is_dark else '#d0d7de'};
+                --button-secondary-hover-bg: {'#484f58' if is_dark else '#f3f4f6'};
                 --button-text: {'white' if is_dark else 'black'};
+                --button-secondary-text: {'#e6edf3' if is_dark else '#24292f'};
                 --hover-bg: {'#30363d' if is_dark else '#f3f4f6'};
                 --info-bg: {'#0550ae' if is_dark else '#ddf4ff'};
                 --info-border: {'#79c0ff' if is_dark else '#218bff'};
@@ -198,13 +202,35 @@ def main():
                 color: var(--text-color) !important;
             }}
             .stButton > button {{
-                background-color: var(--button-bg) !important;
-                border-color: var(--button-border) !important;
+                background-color: var(--button-primary-bg) !important;
+                border-color: var(--button-primary-border) !important;
                 color: var(--button-text) !important;
             }}
             .stButton > button:hover {{
-                background-color: var(--button-hover-bg) !important;
-                border-color: var(--button-hover-border) !important;
+                background-color: var(--button-primary-hover-bg) !important;
+                border-color: var(--button-primary-border) !important;
+            }}
+            /* Secondary buttons - simpler approach */
+            .stButton > button {{
+                background-color: var(--button-secondary-bg) !important;
+                border-color: var(--button-secondary-border) !important;
+                color: var(--button-secondary-text) !important;
+            }}
+            .stButton > button:hover {{
+                background-color: var(--button-secondary-hover-bg) !important;
+                border-color: var(--button-secondary-border) !important;
+            }}
+            /* Primary buttons - override secondary styling */
+            .stButton > button[style*="rgb(26, 127, 55)"], 
+            .stButton > button[style*="rgb(35, 134, 54)"] {{
+                background-color: var(--button-primary-bg) !important;
+                border-color: var(--button-primary-border) !important;
+                color: var(--button-text) !important;
+            }}
+            .stButton > button[style*="rgb(26, 127, 55)"]:hover,
+            .stButton > button[style*="rgb(35, 134, 54)"]:hover {{
+                background-color: var(--button-primary-hover-bg) !important;
+                border-color: var(--button-primary-border) !important;
             }}
             .stTextInput > div > div > input {{
                 background-color: var(--secondary-bg) !important;
@@ -220,6 +246,101 @@ def main():
             }}
             .stProgress > div > div > div {{
                 background-color: var(--primary-color) !important;
+            }}
+            .stMetric {{
+                background-color: var(--card-bg) !important;
+                border: 1px solid var(--card-border) !important;
+                border-radius: 8px !important;
+                color: var(--text-color) !important;
+            }}
+            .stMetric label {{
+                color: var(--text-color) !important;
+            }}
+            .stMetric [data-testid="stMetricValue"] {{
+                color: var(--text-color) !important;
+            }}
+            .stWidgetLabel {{
+                color: var(--text-color) !important;
+            }}
+            .stWidgetLabel p {{
+                color: var(--text-color) !important;
+            }}
+            /* Tab styling for light mode visibility */
+            .stTabs [data-baseweb="tab-list"] button {{
+                color: var(--text-color) !important;
+                background-color: var(--secondary-bg) !important;
+                border-color: var(--card-border) !important;
+            }}
+            .stTabs [data-baseweb="tab-list"] button:hover {{
+                background-color: var(--hover-bg) !important;
+            }}
+            .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
+                background-color: var(--card-bg) !important;
+                border-bottom-color: var(--primary-color) !important;
+            }}
+            /* Input field styling for light mode */
+            input[type="number"], input[type="text"], input[type="password"], input[type="email"], textarea {{
+                background-color: var(--secondary-bg) !important;
+                color: var(--text-color) !important;
+                border-color: var(--card-border) !important;
+            }}
+            input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, textarea:focus {{
+                border-color: var(--primary-color) !important;
+                box-shadow: 0 0 0 1px var(--primary-color) !important;
+            }}
+            /* Slider styling for light mode visibility */
+            .stSlider {{
+                color: var(--text-color) !important;
+            }}
+            .stSlider [data-baseweb="slider"] {{
+                background-color: var(--secondary-bg) !important;
+            }}
+            .stSlider [role="slider"] {{
+                background-color: var(--primary-color) !important;
+                color: white !important;
+            }}
+            .stSlider [data-testid="stSliderThumbValue"] {{
+                background-color: var(--primary-color) !important;
+                color: white !important;
+            }}
+            .stSlider [data-testid="stSliderTickBar"] {{
+                color: var(--text-color) !important;
+            }}
+            .stSlider [data-testid="stSliderTickBar"] span {{
+                color: var(--text-color) !important;
+            }}
+            /* Checkbox styling for light mode */
+            .stCheckbox {{
+                color: var(--text-color) !important;
+            }}
+            .stCheckbox [data-baseweb="checkbox"] {{
+                background-color: var(--secondary-bg) !important;
+                border-color: var(--card-border) !important;
+            }}
+            .stCheckbox input[type="checkbox"] {{
+                accent-color: var(--primary-color) !important;
+            }}
+            /* General text visibility */
+            .stMarkdown p, .stMarkdown span, .stMarkdown div {{
+                color: var(--text-color) !important;
+            }}
+            /* Specific markdown container visibility */
+            [data-testid="stMarkdownContainer"] p {{
+                color: var(--text-color) !important;
+            }}
+            /* Download button styling for light mode */
+            .stDownloadButton button {{
+                background-color: var(--button-secondary-bg) !important;
+                border-color: var(--button-secondary-border) !important;
+                color: var(--button-secondary-text) !important;
+            }}
+            .stDownloadButton button:hover {{
+                background-color: var(--button-secondary-hover-bg) !important;
+                border-color: var(--button-secondary-border) !important;
+            }}
+            /* Ensure download button text is visible */
+            .stDownloadButton [data-testid="stMarkdownContainer"] p {{
+                color: var(--button-secondary-text) !important;
             }}
         </style>
         """, unsafe_allow_html=True)
@@ -335,15 +456,6 @@ def main():
             st.session_state.selected_topics = []
         if "custom_topics" not in st.session_state:
             st.session_state.custom_topics = []
-
-        # Handle scroll to top after page changes
-        if st.session_state.get("scroll_to_top", False):
-            st.markdown("""
-            <script>
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            </script>
-            """, unsafe_allow_html=True)
-            st.session_state.scroll_to_top = False
 
         # Route to the appropriate page
         try:

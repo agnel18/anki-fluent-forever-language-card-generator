@@ -113,6 +113,4 @@ def render_api_setup_page():
                     })
                 except Exception as e:
                     st.warning(f"Could not save API keys to cloud: {e}")
-            st.session_state.page = PAGE_LANGUAGE_SELECT
-            st.session_state.scroll_to_top = True
-            st.rerun()
+            st.session_state.page = PAGE_LANGUAGE_SELECTst.rerun()

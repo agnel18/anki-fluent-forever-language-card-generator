@@ -12,7 +12,6 @@ def render_settings_page():
     # Back button
     if st.button("← Back to Main", key="back_to_main"):
         st.session_state.page = "main"
-        st.session_state.scroll_to_top = True
         st.rerun()
 
     st.markdown("---")

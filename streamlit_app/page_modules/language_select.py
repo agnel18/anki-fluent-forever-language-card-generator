@@ -138,7 +138,6 @@ def render_language_select_page():
         with col_back:
             if st.button("← Back to Main", key="lang_back"):
                 st.session_state.page = "main"
-                st.session_state.scroll_to_top = True
                 st.rerun()
         with col_progress:
             st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)
@@ -146,5 +145,13 @@ def render_language_select_page():
             if st.button("Next: Select Words →", use_container_width=True, type="primary"):
                 st.session_state.selected_language = selected_lang
                 st.session_state.page = "word_select"
-                st.session_state.scroll_to_top = True
                 st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

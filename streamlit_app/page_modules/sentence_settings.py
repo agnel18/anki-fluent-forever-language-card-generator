@@ -270,5 +270,13 @@ def render_sentence_settings_page():
     with col_next:
         if st.button("Next: Generate Deck ➡️", key="next_from_sentence_settings", use_container_width=True, type="primary"):
             st.session_state.page = "generate"
-            st.session_state.scroll_to_top = True
             st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

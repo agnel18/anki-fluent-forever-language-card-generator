@@ -248,7 +248,6 @@ def render_word_select_page():
     with col_back:
         if st.button("⬅️ Back to Language Selection", key="back_from_word_select", use_container_width=True):
             st.session_state.page = "language_select"
-            st.session_state.scroll_to_top = True
             st.rerun()
     with col_next:
         if st.button("Next: Adjust Output Settings ➡️", key="next_from_word_select", use_container_width=True, type="primary"):
@@ -270,5 +269,13 @@ def render_word_select_page():
                 st.error("Please select or enter at least one word.")
             else:
                 st.session_state.page = "sentence_settings"
-                st.session_state.scroll_to_top = True
                 st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)

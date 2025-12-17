@@ -90,7 +90,6 @@ def render_generate_page():
     with col_back:
         if st.button("⬅️ Back to Output Settings", key="back_from_generate", use_container_width=True):
             st.session_state.page = "sentence_settings"
-            st.session_state.scroll_to_top = True
             st.rerun()
     with col_generate:
         # Add loading state for generate button
@@ -113,5 +112,13 @@ def render_generate_page():
                     st.session_state.selected_lang = selected_lang
                     st.session_state.selected_words = selected_words
                     st.session_state.page = "generating"
-                    st.session_state.scroll_to_top = True
                     st.rerun()
+
+    # Scroll to top after all content is rendered
+    st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)
