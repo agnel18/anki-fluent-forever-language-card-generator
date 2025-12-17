@@ -109,14 +109,14 @@ def render_settings_page():
     st.markdown("""
     <style>
     .lang-card-grid {display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;}
-    .lang-card {background: var(--card-bg); color: var(--text-color); border: 1px solid var(--card-border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; position: relative; transition: box-shadow 0.2s;}
+    .lang-card {background: var(--card-bg); color: var(--text-color); border: 1px solid var(--card-border); border-radius: 8px; box-shadow: var(--box-shadow); padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; position: relative; transition: box-shadow 0.2s;}
     .lang-card .lang-title {font-size: 1.1em; font-weight: 600; margin-bottom: 4px;}
     .lang-card .lang-usage {font-size: 0.9em; color: var(--text-color); opacity: 0.7; margin-bottom: 8px;}
     .lang-card .lang-actions {display: flex; justify-content: space-between; align-items: center;}
     .lang-card .stButton>button {background: none !important; color: var(--error-bg) !important; font-size: 1.2em !important; border: none !important; box-shadow: none !important; padding: 4px 8px !important;}
-    .lang-card .stButton>button:hover {color: #fff !important; background: var(--error-bg) !important; border-radius: 50% !important;}
+    .lang-card .stButton>button:hover {color: var(--button-text) !important; background: var(--error-bg) !important; border-radius: 50% !important;}
     .lang-card .arrow-btn .stButton>button {color: var(--primary-color) !important; font-size: 1.1em !important;}
-    .lang-card .arrow-btn .stButton>button:hover {color: #fff !important; background: var(--primary-color) !important; border-radius: 50% !important;}
+    .lang-card .arrow-btn .stButton>button:hover {color: var(--button-text) !important; background: var(--primary-color) !important; border-radius: 50% !important;}
     @media (max-width: 768px) {
         .lang-card {padding: 10px 12px;}
         .lang-card .lang-title {font-size: 1em;}

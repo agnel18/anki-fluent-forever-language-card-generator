@@ -149,14 +149,19 @@ def main():
             :root {{
                 --bg-color: {'#0e1117' if is_dark else '#ffffff'};
                 --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
+                --secondary-bg: {'#161b22' if is_dark else '#f6f8fa'};
                 --text-color: {'#e6edf3' if is_dark else '#0c0c0c'};
+                --subtle-text: {'#8b949e' if is_dark else '#656d76'};
                 --primary-color: {'#58a6ff' if is_dark else '#0969da'};
                 --secondary-color: {'#79c0ff' if is_dark else '#218bff'};
                 --tertiary-color: {'#a5d6ff' if is_dark else '#79c0ff'};
-                --button-bg: {'#238636' if is_dark else '#238636'};
-                --button-border: {'#3fb950' if is_dark else '#3fb950'};
-                --button-hover-bg: {'#2ea043' if is_dark else '#2ea043'};
-                --button-hover-border: {'#56d364' if is_dark else '#56d364'};
+                --accent-color: {'#ff6b6b' if is_dark else '#d73a49'};
+                --accent-secondary: {'#4ecdc4' if is_dark else '#218bff'};
+                --button-bg: {'#238636' if is_dark else '#1a7f37'};
+                --button-border: {'#3fb950' if is_dark else '#1f883d'};
+                --button-hover-bg: {'#2ea043' if is_dark else '#218838'};
+                --button-text: {'white' if is_dark else 'black'};
+                --hover-bg: {'#30363d' if is_dark else '#f3f4f6'};
                 --info-bg: {'#0550ae' if is_dark else '#ddf4ff'};
                 --info-border: {'#79c0ff' if is_dark else '#218bff'};
                 --success-bg: {'#1f6feb' if is_dark else '#ddf4ff'};
@@ -167,11 +172,54 @@ def main():
                 --error-border: {'#f85149' if is_dark else '#cf222e'};
                 --card-bg: {'#161b22' if is_dark else '#f6f8fa'};
                 --card-border: {'#30363d' if is_dark else '#d0d7de'};
+                --gradient-primary: {'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'};
+                --box-shadow: {'0 8px 25px rgba(0,0,0,0.2)' if is_dark else '0 8px 25px rgba(0,0,0,0.1)'};
+                --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 --base-font-size: 16px;
+                --link-color: var(--primary-color);
+                --usage-green: #238636;
+                --usage-yellow: #eab308;
+                --usage-red: #ef4444;
             }}
             .stSidebar {{
                 background-color: var(--bg-color) !important;
                 color: var(--text-color) !important;
+            }}
+            .stApp {{
+                background-color: var(--bg-color) !important;
+                color: var(--text-color) !important;
+            }}
+            .main {{
+                background-color: var(--bg-color) !important;
+                color: var(--text-color) !important;
+            }}
+            .block-container {{
+                background-color: var(--bg-color) !important;
+                color: var(--text-color) !important;
+            }}
+            .stButton > button {{
+                background-color: var(--button-bg) !important;
+                border-color: var(--button-border) !important;
+                color: var(--button-text) !important;
+            }}
+            .stButton > button:hover {{
+                background-color: var(--button-hover-bg) !important;
+                border-color: var(--button-hover-border) !important;
+            }}
+            .stTextInput > div > div > input {{
+                background-color: var(--secondary-bg) !important;
+                color: var(--text-color) !important;
+                border-color: var(--card-border) !important;
+            }}
+            .stSelectbox > div > div {{
+                background-color: var(--secondary-bg) !important;
+                color: var(--text-color) !important;
+            }}
+            .stMarkdown a {{
+                color: var(--link-color) !important;
+            }}
+            .stProgress > div > div > div {{
+                background-color: var(--primary-color) !important;
             }}
         </style>
         """, unsafe_allow_html=True)
