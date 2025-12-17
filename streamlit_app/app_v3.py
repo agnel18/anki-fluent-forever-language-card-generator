@@ -316,6 +316,26 @@ def main():
                     st.sidebar.caption(f"Processing word {word_idx + 1} of {total_words}")
 
 
+        # Ensure critical session state variables are initialized (mobile compatibility)
+        if "sentence_length_range" not in st.session_state:
+            st.session_state.sentence_length_range = (6, 16)
+        if "sentences_per_word" not in st.session_state:
+            st.session_state.sentences_per_word = 10
+        if "difficulty" not in st.session_state:
+            st.session_state.difficulty = "intermediate"
+        if "audio_speed" not in st.session_state:
+            st.session_state.audio_speed = 0.8
+        if "selected_voice" not in st.session_state:
+            st.session_state.selected_voice = None
+        if "selected_voice_display" not in st.session_state:
+            st.session_state.selected_voice_display = None
+        if "enable_topics" not in st.session_state:
+            st.session_state.enable_topics = False
+        if "selected_topics" not in st.session_state:
+            st.session_state.selected_topics = []
+        if "custom_topics" not in st.session_state:
+            st.session_state.custom_topics = []
+
         # Route to the appropriate page
         try:
             if current_page == "api_setup":

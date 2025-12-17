@@ -10,25 +10,6 @@ from constants import CURATED_TOPICS
 
 def render_sentence_settings_page():
     """Render the sentence settings page."""
-    # Initialize session state variables if not present (fallback for mobile)
-    if "sentence_length_range" not in st.session_state:
-        st.session_state.sentence_length_range = (6, 16)
-    if "sentences_per_word" not in st.session_state:
-        st.session_state.sentences_per_word = 10
-    if "difficulty" not in st.session_state:
-        st.session_state.difficulty = "intermediate"
-    if "audio_speed" not in st.session_state:
-        st.session_state.audio_speed = 0.8
-    if "selected_voice" not in st.session_state:
-        st.session_state.selected_voice = None
-    if "selected_voice_display" not in st.session_state:
-        st.session_state.selected_voice_display = None
-    if "enable_topics" not in st.session_state:
-        st.session_state.enable_topics = False
-    if "selected_topics" not in st.session_state:
-        st.session_state.selected_topics = []
-    if "custom_topics" not in st.session_state:
-        st.session_state.custom_topics = []
 
     with st.container():
         st.markdown("# ✍️ Step 3: Adjust Output Settings")
@@ -45,7 +26,7 @@ def render_sentence_settings_page():
         st.markdown("## ✍️ Sentence Settings")
         col_len, col_sent = st.columns(2)
         with col_len:
-            current_length = st.session_state.get("sentence_length_range", (6, 16))
+            current_length = st.session_state.sentence_length_range
             st.session_state.sentence_length_range = st.slider(
                 "Sentence length (words)",
                 min_value=4,
@@ -55,7 +36,7 @@ def render_sentence_settings_page():
                 help="Min and max words per sentence."
             )
         with col_sent:
-            current_sentences = st.session_state.get("sentences_per_word", 10)
+            current_sentences = st.session_state.sentences_per_word
             st.session_state.sentences_per_word = st.slider(
                 "Sentences per word",
                 min_value=3,
@@ -86,7 +67,7 @@ def render_sentence_settings_page():
         st.session_state.difficulty = selected_difficulty
         
         # Show difficulty explanations
-        difficulty = st.session_state.get("difficulty", "intermediate")
+        difficulty = st.session_state.difficulty
         if difficulty == "beginner":
             st.info("**Beginner**: Simple vocabulary and grammar, mostly present tense. Perfect for absolute beginners learning basic sentence structures.")
         elif difficulty == "intermediate":
@@ -119,7 +100,7 @@ def render_sentence_settings_page():
             
             # Topic limit
             TOPIC_LIMIT = 5
-            current_topic_count = len(st.session_state.get("selected_topics", []))
+            current_topic_count = len(st.session_state.selected_topics)
             limit_reached = current_topic_count >= TOPIC_LIMIT
             
             if limit_reached:
