@@ -358,8 +358,8 @@ def main():
             current_page = "main"
             st.session_state.page = current_page
 
-        # Add sidebar navigation (except on login page)
-        if current_page != "login":
+        # Add sidebar navigation (except on login and api_setup pages)
+        if current_page not in ["login", "api_setup"]:
             # Create sidebar content with better mobile alignment
             st.sidebar.markdown("## ⚙️ Quick Access")
 
