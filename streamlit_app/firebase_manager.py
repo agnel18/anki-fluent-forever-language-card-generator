@@ -145,18 +145,17 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
         # First try to initialize with Streamlit secrets
         try:
             import streamlit as st
-            api_key = st.secrets.get("FIREBASE_API_KEY")
             project_id = st.secrets.get("FIREBASE_PROJECT_ID")
 
-            if api_key and project_id:
+            if project_id:
                 logger.info("Initializing Firebase with Streamlit secrets...")
 
                 # For Firebase Admin SDK, we need service account credentials
-                # We'll use the existing config file approach but check if we have all required secrets
                 private_key = st.secrets.get("FIREBASE_PRIVATE_KEY")
                 client_email = st.secrets.get("FIREBASE_CLIENT_EMAIL")
 
                 if private_key and client_email:
+                    logger.info("Found service account credentials, creating certificate...")
                     # Create credentials from individual secrets
                     cred_dict = {
                         "type": "service_account",
@@ -171,7 +170,10 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
                         "client_x509_cert_url": st.secrets.get("FIREBASE_CLIENT_X509_CERT_URL", "")
                     }
 
+                    logger.info("Creating Firebase credentials certificate...")
                     cred = credentials.Certificate(cred_dict)
+
+                    logger.info("Initializing Firebase app...")
                     firebase_admin.initialize_app(cred, {
                         'projectId': project_id
                     })
@@ -180,12 +182,13 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
                     logger.info("✅ Firebase initialized successfully with Streamlit secrets")
                     return True
                 else:
-                    logger.warning(f"Firebase secrets incomplete - missing private_key or client_email. Available secrets: {list(st.secrets.keys()) if hasattr(st, 'secrets') else 'No secrets available'}")
+                    logger.warning(f"Firebase service account secrets incomplete - missing private_key or client_email. Available secrets: {list(st.secrets.keys()) if hasattr(st, 'secrets') else 'No secrets available'}")
             else:
-                logger.debug(f"Firebase secrets not found - api_key: {bool(api_key)}, project_id: {bool(project_id)}")
+                logger.debug(f"Firebase project_id not found in secrets")
 
         except Exception as secrets_error:
-            logger.debug(f"Streamlit secrets not available or incomplete: {secrets_error}")
+            logger.error(f"Streamlit secrets initialization failed: {secrets_error}")
+            logger.debug(f"Secrets error details: {str(secrets_error)}")
 
         # Fallback to config file
         logger.info("Falling back to config file initialization...")
