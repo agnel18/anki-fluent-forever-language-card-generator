@@ -238,13 +238,13 @@ def main():
         if "theme" not in st.session_state:
             st.session_state.theme = "dark"
 
-        # Handle URL parameters for direct page access (Razorpay compliance)
-        page_param = st.query_params.get("page", [None])[0]
-        print(f"DEBUG: URL param 'page' = {page_param}")  # Debug logging
-        if page_param and page_param in ["privacy_policy", "terms_conditions", "refund_policy", "shipping_delivery", "contact_us"]:
-            st.session_state.page = page_param
-            print(f"DEBUG: Set session state page to {page_param}")  # Debug logging
-            print(f"DEBUG: Current session state page = {st.session_state.get('page')}")  # Additional debug
+        # URL parameters disabled - all links go to main page for navigation via sidebar
+        # page_param = st.query_params.get("page", [None])[0]
+        # print(f"DEBUG: URL param 'page' = {page_param}")  # Debug logging
+        # if page_param and page_param in ["privacy_policy", "terms_conditions", "refund_policy", "shipping_delivery", "contact_us"]:
+        #     st.session_state.page = page_param
+        #     print(f"DEBUG: Set session state page to {page_param}")  # Debug logging
+        #     print(f"DEBUG: Current session state page = {st.session_state.get('page')}")  # Additional debug
 
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
