@@ -138,6 +138,23 @@ def render_complete_page():
 
     st.divider()
 
+    # Donation Section
+    st.markdown("### 💝 Enjoying the App?")
+    st.markdown("**Support our mission to keep language learning free and accessible!**")
+
+    donation_url = "https://razorpay.me/@agneljosephn"
+
+    col_donate1, col_donate2, col_donate3 = st.columns([1, 2, 1])
+    with col_donate2:
+        if st.button("💳 Make a Donation", key="complete_page_donation", use_container_width=True, type="secondary"):
+            st.markdown(f'<meta http-equiv="refresh" content="0;url={donation_url}">', unsafe_allow_html=True)
+            st.markdown("Opening donation page...")
+
+    st.markdown(f"**Direct Link:** [Donate via Razorpay.me]({donation_url})")
+    st.markdown("*Your support helps us add more languages and features!* 🎉")
+
+    st.divider()
+
     # Navigation buttons
     col_back, col_new, col_keys = st.columns([1, 1, 1])
     with col_back:

@@ -19,8 +19,7 @@ Pillow>=10.0.0
 # Database & Backend
 firebase-admin>=6.0.0
 
-# Payment Gateway
-# razorpay==2.0.0  # Temporarily disabled for Streamlit Cloud compatibility
+# Payment Gateway - Using Razorpay.me links instead of API
 
 # File handling
 openpyxl>=3.0.0

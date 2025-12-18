@@ -236,7 +236,6 @@ def main():
     from page_modules.refund_policy import render_refund_policy_page
     from page_modules.shipping_delivery import render_shipping_delivery_page
     from page_modules.contact_us import render_contact_us_page
-    from page_modules.donation import render_donation_page
     def format_number_compact(num):
         if num >= 1000000:
             return f"{num // 1000000}M"
@@ -579,9 +578,15 @@ def main():
 
             # Donation/Support Section
             st.sidebar.markdown("---")
-            if st.sidebar.button("💝 Support Us", key="sidebar_donation", use_container_width=True, type="secondary"):
-                st.session_state.page = "donation"
-                st.rerun()
+            st.sidebar.markdown("### 💝 Support Us")
+            st.sidebar.markdown("Help keep language learning free!")
+
+            donation_url = "https://razorpay.me/@agneljosephn"
+            if st.sidebar.button("💳 Donate Now", key="sidebar_donation", use_container_width=True, type="secondary"):
+                st.sidebar.markdown(f'<meta http-equiv="refresh" content="0;url={donation_url}">', unsafe_allow_html=True)
+                st.sidebar.markdown("Opening donation page...")
+
+            st.sidebar.markdown(f"[Direct Link]({donation_url})")
 
             # Legal & Policy Links
             st.sidebar.markdown("---")
@@ -672,8 +677,6 @@ def main():
                 render_shipping_delivery_page()
             elif current_page == "contact_us":
                 render_contact_us_page()
-            elif current_page == "donation":
-                render_donation_page()
             elif current_page == "auth_handler":
                 from page_modules.auth_handler import render_auth_handler_page
                 render_auth_handler_page()
