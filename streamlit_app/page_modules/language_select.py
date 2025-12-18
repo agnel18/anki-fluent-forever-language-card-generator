@@ -9,7 +9,7 @@ from frequency_utils import get_available_frequency_lists
 def render_language_select_page():
     """Render the language selection page."""
     with st.container():
-        st.markdown("🌍 Step 1: Select Your Language")
+        st.markdown("# 🌍 Step 1: Select Your Language")
         st.markdown("Choose your target language for learning. Your favorite languages appear first.")
         
         # Progress indicator
@@ -22,6 +22,9 @@ def render_language_select_page():
 
     # Get languages configuration from session state
     all_languages = st.session_state.get("all_languages", [])
+    print(f"DEBUG: language_select_page - all_languages length: {len(all_languages)}")
+    if all_languages:
+        print(f"DEBUG: First few languages: {[lang['name'] for lang in all_languages[:3]]}")
 
     # --- Preferred order: learned_languages at top, divider, then all others ---
     user_settings_path = Path(__file__).parent.parent / "user_settings.json"
