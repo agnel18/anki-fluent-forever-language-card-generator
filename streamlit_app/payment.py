@@ -124,10 +124,40 @@ def render_donation_section():
 
     # Check if Razorpay is available
     if not RAZORPAY_AVAILABLE:
-        st.warning("⚠️ Payment system is currently unavailable. Please check back later or contact support.")
-        st.info("💡 You can still support us by spreading the word about our free language learning tools!")
+        st.info("💳 **Payment Integration Status:** Currently using external payment links for better compatibility.")
+
+        # Alternative payment methods
+        st.markdown("### Choose Your Payment Method:")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 💳 **UPI/Google Pay/PhonePe**")
+            st.markdown("**Scan QR Code or use UPI ID:**")
+            st.markdown("`your-upi-id@paytm`")  # Replace with actual UPI ID
+
+            # Placeholder for QR code
+            st.image("https://via.placeholder.com/200x200?text=UPI+QR+Code", caption="Scan to donate via UPI")
+
+        with col2:
+            st.markdown("#### 🏦 **Bank Transfer**")
+            st.markdown("**Account Details:**")
+            st.markdown("""
+            - **Account Name:** AI Language Learning
+            - **Account Number:** XXXXXXXX1234
+            - **IFSC Code:** SBIN0001234
+            - **Bank:** State Bank of India
+            """)
+
+        st.markdown("---")
+        st.markdown("#### 📧 **Contact for Custom Donations**")
+        st.markdown("For larger donations or corporate sponsorships:")
+        st.markdown("📧 donations@ailanguagelearning.org")
+        st.markdown("📱 +91-XXXXXXXXXX")
+
         return
 
+    # Original Razorpay integration (when available)
     # Donation amounts
     donation_options = {
         "Coffee ☕": 10000,  # ₹100
