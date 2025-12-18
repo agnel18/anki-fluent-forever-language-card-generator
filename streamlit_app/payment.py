@@ -1,6 +1,12 @@
 # payment.py - Razorpay payment integration module
 
-import razorpay
+try:
+    import razorpay
+    RAZORPAY_AVAILABLE = True
+except ImportError:
+    RAZORPAY_AVAILABLE = False
+    razorpay = None
+
 import json
 from typing import Dict, Optional
 import streamlit as st
@@ -17,6 +23,10 @@ except:
 
 def initialize_razorpay():
     """Initialize Razorpay client."""
+    if not RAZORPAY_AVAILABLE:
+        print("Razorpay library not available")
+        return None
+
     if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
         return None
 
@@ -111,6 +121,12 @@ def render_donation_section():
     - Maintain and improve our AI-powered learning system
     - Support **educational initiatives** worldwide
     """)
+
+    # Check if Razorpay is available
+    if not RAZORPAY_AVAILABLE:
+        st.warning("⚠️ Payment system is currently unavailable. Please check back later or contact support.")
+        st.info("💡 You can still support us by spreading the word about our free language learning tools!")
+        return
 
     # Donation amounts
     donation_options = {

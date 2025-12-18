@@ -20,7 +20,7 @@ Pillow>=10.0.0
 firebase-admin>=6.0.0
 
 # Payment Gateway
-razorpay>=1.4.0
+razorpay==2.0.0
 
 # File handling
 openpyxl>=3.0.0
