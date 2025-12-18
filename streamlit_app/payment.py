@@ -226,7 +226,7 @@ def process_payment(amount_paisa: int, donor_name: str = "", donor_email: str = 
     }
 
     # Razorpay Checkout JavaScript
-    checkout_script = f"""
+    checkout_script = f'''
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         var options = {{
@@ -268,13 +268,46 @@ def process_payment(amount_paisa: int, donor_name: str = "", donor_email: str = 
 
         rzp.open();
     </script>
-    """
+    '''
 
     # Display the checkout
     st.components.v1.html(checkout_script, height=1)
 
     # Listen for payment messages (this would need to be handled in the main app)
     st.markdown("**Processing payment...** Please complete the payment in the popup window.")
+
+    # JavaScript to handle payment callbacks
+    payment_callback_js = '''
+    <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'razorpay_success') {
+                // Store callback data in session state
+                window.parent.postMessage({
+                    type: 'streamlit:setSessionState',
+                    key: 'payment_callback_data',
+                    value: {
+                        status: 'success',
+                        payment_id: event.data.payment_id,
+                        order_id: event.data.order_id,
+                        signature: event.data.signature
+                    }
+                }, '*');
+            } else if (event.data.type === 'razorpay_failed') {
+                // Store failure data in session state
+                window.parent.postMessage({
+                    type: 'streamlit:setSessionState',
+                    key: 'payment_callback_data',
+                    value: {
+                        status: 'failed',
+                        error: event.data.error
+                    }
+                }, '*');
+            }
+        });
+    </script>
+    '''
+
+    st.components.v1.html(payment_callback_js, height=1)
 
 def handle_payment_callback():
     """Handle payment callback messages from JavaScript."""
