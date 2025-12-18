@@ -9,7 +9,7 @@ from frequency_utils import get_available_frequency_lists
 def render_language_select_page():
     """Render the language selection page."""
     with st.container():
-        st.markdown("# 🌍 **SELECT YOUR LANGUAGE**")
+        st.markdown("🌍 Step 1: Select Your Language")
         st.markdown("Choose your target language for learning. Your favorite languages appear first.")
         
         # Progress indicator

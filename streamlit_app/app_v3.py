@@ -72,7 +72,7 @@ try:
     # Check if we're in a Streamlit context
     if hasattr(st, 'session_state'):
         initialize_session_state()
-        initialize_languages_config()
+        # Move languages config initialization inside main() function to avoid import-time issues
         # Move firebase initialization inside main() function to avoid import-time issues
 except Exception as e:
     # If not in Streamlit context or initialization fails, skip
@@ -219,8 +219,11 @@ def main():
             st.session_state.learned_languages = [
                 {"name": lang["name"], "usage": 0, "pinned": True} for lang in config["top_5"]
             ]
+        # Initialize languages config if not set
+        if "all_languages" not in st.session_state:
+            initialize_languages_config()
     except Exception as e:
-        print(f"Failed to initialize learned_languages: {e}")
+        print(f"Failed to initialize languages: {e}")
         pass
 
     try:
