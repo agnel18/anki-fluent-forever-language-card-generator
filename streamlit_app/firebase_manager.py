@@ -219,30 +219,9 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
 
 
 def get_session_id() -> str:
-    """Get or create persistent session ID for user identification."""
-    import streamlit as st
-
-    # For authenticated users, use their user ID
-    if is_signed_in():
-        user = get_current_user()
-        if user and 'uid' in user:
-            return user['uid']
-
-    # For anonymous users, use persistent browser-based ID
-    if 'persistent_session_id' not in st.session_state:
-        # Generate a persistent ID based on browser fingerprint
-        # In a real app, you'd use more sophisticated fingerprinting
-        import hashlib
-        import time
-
-        # Create a semi-persistent ID (changes less frequently)
-        # This is a simple approach - in production you'd want better fingerprinting
-        fingerprint = f"{st.session_state.get('user_agent', 'unknown')}_{time.time() // (24 * 60 * 60)}"  # Daily change
-        persistent_id = hashlib.md5(fingerprint.encode()).hexdigest()[:16]
-
-        st.session_state.persistent_session_id = persistent_id
-
-    return st.session_state.persistent_session_id
+    """Get or create anonymous session ID."""
+    # Session ID stored in browser via Streamlit session state
+    return str(uuid.uuid4())
 
 
 # ============================================================================

@@ -1,86 +1,84 @@
-# auth_handler.py - Firebase Authentication handler page
+# auth_handler.py - Google OAuth authentication handler page
 
 import streamlit as st
 import time
 import json
+from streamlit_oauth import OAuth2Component
 from firebase_manager import is_signed_in, get_current_user
 
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = st.secrets.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
+REDIRECT_URI = st.secrets.get("REDIRECT_URI", "http://localhost:8501")
+
 def render_auth_handler_page():
-    """Handle Firebase Authentication flow."""
-    st.title("🔐 Signing You In...")
-    st.markdown("Please wait while we authenticate with Google...")
+    """Handle Google OAuth authentication flow."""
+    st.title("🔐 Sign In with Google")
+    st.markdown("Please complete the Google authentication...")
 
-    # Show loading spinner
-    with st.spinner("Authenticating with Google..."):
-        try:
-            # For Streamlit Cloud deployment, we need to use a simplified approach
-            # since full OAuth redirects don't work well in Streamlit
+    # Initialize OAuth2Component
+    oauth2 = OAuth2Component(
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        authorize_endpoint="https://accounts.google.com/o/oauth2/auth",
+        token_endpoint="https://oauth2.googleapis.com/token",
+        refresh_token_endpoint="https://oauth2.googleapis.com/token",
+    )
 
-            # Check if Firebase is available
-            from firebase_manager import firebase_initialized
-            if not firebase_initialized:
-                st.error("❌ Firebase authentication is not available")
-                st.info("Returning to main page...")
-                time.sleep(2)
+    # Check if we have authorization code
+    if st.query_params.get("code"):
+        # Exchange code for token
+        code = st.query_params.get("code")
+        token_result = oauth2.get_token(code, redirect_uri=REDIRECT_URI)
+
+        if token_result:
+            # Get user info from Google
+            user_info = oauth2.get("https://www.googleapis.com/oauth2/v2/userinfo").json()
+
+            if user_info:
+                # Create user object
+                user = {
+                    'email': user_info.get('email', ''),
+                    'uid': user_info.get('id', ''),
+                    'display_name': user_info.get('name', ''),
+                    'photo_url': user_info.get('picture', ''),
+                    'email_verified': user_info.get('verified_email', False)
+                }
+
+                # Store user in session state
+                st.session_state.user = user
+                st.session_state.is_guest = False
+
+                # Load cloud data if available
+                try:
+                    from sync_manager import load_cloud_data
+                    load_cloud_data()
+                except Exception as e:
+                    st.warning(f"Could not load cloud data: {e}")
+
+                st.success("✅ Successfully signed in with Google!")
+                st.info("Your settings will now sync across devices.")
+
+                # Show user info
+                st.markdown("---")
+                st.markdown("**Welcome!**")
+                st.markdown(f"**Name:** {user['display_name']}")
+                st.markdown(f"**Email:** {user['email']}")
+
+                # Clear query params
+                st.query_params.clear()
+
+                # Auto-redirect after success
+                time.sleep(3)
                 st.session_state.page = "main"
                 st.rerun()
-                return
-
-            # In a production app, you would implement proper OAuth flow here
-            # For now, we'll create a mock authenticated user for demonstration
-            # This simulates what would happen after successful Google OAuth
-
-            time.sleep(2)  # Simulate authentication delay
-
-            # Mock successful authentication (replace with real OAuth)
-            # In production, this would come from Firebase Auth after OAuth callback
-            # For demo purposes, we'll create a consistent user ID based on session
-            import hashlib
-            import streamlit as st
-
-            # Create a consistent demo user ID based on the session
-            # This ensures the same "user" gets the same ID across sessions
-            session_fingerprint = f"demo_user_{st.session_state.get('user_agent', 'unknown')}"
-            consistent_uid = hashlib.md5(session_fingerprint.encode()).hexdigest()[:16]
-
-            mock_user = {
-                'email': 'demo@example.com',  # Would come from Google OAuth
-                'uid': f"demo_{consistent_uid}",  # Consistent ID for cloud sync
-                'display_name': 'Demo User',  # Would come from Google profile
-                'photo_url': None,            # Would come from Google profile
-                'email_verified': True        # Would come from Firebase Auth
-            }
-
-            # Store user in session state
-            st.session_state.user = mock_user
-            st.session_state.is_guest = False
-
-            # Load cloud data if available
-            try:
-                from sync_manager import load_cloud_data
-                load_cloud_data()
-            except Exception as e:
-                st.warning(f"Could not load cloud data: {e}")
-
-            st.success("✅ Successfully signed in!")
-            st.info("Your settings will now sync across devices.")
-
-            # Show user info
-            st.markdown("---")
-            st.markdown("**Welcome!**")
-            st.markdown(f"**Email:** {mock_user['email']}")
-            st.markdown(f"**Name:** {mock_user['display_name']}")
-
-            # Auto-redirect after success
-            time.sleep(3)
-            st.session_state.page = "main"
-            st.rerun()
-
-        except Exception as e:
-            st.error(f"❌ Authentication failed: {e}")
-            st.info("Returning to main page...")
-            time.sleep(2)
-            st.session_state.page = "main"
+            else:
+                st.error("❌ Failed to get user information from Google")
+        else:
+            st.error("❌ Failed to exchange authorization code for token")
+    else:
+        # Start OAuth flow
+        if oauth2.authorize_button("Sign In with Google", REDIRECT_URI, ["openid", "email", "profile"]):
             st.rerun()
 
 
@@ -98,16 +96,30 @@ def render_sign_in_page():
 
     st.markdown("---")
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🔐 Sign In with Google", use_container_width=True, type="primary"):
-            # Trigger authentication flow
-            st.session_state.page = "auth_handler"
-            st.rerun()
+    # Check if Google OAuth is configured
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        st.warning("⚠️ Google OAuth is not configured. Using demo authentication instead.")
 
-        if st.button("❌ Continue as Guest", use_container_width=True):
-            st.session_state.page = "main"
-            st.rerun()
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🔐 Try Demo Sign In", use_container_width=True, type="primary"):
+                st.session_state.page = "auth_handler"
+                st.rerun()
+
+            if st.button("❌ Continue as Guest", use_container_width=True):
+                st.session_state.page = "main"
+                st.rerun()
+    else:
+        # Real Google OAuth
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🔐 Sign In with Google", use_container_width=True, type="primary"):
+                st.session_state.page = "auth_handler"
+                st.rerun()
+
+            if st.button("❌ Continue as Guest", use_container_width=True):
+                st.session_state.page = "main"
+                st.rerun()
 
     st.markdown("---")
     st.caption("🔒 Your privacy is protected. We only store what you choose to save.")
@@ -125,7 +137,13 @@ def render_user_profile():
             email = user.get('email', 'Unknown')
             name = user.get('display_name', email.split('@')[0])
 
-            st.sidebar.markdown(f"**{name}**")
+            # Show profile picture if available
+            photo_url = user.get('photo_url')
+            if photo_url:
+                st.sidebar.image(photo_url, width=50, caption=name)
+            else:
+                st.sidebar.markdown(f"**{name}**")
+
             st.sidebar.markdown(f"*{email}*")
 
             # Sign out button
