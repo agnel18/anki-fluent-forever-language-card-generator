@@ -42,7 +42,6 @@ def main():
     try:
         import firebase_admin
         from firebase_admin import credentials
-        import streamlit as st
 
         st.write("**Firebase Admin SDK version:**", firebase_admin.__version__)
 
