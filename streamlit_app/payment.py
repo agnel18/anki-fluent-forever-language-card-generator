@@ -6,9 +6,14 @@ from typing import Dict, Optional
 import streamlit as st
 import os
 
-# Razorpay configuration
-RAZORPAY_KEY_ID = st.secrets.get("RAZORPAY_KEY_ID", os.getenv("RAZORPAY_KEY_ID"))
-RAZORPAY_KEY_SECRET = st.secrets.get("RAZORPAY_KEY_SECRET", os.getenv("RAZORPAY_KEY_SECRET"))
+# Razorpay configuration - handle both Streamlit secrets and environment variables
+try:
+    RAZORPAY_KEY_ID = st.secrets.get("RAZORPAY_KEY_ID", os.getenv("RAZORPAY_KEY_ID"))
+    RAZORPAY_KEY_SECRET = st.secrets.get("RAZORPAY_KEY_SECRET", os.getenv("RAZORPAY_KEY_SECRET"))
+except:
+    # Fallback for when Streamlit secrets are not available (e.g., during import testing)
+    RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+    RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 def initialize_razorpay():
     """Initialize Razorpay client."""
@@ -226,7 +231,7 @@ def process_payment(amount_paisa: int, donor_name: str = "", donor_email: str = 
     }
 
     # Razorpay Checkout JavaScript
-    checkout_script = f'''
+    checkout_script = f"""
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         var options = {{
@@ -268,7 +273,7 @@ def process_payment(amount_paisa: int, donor_name: str = "", donor_email: str = 
 
         rzp.open();
     </script>
-    '''
+    """
 
     # Display the checkout
     st.components.v1.html(checkout_script, height=1)
@@ -276,41 +281,7 @@ def process_payment(amount_paisa: int, donor_name: str = "", donor_email: str = 
     # Listen for payment messages (this would need to be handled in the main app)
     st.markdown("**Processing payment...** Please complete the payment in the popup window.")
 
-    # JavaScript to handle payment callbacks
-    payment_callback_js = '''
-    <script>
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'razorpay_success') {
-                // Store callback data in session state
-                window.parent.postMessage({
-                    type: 'streamlit:setSessionState',
-                    key: 'payment_callback_data',
-                    value: {
-                        status: 'success',
-                        payment_id: event.data.payment_id,
-                        order_id: event.data.order_id,
-                        signature: event.data.signature
-                    }
-                }, '*');
-            } else if (event.data.type === 'razorpay_failed') {
-                // Store failure data in session state
-                window.parent.postMessage({
-                    type: 'streamlit:setSessionState',
-                    key: 'payment_callback_data',
-                    value: {
-                        status: 'failed',
-                        error: event.data.error
-                    }
-                }, '*');
-            }
-        });
-    </script>
-    '''
-
-    st.components.v1.html(payment_callback_js, height=1)
-
 def handle_payment_callback():
     """Handle payment callback messages from JavaScript."""
     # This function would be called from the main app to handle payment results
-    pass</content>
-<parameter name="filePath">d:\Language Learning\LanguagLearning\streamlit_app\payment.py
+    pass

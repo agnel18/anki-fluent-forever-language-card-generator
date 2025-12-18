@@ -76,5 +76,4 @@ def render_donation_page():
     with col2:
         if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
             st.session_state.page = "main"
-            st.rerun()</content>
-<parameter name="filePath">d:\Language Learning\LanguagLearning\streamlit_app\page_modules\donation.py
+            st.rerun()
