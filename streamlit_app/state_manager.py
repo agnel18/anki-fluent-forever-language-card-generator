@@ -148,22 +148,23 @@ def initialize_languages_config():
     print(f"DEBUG: initialize_languages_config called. learned_languages in session_state: {'learned_languages' in st.session_state}")
     print(f"DEBUG: all_languages in session_state: {'all_languages' in st.session_state}")
 
+    config_path = Path(__file__).parent / LANGUAGES_CONFIG_PATH
+    print(f"DEBUG: Loading config from {config_path}")
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
     if "learned_languages" not in st.session_state:
-        config_path = Path(__file__).parent / LANGUAGES_CONFIG_PATH
-        print(f"DEBUG: Loading config from {config_path}")
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
         st.session_state.learned_languages = [
             {"name": lang["name"], "usage": 0, "pinned": True} for lang in config["top_5"]
         ]
         print(f"DEBUG: Set learned_languages: {len(st.session_state.learned_languages)} languages")
 
-        # Also set all_languages globally if needed
-        if "all_languages" not in st.session_state:
-            st.session_state.all_languages = config["all_languages"]
-            print(f"DEBUG: Set all_languages: {len(st.session_state.all_languages)} languages")
-        else:
-            print(f"DEBUG: all_languages already exists with {len(st.session_state.all_languages)} languages")
+    # Always set all_languages if not already set
+    if "all_languages" not in st.session_state:
+        st.session_state.all_languages = config["all_languages"]
+        print(f"DEBUG: Set all_languages: {len(st.session_state.all_languages)} languages")
+    else:
+        print(f"DEBUG: all_languages already exists with {len(st.session_state.all_languages)} languages")
 
 
 def initialize_firebase_settings():
