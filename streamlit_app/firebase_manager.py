@@ -520,6 +520,69 @@ def update_last_active(session_id: str) -> bool:
 
 
 # ============================================================================
+# AUTHENTICATION
+# ============================================================================
+
+def sign_in_with_google():
+    """Handle Google OAuth sign-in flow for Streamlit."""
+    try:
+        import streamlit as st
+        # For Streamlit Cloud, we need to use a different approach
+        # since we can't do full OAuth redirects
+
+        # Check if we have Firebase Auth initialized
+        if not firebase_initialized:
+            st.error("❌ Firebase not available")
+            return
+
+        # For now, we'll use a simplified approach
+        # In production, you'd implement proper OAuth flow
+        st.info("🔄 Redirecting to Google sign-in...")
+
+        # This would normally redirect to Google OAuth
+        # For Streamlit, we need to handle this differently
+        st.session_state.page = "auth_handler"
+        st.rerun()
+
+    except Exception as e:
+        logger.error(f"Error in sign_in_with_google: {e}")
+        import streamlit as st
+        st.error(f"❌ Sign-in failed: {e}")
+
+
+def sign_out():
+    """Sign out user and clear authentication state."""
+    try:
+        import streamlit as st
+        if 'user' in st.session_state:
+            del st.session_state.user
+        st.session_state.is_guest = True
+        logger.info("User signed out successfully")
+    except Exception as e:
+        logger.error(f"Error during sign out: {e}")
+
+
+def is_signed_in() -> bool:
+    """Check if user is currently signed in."""
+    try:
+        import streamlit as st
+        return 'user' in st.session_state and not st.session_state.get('is_guest', True)
+    except:
+        return False
+
+
+def get_current_user():
+    """Get current authenticated user info."""
+    try:
+        import streamlit as st
+        if is_signed_in():
+            return st.session_state.user
+        return None
+    except:
+        return None
+
+
+# ============================================================================
 # INITIALIZATION
 # ============================================================================
 

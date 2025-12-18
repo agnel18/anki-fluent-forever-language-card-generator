@@ -85,54 +85,8 @@ except Exception as e:
 
 def render_sidebar_auth_section():
     """Render authentication section in sidebar."""
-    from firebase_manager import get_sync_status, sign_in_with_google, sign_out
-    from utils import should_show_cloud_prompt
-    from sync_manager import sync_user_data
-    
-    firebase_status = get_sync_status()
-    
-    if firebase_status == "enabled":
-        # Signed in state
-        user = st.session_state.get('user', {})
-        user_email = user.get('email', 'User')
-        st.sidebar.success(f"✅ {user_email}")
-        
-        col1, col2 = st.sidebar.columns(2)
-        with col1:
-            if st.sidebar.button("🔄 Sync", key="sync_now", help="Sync your data to the cloud"):
-                if sync_user_data():
-                    st.sidebar.success("✅ Synced!")
-                else:
-                    st.sidebar.error("❌ Sync failed")
-        with col2:
-            if st.sidebar.button("🚪 Sign Out", key="sign_out", help="Sign out and use local storage only"):
-                sign_out()
-                st.sidebar.success("Signed out!")
-                st.rerun()
-                
-    elif firebase_status == "available":
-        # Available but not signed in
-        if should_show_cloud_prompt():
-            st.sidebar.info("💡 **Backup your settings to the cloud?**")
-            
-            col1, col2 = st.sidebar.columns([1, 1])
-            with col1:
-                if st.sidebar.button("🔐 Sign In", key="sidebar_signin", help="Sign in with Google to enable cloud sync"):
-                    sign_in_with_google()
-            with col2:
-                if st.sidebar.button("❌ Later", key="dismiss_prompt", help="Remind me later"):
-                    st.session_state.dismissed_cloud_prompt = True
-                    st.sidebar.success("Will remind you later!")
-        else:
-            # Subtle sign-in option
-            with st.sidebar.expander("☁️ Cloud Sync", expanded=False):
-                st.write("Sign in to backup your API keys and settings across devices.")
-                if st.button("🚀 Enable Cloud Sync", key="enable_cloud_sync"):
-                    sign_in_with_google()
-                    
-    else:
-        # Firebase unavailable
-        st.sidebar.warning("☁️ Cloud features unavailable")
+    from page_modules.auth_handler import render_user_profile
+    render_user_profile()
 
 def handle_auto_sync():
     """Handle automatic sync operations."""
