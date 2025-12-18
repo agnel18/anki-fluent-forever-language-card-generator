@@ -199,6 +199,11 @@ def main():
     from page_modules.complete import render_complete_page
     from page_modules.settings import render_settings_page
     from page_modules.statistics import render_statistics_page
+    from page_modules.privacy_policy import render_privacy_policy_page
+    from page_modules.terms_conditions import render_terms_conditions_page
+    from page_modules.refund_policy import render_refund_policy_page
+    from page_modules.shipping_delivery import render_shipping_delivery_page
+    from page_modules.contact_us import render_contact_us_page
     def format_number_compact(num):
         if num >= 1000000:
             return f"{num // 1000000}M"
@@ -232,6 +237,11 @@ def main():
             st.session_state.page = None
         if "theme" not in st.session_state:
             st.session_state.theme = "dark"
+
+        # Handle URL parameters for direct page access (Razorpay compliance)
+        page_param = st.query_params.get("page", [None])[0]
+        if page_param and page_param in ["privacy_policy", "terms_conditions", "refund_policy", "shipping_delivery", "contact_us"]:
+            st.session_state.page = page_param
 
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
@@ -519,6 +529,27 @@ def main():
                 st.sidebar.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
                 st.rerun()
 
+            # Legal & Policy Links
+            st.sidebar.markdown("---")
+            st.sidebar.markdown("### 📄 Legal")
+
+            # Legal links in a compact format
+            if st.sidebar.button("🔒 Privacy Policy", key="sidebar_privacy", use_container_width=True):
+                st.session_state.page = "privacy_policy"
+                st.rerun()
+
+            if st.sidebar.button("📋 Terms & Conditions", key="sidebar_terms", use_container_width=True):
+                st.session_state.page = "terms_conditions"
+                st.rerun()
+
+            if st.sidebar.button("💰 Refund Policy", key="sidebar_refund", use_container_width=True):
+                st.session_state.page = "refund_policy"
+                st.rerun()
+
+            if st.sidebar.button("📞 Contact Us", key="sidebar_contact", use_container_width=True):
+                st.session_state.page = "contact_us"
+                st.rerun()
+
             # Cloud Sync Authentication Section
             st.sidebar.markdown("---")
             render_sidebar_auth_section()
@@ -577,6 +608,16 @@ def main():
                 render_settings_page()
             elif current_page == "statistics":
                 render_statistics_page()
+            elif current_page == "privacy_policy":
+                render_privacy_policy_page()
+            elif current_page == "terms_conditions":
+                render_terms_conditions_page()
+            elif current_page == "refund_policy":
+                render_refund_policy_page()
+            elif current_page == "shipping_delivery":
+                render_shipping_delivery_page()
+            elif current_page == "contact_us":
+                render_contact_us_page()
             elif current_page == "auth_handler":
                 from page_modules.auth_handler import render_auth_handler_page
                 render_auth_handler_page()
