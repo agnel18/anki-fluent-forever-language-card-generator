@@ -96,7 +96,9 @@ def render_auth_handler_page():
     else:
         # Start OAuth flow
         if st.button("🔐 Sign In with Google", type="primary"):
-            # Build authorization URL
+            # Build authorization URL with proper encoding
+            from urllib.parse import urlencode
+
             auth_params = {
                 'client_id': GOOGLE_CLIENT_ID,
                 'redirect_uri': REDIRECT_URI,
@@ -106,7 +108,7 @@ def render_auth_handler_page():
                 'prompt': 'consent'
             }
 
-            auth_url = f"{AUTH_URL}?{'&'.join([f'{k}={v}' for k, v in auth_params.items()])}"
+            auth_url = f"{AUTH_URL}?{urlencode(auth_params)}"
             st.markdown(f'<meta http-equiv="refresh" content="0; url={auth_url}">', unsafe_allow_html=True)
             st.stop()
 
