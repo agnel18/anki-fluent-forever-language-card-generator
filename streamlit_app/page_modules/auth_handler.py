@@ -21,10 +21,19 @@ def render_auth_handler_page():
     st.title("🔐 Sign In with Google")
     st.markdown("Please complete the Google authentication...")
 
+    # Debug info
+    st.write("**Debug Info:**")
+    st.write(f"Client ID configured: {bool(GOOGLE_CLIENT_ID)}")
+    st.write(f"Client Secret configured: {bool(GOOGLE_CLIENT_SECRET)}")
+    st.write(f"Redirect URI: {REDIRECT_URI}")
+    st.write(f"Auth URL: {AUTH_URL}")
+
     # Check if we have authorization code
     if st.query_params.get("code"):
-        # Exchange code for token
         code = st.query_params.get("code")
+        st.write(f"**Received authorization code:** {code[:20]}...")
+
+        # Exchange code for token
         try:
             # Exchange authorization code for access token
             token_data = {
@@ -35,16 +44,24 @@ def render_auth_handler_page():
                 'redirect_uri': REDIRECT_URI
             }
 
+            st.write("**Exchanging code for token...**")
             token_response = requests.post(TOKEN_URL, data=token_data)
+            st.write(f"**Token response status:** {token_response.status_code}")
+
             token_json = token_response.json()
+            st.write(f"**Token response:** {token_json}")
 
             if 'access_token' in token_json:
                 access_token = token_json['access_token']
+                st.write("**Got access token, fetching user info...**")
 
                 # Get user info from Google
                 headers = {'Authorization': f'Bearer {access_token}'}
                 user_response = requests.get(USERINFO_URL, headers=headers)
+                st.write(f"**User info response status:** {user_response.status_code}")
+
                 user_info = user_response.json()
+                st.write(f"**User info:** {user_info}")
 
                 if user_info.get('email'):
                     # Create user object
@@ -89,10 +106,8 @@ def render_auth_handler_page():
                 st.error(f"❌ Failed to get access token: {token_json.get('error_description', 'Unknown error')}")
         except Exception as e:
             st.error(f"❌ Authentication failed: {e}")
-            st.info("Returning to main page...")
-            time.sleep(2)
-            st.session_state.page = "main"
-            st.rerun()
+            import traceback
+            st.code(traceback.format_exc())
     else:
         # Start OAuth flow
         if st.button("🔐 Sign In with Google", type="primary"):
@@ -109,6 +124,7 @@ def render_auth_handler_page():
             }
 
             auth_url = f"{AUTH_URL}?{urlencode(auth_params)}"
+            st.write(f"**Authorization URL:** {auth_url}")
             st.markdown(f'<meta http-equiv="refresh" content="0; url={auth_url}">', unsafe_allow_html=True)
             st.stop()
 
