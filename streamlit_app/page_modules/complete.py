@@ -146,11 +146,8 @@ def render_complete_page():
 
     col_donate1, col_donate2, col_donate3 = st.columns([1, 2, 1])
     with col_donate2:
-        if st.button("💳 Make a Donation", key="complete_page_donation", use_container_width=True, type="secondary"):
-            st.markdown(f'<meta http-equiv="refresh" content="0;url={donation_url}">', unsafe_allow_html=True)
-            st.markdown("Opening donation page...")
+        st.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">💳 Make a Donation</button></a>', unsafe_allow_html=True)
 
-    st.markdown(f"**Direct Link:** [Donate via Razorpay.me]({donation_url})")
     st.markdown("*Your support helps us add more languages and features!* 🎉")
 
     st.divider()

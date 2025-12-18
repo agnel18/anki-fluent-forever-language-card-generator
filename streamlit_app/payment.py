@@ -131,13 +131,7 @@ def render_donation_section():
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("💳 Donate Now", type="primary", use_container_width=True):
-            st.markdown(f'<meta http-equiv="refresh" content="0;url={donation_url}">', unsafe_allow_html=True)
-            st.markdown(f"Redirecting to: {donation_url}")
-
-    # Alternative: Direct link
-    st.markdown("---")
-    st.markdown(f"**Direct Link:** [Donate via Razorpay.me]({donation_url})")
+        st.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">💳 Donate Now</button></a>', unsafe_allow_html=True)
 
     # Impact message
     st.success("🎉 Every contribution, no matter the size, helps us continue our mission!")

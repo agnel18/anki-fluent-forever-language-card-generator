@@ -278,17 +278,17 @@ def main():
         #     print(f"DEBUG: Set session state page to {page_param}")  # Debug logging
         #     print(f"DEBUG: Current session state page = {st.session_state.get('page')}")  # Additional debug
 
-        # Handle payment callbacks from Razorpay
-        payment_callback = st.empty()
-        if payment_callback.button("Check Payment Status", key="payment_callback_hidden"):
-            # This is triggered by JavaScript messages
-            pass
+        # Handle payment callbacks from Razorpay (legacy code - no longer needed with simple links)
+        # payment_callback = st.empty()
+        # if payment_callback.button("Check Payment Status", key="payment_callback_hidden"):
+        #     # This is triggered by JavaScript messages
+        #     pass
 
-        # Listen for payment callback data
-        if "payment_callback_data" in st.session_state:
-            callback_data = st.session_state.payment_callback_data
-            handle_payment_callback(callback_data)
-            del st.session_state.payment_callback_data
+        # Listen for payment callback data (legacy code - no longer needed)
+        # if "payment_callback_data" in st.session_state:
+        #     callback_data = st.session_state.payment_callback_data
+        #     handle_payment_callback(callback_data)
+        #     del st.session_state.payment_callback_data
 
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
@@ -582,11 +582,7 @@ def main():
             st.sidebar.markdown("Help keep language learning free!")
 
             donation_url = "https://razorpay.me/@agneljosephn"
-            if st.sidebar.button("💳 Donate Now", key="sidebar_donation", use_container_width=True, type="secondary"):
-                st.sidebar.markdown(f'<meta http-equiv="refresh" content="0;url={donation_url}">', unsafe_allow_html=True)
-                st.sidebar.markdown("Opening donation page...")
-
-            st.sidebar.markdown(f"[Direct Link]({donation_url})")
+            st.sidebar.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; margin-bottom: 8px;">💳 Donate Now</button></a>', unsafe_allow_html=True)
 
             # Legal & Policy Links
             st.sidebar.markdown("---")
