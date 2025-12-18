@@ -35,7 +35,10 @@ def main():
         else:
             st.success("Firebase is ready!")
 
-    st.markdown("### Detailed Firebase Debug")
+    except Exception as e:
+        st.error(f"Firebase test failed: {e}")
+        import traceback
+        st.code(traceback.format_exc())
     try:
         import firebase_admin
         from firebase_admin import credentials
