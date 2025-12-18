@@ -107,7 +107,7 @@ def render_refund_policy_page():
     For refund requests or questions:
 
     ### Primary Contact
-    - **Email**: [Your contact email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Subject Line**: "Refund Request - [Transaction ID]"
     - **Response Time**: Within 48 hours
 
@@ -131,7 +131,7 @@ def render_refund_policy_page():
 
     ## 10. Governing Law
 
-    This refund policy is governed by the laws of [Your jurisdiction]. Any disputes will be resolved through appropriate legal channels in [Your jurisdiction].
+    This refund policy is governed by the laws of India Karnataka. Any disputes will be resolved through appropriate legal channels in India Karnataka.
 
     ## 11. Acknowledgment
 

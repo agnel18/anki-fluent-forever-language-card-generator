@@ -122,13 +122,13 @@ def render_privacy_policy_page():
 
     If you have any questions about this Privacy Policy, please contact us:
 
-    - **Email**: [Your contact email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Response Time**: We aim to respond within 48 hours
-    - **Data Protection Officer**: [Contact information]
+    - **Data Protection Officer**: agnel.joseph.n@gmail.com
 
     ## 14. Governing Law
 
-    This Privacy Policy is governed by the laws of [Your jurisdiction]. Any disputes will be resolved in the courts of [Your jurisdiction].
+    This Privacy Policy is governed by the laws of India Karnataka. Any disputes will be resolved in the courts of India Karnataka.
     """)
 
     st.markdown("---")

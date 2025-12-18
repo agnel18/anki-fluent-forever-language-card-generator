@@ -141,8 +141,8 @@ def render_shipping_delivery_page():
 
     For questions about digital delivery or technical issues:
 
-    - **Email**: [Your contact email]
-    - **Support Hours**: [Your support hours]
+    - **Email**: agnel.joseph.n@gmail.com
+    - **Support Hours**: 9am to 5pm IST
     - **Response Time**: Within 24 hours for delivery issues
 
     ## 12. Policy Updates

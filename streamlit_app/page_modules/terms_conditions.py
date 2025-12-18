@@ -133,8 +133,8 @@ def render_terms_conditions_page():
     ## 12. Governing Law and Dispute Resolution
 
     ### Governing Law
-    - These Terms are governed by the laws of [Your jurisdiction]
-    - Any disputes will be resolved in the courts of [Your jurisdiction]
+    - These Terms are governed by the laws of India Karnataka
+    - Any disputes will be resolved in the courts of India Karnataka
 
     ### Dispute Resolution
     - We encourage amicable resolution of disputes
@@ -152,7 +152,7 @@ def render_terms_conditions_page():
     ## 15. Contact Information
 
     For questions about these Terms, please contact us:
-    - **Email**: [Your contact email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Response Time**: We aim to respond within 48 hours
 
     ## 16. Changes to Terms

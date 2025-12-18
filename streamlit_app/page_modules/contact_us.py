@@ -20,11 +20,11 @@ def render_contact_us_page():
     ### Developer & Support
     - **Name**: Agnel J N
     - **Role**: Full Stack Developer & Language Learning Enthusiast
-    - **Email**: [Your primary contact email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Response Time**: Within 24-48 hours
 
     ### Business Inquiries
-    - **Email**: [Your business contact email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Subject**: Include "Business Inquiry" in the subject line
     - **Topics**: Partnerships, collaborations, media inquiries
 
@@ -51,7 +51,7 @@ def render_contact_us_page():
     ## 💡 Feature Requests & Feedback
 
     ### How to Submit Ideas
-    - **Email**: [Your feedback email]
+    - **Email**: agnel.joseph.n@gmail.com
     - **Subject**: "Feature Request" or "Feedback"
     - **Details**: Describe your idea and why it would be valuable
     - **Priority**: Let us know how important this is to you
@@ -118,10 +118,10 @@ def render_contact_us_page():
     ## 📱 Social Media & Community
 
     ### Stay Connected
-    - **GitHub**: [Your GitHub repository URL]
-    - **LinkedIn**: [Your LinkedIn profile]
-    - **Twitter/X**: [Your Twitter handle]
-    - **YouTube**: [Your YouTube channel for language learning content]
+    - **GitHub**: agnel.joseph.n@gmail.com
+    - **LinkedIn**: https://in.linkedin.com/in/agnel-noojibalthila-08976b29
+    - **Twitter/X**: @agnel18
+    - **YouTube**: https://www.youtube.com/@agnel14
 
     ### Community Guidelines
     - **Respectful Communication**: Keep discussions constructive and respectful
@@ -151,7 +151,7 @@ def render_contact_us_page():
 
     For urgent technical issues that prevent you from using the service:
 
-    - **Emergency Email**: [Your emergency contact email]
+    - **Emergency Email**: agnel.joseph.n@gmail.com
     - **Priority Response**: Within 4 hours during business days
     - **After Hours**: Best effort response within 12 hours
 
@@ -208,17 +208,17 @@ def render_contact_us_page():
 
     with col1:
         st.markdown("**📧 Email Support**")
-        st.code("[Your support email]")
+        st.code("agnel.joseph.n@gmail.com")
         st.markdown("*Response: 24-48 hours*")
 
     with col2:
         st.markdown("**🐛 Bug Reports**")
-        st.code("[Your bug report email]")
+        st.code("agnel.joseph.n@gmail.com")
         st.markdown("*Priority handling*")
 
     with col3:
         st.markdown("**💡 Feature Requests**")
-        st.code("[Your feedback email]")
+        st.code("agnel.joseph.n@gmail.com")
         st.markdown("*Community driven*")
 
     st.markdown("---")
