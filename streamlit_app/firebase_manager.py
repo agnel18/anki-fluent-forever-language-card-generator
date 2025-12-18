@@ -180,7 +180,9 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
                     logger.info("✅ Firebase initialized successfully with Streamlit secrets")
                     return True
                 else:
-                    logger.warning("Firebase secrets incomplete - missing private_key or client_email")
+                    logger.warning(f"Firebase secrets incomplete - missing private_key or client_email. Available secrets: {list(st.secrets.keys()) if hasattr(st, 'secrets') else 'No secrets available'}")
+            else:
+                logger.debug(f"Firebase secrets not found - api_key: {bool(api_key)}, project_id: {bool(project_id)}")
 
         except Exception as secrets_error:
             logger.debug(f"Streamlit secrets not available or incomplete: {secrets_error}")
@@ -480,18 +482,28 @@ def is_signed_in() -> bool:
 
 def get_sync_status() -> str:
     """Return cloud sync status for UI display.
-    
+
     Returns:
         "enabled" - User signed in, sync active
         "available" - Firebase available but user not signed in
         "unavailable" - Firebase not available
     """
+    # Ensure Firebase is initialized before checking status
+    if firebase_available and not firebase_initialized:
+        try:
+            init_firebase()
+        except Exception as e:
+            logger.debug(f"Firebase init failed in get_sync_status: {e}")
+
     if not firebase_available:
         return "unavailable"
-    
+
+    if not firebase_initialized:
+        return "unavailable"
+
     if is_signed_in():
         return "enabled"
-    
+
     return "available"
 
 
@@ -631,8 +643,19 @@ def get_current_user():
 # INITIALIZATION
 # ============================================================================
 
-# Try to initialize Firebase on import
+# Try to initialize Firebase on import (but defer secrets access)
 try:
-    init_firebase()
-except Exception as e:
-    logger.debug(f"Firebase auto-init: {e}")
+    # Only try basic import check here
+    import firebase_admin
+    from firebase_admin import credentials, firestore, auth
+    firebase_available = True
+
+    # Try to initialize immediately if we have a config file
+    try:
+        init_firebase()
+    except Exception as e:
+        logger.debug(f"Firebase auto-init failed (expected if no secrets yet): {e}")
+
+except ImportError:
+    logger.warning("Firebase SDK not installed. Install with: pip install firebase-admin")
+    firebase_available = False
