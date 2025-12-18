@@ -19,11 +19,6 @@ def render_settings_page():
     # --- Profile & Cloud Sync Section ---
     st.markdown("### 👤 Account & Cloud Sync")
 
-    # Debug button (temporary)
-    if st.button("🔍 Debug Firebase", help="Debug Firebase configuration"):
-        st.session_state.page = "debug_firebase"
-        st.rerun()
-
     try:
         from firebase_manager import firebase_initialized, is_signed_in, get_current_user
         from sync_manager import sync_user_data, load_cloud_data, export_user_data
