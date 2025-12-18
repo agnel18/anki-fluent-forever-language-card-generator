@@ -244,6 +244,7 @@ def main():
         if page_param and page_param in ["privacy_policy", "terms_conditions", "refund_policy", "shipping_delivery", "contact_us"]:
             st.session_state.page = page_param
             print(f"DEBUG: Set session state page to {page_param}")  # Debug logging
+            print(f"DEBUG: Current session state page = {st.session_state.get('page')}")  # Additional debug
 
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
