@@ -51,15 +51,15 @@ def render_settings_page():
                             data = export_user_data()
                             if data:
                                 import json
-                        st.download_button(
-                            label="📥 Download Data",
-                            data=json.dumps(data, indent=2),
-                            file_name="language_app_data.json",
-                            mime="application/json"
-                        )
-                        st.success("✅ Data exported!")
-                    else:
-                        st.error("❌ Failed to export data.")
+                                st.download_button(
+                                    label="📥 Download Data",
+                                    data=json.dumps(data, indent=2),
+                                    file_name="language_app_data.json",
+                                    mime="application/json"
+                                )
+                                st.success("✅ Data exported!")
+                            else:
+                                st.error("❌ Failed to export data.")
 
                     with account_col3:
                         if st.button("🚪 Sign Out", help="Sign out and use local storage only"):
