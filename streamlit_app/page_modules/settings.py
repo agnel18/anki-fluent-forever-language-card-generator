@@ -136,9 +136,12 @@ def render_settings_page():
             st.session_state.sync_preferences = sync_options
             st.success("✅ Sync preferences updated!")
             # Trigger a sync to apply new preferences
-            if firebase_status == "enabled":
+            if user_signed_in and firebase_available:
                 from sync_manager import sync_user_data
                 sync_user_data()
+    
+    except Exception as e:
+        st.error(f"Privacy controls error: {e}")
     
     st.markdown("---")
 
