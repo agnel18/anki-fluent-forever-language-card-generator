@@ -117,51 +117,96 @@ except ImportError:
 def init_firebase(config_path: Optional[Path] = None) -> bool:
     """
     Initialize Firebase admin SDK.
-    
+    First tries to use Streamlit secrets, then falls back to config file.
+
     Args:
-        config_path: Path to Firebase service account key JSON
+        config_path: Path to Firebase service account key JSON (fallback only)
                     Default: LanguagLearning/firebase_config.json
-        
+
     Returns:
         True if successful, False otherwise
     """
     global firebase_initialized
-    
+
     if not firebase_available:
         logger.error("Firebase SDK not available. Install with: pip install firebase-admin")
         return False
-    
+
     if firebase_initialized:
         return True
-    
+
     # Check if Firebase app already exists
     if firebase_admin._apps:
         firebase_initialized = True
         logger.info("✅ Firebase already initialized")
         return True
-    
+
     try:
-        # Determine config path
+        # First try to initialize with Streamlit secrets
+        try:
+            import streamlit as st
+            api_key = st.secrets.get("FIREBASE_API_KEY")
+            project_id = st.secrets.get("FIREBASE_PROJECT_ID")
+
+            if api_key and project_id:
+                logger.info("Initializing Firebase with Streamlit secrets...")
+
+                # For Firebase Admin SDK, we need service account credentials
+                # We'll use the existing config file approach but check if we have all required secrets
+                private_key = st.secrets.get("FIREBASE_PRIVATE_KEY")
+                client_email = st.secrets.get("FIREBASE_CLIENT_EMAIL")
+
+                if private_key and client_email:
+                    # Create credentials from individual secrets
+                    cred_dict = {
+                        "type": "service_account",
+                        "project_id": project_id,
+                        "private_key_id": st.secrets.get("FIREBASE_PRIVATE_KEY_ID", ""),
+                        "private_key": private_key.replace('\\n', '\n'),
+                        "client_email": client_email,
+                        "client_id": st.secrets.get("FIREBASE_CLIENT_ID", ""),
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                        "client_x509_cert_url": st.secrets.get("FIREBASE_CLIENT_X509_CERT_URL", "")
+                    }
+
+                    cred = credentials.Certificate(cred_dict)
+                    firebase_admin.initialize_app(cred, {
+                        'projectId': project_id
+                    })
+
+                    firebase_initialized = True
+                    logger.info("✅ Firebase initialized successfully with Streamlit secrets")
+                    return True
+                else:
+                    logger.warning("Firebase secrets incomplete - missing private_key or client_email")
+
+        except Exception as secrets_error:
+            logger.debug(f"Streamlit secrets not available or incomplete: {secrets_error}")
+
+        # Fallback to config file
+        logger.info("Falling back to config file initialization...")
         if config_path is None:
             config_path = Path(__file__).parent.parent / "firebase_config.json"
-        
+
         config_path = Path(config_path)
-        
+
         if not config_path.exists():
             logger.warning(f"Firebase config not found at {config_path}")
             logger.info("Firebase sync disabled. Progress will only be saved locally.")
             return False
-        
-        # Initialize Firebase
+
+        # Initialize Firebase with config file
         cred = credentials.Certificate(str(config_path))
         firebase_admin.initialize_app(cred, {
             'projectId': json.load(open(config_path))['project_id']
         })
-        
+
         firebase_initialized = True
-        logger.info("✅ Firebase initialized successfully")
+        logger.info("✅ Firebase initialized successfully with config file")
         return True
-        
+
     except Exception as e:
         logger.warning(f"Firebase initialization failed: {e}")
         logger.info("Continuing without Firebase sync...")
