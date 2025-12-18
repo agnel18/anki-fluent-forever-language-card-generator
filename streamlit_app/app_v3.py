@@ -157,37 +157,6 @@ def handle_auto_sync():
             print(f"Periodic sync failed: {e}")
 
 # ============================================================================
-# PAYMENT CALLBACK HANDLER
-# ============================================================================
-
-def handle_payment_callback(callback_data):
-    """Handle payment callback from Razorpay."""
-    from payment import verify_payment_signature
-
-    status = callback_data.get("status")
-
-    if status == "success":
-        payment_id = callback_data.get("payment_id")
-        order_id = callback_data.get("order_id")
-        signature = callback_data.get("signature")
-
-        # Verify payment signature
-        if verify_payment_signature(order_id, payment_id, signature):
-            st.session_state.payment_status = "success"
-            # Here you could save donation details to database
-            st.success("✅ Payment successful! Thank you for your support.")
-        else:
-            st.session_state.payment_status = "failed"
-            st.error("❌ Payment verification failed. Please contact support.")
-
-    elif status == "failed":
-        st.session_state.payment_status = "failed"
-        error_info = callback_data.get("error", {})
-        st.error(f"❌ Payment failed: {error_info.get('description', 'Unknown error')}")
-
-    # Rerun to show status
-    st.rerun()
-
 # ============================================================================
 # MAIN APPLICATION - MULTI-PAGE WITH SIDEBAR NAVIGATION
 # ============================================================================
@@ -277,18 +246,6 @@ def main():
         #     st.session_state.page = page_param
         #     print(f"DEBUG: Set session state page to {page_param}")  # Debug logging
         #     print(f"DEBUG: Current session state page = {st.session_state.get('page')}")  # Additional debug
-
-        # Handle payment callbacks from Razorpay (legacy code - no longer needed with simple links)
-        # payment_callback = st.empty()
-        # if payment_callback.button("Check Payment Status", key="payment_callback_hidden"):
-        #     # This is triggered by JavaScript messages
-        #     pass
-
-        # Listen for payment callback data (legacy code - no longer needed)
-        # if "payment_callback_data" in st.session_state:
-        #     callback_data = st.session_state.payment_callback_data
-        #     handle_payment_callback(callback_data)
-        #     del st.session_state.payment_callback_data
 
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
