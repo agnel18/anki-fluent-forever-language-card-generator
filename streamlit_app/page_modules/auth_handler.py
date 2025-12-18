@@ -3,7 +3,7 @@
 import streamlit as st
 import time
 import json
-from streamlit_oauth import OAuth2Component
+from httpx_oauth.clients.google import GoogleOAuth2
 from firebase_manager import is_signed_in, get_current_user
 
 # Google OAuth configuration
@@ -11,29 +11,24 @@ GOOGLE_CLIENT_ID = st.secrets.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
 REDIRECT_URI = st.secrets.get("REDIRECT_URI", "http://localhost:8501")
 
+# Initialize OAuth client
+client = GoogleOAuth2(
+    client_id=GOOGLE_CLIENT_ID,
+    client_secret=GOOGLE_CLIENT_SECRET
+)
+
 def render_auth_handler_page():
     """Handle Google OAuth authentication flow."""
     st.title("🔐 Sign In with Google")
     st.markdown("Please complete the Google authentication...")
 
-    # Initialize OAuth2Component
-    oauth2 = OAuth2Component(
-        client_id=GOOGLE_CLIENT_ID,
-        client_secret=GOOGLE_CLIENT_SECRET,
-        authorize_endpoint="https://accounts.google.com/o/oauth2/auth",
-        token_endpoint="https://oauth2.googleapis.com/token",
-        refresh_token_endpoint="https://oauth2.googleapis.com/token",
-    )
-
     # Check if we have authorization code
     if st.query_params.get("code"):
         # Exchange code for token
         code = st.query_params.get("code")
-        token_result = oauth2.get_token(code, redirect_uri=REDIRECT_URI)
-
-        if token_result:
-            # Get user info from Google
-            user_info = oauth2.get("https://www.googleapis.com/oauth2/v2/userinfo").json()
+        try:
+            token = client.get_access_token(code, redirect_uri=REDIRECT_URI)
+            user_info = client.get("https://www.googleapis.com/oauth2/v2/userinfo", token=token)
 
             if user_info:
                 # Create user object
@@ -74,12 +69,21 @@ def render_auth_handler_page():
                 st.rerun()
             else:
                 st.error("❌ Failed to get user information from Google")
-        else:
-            st.error("❌ Failed to exchange authorization code for token")
+        except Exception as e:
+            st.error(f"❌ Authentication failed: {e}")
+            st.info("Returning to main page...")
+            time.sleep(2)
+            st.session_state.page = "main"
+            st.rerun()
     else:
         # Start OAuth flow
-        if oauth2.authorize_button("Sign In with Google", REDIRECT_URI, ["openid", "email", "profile"]):
-            st.rerun()
+        if st.button("🔐 Sign In with Google", type="primary"):
+            authorization_url = client.get_authorization_url(
+                redirect_uri=REDIRECT_URI,
+                scope=["openid", "email", "profile"]
+            )
+            st.markdown(f'<meta http-equiv="refresh" content="0; url={authorization_url}">', unsafe_allow_html=True)
+            st.stop()
 
 
 def render_sign_in_page():
