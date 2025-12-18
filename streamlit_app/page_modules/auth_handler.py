@@ -34,9 +34,18 @@ def render_auth_handler_page():
 
             # Mock successful authentication (replace with real OAuth)
             # In production, this would come from Firebase Auth after OAuth callback
+            # For demo purposes, we'll create a consistent user ID based on session
+            import hashlib
+            import streamlit as st
+
+            # Create a consistent demo user ID based on the session
+            # This ensures the same "user" gets the same ID across sessions
+            session_fingerprint = f"demo_user_{st.session_state.get('user_agent', 'unknown')}"
+            consistent_uid = hashlib.md5(session_fingerprint.encode()).hexdigest()[:16]
+
             mock_user = {
                 'email': 'demo@example.com',  # Would come from Google OAuth
-                'uid': 'demo_user_id_123',    # Would come from Firebase Auth
+                'uid': f"demo_{consistent_uid}",  # Consistent ID for cloud sync
                 'display_name': 'Demo User',  # Would come from Google profile
                 'photo_url': None,            # Would come from Google profile
                 'email_verified': True        # Would come from Firebase Auth
