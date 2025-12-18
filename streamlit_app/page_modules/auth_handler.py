@@ -3,7 +3,7 @@
 import streamlit as st
 import time
 import json
-from httpx_oauth.clients.google import GoogleOAuth2
+import requests
 from firebase_manager import is_signed_in, get_current_user
 
 # Google OAuth configuration
@@ -11,11 +11,10 @@ GOOGLE_CLIENT_ID = st.secrets.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
 REDIRECT_URI = st.secrets.get("REDIRECT_URI", "http://localhost:8501")
 
-# Initialize OAuth client
-client = GoogleOAuth2(
-    client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET
-)
+# Google OAuth endpoints
+AUTH_URL = "https://accounts.google.com/o/oauth2/auth"
+TOKEN_URL = "https://oauth2.googleapis.com/token"
+USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 def render_auth_handler_page():
     """Handle Google OAuth authentication flow."""
@@ -27,48 +26,67 @@ def render_auth_handler_page():
         # Exchange code for token
         code = st.query_params.get("code")
         try:
-            token = client.get_access_token(code, redirect_uri=REDIRECT_URI)
-            user_info = client.get("https://www.googleapis.com/oauth2/v2/userinfo", token=token)
+            # Exchange authorization code for access token
+            token_data = {
+                'client_id': GOOGLE_CLIENT_ID,
+                'client_secret': GOOGLE_CLIENT_SECRET,
+                'code': code,
+                'grant_type': 'authorization_code',
+                'redirect_uri': REDIRECT_URI
+            }
 
-            if user_info:
-                # Create user object
-                user = {
-                    'email': user_info.get('email', ''),
-                    'uid': user_info.get('id', ''),
-                    'display_name': user_info.get('name', ''),
-                    'photo_url': user_info.get('picture', ''),
-                    'email_verified': user_info.get('verified_email', False)
-                }
+            token_response = requests.post(TOKEN_URL, data=token_data)
+            token_json = token_response.json()
 
-                # Store user in session state
-                st.session_state.user = user
-                st.session_state.is_guest = False
+            if 'access_token' in token_json:
+                access_token = token_json['access_token']
 
-                # Load cloud data if available
-                try:
-                    from sync_manager import load_cloud_data
-                    load_cloud_data()
-                except Exception as e:
-                    st.warning(f"Could not load cloud data: {e}")
+                # Get user info from Google
+                headers = {'Authorization': f'Bearer {access_token}'}
+                user_response = requests.get(USERINFO_URL, headers=headers)
+                user_info = user_response.json()
 
-                st.success("✅ Successfully signed in with Google!")
-                st.info("Your settings will now sync across devices.")
+                if user_info.get('email'):
+                    # Create user object
+                    user = {
+                        'email': user_info.get('email', ''),
+                        'uid': user_info.get('id', ''),
+                        'display_name': user_info.get('name', ''),
+                        'photo_url': user_info.get('picture', ''),
+                        'email_verified': user_info.get('verified_email', False)
+                    }
 
-                # Show user info
-                st.markdown("---")
-                st.markdown("**Welcome!**")
-                st.markdown(f"**Name:** {user['display_name']}")
-                st.markdown(f"**Email:** {user['email']}")
+                    # Store user in session state
+                    st.session_state.user = user
+                    st.session_state.is_guest = False
 
-                # Clear query params
-                st.query_params.clear()
+                    # Load cloud data if available
+                    try:
+                        from sync_manager import load_cloud_data
+                        load_cloud_data()
+                    except Exception as e:
+                        st.warning(f"Could not load cloud data: {e}")
 
-                # Auto-redirect after success
-                time.sleep(3)
-                st.session_state.page = "main"
-                st.rerun()
+                    st.success("✅ Successfully signed in with Google!")
+                    st.info("Your settings will now sync across devices.")
+
+                    # Show user info
+                    st.markdown("---")
+                    st.markdown("**Welcome!**")
+                    st.markdown(f"**Name:** {user['display_name']}")
+                    st.markdown(f"**Email:** {user['email']}")
+
+                    # Clear query params
+                    st.query_params.clear()
+
+                    # Auto-redirect after success
+                    time.sleep(3)
+                    st.session_state.page = "main"
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to get user information from Google")
             else:
-                st.error("❌ Failed to get user information from Google")
+                st.error(f"❌ Failed to get access token: {token_json.get('error_description', 'Unknown error')}")
         except Exception as e:
             st.error(f"❌ Authentication failed: {e}")
             st.info("Returning to main page...")
@@ -78,11 +96,18 @@ def render_auth_handler_page():
     else:
         # Start OAuth flow
         if st.button("🔐 Sign In with Google", type="primary"):
-            authorization_url = client.get_authorization_url(
-                redirect_uri=REDIRECT_URI,
-                scope=["openid", "email", "profile"]
-            )
-            st.markdown(f'<meta http-equiv="refresh" content="0; url={authorization_url}">', unsafe_allow_html=True)
+            # Build authorization URL
+            auth_params = {
+                'client_id': GOOGLE_CLIENT_ID,
+                'redirect_uri': REDIRECT_URI,
+                'scope': 'openid email profile',
+                'response_type': 'code',
+                'access_type': 'offline',
+                'prompt': 'consent'
+            }
+
+            auth_url = f"{AUTH_URL}?{'&'.join([f'{k}={v}' for k, v in auth_params.items()])}"
+            st.markdown(f'<meta http-equiv="refresh" content="0; url={auth_url}">', unsafe_allow_html=True)
             st.stop()
 
 
