@@ -207,7 +207,7 @@ def main():
     if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
             # Center the sidebar logo horizontally using HTML
-            st.sidebar.image("logo.png", width="stretch")
+            st.sidebar.image("logo.svg", width="stretch")
             st.sidebar.markdown("---") 
             
             # Create sidebar content with better mobile alignment
