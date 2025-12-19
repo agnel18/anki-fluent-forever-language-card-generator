@@ -121,7 +121,7 @@ def main():
     from streamlit_option_menu import option_menu
     
     # Google Site Verification Meta Tag
-    st.markdown('<meta name="google-site-verification" content="4Wgb0p8tbH10vZuWbsOB6UAK0Fd9PiSQkseKvJx7xKc" />', unsafe_allow_html=True)
+    st.markdown('<meta name="google-site-verification" content="YUTo7TlPD5g4Yz_i6pCEEnIMTKlwplPMIukMKhOyfnw" />', unsafe_allow_html=True)
     
     # Import all page rendering functions and format_number_compact utility
     from page_modules.main import render_main_page
