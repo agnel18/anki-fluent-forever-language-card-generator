@@ -45,8 +45,15 @@ def render_auth_handler_page():
             }
 
             st.write("**Exchanging code for token...**")
-            token_response = requests.post(TOKEN_URL, data=token_data)
+            st.write(f"**Client ID:** {GOOGLE_CLIENT_ID}")
+            st.write(f"**Client Secret:** {GOOGLE_CLIENT_SECRET[:10]}...")
+            st.write(f"**Redirect URI:** {REDIRECT_URI}")
+            st.write(f"**Code:** {code[:20]}...")
+            
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            token_response = requests.post(TOKEN_URL, data=token_data, headers=headers)
             st.write(f"**Token response status:** {token_response.status_code}")
+            st.write(f"**Token response headers:** {dict(token_response.headers)}")
 
             token_json = token_response.json()
             st.write(f"**Token response:** {token_json}")

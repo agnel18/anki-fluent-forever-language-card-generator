@@ -150,6 +150,11 @@ def main():
     # Determine which section to show based on session state
     current_page = st.session_state.get("page")
 
+    # Check for OAuth callback - if we have auth code in URL, go to auth handler
+    if st.query_params.get("code"):
+        current_page = "auth_handler"
+        st.session_state.page = current_page
+
     # If no page is set, determine default based on API key availability
     if current_page is None:
         # Always start with main page - it will guide user to API setup if needed
@@ -160,7 +165,7 @@ def main():
     if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
             # Center the sidebar logo horizontally using HTML
-            st.sidebar.image("logo.svg", width="stretch")
+            st.sidebar.image("streamlit_app/logo.svg", width="stretch")
             st.sidebar.markdown("---") 
             
             # Create sidebar content with better mobile alignment
@@ -183,7 +188,7 @@ def main():
             # Documentation button
             if st.sidebar.button("📖 Documentation", key="sidebar_docs", use_container_width=True):
                 import webbrowser
-                webbrowser.open("https://github.com/your-repo")
+                webbrowser.open("https://github.com/agnel18/anki-fluent-forever-language-card-generator")
                 st.sidebar.success("Opening documentation...")
 
             st.sidebar.markdown("---")
@@ -279,6 +284,77 @@ def main():
             --usage-yellow: #eab308;
             --usage-red: #ef4444;
         }}
+        
+        /* Apply theme variables to Streamlit components */
+        .stApp {{
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+        }}
+        
+        .main .block-container {{
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+        }}
+        
+        .stSidebar {{
+            background-color: var(--secondary-bg) !important;
+        }}
+        
+        .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {{
+            color: var(--text-color) !important;
+        }}
+        
+        .stButton > button {{
+            background-color: var(--button-secondary-bg) !important;
+            color: var(--button-secondary-text) !important;
+            border-color: var(--button-secondary-border) !important;
+        }}
+        
+        .stButton > button:hover {{
+            background-color: var(--button-secondary-hover-bg) !important;
+        }}
+        
+        .stSelectbox > div > div {{
+            background-color: var(--secondary-bg) !important;
+            color: var(--text-color) !important;
+        }}
+        
+        /* Additional theme rules for light mode */
+        .stMetric, .stMetric * {{
+            color: var(--text-color) !important;
+        }}
+        
+        .stSidebar .stMetric, .stSidebar .stMetric * {{
+            color: var(--text-color) !important;
+        }}
+        
+        .stTextInput input {{
+            color: var(--text-color) !important;
+            background-color: var(--secondary-bg) !important;
+        }}
+        
+        button[kind="primary"] {{
+            background-color: var(--button-primary-bg) !important;
+            color: var(--button-text) !important;
+            border-color: var(--button-primary-border) !important;
+        }}
+        
+        button[kind="secondary"] {{
+            background-color: var(--button-secondary-bg) !important;
+            color: var(--button-secondary-text) !important;
+            border-color: var(--button-secondary-border) !important;
+        }}
+        
+        .stSelectbox select, .stSelectbox input, .stSelectbox div {{
+            color: var(--text-color) !important;
+            background-color: var(--secondary-bg) !important;
+        }}
+        
+        li[role="option"], li[role="option"] * {{
+            color: var(--text-color) !important;
+            background-color: var(--secondary-bg) !important;
+        }}
+        
         /* ...existing CSS rules... */
     </style>
     """, unsafe_allow_html=True)
@@ -352,6 +428,10 @@ def main():
         st.session_state.selected_topics = []
     if "custom_topics" not in st.session_state:
         st.session_state.custom_topics = []
+
+    # Initialize languages and firebase settings
+    initialize_languages_config()
+    initialize_firebase_settings()
 
     # Route to the appropriate page
     try:

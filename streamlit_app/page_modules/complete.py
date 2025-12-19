@@ -145,9 +145,7 @@ def render_complete_page():
 
     payment_url = "https://razorpay.me/@agneljosephn"
 
-    col_pay1, col_pay2, col_pay3 = st.columns([1, 2, 1])
-    with col_pay2:
-        st.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">Pay Fees</button></a>', unsafe_allow_html=True)
+    st.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;">Pay Fees</button></a>', unsafe_allow_html=True)
 
     st.markdown("*Any amount is welcome – thank you for helping maintain this free tool!* 🎉")
 
