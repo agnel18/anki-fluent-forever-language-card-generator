@@ -10,12 +10,12 @@ def render_main_page():
     # Display app logo
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("Language Card Generator Logo.png", width=150, use_column_width=False)
+        st.image("Language Card Generator Logo.png", width=100, use_column_width=False)
         st.markdown("<br>", unsafe_allow_html=True)
 
     # Hero section with better spacing
     with st.container():
-        st.markdown("# 🌍 Language Learning Anki Deck Generator")
+        st.markdown("# Language Learning Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
         st.markdown("---")
 

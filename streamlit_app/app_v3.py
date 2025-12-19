@@ -120,7 +120,7 @@ def main():
     # Configure the page - must be called first and only once
     st.set_page_config(
         page_title="Language Learning App",
-        page_icon="static/Language Card Generator Logo.png",
+        page_icon="Language Card Generator Logo.png",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -420,7 +420,7 @@ def main():
         if current_page != "login":
             # Add logo to sidebar
             try:
-                st.sidebar.image("static/Language Card Generator Logo.png", width=120, use_column_width=False)
+                st.sidebar.image("Language Card Generator Logo.png", width=80, use_column_width=False)
                 st.sidebar.markdown("---")
             except:
                 pass  # Logo not found, continue without it
