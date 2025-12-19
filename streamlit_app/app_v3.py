@@ -143,10 +143,6 @@ def main():
         else:
             return str(num)
 
-    # Hamburger menu toggle state
-    if "menu_open" not in st.session_state:
-        st.session_state.menu_open = False
-
     # Determine which section to show based on session state
     current_page = st.session_state.get("page")
 
@@ -197,57 +193,17 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Hamburger icon (three bars)
-    hamburger_icon = "☰"
-    cols = st.columns([0.1, 0.9])
-    with cols[0]:
-        if st.button(hamburger_icon, key="hamburger", help="Open menu"):
-            st.session_state.menu_open = not st.session_state.menu_open
+    # If no page is set, determine default based on API key availability
+    if current_page is None:
+        # Always start with main page - it will guide user to API setup if needed
+        current_page = "main"
+        st.session_state.page = current_page
 
-    # Show the menu as a floating sidebar when open
-    if st.session_state.menu_open and current_page != "login":
-        with st.sidebar:
-            st.image("Language Card Generator Logo-.png", width=60)
-            selected = option_menu(
-                "Menu",
-                ["Main", "Settings", "Statistics", "Documentation", "Pay Fees"],
-                icons=["house", "gear", "bar-chart", "book", "credit-card"],
-                menu_icon="cast",
-                default_index=0,
-                orientation="vertical"
-            )
-            if selected == "Main":
-                st.session_state.page = "main"
-                st.rerun()
-            elif selected == "Settings":
-                st.session_state.page = "settings"
-                st.rerun()
-            elif selected == "Statistics":
-                st.session_state.page = "statistics"
-                st.rerun()
-            elif selected == "Documentation":
-                st.session_state.page = "help"
-                st.rerun()
-            elif selected == "Pay Fees":
-                payment_url = "https://razorpay.me/@agneljosephn"
-                st.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; margin-bottom: 8px;">Pay Fees</button></a>', unsafe_allow_html=True)
-            st.markdown("---")
-            st.markdown("### 📄 Legal")
-            st.markdown("[Terms & Conditions](#)")
-            st.markdown("[Privacy Policy](#)")
-            st.markdown("[Refund Policy](#)")
-
-        # If no page is set, determine default based on API key availability
-        if current_page is None:
-            # Always start with main page - it will guide user to API setup if needed
-            current_page = "main"
-            st.session_state.page = current_page
-
-        # Add sidebar navigation (except on login page)
-        if current_page != "login":
+    # Add sidebar navigation (except on login page)
+    if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
             # Center the sidebar logo horizontally using HTML
-            st.sidebar.image("Language Card Generator Logo-.png", width="stretch")
+            st.sidebar.image("logo.png", width="stretch")
             st.sidebar.markdown("---") 
             
             # Create sidebar content with better mobile alignment
@@ -368,27 +324,27 @@ def main():
                     st.sidebar.caption(f"Processing word {word_idx + 1} of {total_words}")
 
 
-        # Ensure critical session state variables are initialized (mobile compatibility)
-        if "sentence_length_range" not in st.session_state:
-            st.session_state.sentence_length_range = (6, 16)
-        if "sentences_per_word" not in st.session_state:
-            st.session_state.sentences_per_word = 10
-        if "difficulty" not in st.session_state:
-            st.session_state.difficulty = "intermediate"
-        if "audio_speed" not in st.session_state:
-            st.session_state.audio_speed = 0.8
-        if "selected_voice" not in st.session_state:
-            st.session_state.selected_voice = None
-        if "selected_voice_display" not in st.session_state:
-            st.session_state.selected_voice_display = None
-        if "enable_topics" not in st.session_state:
-            st.session_state.enable_topics = False
-        if "selected_topics" not in st.session_state:
-            st.session_state.selected_topics = []
-        if "custom_topics" not in st.session_state:
-            st.session_state.custom_topics = []
+    # Ensure critical session state variables are initialized (mobile compatibility)
+    if "sentence_length_range" not in st.session_state:
+        st.session_state.sentence_length_range = (6, 16)
+    if "sentences_per_word" not in st.session_state:
+        st.session_state.sentences_per_word = 10
+    if "difficulty" not in st.session_state:
+        st.session_state.difficulty = "intermediate"
+    if "audio_speed" not in st.session_state:
+        st.session_state.audio_speed = 0.8
+    if "selected_voice" not in st.session_state:
+        st.session_state.selected_voice = None
+    if "selected_voice_display" not in st.session_state:
+        st.session_state.selected_voice_display = None
+    if "enable_topics" not in st.session_state:
+        st.session_state.enable_topics = False
+    if "selected_topics" not in st.session_state:
+        st.session_state.selected_topics = []
+    if "custom_topics" not in st.session_state:
+        st.session_state.custom_topics = []
 
-        # Route to the appropriate page
+    # Route to the appropriate page
     try:
         if current_page == "api_setup":
             render_api_setup_page()
