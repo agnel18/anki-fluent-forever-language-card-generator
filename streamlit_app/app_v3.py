@@ -267,7 +267,7 @@ def main():
             st.sidebar.markdown("### 🎨 Theme")
 
             theme_options = ["Light", "Dark"]
-            current_theme = st.session_state.theme.capitalize()
+            current_theme = st.session_state.get("theme", "dark").capitalize()
 
             selected_theme = st.sidebar.selectbox(
                 "Select Theme",
@@ -277,7 +277,7 @@ def main():
                 help="Switch between light and dark themes"
             )
 
-            if selected_theme.lower() != st.session_state.theme:
+            if selected_theme.lower() != st.session_state.get("theme", "dark"):
                 st.session_state.theme = selected_theme.lower()
                 st.sidebar.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
                 st.rerun()
