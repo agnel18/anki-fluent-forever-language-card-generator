@@ -125,6 +125,9 @@ def main():
         initial_sidebar_state="expanded"
     )
 
+    # Google Site Verification meta tag
+    st.html('<meta name="google-site-verification" content="4Wgb0p8tbH10vZuWbsOB6UAK0Fd9PiSQkseKvJx7xKc" />')
+
     # Initialize theme if not set (fallback)
     if "theme" not in st.session_state:
         st.session_state.theme = "dark"
