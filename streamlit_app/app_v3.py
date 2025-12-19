@@ -419,7 +419,11 @@ def main():
         # Add sidebar navigation (except on login page)
         if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
-            st.sidebar.image("Language Card Generator Logo-.png", width=60)
+            # Center the sidebar logo horizontally using HTML
+            st.sidebar.markdown(
+                '<div style="display: flex; justify-content: center; align-items: center; width: 100%;"><img src="Language Card Generator Logo-.png" width="60" /></div>',
+                unsafe_allow_html=True
+            )
             st.sidebar.markdown("---")
             
             # Create sidebar content with better mobile alignment

@@ -9,9 +9,9 @@ def render_main_page():
 
 
     # Place logo next to the title using columns with less spacing
-    col_logo, col_title = st.columns([0.13, 1])
+    col_logo, col_title = st.columns([0.3, 1])
     with col_logo:
-        st.image("Language Card Generator Logo-.png", width=60)
+        st.image("Language Card Generator Logo-.png", width=300)
     with col_title:
         st.markdown("# Language Learning Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
