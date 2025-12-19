@@ -138,17 +138,18 @@ def render_complete_page():
 
     st.divider()
 
-    # Donation Section
-    st.markdown("### 💝 Enjoying the App?")
-    st.markdown("**Support our mission to keep language learning free and accessible!**")
 
-    donation_url = "https://razorpay.me/@agneljosephn"
+    # Payment Section
+    st.markdown("### 💸 Like the App?")
+    st.markdown("**Pay Fees of Any Amount to Help Keep This App Running!**")
 
-    col_donate1, col_donate2, col_donate3 = st.columns([1, 2, 1])
-    with col_donate2:
-        st.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">💳 Make a Donation</button></a>', unsafe_allow_html=True)
+    payment_url = "https://razorpay.me/@agneljosephn"
 
-    st.markdown("*Your support helps us add more languages and features!* 🎉")
+    col_pay1, col_pay2, col_pay3 = st.columns([1, 2, 1])
+    with col_pay2:
+        st.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">Pay Fees</button></a>', unsafe_allow_html=True)
+
+    st.markdown("*Any amount is welcome – thank you for helping maintain this free tool!* 🎉")
 
     st.divider()
 

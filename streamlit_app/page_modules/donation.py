@@ -1,19 +1,21 @@
-# pages/donation.py - Donation page for the language learning app
+
+# pages/donation.py - Voluntary payment page for the language learning app
 
 import streamlit as st
-from payment import render_donation_section
+from payment import render_payment_section
 
-def render_donation_page():
-    """Render the donation page."""
-    st.title("💝 Support Our Mission")
-    st.markdown("*Help us keep language learning free and accessible*")
+
+def render_payment_page():
+    """Render the voluntary payment page."""
+    st.title("💸 Pay Fees of Any Amount")
+    st.markdown("*Help keep this language learning app running for everyone*")
 
     st.markdown("---")
 
     st.markdown("""
-    ## 🌟 Why Your Support Matters
+    ## 🌟 Why Your Payment Matters
 
-    Your generous donations directly support:
+    Your fees directly help with:
 
     ### 🎓 **Free Education for Everyone**
     - **Zero-cost access** to AI-powered language learning tools
@@ -21,14 +23,13 @@ def render_donation_page():
     - **Inclusive education** for students worldwide
 
     ### 🚀 **Innovation & Growth**
-    - **New language support** (we're planning 50+ languages!)
+    - **New language support**
     - **Advanced AI features** for better learning outcomes
     - **Mobile apps** and offline capabilities
 
     ### 🌍 **Global Impact**
     - **Educational initiatives** in underserved communities
     - **Teacher training programs** and resources
-    - **Research partnerships** with universities
 
     ### 💻 **Technical Excellence**
     - **Server costs** for AI processing and cloud storage
@@ -47,28 +48,25 @@ def render_donation_page():
 
     st.markdown("---")
 
-    # Donation section
-    render_donation_section()
+    # Payment section
+    render_payment_section()
 
     st.markdown("---")
 
     st.markdown("""
-    ## 🙏 Our Commitment to Donors
+    ## 🙏 Our Commitment to You
 
     ### **100% Transparency**
-    - All donations go directly to development and operations
-    - Regular updates on how funds are used
-    - Public financial reports available
+    - All fees go directly to development and operations
 
     ### **No Strings Attached**
-    - Donations are voluntary and never required
+    - Payments are voluntary and never required
     - No premium features or priority access
-    - Your support doesn't change the free experience
+    - Your payment doesn't change the free experience
 
-    ### **Tax Benefits**
-    - Donations may be tax-deductible in your country
-    - We provide donation receipts upon request
-    - Contact us for tax-related questions
+    ### **Receipts**
+    - Receipts available upon request
+    - Contact us for payment-related questions
     """)
 
     # Navigation back to main app

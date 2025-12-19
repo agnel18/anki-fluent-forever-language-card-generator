@@ -1,32 +1,17 @@
-# payment.py - Simple donation integration using Razorpay.me links
+
+# payment.py - Simple voluntary payment integration using Razorpay.me links
 
 import streamlit as st
 
-def render_donation_section():
-    """Render the donation/payment section in Streamlit."""
+
+def render_payment_section():
+    """Render the voluntary payment section in Streamlit (Razorpay compliant)."""
     st.markdown("---")
-    st.markdown("## 💝 Support Our Mission")
-
-    st.markdown("""
-    Your generous donations help us:
-    - Keep the language learning tools **free and accessible**
-    - Add **new languages and features**
-    - Maintain and improve our AI-powered learning system
-    - Support **educational initiatives** worldwide
-    """)
-
-    # Simple donation button
-    st.markdown("### Make a Donation")
-    st.markdown("Click below to support us with any amount you choose:")
-
-    # Razorpay.me link
-    donation_url = "https://razorpay.me/@agneljosephn"
-
+    st.markdown("## Pay Fees of Any Amount")
+    st.markdown("Your fees help keep this language learning app running. Any amount is welcome!")
+    payment_url = "https://razorpay.me/@agneljosephn"
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">💳 Donate Now</button></a>', unsafe_allow_html=True)
-
-    # Impact message
-    st.success("🎉 Every contribution, no matter the size, helps us continue our mission!")
-
+        st.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;">Pay Fees</button></a>', unsafe_allow_html=True)
+    st.info("Any amount is welcome – choose what works for you. Thank you for helping maintain this free tool! 🙏")
     return

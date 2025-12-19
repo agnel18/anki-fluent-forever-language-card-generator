@@ -420,8 +420,8 @@ def main():
         if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
             # Center the sidebar logo horizontally using HTML
-            st.sidebar.image("Language Card Generator Logo-.png", width=60)
-            st.sidebar.markdown("---")
+            st.sidebar.image("Language Card Generator Logo-.png", width="stretch")
+            st.sidebar.markdown("---") 
             
             # Create sidebar content with better mobile alignment
             st.sidebar.markdown("## ⚙️ Quick Access")
@@ -495,13 +495,14 @@ def main():
                 st.sidebar.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
                 st.rerun()
 
-            # Donation/Support Section
-            st.sidebar.markdown("---")
-            st.sidebar.markdown("### 💝 Support Us")
-            st.sidebar.markdown("Help keep language learning free!")
 
-            donation_url = "https://razorpay.me/@agneljosephn"
-            st.sidebar.markdown(f'<a href="{donation_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; margin-bottom: 8px;">💳 Donate Now</button></a>', unsafe_allow_html=True)
+            # Voluntary Payment Section
+            st.sidebar.markdown("---")
+            st.sidebar.markdown("### 💸 Pay Fees of Any Amount")
+            st.sidebar.markdown("Help keep this language learning app running!")
+
+            payment_url = "https://razorpay.me/@agneljosephn"
+            st.sidebar.markdown(f'<a href="{payment_url}" target="_blank" style="text-decoration: none;"><button style="background-color: #FF6B35; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; margin-bottom: 8px;">Pay Fees</button></a>', unsafe_allow_html=True)
 
             # Legal & Policy Links
             st.sidebar.markdown("---")
