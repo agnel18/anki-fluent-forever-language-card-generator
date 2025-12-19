@@ -150,53 +150,6 @@ def main():
     # Determine which section to show based on session state
     current_page = st.session_state.get("page")
 
-    # Theme-aware CSS with CSS variables
-    is_dark = st.session_state.get("theme", "dark") == "dark"
-    st.markdown(f"""
-    <style>
-        :root {{
-            --bg-color: {'#0e1117' if is_dark else '#ffffff'};
-            --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
-            --secondary-bg: {'#161b22' if is_dark else '#f6f8fa'};
-            --text-color: {'#e6edf3' if is_dark else '#0c0c0c'};
-            --subtle-text: {'#8b949e' if is_dark else '#24292f'};
-            --primary-color: {'#58a6ff' if is_dark else '#0969da'};
-            --secondary-color: {'#79c0ff' if is_dark else '#218bff'};
-            --tertiary-color: {'#a5d6ff' if is_dark else '#79c0ff'};
-            --accent-color: {'#ff6b6b' if is_dark else '#d73a49'};
-            --accent-secondary: {'#4ecdc4' if is_dark else '#218bff'};
-            --button-primary-bg: {'#238636' if is_dark else '#1a7f37'};
-            --button-primary-border: {'#3fb950' if is_dark else '#1f883d'};
-            --button-primary-hover-bg: {'#2ea043' if is_dark else '#218838'};
-            --button-secondary-bg: {'#30363d' if is_dark else '#f6f8fa'};
-            --button-secondary-border: {'#8b949e' if is_dark else '#d0d7de'};
-            --button-secondary-hover-bg: {'#484f58' if is_dark else '#f3f4f6'};
-            --button-text: {'white' if is_dark else 'black'};
-            --button-secondary-text: {'#e6edf3' if is_dark else '#24292f'};
-            --hover-bg: {'#30363d' if is_dark else '#f3f4f6'};
-            --info-bg: {'#0550ae' if is_dark else '#ddf4ff'};
-            --info-border: {'#79c0ff' if is_dark else '#218bff'};
-            --success-bg: {'#1f6feb' if is_dark else '#ddf4ff'};
-            --success-border: {'#58a6ff' if is_dark else '#0969da'};
-            --warning-bg: {'#8b4513' if is_dark else '#fff3cd'};
-            --warning-border: {'#d9a040' if is_dark else '#bf8700'};
-            --error-bg: {'#da3633' if is_dark else '#ffebe9'};
-            --error-border: {'#f85149' if is_dark else '#cf222e'};
-            --card-bg: {'#161b22' if is_dark else '#f6f8fa'};
-            --card-border: {'#30363d' if is_dark else '#d0d7de'};
-            --gradient-primary: {'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'};
-            --box-shadow: {'0 8px 25px rgba(0,0,0,0.2)' if is_dark else '0 8px 25px rgba(0,0,0,0.1)'};
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            --base-font-size: 16px;
-            --link-color: var(--primary-color);
-            --usage-green: #238636;
-            --usage-yellow: #eab308;
-            --usage-red: #ef4444;
-        }}
-        /* ...existing CSS rules... */
-    </style>
-    """, unsafe_allow_html=True)
-
     # If no page is set, determine default based on API key availability
     if current_page is None:
         # Always start with main page - it will guide user to API setup if needed
@@ -277,13 +230,65 @@ def main():
                 help="Switch between light and dark themes"
             )
 
+            theme_changed = False
             if selected_theme.lower() != st.session_state.get("theme", "dark"):
                 st.session_state.theme = selected_theme.lower()
-                st.sidebar.success(f"Theme changed to {selected_theme}! Refresh the page to apply changes.")
-                st.rerun()
+                theme_changed = True
+                st.sidebar.success(f"Theme changed to {selected_theme}!")
 
+    # Theme-aware CSS with CSS variables (applied after theme selection)
+    is_dark = st.session_state.get("theme", "dark") == "dark"
+    st.markdown(f"""
+    <style>
+        :root {{
+            --bg-color: {'#0e1117' if is_dark else '#ffffff'};
+            --bg-color-rgb: {'14, 17, 23' if is_dark else '255, 255, 255'};
+            --secondary-bg: {'#161b22' if is_dark else '#f6f8fa'};
+            --text-color: {'#e6edf3' if is_dark else '#0c0c0c'};
+            --subtle-text: {'#8b949e' if is_dark else '#24292f'};
+            --primary-color: {'#58a6ff' if is_dark else '#0969da'};
+            --secondary-color: {'#79c0ff' if is_dark else '#218bff'};
+            --tertiary-color: {'#a5d6ff' if is_dark else '#79c0ff'};
+            --accent-color: {'#ff6b6b' if is_dark else '#d73a49'};
+            --accent-secondary: {'#4ecdc4' if is_dark else '#218bff'};
+            --button-primary-bg: {'#238636' if is_dark else '#1a7f37'};
+            --button-primary-border: {'#3fb950' if is_dark else '#1f883d'};
+            --button-primary-hover-bg: {'#2ea043' if is_dark else '#218838'};
+            --button-secondary-bg: {'#30363d' if is_dark else '#f6f8fa'};
+            --button-secondary-border: {'#8b949e' if is_dark else '#d0d7de'};
+            --button-secondary-hover-bg: {'#484f58' if is_dark else '#f3f4f6'};
+            --button-text: {'white' if is_dark else 'black'};
+            --button-secondary-text: {'#e6edf3' if is_dark else '#24292f'};
+            --hover-bg: {'#30363d' if is_dark else '#f3f4f6'};
+            --info-bg: {'#0550ae' if is_dark else '#ddf4ff'};
+            --info-border: {'#79c0ff' if is_dark else '#218bff'};
+            --success-bg: {'#1f6feb' if is_dark else '#ddf4ff'};
+            --success-border: {'#58a6ff' if is_dark else '#0969da'};
+            --warning-bg: {'#8b4513' if is_dark else '#fff3cd'};
+            --warning-border: {'#d9a040' if is_dark else '#bf8700'};
+            --error-bg: {'#da3633' if is_dark else '#ffebe9'};
+            --error-border: {'#f85149' if is_dark else '#cf222e'};
+            --card-bg: {'#161b22' if is_dark else '#f6f8fa'};
+            --card-border: {'#30363d' if is_dark else '#d0d7de'};
+            --gradient-primary: {'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'};
+            --box-shadow: {'0 8px 25px rgba(0,0,0,0.2)' if is_dark else '0 8px 25px rgba(0,0,0,0.1)'};
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --base-font-size: 16px;
+            --link-color: var(--primary-color);
+            --usage-green: #238636;
+            --usage-yellow: #eab308;
+            --usage-red: #ef4444;
+        }}
+        /* ...existing CSS rules... */
+    </style>
+    """, unsafe_allow_html=True)
 
-            # Voluntary Payment Section
+    # Apply theme change if needed
+    if 'theme_changed' in locals() and theme_changed:
+        st.rerun()
+
+    # Continue with sidebar content (outside the theme selection block)
+    if current_page != "login":
             st.sidebar.markdown("---")
             st.sidebar.markdown("### 💸 Pay Fees of Any Amount")
             st.sidebar.markdown("Help keep this language learning app running!")
