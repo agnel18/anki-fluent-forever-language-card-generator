@@ -119,6 +119,10 @@ def main():
 
     # Import option_menu for the hamburger menu
     from streamlit_option_menu import option_menu
+    
+    # Google Site Verification Meta Tag
+    st.markdown('<meta name="google-site-verification" content="4Wgb0p8tbH10vZuWbsOB6UAK0Fd9PiSQkseKvJx7xKc" />', unsafe_allow_html=True)
+    
     # Import all page rendering functions and format_number_compact utility
     from page_modules.main import render_main_page
     from page_modules.api_setup import render_api_setup_page
