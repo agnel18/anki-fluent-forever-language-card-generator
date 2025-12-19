@@ -7,17 +7,17 @@ import streamlit as st
 def render_main_page():
     """Render the main overview page with introduction and start button."""
 
-    # Display app logo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("Language Card Generator Logo-.png", width=100)
-        st.markdown("<br>", unsafe_allow_html=True)
 
-    # Hero section with better spacing
-    with st.container():
+    # Place logo next to the title using columns
+    col_logo, col_title = st.columns([1, 6])
+    with col_logo:
+        st.image("Language Card Generator Logo-.png", width=70)
+    with col_title:
         st.markdown("# Language Learning Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
-        st.markdown("---")
+    st.markdown("---")
+
+
 
     # Features overview - moved before How It Works
     with st.container():

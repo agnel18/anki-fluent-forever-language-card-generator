@@ -418,12 +418,12 @@ def main():
 
         # Add sidebar navigation (except on login page)
         if current_page != "login":
-            # Add logo to sidebar
-            try:
-                st.sidebar.image("Language Card Generator Logo-.png", width=60)
-                st.sidebar.markdown("---")
-            except:
-                pass  # Logo not found, continue without it
+            # Center the logo vertically in the sidebar using HTML/CSS
+            st.sidebar.markdown(
+                '''<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 180px;">
+                    <img src="app/static/Language Card Generator Logo-.png" width="60" style="margin-bottom: 10px;" />
+                </div>''', unsafe_allow_html=True)
+            st.sidebar.markdown("---")
             
             # Create sidebar content with better mobile alignment
             st.sidebar.markdown("## ⚙️ Quick Access")
