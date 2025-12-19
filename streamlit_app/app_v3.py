@@ -120,7 +120,7 @@ def main():
     # Configure the page - must be called first and only once
     st.set_page_config(
         page_title="Language Learning App",
-        page_icon="🌍",
+        page_icon="Language Card Generator Logo.png",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -418,6 +418,13 @@ def main():
 
         # Add sidebar navigation (except on login page)
         if current_page != "login":
+            # Add logo to sidebar
+            try:
+                st.sidebar.image("Language Card Generator Logo.png", width=120, use_column_width=False)
+                st.sidebar.markdown("---")
+            except:
+                pass  # Logo not found, continue without it
+            
             # Create sidebar content with better mobile alignment
             st.sidebar.markdown("## ⚙️ Quick Access")
 
