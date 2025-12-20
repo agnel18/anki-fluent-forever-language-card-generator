@@ -1,6 +1,7 @@
 # pages/main.py - Main overview page for the language learning app
 
 import streamlit as st
+import os
 
 
 
@@ -11,7 +12,11 @@ def render_main_page():
     # Place logo next to the title using columns with less spacing
     col_logo, col_title = st.columns([0.3, 1])
     with col_logo:
-        st.image("streamlit_app/logo.svg", width=200)
+        logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo.svg")
+        if os.path.exists(logo_path):
+            st.image(logo_path, width=200)
+        else:
+            st.markdown("🧠")
     with col_title:
         st.markdown("# Language Learning Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")

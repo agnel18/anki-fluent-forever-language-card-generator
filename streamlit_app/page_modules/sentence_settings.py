@@ -233,11 +233,13 @@ def render_sentence_settings_page():
             if lang in EDGE_TTS_VOICES:
                 voice_options = [f"{v[0]} ({v[1]}, {v[2]})" for v in EDGE_TTS_VOICES[lang]]
                 selected_voice_idx = voice_options.index(st.session_state.selected_voice_display) if st.session_state.selected_voice_display in voice_options else 0
+                st.markdown("**Voice**")
                 selected_voice_display = st.selectbox(
-                    "Voice",
+                    label="",
                     options=voice_options,
                     index=selected_voice_idx,
-                    help="Choose the voice for audio generation."
+                    help="Choose the voice for audio generation.",
+                    label_visibility="collapsed"
                 )
                 st.session_state.selected_voice_display = selected_voice_display
                 st.session_state.selected_voice = EDGE_TTS_VOICES[lang][voice_options.index(selected_voice_display)][0]
@@ -245,13 +247,15 @@ def render_sentence_settings_page():
                 st.session_state.selected_voice_display = "en-US-AvaNeural (Female, Ava)"
                 st.session_state.selected_voice = "en-US-AvaNeural"
         with col_speed:
+            st.markdown("**Audio Speed**")
             audio_speed = st.slider(
-                "Audio Speed",
+                label="",
                 min_value=0.5,
                 max_value=1.5,
                 value=st.session_state.audio_speed,
                 step=0.1,
-                help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast"
+                help="0.5 = very slow, 0.8 = learner-friendly (recommended), 1.0 = normal, 1.5 = fast",
+                label_visibility="collapsed"
             )
             st.session_state.audio_speed = audio_speed
 

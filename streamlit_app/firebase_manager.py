@@ -12,6 +12,17 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
+# Import Firebase service modules (with fallback)
+try:
+    from firebase_auth import get_session_id, is_signed_in, sign_in_with_google, sign_out
+    from firebase_sync import sync_progress_to_firebase, sync_stats_to_firebase, load_progress_from_firebase
+    from firebase_stats import update_usage_stats_to_firebase, load_usage_stats_from_firebase, merge_guest_stats_to_firebase, log_generation_to_firebase, get_generation_history
+    from firebase_session import create_user_session, update_last_active
+    logger.info("Using new Firebase service modules")
+except ImportError as e:
+    logger.warning(f"Could not import Firebase service modules: {e}, using fallback functions")
+    # Fallback functions will be defined later in the file
+
 # ============================================================================
 # USAGE STATS PERSISTENCE
 # ============================================================================

@@ -56,7 +56,10 @@ def get_available_frequency_lists() -> Dict[str, int]:
     Returns dict of {language: word_count}
     """
     from db_manager import get_languages
-    return get_languages()
+    from stats_manager import get_word_stats
+
+    languages = get_languages()
+    return {lang: get_word_stats(lang).get("total", 0) for lang in languages}
 
 
 def load_frequency_list(language: str, limit: int = None) -> List[str]:
@@ -92,7 +95,7 @@ def load_frequency_list(language: str, limit: int = None) -> List[str]:
     
     try:
         # Get all words from database
-        words, total = get_words_paginated(db_language, page=1, page_size=1000)
+        words, total = get_words_paginated(db_language, page=1, per_page=1000)
         
         if limit:
             words = words[:limit]
@@ -243,14 +246,15 @@ def get_words_with_ranks(language: str, page: int = 1, page_size: int = 25) -> T
     """
     from db_manager import get_words_paginated, get_completed_words
     
-    words, total_count = get_words_paginated(language, page=page, page_size=page_size)
+    words, total_count = get_words_paginated(language, page=page, per_page=page_size)
     completed = get_completed_words(language)
     
     # Build dataframe with rank and completion status
     start_rank = (page - 1) * page_size + 1
     data = []
     
-    for idx, word in enumerate(words, start=start_rank):
+    for idx, word_dict in enumerate(words, start=start_rank):
+        word = word_dict['word']
         data.append({
             'Rank': idx,
             'Word': word,

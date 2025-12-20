@@ -165,7 +165,9 @@ def main():
     if current_page != "login":
             # Center the logo vertically in the sidebar using HTML/CSS
             # Center the sidebar logo horizontally using HTML
-            st.sidebar.image("streamlit_app/logo.svg", width="stretch")
+            logo_path = os.path.join(os.path.dirname(__file__), "logo.svg")
+            if os.path.exists(logo_path):
+                st.sidebar.image(logo_path, width="stretch")
             st.sidebar.markdown("---") 
             
             # Create sidebar content with better mobile alignment
