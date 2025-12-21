@@ -54,6 +54,26 @@ streamlit run streamlit_app/app_v3.py
 
 ---
 
+## 🎴 Card Types
+
+Each word generates 3 cards for comprehensive learning:
+
+1. **Listening Card** 🎧  
+   *Front*: Audio only  
+   *Back*: Sentence, image, translation, IPA, word info
+
+2. **Production Card** 💬  
+   *Front*: English translation  
+   *Back*: Sentence, audio, image, IPA, word info
+
+3. **Reading Card** 📖  
+   *Front*: Sentence text  
+   *Back*: Audio, image, translation, IPA, word info
+
+**Tip**: Use Anki's built-in "Record Own Voice" (R key) on the Pronunciation card to practice speaking.
+
+---
+
 ## 📋 How It Works
 1. **Select a language and words** from the frequency list (max 10 per generation)
 2. **Configure settings**: difficulty, sentence length, audio speed, voice
