@@ -235,7 +235,7 @@ def render_sentence_settings_page():
                 selected_voice_idx = voice_options.index(st.session_state.selected_voice_display) if st.session_state.selected_voice_display in voice_options else 0
                 st.markdown("**Voice**")
                 selected_voice_display = st.selectbox(
-                    label="",
+                    label="Voice Selection",
                     options=voice_options,
                     index=selected_voice_idx,
                     help="Choose the voice for audio generation.",
@@ -249,7 +249,7 @@ def render_sentence_settings_page():
         with col_speed:
             st.markdown("**Audio Speed**")
             audio_speed = st.slider(
-                label="",
+                label="Audio Speed",
                 min_value=0.5,
                 max_value=1.5,
                 value=st.session_state.audio_speed,
