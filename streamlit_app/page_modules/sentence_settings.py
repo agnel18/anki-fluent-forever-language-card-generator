@@ -52,9 +52,9 @@ def render_sentence_settings_page():
         st.markdown("*Choose the complexity level for your sentences*")
 
         difficulty_options = {
-            "beginner": "beginner - Simple vocabulary and basic sentence structures for absolute beginners",
-            "intermediate": "intermediate - Moderate vocabulary with varied sentence patterns for learners with basic knowledge",
-            "advanced": "advanced - Complex vocabulary and sophisticated sentence structures for proficient learners"
+            "beginner": "Beginner - Simple vocabulary and basic sentence structures for absolute beginners",
+            "intermediate": "Intermediate - Moderate vocabulary with varied sentence patterns for learners with basic knowledge",
+            "advanced": "Advanced - Complex vocabulary and sophisticated sentence structures for proficient learners"
         }
 
         selected_difficulty = st.selectbox(
