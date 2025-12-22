@@ -285,43 +285,63 @@ def render_settings_page():
 
     st.markdown("Your Favorites:")
 
-    # Create compact horizontal layout with chips
-    if st.session_state.learned_languages:
-        # Group languages into rows of 3 for better layout
-        langs_per_row = 3
-        for row_start in range(0, len(st.session_state.learned_languages), langs_per_row):
-            row_langs = st.session_state.learned_languages[row_start:row_start + langs_per_row]
-            cols = st.columns([2, 1, 1, 1] * len(row_langs))  # name, up, down, remove for each lang
+    # Access all_languages from session state (set in state_manager.py)
+    all_languages = st.session_state.get("all_languages", [])
+    all_lang_names = [lang["name"] for lang in all_languages]
 
-            for i, lang in enumerate(row_langs):
-                idx = row_start + i
-                base_col = i * 4
+    # Create a clean numbered list with dropdowns
+    max_favorites = 5
+    current_favorites = [lang["name"] for lang in st.session_state.learned_languages[:max_favorites]]
 
-                # Language name
-                with cols[base_col]:
-                    st.markdown(f"**{lang['name']}**")
+    # Pad with empty strings to ensure we have exactly max_favorites slots
+    while len(current_favorites) < max_favorites:
+        current_favorites.append("")
 
-                # Move up button
-                with cols[base_col + 1]:
-                    if idx > 0:
-                        if st.button("↑", key=f"moveup_{lang['name']}_{idx}", help=f"Move {lang['name']} up"):
-                            st.session_state.learned_languages[idx-1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx-1]
-                            st.rerun()
+    # Display numbered slots
+    for i in range(max_favorites):
+        col1, col2, col3 = st.columns([1, 4, 1])
 
-                # Move down button
-                with cols[base_col + 2]:
-                    if idx < len(st.session_state.learned_languages) - 1:
-                        if st.button("↓", key=f"movedown_{lang['name']}_{idx}", help=f"Move {lang['name']} down"):
-                            st.session_state.learned_languages[idx+1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx+1]
-                            st.rerun()
+        with col1:
+            st.markdown(f"**{i+1}.**")
 
-                # Remove button
-                with cols[base_col + 3]:
-                    if st.button("❌", key=f"remove_{lang['name']}_{idx}", help=f"Remove {lang['name']}"):
-                        st.session_state.learned_languages.pop(idx)
-                        st.rerun()
+        with col2:
+            # Get available languages (current favorites + unused ones)
+            used_langs = [fav for fav in current_favorites if fav and fav != current_favorites[i]]
+            available_options = [""] + [lang for lang in all_lang_names if lang not in used_langs]
 
-    st.caption("↑↓ Reorder • ❌ Remove • Max 5 favorites")
+            # If current selection is still valid, include it
+            if current_favorites[i] and current_favorites[i] not in available_options:
+                available_options.insert(1, current_favorites[i])
+
+            selected_lang = st.selectbox(
+                f"Position {i+1}",
+                options=available_options,
+                index=available_options.index(current_favorites[i]) if current_favorites[i] in available_options else 0,
+                key=f"favorite_lang_{i}",
+                label_visibility="collapsed"
+            )
+
+            # Update the favorites list
+            if selected_lang != current_favorites[i]:
+                current_favorites[i] = selected_lang
+                # Update session state
+                st.session_state.learned_languages = [
+                    {"name": lang, "usage": next((l["usage"] for l in st.session_state.learned_languages if l["name"] == lang), 0)}
+                    for lang in current_favorites if lang
+                ]
+
+        with col3:
+            if current_favorites[i]:  # Only show X if there's a language selected
+                if st.button("❌", key=f"remove_fav_{i}", help=f"Remove {current_favorites[i]}"):
+                    current_favorites[i] = ""
+                    # Update session state
+                    st.session_state.learned_languages = [
+                        {"name": lang, "usage": next((l["usage"] for l in st.session_state.learned_languages if l["name"] == lang), 0)}
+                        for lang in current_favorites if lang
+                    ]
+                    st.rerun()
+
+    st.caption("Select languages for quick access in dropdowns. Max 5 favorites.")
     st.markdown("---")
 
     # --- Default Settings Per Language (original design) ---
