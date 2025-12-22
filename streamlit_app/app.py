@@ -3,7 +3,13 @@
 Main entry point for Streamlit Cloud deployment in streamlit_app directory.
 """
 
-from app_v3 import main
+try:
+    from app_v3 import main
+    print("Successfully imported main from app_v3")
+except ImportError as e:
+    print(f"ImportError: {e}")
+    import sys
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

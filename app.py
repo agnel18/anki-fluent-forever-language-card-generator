@@ -15,7 +15,13 @@ os.chdir(streamlit_app_dir)
 sys.path.insert(0, streamlit_app_dir)
 
 # Import and run the main app
-from app_v3 import main
+try:
+    from app_v3 import main
+    print("Successfully imported main from app_v3")
+except ImportError as e:
+    print(f"ImportError: {e}")
+    import sys
+    sys.exit(1)
 
 # Run the main function
 if __name__ == "__main__":
