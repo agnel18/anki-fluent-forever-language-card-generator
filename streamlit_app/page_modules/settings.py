@@ -301,17 +301,11 @@ def render_settings_page():
 
         st.session_state.learned_languages = updated_favorites
 
-    # Display current favorites as clean numbered list
+    # Display current favorites as clean numbered list (read-only)
     if st.session_state.learned_languages:
         st.markdown("**Current Favorites:**")
         for idx, lang in enumerate(st.session_state.learned_languages, 1):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.markdown(f"**{idx}. {lang['name']}**")
-            with col2:
-                if st.button("❌", key=f"remove_fav_{lang['name']}_{idx}", help=f"Remove {lang['name']} from favorites"):
-                    st.session_state.learned_languages.pop(idx - 1)
-                    st.rerun()
+            st.markdown(f"**{idx}. {lang['name']}**")
 
     st.caption(f"{len(st.session_state.learned_languages)}/5 favorites selected")
     st.markdown("---")
