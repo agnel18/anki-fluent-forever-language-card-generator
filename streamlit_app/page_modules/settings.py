@@ -284,53 +284,44 @@ def render_settings_page():
             st.rerun()
 
     st.markdown("Your Favorites:")
-    st.markdown("""
-    <style>
-    .lang-card-grid {display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;}
-    .lang-card {background: var(--card-bg); color: var(--text-color); border: 1px solid var(--card-border); border-radius: 8px; box-shadow: var(--box-shadow); padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; position: relative; transition: box-shadow 0.2s;}
-    .lang-card .lang-title {font-size: 1.1em; font-weight: 600; margin-bottom: 4px;}
-    .lang-card .lang-usage {font-size: 0.9em; color: var(--text-color); opacity: 0.7; margin-bottom: 8px;}
-    .lang-card .lang-actions {display: flex; justify-content: space-between; align-items: center;}
-    .lang-card .stButton>button {background: none !important; color: var(--error-bg) !important; font-size: 1.2em !important; border: none !important; box-shadow: none !important; padding: 4px 8px !important;}
-    .lang-card .stButton>button:hover {color: var(--button-text) !important; background: var(--error-bg) !important; border-radius: 50% !important;}
-    .lang-card .arrow-btn .stButton>button {color: var(--primary-color) !important; font-size: 1.1em !important;}
-    .lang-card .arrow-btn .stButton>button:hover {color: var(--button-text) !important; background: var(--primary-color) !important; border-radius: 50% !important;}
-    @media (max-width: 768px) {
-        .lang-card {padding: 10px 12px;}
-        .lang-card .lang-title {font-size: 1em;}
-        .lang-card .lang-actions {flex-direction: column; gap: 8px;}
-    }
-    </style>
-    <div class='lang-card-grid'>
-    """, unsafe_allow_html=True)
 
-    for idx, lang in enumerate(st.session_state.learned_languages):
-        # Mobile-responsive layout: stack actions vertically on small screens
-        with st.container():
-            st.markdown(f"<div class='lang-card'><div class='lang-title'>{lang['name']}</div><div class='lang-usage'>Usage: {lang['usage']}</div></div>", unsafe_allow_html=True)
-            action_cols = st.columns([1, 1, 1]) if len(st.session_state.learned_languages) > 1 else st.columns([1])
-            if len(st.session_state.learned_languages) > 1:
-                with action_cols[0]:
+    # Create compact horizontal layout with chips
+    if st.session_state.learned_languages:
+        # Group languages into rows of 3 for better layout
+        langs_per_row = 3
+        for row_start in range(0, len(st.session_state.learned_languages), langs_per_row):
+            row_langs = st.session_state.learned_languages[row_start:row_start + langs_per_row]
+            cols = st.columns([2, 1, 1, 1] * len(row_langs))  # name, up, down, remove for each lang
+
+            for i, lang in enumerate(row_langs):
+                idx = row_start + i
+                base_col = i * 4
+
+                # Language name
+                with cols[base_col]:
+                    st.markdown(f"**{lang['name']}**")
+
+                # Move up button
+                with cols[base_col + 1]:
                     if idx > 0:
                         if st.button("↑", key=f"moveup_{lang['name']}_{idx}", help=f"Move {lang['name']} up"):
                             st.session_state.learned_languages[idx-1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx-1]
                             st.rerun()
-                    else:
-                        st.empty()
-                with action_cols[1]:
+
+                # Move down button
+                with cols[base_col + 2]:
                     if idx < len(st.session_state.learned_languages) - 1:
                         if st.button("↓", key=f"movedown_{lang['name']}_{idx}", help=f"Move {lang['name']} down"):
                             st.session_state.learned_languages[idx+1], st.session_state.learned_languages[idx] = st.session_state.learned_languages[idx], st.session_state.learned_languages[idx+1]
                             st.rerun()
-                    else:
-                        st.empty()
-            with action_cols[-1]:
-                if st.button("❌", key=f"remove_{lang['name']}_{idx}", help=f"Remove {lang['name']}"):
-                    st.session_state.learned_languages.pop(idx)
-                    st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.caption("Reorder with arrows. Remove with ❌. Max 5.")
+                # Remove button
+                with cols[base_col + 3]:
+                    if st.button("❌", key=f"remove_{lang['name']}_{idx}", help=f"Remove {lang['name']}"):
+                        st.session_state.learned_languages.pop(idx)
+                        st.rerun()
+
+    st.caption("↑↓ Reorder • ❌ Remove • Max 5 favorites")
     st.markdown("---")
 
     # --- Default Settings Per Language (original design) ---
