@@ -6,6 +6,24 @@ from pathlib import Path
 from frequency_utils import get_available_frequency_lists
 
 
+def load_per_language_settings(selected_lang):
+    """Load per-language settings for the selected language."""
+    if "per_language_settings" in st.session_state:
+        lang_settings = st.session_state.per_language_settings.get(selected_lang, {})
+        if lang_settings:
+            # Apply the per-language settings to session state
+            if "difficulty" in lang_settings:
+                st.session_state.difficulty = lang_settings["difficulty"]
+            if "sentence_length_range" in lang_settings:
+                st.session_state.sentence_length_range = lang_settings["sentence_length_range"]
+            if "sentences_per_word" in lang_settings:
+                st.session_state.sentences_per_word = lang_settings["sentences_per_word"]
+            if "audio_speed" in lang_settings:
+                st.session_state.audio_speed = lang_settings["audio_speed"]
+            return True
+    return False
+
+
 def render_language_select_page():
     """Render the language selection page."""
     with st.container():
@@ -118,6 +136,12 @@ def render_language_select_page():
             selected_opt = options[0]
 
     selected_lang = selected_opt["name"]
+    
+    # Load per-language settings for the selected language
+    settings_loaded = load_per_language_settings(selected_lang)
+    if settings_loaded:
+        st.info(f"✅ Loaded custom settings for {selected_lang}")
+    
     available_lists = get_available_frequency_lists()
     max_words = available_lists.get(selected_lang, 5000)
 
@@ -143,6 +167,8 @@ def render_language_select_page():
             st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)
         with col_next:
             if st.button("Next: Select Words →", use_container_width=True, type="primary"):
+                # Load per-language settings before proceeding
+                load_per_language_settings(selected_lang)
                 st.session_state.selected_language = selected_lang
                 st.session_state.page = "word_select"
                 st.rerun()
