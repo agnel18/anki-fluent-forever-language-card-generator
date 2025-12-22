@@ -17,7 +17,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- Profile & Cloud Sync Section ---
-    st.markdown("### 👤 Account & Cloud Sync")
+    st.markdown("## 👤 Account & Cloud Sync")
 
     try:
         from firebase_manager import firebase_initialized, is_signed_in, get_current_user
@@ -118,7 +118,7 @@ def render_settings_page():
         user_signed_in = is_signed_in()
         if user_signed_in or firebase_available:
             st.markdown("---")
-            st.markdown("### 🔒 Privacy Controls")
+            st.markdown("## 🔒 Privacy Controls")
             st.info("Choose exactly what data gets synced to the cloud.")
         
         # Initialize sync preferences if not set
@@ -146,7 +146,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- API Keys Management Section ---
-    st.markdown("### 🔑 API Keys Management")
+    st.markdown("## 🔑 API Keys Management")
     st.info("Manage your API keys for Groq and Pixabay services.")
     
     # Current API keys status
@@ -211,7 +211,7 @@ def render_settings_page():
                 st.error(f"❌ Failed to load from cloud: {e}")
     
     st.markdown("---")
-    st.markdown("### 🎨 Theme")
+    st.markdown("## 🎨 Theme")
     st.info("Choose your preferred theme for the application interface.")
 
     # Initialize theme if not set
@@ -237,7 +237,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- API Keys Section (Single) ---
-    st.markdown("### 🔑 API Keys")
+    st.markdown("## 🔑 API Keys")
     st.info("Your API keys are securely stored in your account (never in the cloud for guests). Changes are saved automatically.")
     st.text_input(
         "Groq API Key",
@@ -256,7 +256,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- Favorite Languages Section ---
-    st.markdown("### 🌟 Favorite Languages (Pinned for Quick Access)")
+    st.markdown("## 🌟 Favorite Languages (Pinned for Quick Access)")
     st.info("Select your favorite languages below. They'll appear first in all dropdowns for faster selection.")
 
     # Access all_languages from session state (set in state_manager.py)
@@ -311,7 +311,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- Default Settings Per Language (original design) ---
-    st.markdown("### ⚙️ Default Settings Per Language")
+    st.markdown("## ⚙️ Default Settings Per Language")
     st.info("Select a language, adjust its default settings, and save.")
     if "per_language_settings" not in st.session_state:
         st.session_state.per_language_settings = {}
@@ -324,39 +324,220 @@ def render_settings_page():
         "difficulty": "intermediate",
         "sentence_length_range": (6, 16),
         "sentences_per_word": 10,
-        "audio_speed": 0.8
+        "audio_speed": 0.8,
+        "enable_topics": False,
+        "selected_topics": [],
+        "custom_topics": []
     })
 
-    settings["difficulty"] = st.selectbox(
-        "Difficulty",
-        ["beginner", "intermediate", "advanced"],
-        index=["beginner", "intermediate", "advanced"].index(settings["difficulty"]),
-        key="perlang_difficulty"
-    )
-    settings["sentence_length_range"] = st.slider(
-        "Sentence length (words)",
-        min_value=4,
-        max_value=30,
-        value=settings["sentence_length_range"],
-        step=1,
-        key="perlang_sentlen"
-    )
-    settings["sentences_per_word"] = st.slider(
-        "Sentences per word",
-        min_value=3,
-        max_value=15,
-        value=settings["sentences_per_word"],
-        step=1,
-        key="perlang_sentcount"
-    )
-    settings["audio_speed"] = st.slider(
-        "Audio speed",
-        min_value=0.5,
-        max_value=1.5,
-        value=settings["audio_speed"],
-        step=0.1,
-        key="perlang_audiospeed"
-    )
+    # --- Sentence Parameters ---
+    with st.container():
+        st.markdown("### 📏 Sentence Parameters")
+        st.markdown("*Control the length and quantity of generated sentences*")
+
+        col_len, col_sent = st.columns(2)
+        with col_len:
+            settings["sentence_length_range"] = st.slider(
+                "Sentence length (words)",
+                min_value=4,
+                max_value=30,
+                value=settings["sentence_length_range"],
+                step=1,
+                key="perlang_sentlen",
+                help="Minimum and maximum words per sentence for this language"
+            )
+        with col_sent:
+            settings["sentences_per_word"] = st.slider(
+                "Sentences per word",
+                min_value=3,
+                max_value=15,
+                value=settings["sentences_per_word"],
+                step=1,
+                key="perlang_sentcount",
+                help="How many different sentences to generate for each word"
+            )
+
+    st.markdown("---")
+
+    # --- Audio Settings ---
+    with st.container():
+        st.markdown("### 🔊 Audio Settings")
+        st.markdown("*Adjust pronunciation speed for language learning*")
+
+        settings["audio_speed"] = st.slider(
+            "Audio speed",
+            min_value=0.5,
+            max_value=1.5,
+            value=settings["audio_speed"],
+            step=0.1,
+            key="perlang_audiospeed",
+            help="0.5 = very slow (beginners), 0.8 = recommended for learners, 1.0 = normal speed"
+        )
+
+    st.markdown("---")
+
+    # --- Difficulty Level ---
+    with st.container():
+        st.markdown("## 🎯 Difficulty Level")
+        st.markdown("*Choose the complexity level for generated content*")
+
+        difficulty_options = {
+            "beginner": "Beginner - Simple vocabulary and basic sentence structures",
+            "intermediate": "Intermediate - Moderate vocabulary with varied sentence patterns",
+            "advanced": "Advanced - Complex vocabulary and sophisticated sentence structures"
+        }
+
+        settings["difficulty"] = st.selectbox(
+            "Difficulty",
+            ["beginner", "intermediate", "advanced"],
+            index=["beginner", "intermediate", "advanced"].index(settings["difficulty"]),
+            key="perlang_difficulty",
+            format_func=lambda x: difficulty_options[x],
+            help="Choose the complexity level for generated sentences"
+        )
+
+        # Show difficulty explanations
+        difficulty = settings["difficulty"]
+        if difficulty == "beginner":
+            st.info("**Beginner**: Simple vocabulary and grammar, perfect for absolute beginners.")
+        elif difficulty == "intermediate":
+            st.info("**Intermediate**: Mixed vocabulary and grammar, suitable for learners with basic knowledge.")
+        elif difficulty == "advanced":
+            st.info("**Advanced**: Complex structures and vocabulary, ideal for proficient learners.")
+
+    st.markdown("---")
+
+    # --- Topic Settings ---
+    with st.container():
+        st.markdown("## 🎯 Topic Settings")
+        st.markdown("*Choose topics to focus sentence generation for contextual learning*")
+
+        # Enable/disable toggle
+        settings["enable_topics"] = st.toggle(
+            "Enable topic-based generation",
+            value=settings.get("enable_topics", False),
+            key="perlang_enable_topics",
+            help="When enabled, generated sentences will be themed around selected topics"
+        )
+
+        if settings["enable_topics"]:
+            # Initialize selected_topics if not exists
+            if "selected_topics" not in settings:
+                settings["selected_topics"] = []
+
+            # Topic limit
+            TOPIC_LIMIT = 5
+            current_topic_count = len(settings["selected_topics"])
+            limit_reached = current_topic_count >= TOPIC_LIMIT
+
+            if limit_reached:
+                st.warning(f"⚠️ **Topic limit reached:** Maximum of {TOPIC_LIMIT} topics allowed.")
+            else:
+                st.info(f"📊 **Topics selected:** {current_topic_count}/{TOPIC_LIMIT}")
+
+            # Import curated topics
+            from constants import CURATED_TOPICS
+
+            # Curated topics selection in two columns
+            st.markdown("**Select topics:**")
+            col1, col2 = st.columns(2)
+
+            # Split curated topics into two columns
+            mid_point = len(CURATED_TOPICS) // 2
+            left_topics = CURATED_TOPICS[:mid_point]
+            right_topics = CURATED_TOPICS[mid_point:]
+
+            with col1:
+                for topic in left_topics:
+                    is_selected = topic in settings["selected_topics"]
+                    disabled = limit_reached and not is_selected
+
+                    if st.checkbox(
+                        topic,
+                        value=is_selected,
+                        key=f"perlang_topic_{topic}",
+                        disabled=disabled
+                    ):
+                        if topic not in settings["selected_topics"] and not limit_reached:
+                            settings["selected_topics"].append(topic)
+                        elif topic in settings["selected_topics"]:
+                            settings["selected_topics"].remove(topic)
+
+            with col2:
+                for topic in right_topics:
+                    is_selected = topic in settings["selected_topics"]
+                    disabled = limit_reached and not is_selected
+
+                    if st.checkbox(
+                        topic,
+                        value=is_selected,
+                        key=f"perlang_topic_{topic}_right",
+                        disabled=disabled
+                    ):
+                        if topic not in settings["selected_topics"] and not limit_reached:
+                            settings["selected_topics"].append(topic)
+                        elif topic in settings["selected_topics"]:
+                            settings["selected_topics"].remove(topic)
+
+            # Display selected topics
+            if settings["selected_topics"]:
+                st.markdown("**Selected topics:**")
+                selected_display = ", ".join(settings["selected_topics"])
+                st.info(f"🎯 {selected_display}")
+            else:
+                st.info("No topics selected - sentences will use general themes")
+
+            # Custom topics section
+            st.markdown("### ➕ Custom Topics")
+            col_add, col_list = st.columns([1, 2])
+
+            with col_add:
+                new_topic = st.text_input(
+                    "Add custom topic:",
+                    placeholder="e.g., Gardening, Photography",
+                    key=f"perlang_new_topic_{selected_lang}",
+                    max_chars=50,
+                    disabled=limit_reached
+                )
+
+                if st.button("➕ Add Topic", key=f"perlang_add_custom_{selected_lang}", disabled=limit_reached):
+                    if new_topic.strip():
+                        # Validate input
+                        clean_topic = new_topic.strip()
+                        if len(clean_topic) < 2:
+                            st.error("Topic must be at least 2 characters long.")
+                        elif clean_topic in settings["selected_topics"]:
+                            st.warning("This topic is already selected.")
+                        elif clean_topic in CURATED_TOPICS:
+                            st.warning("This topic already exists in the curated list.")
+                        else:
+                            settings["custom_topics"].append(clean_topic)
+                            settings["selected_topics"].append(clean_topic)
+                            st.success(f"Added topic: {clean_topic}")
+                            st.rerun()
+
+            with col_list:
+                if settings["custom_topics"]:
+                    st.markdown("**Your Custom Topics:**")
+                    for i, topic in enumerate(settings["custom_topics"]):
+                        col_topic, col_remove = st.columns([3, 1])
+                        with col_topic:
+                            is_selected = st.checkbox(
+                                topic,
+                                value=topic in settings["selected_topics"],
+                                key=f"perlang_custom_{selected_lang}_{topic}_{i}"
+                            )
+                            if is_selected and topic not in settings["selected_topics"]:
+                                settings["selected_topics"].append(topic)
+                            elif not is_selected and topic in settings["selected_topics"]:
+                                settings["selected_topics"].remove(topic)
+
+                        with col_remove:
+                            if st.button("🗑️", key=f"perlang_remove_custom_{selected_lang}_{i}", help=f"Remove {topic}"):
+                                if topic in settings["selected_topics"]:
+                                    settings["selected_topics"].remove(topic)
+                                settings["custom_topics"].remove(topic)
+                                st.rerun()
 
     if st.button("Save Settings", key="perlang_save_btn", type="primary"):
         st.session_state.per_language_settings[selected_lang] = settings.copy()
@@ -364,7 +545,7 @@ def render_settings_page():
     st.markdown("---")
 
     # --- Cache Management Section ---
-    st.markdown("### 💾 API Response Cache")
+    st.markdown("## 💾 API Response Cache")
     st.info("Caching reduces API costs and speeds up deck generation by reusing previous results. Cache expires automatically.")
 
     try:
