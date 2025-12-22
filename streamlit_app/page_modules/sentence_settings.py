@@ -48,7 +48,7 @@ def render_sentence_settings_page():
         
         # Difficulty setting - made more prominent
         st.markdown("---")
-        st.markdown("### 🎯 **Difficulty Level**")
+        st.markdown("## 🎯 **Difficulty Level**")
         st.markdown("*Choose the complexity level for your sentences*")
 
         difficulty_options = {
