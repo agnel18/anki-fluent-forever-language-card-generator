@@ -257,7 +257,7 @@ def render_settings_page():
 
     # --- Favorite Languages Section ---
     st.markdown("### 🌟 Favorite Languages (Pinned for Quick Access)")
-    st.info("Your favorite languages appear first in all dropdowns for faster selection.")
+    st.info("Select your favorite languages below. They'll appear first in all dropdowns for faster selection.")
 
     # Access all_languages from session state (set in state_manager.py)
     all_languages = st.session_state.get("all_languages", [])
@@ -272,76 +272,48 @@ def render_settings_page():
             {"name": "Italian", "usage": 12, "pinned": False},
         ]
 
-    st.markdown("Add a favorite language:")
-    add_col1, add_col2 = st.columns([4,1])
-    with add_col1:
-        available_langs = [l for l in all_lang_names if l not in [x["name"] for x in st.session_state.learned_languages]]
-        new_lang = st.selectbox("Select language", available_langs, key="add_lang_select", disabled=len(st.session_state.learned_languages) >= 5)
-    with add_col2:
-        if st.button("Add", key="add_lang_btn", type="secondary") and new_lang and len(st.session_state.learned_languages) < 5:
-            st.session_state.learned_languages.append({"name": new_lang, "usage": 0})
-            st.success(f"Added {new_lang}")
-            st.rerun()
-
     st.markdown("Your Favorites:")
 
-    # Access all_languages from session state (set in state_manager.py)
-    all_languages = st.session_state.get("all_languages", [])
-    all_lang_names = [lang["name"] for lang in all_languages]
+    # Get current favorite language names
+    current_favorites = [lang["name"] for lang in st.session_state.learned_languages]
 
-    # Create a clean numbered list with dropdowns
-    max_favorites = 5
-    current_favorites = [lang["name"] for lang in st.session_state.learned_languages[:max_favorites]]
+    # Create multiselect for managing favorites
+    selected_favorites = st.multiselect(
+        "Select your favorite languages (max 5):",
+        options=all_lang_names,
+        default=current_favorites,
+        max_selections=5,
+        key="favorite_languages_multiselect",
+        help="These languages will appear first in all dropdowns for faster selection"
+    )
 
-    # Pad with empty strings to ensure we have exactly max_favorites slots
-    while len(current_favorites) < max_favorites:
-        current_favorites.append("")
+    # Update session state when multiselect changes
+    if selected_favorites != current_favorites:
+        # Convert selected names back to language objects with usage data
+        updated_favorites = []
+        for lang_name in selected_favorites:
+            # Find existing language data or create new entry
+            existing = next((lang for lang in st.session_state.learned_languages if lang["name"] == lang_name), None)
+            if existing:
+                updated_favorites.append(existing)
+            else:
+                updated_favorites.append({"name": lang_name, "usage": 0})
 
-    # Display numbered slots
-    for i in range(max_favorites):
-        col1, col2, col3 = st.columns([1, 4, 1])
+        st.session_state.learned_languages = updated_favorites
 
-        with col1:
-            st.markdown(f"**{i+1}.**")
-
-        with col2:
-            # Get available languages (current favorites + unused ones)
-            used_langs = [fav for fav in current_favorites if fav and fav != current_favorites[i]]
-            available_options = [""] + [lang for lang in all_lang_names if lang not in used_langs]
-
-            # If current selection is still valid, include it
-            if current_favorites[i] and current_favorites[i] not in available_options:
-                available_options.insert(1, current_favorites[i])
-
-            selected_lang = st.selectbox(
-                f"Position {i+1}",
-                options=available_options,
-                index=available_options.index(current_favorites[i]) if current_favorites[i] in available_options else 0,
-                key=f"favorite_lang_{i}",
-                label_visibility="collapsed"
-            )
-
-            # Update the favorites list
-            if selected_lang != current_favorites[i]:
-                current_favorites[i] = selected_lang
-                # Update session state
-                st.session_state.learned_languages = [
-                    {"name": lang, "usage": next((l["usage"] for l in st.session_state.learned_languages if l["name"] == lang), 0)}
-                    for lang in current_favorites if lang
-                ]
-
-        with col3:
-            if current_favorites[i]:  # Only show X if there's a language selected
-                if st.button("❌", key=f"remove_fav_{i}", help=f"Remove {current_favorites[i]}"):
-                    current_favorites[i] = ""
-                    # Update session state
-                    st.session_state.learned_languages = [
-                        {"name": lang, "usage": next((l["usage"] for l in st.session_state.learned_languages if l["name"] == lang), 0)}
-                        for lang in current_favorites if lang
-                    ]
+    # Display current favorites as clean numbered list
+    if st.session_state.learned_languages:
+        st.markdown("**Current Favorites:**")
+        for idx, lang in enumerate(st.session_state.learned_languages, 1):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.markdown(f"**{idx}. {lang['name']}**")
+            with col2:
+                if st.button("❌", key=f"remove_fav_{lang['name']}_{idx}", help=f"Remove {lang['name']} from favorites"):
+                    st.session_state.learned_languages.pop(idx - 1)
                     st.rerun()
 
-    st.caption("Select languages for quick access in dropdowns. Max 5 favorites.")
+    st.caption(f"{len(st.session_state.learned_languages)}/5 favorites selected")
     st.markdown("---")
 
     # --- Default Settings Per Language (original design) ---
