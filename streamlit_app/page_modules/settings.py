@@ -9,6 +9,64 @@ def render_settings_page():
     """Render the settings page with profile, API keys, favorite languages, and per-language settings."""
     st.title("Settings")
 
+    # Inject custom CSS to fix accessibility and contrast issues
+    st.markdown("""
+    <style>
+    /* Fix text contrast issues - override Streamlit's emotion classes */
+    .st-emotion-cache-n2fj4p {
+        opacity: 1 !important;
+        color: var(--text-color, #31333F) !important;
+        font-weight: 500 !important;
+    }
+    
+    .st-emotion-cache-svhcdj {
+        color: var(--text-color, #31333F) !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Fix label association issues - hide decorative labels that cause accessibility warnings */
+    label[data-testid="stWidgetLabel"][aria-hidden="true"] {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+    
+    /* Ensure form elements remain accessible through their help text and context */
+    .stSelectbox [data-testid="stSelectbox"] {
+        position: relative;
+    }
+    
+    /* Theme-aware text colors for better contrast */
+    [data-theme="light"] .st-emotion-cache-n2fj4p,
+    [data-theme="light"] .st-emotion-cache-svhcdj {
+        color: #0F1419 !important;
+    }
+    
+    [data-theme="dark"] .st-emotion-cache-n2fj4p,
+    [data-theme="dark"] .st-emotion-cache-svhcdj {
+        color: #FAFAFA !important;
+    }
+    
+    /* Improve tooltip visibility */
+    .stTooltipIcon {
+        opacity: 0.7 !important;
+        transition: opacity 0.2s ease;
+    }
+    
+    .stTooltipIcon:hover {
+        opacity: 1 !important;
+    }
+    
+    /* Ensure slider labels are properly styled */
+    .stSlider label {
+        color: var(--text-color, #31333F) !important;
+        opacity: 1 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Back button
     if st.button("← Back to Main", key="back_to_main"):
         st.session_state.page = "main"
