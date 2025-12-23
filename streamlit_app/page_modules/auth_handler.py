@@ -1,6 +1,7 @@
 # auth_handler.py - Firebase Auth using streamlit-firebase-auth component
 
 import streamlit as st
+import streamlit.components.v1 as components
 try:
     from streamlit_firebase_auth import FirebaseAuth
     FIREBASE_AUTH_AVAILABLE = True
@@ -55,7 +56,14 @@ def firebase_auth_component():
         return None
 
     # Initialize FirebaseAuth
-    auth = FirebaseAuth(config=config)
+    auth = FirebaseAuth(
+        apiKey=FIREBASE_API_KEY,
+        authDomain=f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
+        projectId=FIREBASE_PROJECT_ID,
+        storageBucket=f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
+        messagingSenderId="144901974646",
+        appId="1:144901974646:web:5f677d6632d5b79f2c4d57"
+    )
 
     # Check current session
     user = auth.check_session()
