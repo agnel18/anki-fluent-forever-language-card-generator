@@ -337,24 +337,28 @@ def render_settings_page():
 
         col_len, col_sent = st.columns(2)
         with col_len:
+            st.markdown("**Sentence Length (words)**")
             settings["sentence_length_range"] = st.slider(
-                "Sentence length (words)",
+                "",
                 min_value=4,
                 max_value=30,
                 value=settings["sentence_length_range"],
                 step=1,
                 key="perlang_sentlen",
-                help="Minimum and maximum words per sentence for this language"
+                help="Minimum and maximum words per sentence for this language",
+                label_visibility="collapsed"
             )
         with col_sent:
+            st.markdown("**Sentences Per Word**")
             settings["sentences_per_word"] = st.slider(
-                "Sentences per word",
+                "",
                 min_value=3,
                 max_value=15,
                 value=settings["sentences_per_word"],
                 step=1,
                 key="perlang_sentcount",
-                help="How many different sentences to generate for each word"
+                help="How many different sentences to generate for each word",
+                label_visibility="collapsed"
             )
 
     st.markdown("---")
@@ -364,14 +368,16 @@ def render_settings_page():
         st.markdown("### 🔊 Audio Settings")
         st.markdown("*Adjust pronunciation speed for language learning*")
 
+        st.markdown("**Audio Speed**")
         settings["audio_speed"] = st.slider(
-            "Audio speed",
+            "",
             min_value=0.5,
             max_value=1.5,
             value=settings["audio_speed"],
             step=0.1,
             key="perlang_audiospeed",
-            help="0.5 = very slow (beginners), 0.8 = recommended for learners, 1.0 = normal speed"
+            help="0.5 = very slow (beginners), 0.8 = recommended for learners, 1.0 = normal speed",
+            label_visibility="collapsed"
         )
 
     st.markdown("---")
