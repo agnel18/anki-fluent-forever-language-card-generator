@@ -338,7 +338,7 @@ def render_settings_page():
         with col_len:
             st.markdown("**Sentence Length (words)**")
             settings["sentence_length_range"] = st.slider(
-                "",
+                "Sentence Length Range",
                 min_value=4,
                 max_value=30,
                 value=settings["sentence_length_range"],
@@ -350,7 +350,7 @@ def render_settings_page():
         with col_sent:
             st.markdown("**Sentences Per Word**")
             settings["sentences_per_word"] = st.slider(
-                "",
+                "Sentences Per Word",
                 min_value=3,
                 max_value=15,
                 value=settings["sentences_per_word"],
@@ -369,7 +369,7 @@ def render_settings_page():
 
         st.markdown("**Audio Speed**")
         settings["audio_speed"] = st.slider(
-            "",
+            "Audio Speed",
             min_value=0.5,
             max_value=1.5,
             value=settings["audio_speed"],

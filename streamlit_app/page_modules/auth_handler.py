@@ -26,7 +26,8 @@ def render_auth_handler_page():
     st.write("### 🔧 Firebase Configuration Check")
     col1, col2 = st.columns(2)
     with col1:
-        st.write("**API Key:**", f"`{FIREBASE_API_KEY[:20]}...`" if FIREBASE_API_KEY else "❌ Missing")
+        api_key_display = f"`{FIREBASE_API_KEY[:20]}...`" if FIREBASE_API_KEY else "❌ Missing"
+        st.write("**API Key:**", api_key_display)
         st.write("**Project ID:**", f"`{FIREBASE_PROJECT_ID}`" if FIREBASE_PROJECT_ID else "❌ Missing")
         st.write("**Auth Domain:**", f"`{firebase_config['authDomain']}`")
     with col2:
@@ -39,7 +40,12 @@ def render_auth_handler_page():
     st.write(f"**Environment:** {'🌐 Streamlit Cloud' if is_streamlit_cloud else '💻 Local Development'}")
 
     if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
-        st.error("❌ Firebase configuration is incomplete. Please check your secrets.")
+        st.error("❌ Firebase configuration is incomplete. Please check your Streamlit Cloud secrets.")
+        st.info("**Required secrets in Streamlit Cloud:**")
+        st.code("""
+FIREBASE_WEB_API_KEY = "your-api-key-here"
+FIREBASE_PROJECT_ID = "your-project-id-here"
+        """)
         return
     # JavaScript for Firebase Auth - Working version with traditional script loading
     firebase_auth_js = f"""
@@ -180,6 +186,10 @@ def render_auth_handler_page():
 
     # Inject Firebase Auth JavaScript
     st.markdown(firebase_auth_js, unsafe_allow_html=True)
+    
+    # Status indicator
+    st.success("✅ Firebase JavaScript has been injected into the page!")
+    st.info("🔄 If you don't see Firebase loading messages in your browser console, try refreshing the page.")
 
     # Add a manual trigger button as backup
     st.markdown("---")
