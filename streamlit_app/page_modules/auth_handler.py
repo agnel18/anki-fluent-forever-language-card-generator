@@ -104,7 +104,22 @@ def firebase_auth_component():
         }});
     </script>
     """
-    return components.html(auth_html, height=50)
+    # Create custom iframe with necessary sandbox permissions
+    import streamlit as st
+    import html
+    import base64
+
+    # Encode the HTML content for srcdoc
+    encoded_html = base64.b64encode(auth_html.encode('utf-8')).decode('utf-8')
+    iframe_html = f"""
+    <iframe src="data:text/html;base64,{encoded_html}"
+            width="100%"
+            height="50"
+            style="border: none; overflow: hidden;"
+            sandbox="allow-scripts allow-same-origin allow-top-navigation allow-popups allow-forms">
+    </iframe>
+    """
+    st.markdown(iframe_html, unsafe_allow_html=True)
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""
