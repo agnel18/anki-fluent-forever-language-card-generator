@@ -1,9 +1,9 @@
-# auth_handler.py - Firebase Auth SDK integration for Streamlit
+# auth_handler.py - Firebase Auth using streamlit-firebase-auth component
 
 import streamlit as st
-import streamlit.components.v1 as components
+from streamlit_firebase_auth import firebase_auth
 import json
-from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_to_user, sign_out
+from firebase_manager import migrate_guest_data_to_user
 
 # Firebase configuration
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
@@ -20,80 +20,39 @@ def get_firebase_config():
     }
 
 def firebase_auth_component():
-    """Render the Google Sign-In button that opens a popup for authentication."""
+    """Render the Firebase Auth component."""
     config = get_firebase_config()
 
-    popup_html = f"""
-    <button onclick="openAuthPopup()" style="
-        display: inline-flex; align-items: center; justify-content: center;
-        background-color: #4285f4; color: white; border: none; border-radius: 4px;
-        padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
-        font-family: 'Roboto', sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-        <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right: 8px;">
-            <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Sign in with Google
-    </button>
+    if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
+        st.error("❌ Firebase configuration is incomplete. Please check your Streamlit Cloud secrets.")
+        return None
 
-    <script>
-    function openAuthPopup() {{
-      const authWindow = window.open('', 'firebaseAuth', 'width=500,height=600');
-      authWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-      <title>Firebase Auth</title>
-      <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-      </head>
-      <body>
-      <div id="auth-root" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
-      <button id="google-btn" style="
-        display: inline-flex; align-items: center; justify-content: center;
-        background-color: #4285f4; color: white; border: none; border-radius: 4px;
-        padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
-        font-family: 'Roboto', sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-        <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right: 8px;">
-            <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Sign in with Google
-      </button>
-      </div>
-      <script>
-      const firebaseConfig = {json.dumps(config)};
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-      document.getElementById('google-btn').addEventListener('click', () => {{
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).then((result) => {{
-          const user = result.user;
-          const userData = {{
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL
-          }};
-          window.opener.postMessage({{ type: 'auth_success', userData }}, '*');
-          window.close();
-        }}).catch((error) => {{
-          window.opener.postMessage({{ type: 'auth_error', error: error.message }}, '*');
-          window.close();
-        }});
-      }});
-      </script>
-      </body>
-      </html>
-      `);
-    }}
-    </script>
-    """
-    st.markdown(popup_html, unsafe_allow_html=True)
+    # Use the streamlit-firebase-auth component
+    user = firebase_auth(
+        config=config,
+        login_button_text="Sign in with Google",
+        logout_button_text="Sign Out",
+        login_button_color="#4285f4",
+        key="firebase_auth"
+    )
+
+    if user:
+        # User is authenticated
+        user_data = {
+            'uid': user['user']['uid'],
+            'email': user['user']['email'],
+            'displayName': user['user']['displayName'],
+            'photoURL': user['user'].get('photoURL')
+        }
+        # Store in session state
+        st.session_state.user = user_data
+        st.session_state.is_guest = False
+        # Migrate guest data
+        migrate_guest_data_to_user(user_data['uid'])
+        return user_data
+    else:
+        # Not authenticated
+        return None
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""

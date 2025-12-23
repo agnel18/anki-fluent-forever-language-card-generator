@@ -10,21 +10,6 @@ from firebase_manager import is_signed_in, get_current_user, sign_out
 def handle_auth_callback():
     """Checks URL for auth data, saves to session, and cleans URL."""
     params = st.query_params
-    if "auth_data" in params:
-        try:
-            user_data = json.loads(params["auth_data"])
-            if user_data:
-                st.session_state.user = user_data
-                st.session_state.is_guest = False
-                # Migrate guest data
-                from firebase_manager import migrate_guest_data_to_user
-                migrate_guest_data_to_user(user_data['uid'])
-                # Clear URL and rerun
-                st.query_params.clear()
-                st.rerun()
-        except Exception as e:
-            st.error(f"Login failed: {e}")
-            st.query_params.clear()
     # Keep the old check for backward compatibility
     if "auth_success" in params:
         try:
@@ -40,23 +25,6 @@ def handle_auth_callback():
 
 def render_main_page():
     """Render the main overview page with introduction and start button."""
-
-    # 1. Catch incoming auth from URL
-    handle_auth_callback()
-
-    # Add message listener for popup auth
-    st.components.v1.html("""
-    <script>
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'auth_success') {
-        const userData = event.data.userData;
-        const url = new URL(window.location.href);
-        url.searchParams.set('auth_data', JSON.stringify(userData));
-        window.location.href = url.href;
-      }
-    });
-    </script>
-    """)
 
     # Check if user is in session state or firebase_manager
     current_user = st.session_state.get("user") or (get_current_user() if is_signed_in() else None)
