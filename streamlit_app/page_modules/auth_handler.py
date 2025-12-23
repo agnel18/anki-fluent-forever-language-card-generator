@@ -26,17 +26,24 @@ def render_auth_handler_page():
     # JavaScript for Firebase Auth
     firebase_auth_js = f"""
     <script type="module">
+        console.log('Loading Firebase Auth module...');
+
         // Import Firebase modules
         import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import {{ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
+        console.log('Firebase modules imported successfully');
+
         // Firebase configuration
         const firebaseConfig = {json.dumps(firebase_config)};
 
+        console.log('Initializing Firebase app...');
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        console.log('Firebase initialized, setting up auth...');
 
         // Configure Google provider
         provider.setCustomParameters({{
@@ -45,8 +52,10 @@ def render_auth_handler_page():
 
         // Auth state observer
         onAuthStateChanged(auth, (user) => {{
+            console.log('Auth state changed:', user ? 'signed in' : 'signed out');
             if (user) {{
                 // User is signed in
+                console.log('User signed in:', user.email);
                 const userData = {{
                     uid: user.uid,
                     email: user.email,
@@ -62,9 +71,11 @@ def render_auth_handler_page():
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('firebase_auth_type', 'success');
                 currentUrl.searchParams.set('user_data', userDataStr);
+                console.log('Redirecting to:', currentUrl.toString());
                 window.location.href = currentUrl.toString();
             }} else {{
                 // User is signed out - redirect to sign out
+                console.log('User signed out');
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('firebase_auth_type', 'signout');
                 window.location.href = currentUrl.toString();
@@ -74,9 +85,10 @@ def render_auth_handler_page():
         // Make functions available globally
         window.firebaseAuth = {{
             signIn: () => {{
+                console.log('signIn function called');
                 signInWithPopup(auth, provider)
                     .then((result) => {{
-                        console.log('Sign in successful');
+                        console.log('Sign in successful:', result.user.email);
                     }})
                     .catch((error) => {{
                         console.error('Sign in error:', error);
@@ -88,6 +100,7 @@ def render_auth_handler_page():
                     }});
             }},
             signOut: () => {{
+                console.log('signOut function called');
                 signOut(auth)
                     .then(() => {{
                         console.log('Sign out successful');
@@ -98,8 +111,11 @@ def render_auth_handler_page():
             }}
         }};
 
+        console.log('Firebase Auth setup complete, window.firebaseAuth available:', !!window.firebaseAuth);
+
         // Listen for messages from Streamlit
         window.addEventListener('message', (event) => {{
+            console.log('Received message:', event.data);
             if (event.data.type === 'trigger-sign-in') {{
                 window.firebaseAuth.signIn();
             }} else if (event.data.type === 'trigger-sign-out') {{
@@ -121,17 +137,46 @@ def render_auth_handler_page():
 
     # Sign in button
     if not is_signed_in():
+        # Add a container for status messages
+        status_container = st.empty()
+
         if st.button("🔐 Sign In with Google", type="primary", use_container_width=True):
-            # Trigger sign in via JavaScript
+            # Trigger sign in via JavaScript with better error handling
             st.markdown("""
             <script>
-                if (window.firebaseAuth) {
-                    window.firebaseAuth.signIn();
-                } else {
-                    alert('Firebase Auth not loaded yet. Please refresh the page.');
+                try {
+                    if (window.firebaseAuth && window.firebaseAuth.signIn) {
+                        console.log('Triggering Firebase sign in...');
+                        window.firebaseAuth.signIn();
+                    } else {
+                        console.error('Firebase Auth not available');
+                        // Show error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.style.cssText = 'color: red; padding: 10px; border: 1px solid red; border-radius: 4px; margin: 10px 0; background: #ffe6e6;';
+                        errorDiv.textContent = 'Firebase Auth is not loaded yet. Please wait a moment and try again, or refresh the page.';
+                        document.body.appendChild(errorDiv);
+                        setTimeout(() => errorDiv.remove(), 5000);
+                    }
+                } catch (error) {
+                    console.error('Error triggering sign in:', error);
+                    alert('Error starting sign in process. Please refresh the page and try again.');
                 }
             </script>
             """, unsafe_allow_html=True)
+
+        # Show loading status
+        st.markdown("""
+        <div style="margin: 20px 0; padding: 10px; background: #e8f4fd; border-left: 4px solid #1e88e5; border-radius: 4px;">
+            <strong>🔄 Ready to sign in!</strong><br>
+            Click the button above to open Google sign-in popup.
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Add fallback link in case JavaScript fails
+        st.markdown("---")
+        st.markdown("**Having trouble?** Try the direct sign-in link:")
+        auth_url = f"https://accounts.google.com/o/oauth2/auth?client_id={st.secrets.get('GOOGLE_CLIENT_ID', '')}&redirect_uri={st.secrets.get('REDIRECT_URI', '')}&scope=openid%20email%20profile&response_type=code&state=firebase_auth&prompt=select_account"
+        st.markdown(f"[🔗 Direct Google Sign-In]({auth_url})", unsafe_allow_html=True)
 
         st.markdown("---")
         st.markdown("**Why sign in?**")
