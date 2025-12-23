@@ -39,6 +39,7 @@ def firebase_auth_component():
             </svg>
             Sign in with Google
         </button>
+        <a id="redirect-link" href="" target="_top" style="display: none;"></a>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -47,6 +48,31 @@ def firebase_auth_component():
     <script>
         const firebaseConfig = {json.dumps(config)};
         firebase.initializeApp(firebaseConfig);
+
+        function navigateToUrl(url) {{
+            // Try multiple methods to navigate the parent frame
+            try {{
+                // Method 1: Use a hidden link with target="_top"
+                const link = document.getElementById('redirect-link');
+                link.href = url;
+                link.click();
+            }} catch (e) {{
+                console.log('Link click failed, trying window.open');
+                try {{
+                    // Method 2: Use window.open with _top
+                    window.open(url, '_top');
+                }} catch (e2) {{
+                    console.log('window.open failed, trying location.href');
+                    try {{
+                        // Method 3: Direct location assignment
+                        window.location.href = url;
+                    }} catch (e3) {{
+                        console.error('All navigation methods failed');
+                        alert('Authentication successful! Please refresh the page.');
+                    }}
+                }}
+            }}
+        }}
 
         document.getElementById('google-btn').addEventListener('click', () => {{
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -60,18 +86,20 @@ def firebase_auth_component():
                         photoURL: user.photoURL
                     }};
 
-                    // Redirect the PARENT window with the auth data
-                    const url = new URL(window.parent.location.href);
+                    // Navigate with auth data
+                    const url = new URL(window.location.href);
                     url.searchParams.set('auth_success', 'true');
                     url.searchParams.set('user_data', JSON.stringify(userData));
-                    window.parent.location.href = url.href;
+                    console.log('🔀 Redirecting to:', url.href);
+                    navigateToUrl(url.href);
                 }})
                 .catch((error) => {{
                     console.error("Auth Error:", error);
-                    // Redirect with error
-                    const url = new URL(window.parent.location.href);
+                    // Navigate with error
+                    const url = new URL(window.location.href);
                     url.searchParams.set('auth_error', error.message);
-                    window.parent.location.href = url.href;
+                    console.log('🔀 Redirecting with error to:', url.href);
+                    navigateToUrl(url.href);
                 }});
         }});
     </script>
