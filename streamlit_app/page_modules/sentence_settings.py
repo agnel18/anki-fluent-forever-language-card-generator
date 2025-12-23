@@ -11,9 +11,13 @@ from constants import CURATED_TOPICS
 def render_sentence_settings_page():
     """Render the sentence settings page."""
 
+    # DEBUG: Force clear any cached content
+    st.empty()
+
     with st.container():
-        st.markdown("# ✍️ Step 3: Adjust Output Settings")
-        st.markdown("Customize how your Anki cards will be generated. These settings control sentence complexity and audio pronunciation.")
+        # Main page title - make it more prominent
+        st.title("✍️ Step 3: Adjust Output Settings")
+        st.markdown("**Customize how your Anki cards will be generated.** These settings control sentence complexity and audio pronunciation.")
 
         # Progress indicator
         st.markdown("**Progress:** Step 3 of 5")
