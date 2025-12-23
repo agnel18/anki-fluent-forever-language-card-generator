@@ -8,3 +8,11 @@ backgroundColor = "#0e1117"
 secondaryBackgroundColor = "#161b22"
 textColor = "#e6edf3"
 font = "sans serif"
+
+[theme.sidebar]
+backgroundColor = "#161b22"
+secondaryBackgroundColor = "#21262d"
+textColor = "#e6edf3"
+widgetBackgroundColor = "#21262d"
+widgetBorderColor = "#30363d"
+skeletonBackgroundColor = "#30363d"

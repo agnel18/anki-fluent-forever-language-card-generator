@@ -22,7 +22,6 @@ def render_settings_page():
     try:
         from firebase_manager import firebase_initialized, is_signed_in, get_current_user
         from sync_manager import sync_user_data, load_cloud_data, export_user_data
-        from page_modules.auth_handler import render_sign_in_page
 
         if firebase_initialized:
             if is_signed_in():

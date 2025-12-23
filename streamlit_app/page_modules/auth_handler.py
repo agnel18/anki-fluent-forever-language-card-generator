@@ -41,127 +41,140 @@ def render_auth_handler_page():
     if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
         st.error("❌ Firebase configuration is incomplete. Please check your secrets.")
         return
-    # JavaScript for Firebase Auth
+    # JavaScript for Firebase Auth - Working version with traditional script loading
     firebase_auth_js = f"""
-    <script type="module">
-        console.log('🔄 Loading Firebase Auth module...');
+    <script>
+        (function() {{
+            console.log('🔄 Firebase Auth JavaScript loaded and executing!');
+            console.log('Current URL:', window.location.href);
 
-        // Show loading indicator
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'firebase-loading';
-        loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
-        loadingDiv.textContent = '🔄 Loading Firebase...';
-        document.body.appendChild(loadingDiv);
+            // Show loading indicator
+            var loadingDiv = document.createElement('div');
+            loadingDiv.id = 'firebase-loading';
+            loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
+            loadingDiv.textContent = '🔄 Loading Firebase...';
+            document.body.appendChild(loadingDiv);
 
-        try {{
-            // Import Firebase modules
-            console.log('📦 Importing Firebase modules...');
-            const {{ initializeApp }} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-            const {{ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-
-            console.log('✅ Firebase modules imported successfully');
+            // Load Firebase scripts dynamically
+            function loadScript(src, callback) {{
+                var script = document.createElement('script');
+                script.src = src;
+                script.onload = callback;
+                document.head.appendChild(script);
+            }}
 
             // Firebase configuration
-            const firebaseConfig = {json.dumps(firebase_config)};
+            var firebaseConfig = {json.dumps(firebase_config)};
 
-            console.log('🚀 Initializing Firebase app...');
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
+            // Load Firebase App first
+            loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js', function() {{
+                console.log('📦 Firebase App loaded');
 
-            console.log('🔐 Firebase initialized, setting up auth...');
+                // Load Firebase Auth
+                loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js', function() {{
+                    console.log('🔐 Firebase Auth loaded');
 
-            // Configure Google provider
-            provider.setCustomParameters({{
-                prompt: 'select_account'
-            }});
-
-            // Update loading indicator
-            loadingDiv.textContent = '✅ Firebase Ready';
-            loadingDiv.style.background = '#4CAF50';
-            setTimeout(() => loadingDiv.remove(), 3000);
-
-            // Auth state observer
-            onAuthStateChanged(auth, (user) => {{
-                console.log('🔄 Auth state changed:', user ? 'signed in' : 'signed out');
-                if (user) {{
-                    // User is signed in
-                    console.log('✅ User signed in:', user.email);
-                    const userData = {{
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName,
-                        photoURL: user.photoURL,
-                        emailVerified: user.emailVerified,
-                        isAnonymous: user.isAnonymous,
-                        providerData: user.providerData
-                    }};
-
-                    // Redirect with user data as query parameters
-                    const userDataStr = encodeURIComponent(JSON.stringify(userData));
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('firebase_auth_type', 'success');
-                    currentUrl.searchParams.set('user_data', userDataStr);
-                    console.log('🔀 Redirecting to:', currentUrl.toString());
-                    window.location.href = currentUrl.toString();
-                }} else {{
-                    // User is signed out - redirect to sign out
-                    console.log('🚪 User signed out');
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('firebase_auth_type', 'signout');
-                    window.location.href = currentUrl.toString();
-                }}
-            }});
-
-            // Make functions available globally
-            window.firebaseAuth = {{
-                signIn: async () => {{
-                    console.log('🚀 signIn function called');
                     try {{
-                        const result = await signInWithPopup(auth, provider);
-                        console.log('✅ Sign in successful:', result.user.email);
-                    }} catch (error) {{
-                        console.error('❌ Sign in error:', error);
-                        // Show error to user
-                        alert('Sign in failed: ' + error.message);
+                        // Initialize Firebase
+                        firebase.initializeApp(firebaseConfig);
+                        var auth = firebase.auth();
 
-                        // Redirect with error
-                        const currentUrl = new URL(window.location.href);
-                        currentUrl.searchParams.set('firebase_auth_type', 'error');
-                        currentUrl.searchParams.set('error', encodeURIComponent(error.message));
-                        window.location.href = currentUrl.toString();
-                    }}
-                }},
-                signOut: async () => {{
-                    console.log('🚪 signOut function called');
-                    try {{
-                        await signOut(auth);
-                        console.log('✅ Sign out successful');
-                    }} catch (error) {{
-                        console.error('❌ Sign out error:', error);
-                    }}
-                }}
-            }};
+                        // Configure Google provider
+                        var provider = new firebase.auth.GoogleAuthProvider();
+                        provider.setCustomParameters({{
+                            prompt: 'select_account'
+                        }});
 
-            console.log('✅ Firebase Auth setup complete, window.firebaseAuth available:', !!window.firebaseAuth);
+                        // Update loading indicator
+                        loadingDiv.textContent = '✅ Firebase Ready';
+                        loadingDiv.style.background = '#4CAF50';
+                        setTimeout(function() {{ loadingDiv.remove(); }}, 3000);
+
+                        // Auth state observer
+                        firebase.auth().onAuthStateChanged(function(user) {{
+                            console.log('🔄 Auth state changed:', user ? 'signed in' : 'signed out');
+                            if (user) {{
+                                console.log('✅ User signed in:', user.email);
+                                var userData = {{
+                                    uid: user.uid,
+                                    email: user.email,
+                                    displayName: user.displayName,
+                                    photoURL: user.photoURL,
+                                    emailVerified: user.emailVerified,
+                                    isAnonymous: user.isAnonymous,
+                                    providerData: user.providerData
+                                }};
+
+                                // Redirect with user data
+                                var userDataStr = encodeURIComponent(JSON.stringify(userData));
+                                var currentUrl = new URL(window.location.href);
+                                currentUrl.searchParams.set('firebase_auth_type', 'success');
+                                currentUrl.searchParams.set('user_data', userDataStr);
+                                console.log('🔀 Redirecting to:', currentUrl.toString());
+                                window.location.href = currentUrl.toString();
+                            }} else {{
+                                console.log('🚪 User signed out');
+                                var currentUrl = new URL(window.location.href);
+                                currentUrl.searchParams.set('firebase_auth_type', 'signout');
+                                window.location.href = currentUrl.toString();
+                            }}
+                        }});
+
+                        // Make functions globally available
+                        window.firebaseAuth = {{
+                            signIn: function() {{
+                                console.log('🚀 signIn called');
+                                firebase.auth().signInWithPopup(provider)
+                                    .then(function(result) {{
+                                        console.log('✅ Sign in successful:', result.user.email);
+                                    }})
+                                    .catch(function(error) {{
+                                        console.error('❌ Sign in error:', error);
+                                        alert('Sign in failed: ' + error.message);
+                                        var currentUrl = new URL(window.location.href);
+                                        currentUrl.searchParams.set('firebase_auth_type', 'error');
+                                        currentUrl.searchParams.set('error', encodeURIComponent(error.message));
+                                        window.location.href = currentUrl.toString();
+                                    }});
+                            }},
+                            signOut: function() {{
+                                console.log('🚪 signOut called');
+                                firebase.auth().signOut()
+                                    .then(function() {{
+                                        console.log('✅ Sign out successful');
+                                    }})
+                                    .catch(function(error) {{
+                                        console.error('❌ Sign out error:', error);
+                                    }});
+                            }}
+                        }};
+
+                        console.log('✅ Firebase Auth setup complete');
+
+                    }} catch (error) {{
+                        console.error('❌ Firebase initialization error:', error);
+                        loadingDiv.textContent = '❌ Firebase Error';
+                        loadingDiv.style.background = '#f44336';
+                        alert('Firebase setup failed: ' + error.message);
+                    }}
+                }});
+            }});
 
             // Listen for messages from Streamlit
-            window.addEventListener('message', (event) => {{
+            window.addEventListener('message', function(event) {{
                 console.log('📨 Received message:', event.data);
-                if (event.data.type === 'trigger-sign-in') {{
-                    window.firebaseAuth.signIn();
-                }} else if (event.data.type === 'trigger-sign-out') {{
-                    window.firebaseAuth.signOut();
+                if (event.data && event.data.type === 'trigger-sign-in') {{
+                    if (window.firebaseAuth && window.firebaseAuth.signIn) {{
+                        window.firebaseAuth.signIn();
+                    }}
+                }} else if (event.data && event.data.type === 'trigger-sign-out') {{
+                    if (window.firebaseAuth && window.firebaseAuth.signOut) {{
+                        window.firebaseAuth.signOut();
+                    }}
                 }}
             }});
 
-        }} catch (error) {{
-            console.error('❌ Firebase initialization error:', error);
-            loadingDiv.textContent = '❌ Firebase Error';
-            loadingDiv.style.background = '#f44336';
-            alert('Firebase initialization failed: ' + error.message);
-        }}
+        }})();
     </script>
     """
 
