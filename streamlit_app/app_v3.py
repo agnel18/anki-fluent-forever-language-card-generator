@@ -105,63 +105,6 @@ except Exception as e:
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# FIREBASE AUTH MESSAGE HANDLER
-# ============================================================================
-
-def handle_firebase_auth_messages():
-    """Handle Firebase authentication messages from JavaScript via query parameters."""
-    # Check for Firebase auth messages in query parameters
-    auth_type = st.query_params.get("firebase_auth_type")
-    if not auth_type:
-        return
-
-    try:
-        if auth_type == "success":
-            # Parse user data from query parameters
-            import json
-            user_data_str = st.query_params.get("user_data", "{}")
-            user_data = json.loads(user_data_str)
-
-            if user_data:
-                # Set user in session state
-                st.session_state.user = user_data
-                st.session_state.is_guest = False
-
-                # Clear query parameters
-                st.query_params.clear()
-
-                # Show success message and rerun
-                st.success("🎉 Successfully signed in with Google!")
-                st.rerun()
-
-        elif auth_type == "error":
-            error_msg = st.query_params.get("error", "Unknown authentication error")
-            st.error(f"Authentication failed: {error_msg}")
-
-            # Clear query parameters
-            st.query_params.clear()
-            st.rerun()
-
-        elif auth_type == "signout":
-            # Handle sign out
-            if 'user' in st.session_state:
-                del st.session_state.user
-            if 'data_migrated' in st.session_state:
-                del st.session_state.data_migrated
-            st.session_state.is_guest = True
-
-            # Clear query parameters
-            st.query_params.clear()
-
-            st.info("Signed out successfully")
-            st.rerun()
-
-    except Exception as e:
-        logger.error(f"Error handling Firebase auth message: {e}")
-        # Clear query parameters on error
-        st.query_params.clear()
-
-# ============================================================================
 # MAIN APPLICATION - MULTI-PAGE WITH SIDEBAR NAVIGATION
 # ============================================================================
 
@@ -174,7 +117,8 @@ def main():
     st.markdown('<meta name="google-site-verification" content="YUTo7TlPD5g4Yz_i6pCEEnIMTKlwplPMIukMKhOyfnw" />', unsafe_allow_html=True)
 
     # Handle Firebase Auth messages from JavaScript
-    handle_firebase_auth_messages()
+    from page_modules.main import handle_auth_callback
+    handle_auth_callback()
 
     # Inject global CSS to fix accessibility and contrast issues app-wide
     st.markdown("""

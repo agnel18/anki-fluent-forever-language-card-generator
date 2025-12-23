@@ -5,12 +5,54 @@ import os
 
 
 
+def handle_auth_callback():
+    """Handle authentication callback from Firebase auth component."""
+    # Check for auth success
+    if st.query_params.get("auth_success") == "true":
+        try:
+            import json
+            user_data_str = st.query_params.get("user_data", "{}")
+            user_data = json.loads(user_data_str)
+
+            if user_data:
+                # Set user in session state
+                st.session_state.user = user_data
+                st.session_state.is_guest = False
+
+                # Clear query parameters
+                st.query_params.clear()
+
+                # Show success message
+                st.success("🎉 Successfully signed in with Google!")
+                return True
+
+        except Exception as e:
+            st.error(f"Authentication error: {e}")
+            st.query_params.clear()
+            return False
+
+    # Check for auth error
+    elif st.query_params.get("auth_error"):
+        error_msg = st.query_params.get("auth_error")
+        st.error(f"Authentication failed: {error_msg}")
+        st.query_params.clear()
+        return False
+
+    return False
+
 def render_main_page():
     """Render the main overview page with introduction and start button."""
 
+    # Handle auth callback first
+    auth_processed = handle_auth_callback()
 
-    # Place logo next to the title using columns with less spacing
-    col_logo, col_title = st.columns([0.3, 1])
+    # Check if user is signed in
+    from firebase_manager import is_signed_in, get_current_user, sign_out
+    user_signed_in = is_signed_in()
+    current_user = get_current_user() if user_signed_in else None
+
+    # Header with authentication status
+    col_logo, col_title, col_auth = st.columns([0.3, 1, 0.4])
     with col_logo:
         logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo.svg")
         if os.path.exists(logo_path):
@@ -20,6 +62,22 @@ def render_main_page():
     with col_title:
         st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
+    with col_auth:
+        if user_signed_in and current_user:
+            # Show user info and sign out option
+            st.markdown("### Welcome back!")
+            user_name = current_user.get('displayName', current_user.get('email', 'User'))
+            st.markdown(f"**{user_name}**")
+            if st.button("🚪 Sign Out", key="main_signout"):
+                sign_out()
+                st.rerun()
+        else:
+            # Show sign-in component
+            st.markdown("### ☁️ Cloud Sync")
+            from page_modules.auth_handler import firebase_auth_component
+            firebase_auth_component()
+            st.caption("Optional - Guest mode available")
+
     st.markdown("---")
 
 
