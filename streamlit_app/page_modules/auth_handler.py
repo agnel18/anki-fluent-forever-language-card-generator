@@ -201,3 +201,36 @@ def render_auth_handler_page():
     st.markdown("• Your data is encrypted and stored securely in Firebase")
     st.markdown("• You can delete your account and data anytime")
     st.markdown("• [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
+
+def render_user_profile():
+    """Render user profile section in sidebar."""
+    if is_signed_in():
+        user = get_current_user()
+        if user:
+            # Display user info
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if user.get('photoURL'):
+                    st.image(user['photoURL'], width=40)
+                else:
+                    st.markdown("👤")
+            with col2:
+                st.markdown(f"**{user.get('displayName', 'User')}**")
+                st.caption(user.get('email', ''))
+
+            # Sign out button
+            if st.button("🚪 Sign Out", key="sign_out_sidebar", use_container_width=True):
+                sign_out()
+                st.rerun()
+        else:
+            st.error("User data not available")
+    else:
+        # Show sign-in option
+        st.markdown("### ☁️ Cloud Sync")
+        st.markdown("Save progress across devices!")
+
+        if st.button("🔐 Sign In", key="sign_in_sidebar", use_container_width=True):
+            st.session_state.page = "auth_handler"
+            st.rerun()
+
+        st.caption("Optional - Guest mode available")
