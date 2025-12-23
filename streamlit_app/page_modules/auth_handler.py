@@ -9,128 +9,74 @@ from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
 FIREBASE_PROJECT_ID = st.secrets.get("FIREBASE_PROJECT_ID", "")
 
+def get_firebase_config():
+    """Get Firebase configuration from secrets."""
+    return {
+        "apiKey": FIREBASE_API_KEY,
+        "authDomain": f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
+        "projectId": FIREBASE_PROJECT_ID,
+        "storageBucket": f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
+        "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
+    }
+
 def firebase_auth_component():
-    """Render Firebase authentication component with Google-styled button."""
-    import streamlit.components.v1 as components
-    import json
+    """Render the actual Google Sign-In button component."""
+    config = get_firebase_config()
 
-    # Get Firebase config
-    firebase_config = get_firebase_config()
-    if not firebase_config:
-        st.error("❌ Firebase configuration not found. Please check your secrets.")
-        return
-
-    # Firebase Auth Component JavaScript - Hybrid approach using query parameters
-    firebase_auth_component_js = """
-    <div id="firebase-auth-container" style="display: inline-block;">
-        <button id="google-signin-btn"
-                style="display: inline-flex; align-items: center; justify-content: center;
-                       background-color: #4285f4; color: white; border: none; border-radius: 4px;
-                       padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
-                       box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s ease;">
+    # The HTML/JS for the button and the Firebase logic
+    auth_html = f"""
+    <div id="auth-root" style="display: flex; align-items: center;">
+        <button id="google-btn" style="
+            display: inline-flex; align-items: center; justify-content: center;
+            background-color: #4285f4; color: white; border: none; border-radius: 4px;
+            padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
+            font-family: 'Roboto', sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
             <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right: 8px;">
-                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Sign in with Google
         </button>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
     <script>
-        (function() {{
-            console.log('🔄 Firebase Auth Component initializing...');
+        const firebaseConfig = {json.dumps(config)};
+        firebase.initializeApp(firebaseConfig);
 
-            // Firebase configuration
-            var firebaseConfig = {firebase_config_json};
+        document.getElementById('google-btn').addEventListener('click', () => {{
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {{
+                    const user = result.user;
+                    const userData = {{
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL
+                    }};
 
-            // Load Firebase scripts dynamically
-            function loadScript(src, callback) {{
-                var script = document.createElement('script');
-                script.src = src;
-                script.onload = callback;
-                document.head.appendChild(script);
-            }}
-
-            // Load Firebase App first
-            loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js', function() {{
-                console.log('📦 Firebase App loaded');
-
-                // Load Firebase Auth
-                loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js', function() {{
-                    console.log('🔐 Firebase Auth loaded');
-
-                    try {{
-                        // Initialize Firebase
-                        firebase.initializeApp(firebaseConfig);
-                        var auth = firebase.auth();
-
-                        // Configure Google provider
-                        var provider = new firebase.auth.GoogleAuthProvider();
-                        provider.setCustomParameters({{
-                            prompt: 'select_account'
-                        }});
-
-                        // Set up sign-in button click handler
-                        var signInBtn = document.getElementById('google-signin-btn');
-                        if (signInBtn) {{
-                            signInBtn.addEventListener('click', function() {{
-                                console.log('🚀 Sign-in button clicked');
-                                firebase.auth().signInWithPopup(provider)
-                                    .then(function(result) {{
-                                        console.log('✅ Sign in successful:', result.user.email);
-                                        var user = result.user;
-                                        var userData = {{
-                                            uid: user.uid,
-                                            email: user.email,
-                                            displayName: user.displayName,
-                                            photoURL: user.photoURL,
-                                            emailVerified: user.emailVerified,
-                                            isAnonymous: user.isAnonymous,
-                                            providerData: user.providerData
-                                        }};
-
-                                        // Redirect with success query parameters
-                                        var userDataStr = encodeURIComponent(JSON.stringify(userData));
-                                        var currentUrl = new URL(window.location.href);
-                                        currentUrl.searchParams.set('auth_success', 'true');
-                                        currentUrl.searchParams.set('user_data', userDataStr);
-                                        console.log('🔀 Redirecting to:', currentUrl.toString());
-                                        window.location.href = currentUrl.toString();
-                                    }})
-                                    .catch(function(error) {{
-                                        console.error('❌ Sign in error:', error);
-                                        var currentUrl = new URL(window.location.href);
-                                        currentUrl.searchParams.set('auth_error', error.message);
-                                        window.location.href = currentUrl.toString();
-                                    }});
-                            }});
-
-                            // Update button state
-                            signInBtn.textContent = 'Sign in with Google';
-                            signInBtn.disabled = false;
-                        }}
-
-                        console.log('✅ Firebase Auth component setup complete');
-
-                    }} catch (error) {{
-                        console.error('❌ Firebase initialization error:', error);
-                        var signInBtn = document.getElementById('google-signin-btn');
-                        if (signInBtn) {{
-                            signInBtn.textContent = 'Error loading auth';
-                            signInBtn.disabled = true;
-                        }}
-                    }}
+                    // Redirect the PARENT window with the auth data
+                    const url = new URL(window.parent.location.href);
+                    url.searchParams.set('auth_success', 'true');
+                    url.searchParams.set('user_data', JSON.stringify(userData));
+                    window.parent.location.href = url.href;
+                }})
+                .catch((error) => {{
+                    console.error("Auth Error:", error);
+                    // Redirect with error
+                    const url = new URL(window.parent.location.href);
+                    url.searchParams.set('auth_error', error.message);
+                    window.parent.location.href = url.href;
                 }});
-            }});
-
-        }})();
+        }});
     </script>
-    """.format(firebase_config_json=json.dumps(firebase_config))
-
-    # Render the component
-    components.html(firebase_auth_component_js, height=50)
+    """
+    return components.html(auth_html, height=50)
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""

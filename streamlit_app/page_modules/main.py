@@ -6,50 +6,30 @@ import os
 
 
 def handle_auth_callback():
-    """Handle authentication callback from Firebase auth component."""
-    # Check for auth success
-    if st.query_params.get("auth_success") == "true":
+    """Checks URL for auth data, saves to session, and cleans URL."""
+    params = st.query_params
+    if "auth_success" in params:
         try:
-            import json
-            user_data_str = st.query_params.get("user_data", "{}")
-            user_data = json.loads(user_data_str)
-
+            user_data = json.loads(params.get("user_data", "{}"))
             if user_data:
-                # Set user in session state
                 st.session_state.user = user_data
                 st.session_state.is_guest = False
 
-                # Clear query parameters
+                # Clear URL and rerun to "finalize" the login state
                 st.query_params.clear()
-
-                # Show success message
-                st.success("🎉 Successfully signed in with Google!")
-                return True
-
+                st.rerun()
         except Exception as e:
-            st.error(f"Authentication error: {e}")
+            st.error(f"Login failed: {e}")
             st.query_params.clear()
-            return False
-
-    # Check for auth error
-    elif st.query_params.get("auth_error"):
-        error_msg = st.query_params.get("auth_error")
-        st.error(f"Authentication failed: {error_msg}")
-        st.query_params.clear()
-        return False
-
-    return False
 
 def render_main_page():
     """Render the main overview page with introduction and start button."""
 
-    # Handle auth callback first
-    auth_processed = handle_auth_callback()
+    # 1. Catch incoming auth from URL
+    handle_auth_callback()
 
-    # Check if user is signed in
-    from firebase_manager import is_signed_in, get_current_user, sign_out
-    user_signed_in = is_signed_in()
-    current_user = get_current_user() if user_signed_in else None
+    # Check if user is in session state or firebase_manager
+    current_user = st.session_state.get("user") or (get_current_user() if is_signed_in() else None)
 
     # Header with authentication status
     col_logo, col_title, col_auth = st.columns([0.3, 1, 0.4])
@@ -63,13 +43,11 @@ def render_main_page():
         st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
     with col_auth:
-        if user_signed_in and current_user:
-            # Show user info and sign out option
-            st.markdown("### Welcome back!")
-            user_name = current_user.get('displayName', current_user.get('email', 'User'))
-            st.markdown(f"**{user_name}**")
-            if st.button("🚪 Sign Out", key="main_signout"):
+        if current_user:
+            st.markdown(f"**Hello, {current_user.get('displayName', 'User')}!**")
+            if st.button("🚪 Sign Out"):
                 sign_out()
+                st.session_state.user = None
                 st.rerun()
         else:
             # Show sign-in component
