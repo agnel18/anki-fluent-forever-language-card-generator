@@ -207,19 +207,34 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
         # This will trigger the JavaScript via a different method
         manual_trigger_js = """
         <script>
+            // Find the iframe containing Firebase and send message
+            var iframes = document.querySelectorAll('iframe');
+            var firebaseIframe = null;
+            
+            // Look for iframe with Firebase content
+            for (var i = 0; i < iframes.length; i++) {
+                try {
+                    // Check if this iframe contains our Firebase code
+                    if (iframes[i].contentWindow && iframes[i].contentWindow.postMessage) {
+                        firebaseIframe = iframes[i];
+                        break;
+                    }
+                } catch (e) {
+                    // Cross-origin restriction, skip this iframe
+                    continue;
+                }
+            }
+            
             // Wait a bit for Firebase to load, then try to sign in
             setTimeout(() => {
-                try {
-                    if (window.firebaseAuth && window.firebaseAuth.signIn) {
-                        console.log('Manual trigger: Calling Firebase sign in...');
-                        window.firebaseAuth.signIn();
-                    } else {
-                        console.error('Manual trigger: Firebase Auth not available');
-                        alert('Firebase is still loading. Please wait a moment and try again.');
-                    }
-                } catch (error) {
-                    console.error('Manual trigger error:', error);
-                    alert('Error: ' + error.message);
+                if (firebaseIframe) {
+                    console.log('Manual trigger: Sending sign-in message to Firebase iframe...');
+                    firebaseIframe.contentWindow.postMessage({
+                        type: 'trigger-sign-in'
+                    }, '*');
+                } else {
+                    console.error('Manual trigger: Could not find Firebase iframe');
+                    alert('Firebase iframe not found. Please refresh the page and try again.');
                 }
             }, 2000); // Wait 2 seconds for Firebase to load
         </script>
@@ -233,20 +248,35 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
         status_container = st.empty()
 
         if st.button("🔐 Sign In with Google", type="primary", use_container_width=True):
-            # Trigger sign in via JavaScript with better error handling
+            # Send message to iframe to trigger sign in
             signin_trigger_js = """
             <script>
-                try {
-                    if (window.firebaseAuth && window.firebaseAuth.signIn) {
-                        console.log('Triggering Firebase sign in...');
-                        window.firebaseAuth.signIn();
-                    } else {
-                        console.error('Firebase Auth not available');
-                        alert('Firebase Auth is not loaded yet. Please wait a moment and try again, or refresh the page.');
+                // Find the iframe containing Firebase and send message
+                var iframes = document.querySelectorAll('iframe');
+                var firebaseIframe = null;
+                
+                // Look for iframe with Firebase content
+                for (var i = 0; i < iframes.length; i++) {
+                    try {
+                        // Check if this iframe contains our Firebase code
+                        if (iframes[i].contentWindow && iframes[i].contentWindow.postMessage) {
+                            firebaseIframe = iframes[i];
+                            break;
+                        }
+                    } catch (e) {
+                        // Cross-origin restriction, skip this iframe
+                        continue;
                     }
-                } catch (error) {
-                    console.error('Error triggering sign in:', error);
-                    alert('Error starting sign in process. Please refresh the page and try again.');
+                }
+                
+                if (firebaseIframe) {
+                    console.log('Sending sign-in message to Firebase iframe...');
+                    firebaseIframe.contentWindow.postMessage({
+                        type: 'trigger-sign-in'
+                    }, '*');
+                } else {
+                    console.error('Could not find Firebase iframe');
+                    alert('Firebase is not loaded yet. Please wait a moment and try again.');
                 }
             </script>
             """
