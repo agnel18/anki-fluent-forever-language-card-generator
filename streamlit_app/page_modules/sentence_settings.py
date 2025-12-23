@@ -11,13 +11,9 @@ from constants import CURATED_TOPICS
 def render_sentence_settings_page():
     """Render the sentence settings page."""
 
-    # DEBUG: Force clear any cached content
-    st.empty()
-
     with st.container():
-        # Main page title - make it more prominent
-        st.title("✍️ Step 3: Adjust Output Settings")
-        st.markdown("**Customize how your Anki cards will be generated.** These settings control sentence complexity and audio pronunciation.")
+        st.markdown("# ✍️ Step 3: Adjust Output Settings")
+        st.markdown("Customize how your Anki cards will be generated. These settings control sentence complexity and audio pronunciation.")
 
         # Progress indicator
         st.markdown("**Progress:** Step 3 of 5")
@@ -30,24 +26,28 @@ def render_sentence_settings_page():
         st.markdown("## ✍️ Sentence Settings")
         col_len, col_sent = st.columns(2)
         with col_len:
+            st.markdown("**Sentence Length (words)**")
             current_length = st.session_state.sentence_length_range
             st.session_state.sentence_length_range = st.slider(
-                "Sentence length (words)",
+                "",
                 min_value=4,
                 max_value=30,
                 value=current_length,
                 step=1,
-                help="Min and max words per sentence."
+                help="Min and max words per sentence.",
+                label_visibility="collapsed"
             )
         with col_sent:
+            st.markdown("**Sentences Per Word**")
             current_sentences = st.session_state.sentences_per_word
             st.session_state.sentences_per_word = st.slider(
-                "Sentences per word",
+                "",
                 min_value=3,
                 max_value=15,
                 value=current_sentences,
                 step=1,
-                help="How many sentences to generate for each word."
+                help="How many sentences to generate for each word.",
+                label_visibility="collapsed"
             )
         
         # Difficulty setting - made more prominent
