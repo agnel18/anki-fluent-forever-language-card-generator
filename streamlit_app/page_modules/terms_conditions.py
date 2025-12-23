@@ -13,14 +13,14 @@ def render_terms_conditions_page():
     st.markdown("""
     ## 1. Acceptance of Terms
 
-    Welcome to the **AI-Powered Language Learning App**. These Terms and Conditions ("Terms") govern your use of our language learning application and services. By accessing or using our service, you agree to be bound by these Terms.
+    Welcome to the **Language Anki Deck Generator**. These Terms and Conditions ("Terms") govern your use of our language learning application and services. By accessing or using our service, you agree to be bound by these Terms.
 
     If you do not agree to these Terms, please do not use our service.
 
     ## 2. Description of Service
 
     Our service provides:
-    - **AI-Powered Language Learning**: Generation of personalized Anki flashcards
+    - **Language Anki Deck Generation**: Generation of personalized Anki flashcards
     - **Multilingual Support**: Learning materials for multiple languages
     - **Audio and Visual Content**: Pronunciation guides and contextual images
     - **Progress Tracking**: Learning analytics and statistics
@@ -170,7 +170,7 @@ def render_terms_conditions_page():
     # Navigation back to main app
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
+        if st.button("← Back to Language Anki Deck Generator", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
 

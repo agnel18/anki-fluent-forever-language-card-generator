@@ -18,7 +18,7 @@ def render_main_page():
         else:
             st.markdown("🧠")
     with col_title:
-        st.markdown("# Language Learning Anki Deck Generator")
+        st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
     st.markdown("---")
 

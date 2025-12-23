@@ -421,7 +421,7 @@ frequency_list_map:
 # UI strings for 5 languages (English, Spanish, French, Hindi, Mandarin)
 ui_strings:
   en:
-    title: "🌍 Fluent Forever Anki Card Generator"
+    title: "🌍 Language Anki Deck Generator"
     subtitle: "Create language learning cards in seconds"
     select_language: "Select Your Language"
     api_keys: "API Keys & Settings"

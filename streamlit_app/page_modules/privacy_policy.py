@@ -13,7 +13,7 @@ def render_privacy_policy_page():
     st.markdown("""
     ## 1. Introduction
 
-    Welcome to the **AI-Powered Language Learning App** ("we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our language learning application that generates personalized Anki flashcards.
+    Welcome to the **Language Anki Deck Generator** ("we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our language learning application that generates personalized Anki flashcards.
 
     By using our service, you agree to the collection and use of information in accordance with this policy.
 
@@ -136,7 +136,7 @@ def render_privacy_policy_page():
     # Navigation back to main app
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
+        if st.button("← Back to Language Anki Deck Generator", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
 

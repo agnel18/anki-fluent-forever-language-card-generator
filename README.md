@@ -1,4 +1,4 @@
-# 🌍 Fluent Forever Anki Language Card Generator
+# 🌍 Language Anki Deck Generator
 
 **Generate professional language learning Anki decks in minutes.**
 

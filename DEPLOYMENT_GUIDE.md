@@ -1,7 +1,7 @@
-# 🚀 Language Learning App - Deployment Guide
+# 🚀 Language Anki Deck Generator - Deployment Guide
 
 ## Overview
-This guide will help you deploy your Language Learning App to **Streamlit Cloud** and optionally configure **Firebase** for data persistence.
+This guide will help you deploy your Language Anki Deck Generator to **Streamlit Cloud** and optionally configure **Firebase** for data persistence.
 
 ## Prerequisites
 - ✅ GitHub account
@@ -62,7 +62,7 @@ git push origin main
 1. Go to **[share.streamlit.io](https://share.streamlit.io)**
 2. Sign in with your GitHub account
 3. Click **"New app"**
-4. Select your repository: `agnel18/anki-fluent-forever-language-card-generator`
+4. Select your repository: `agnel18/language-anki-deck-generator`
 5. Set the main file path: `app.py`
 6. Click **"Deploy"**
 
@@ -168,6 +168,6 @@ For better performance on Streamlit Cloud:
 
 ---
 
-🎉 **Congratulations! Your Language Learning App is now live!**
+🎉 **Congratulations! Your Language Anki Deck Generator is now live!**
 
 Share your app URL with others and start helping people learn languages! 🌍📚

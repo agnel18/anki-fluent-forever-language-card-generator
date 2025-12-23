@@ -28,7 +28,7 @@ def render_api_setup_page():
         st.rerun()
         return
     
-    st.markdown("# 🌍 Language Learning Anki Deck Generator")
+    st.markdown("# 🌍 Language Anki Deck Generator")
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     st.markdown("## 🔐 API Keys Setup")

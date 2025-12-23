@@ -13,7 +13,7 @@ def render_shipping_delivery_page():
     st.markdown("""
     ## 1. Digital Service Overview
 
-    The **AI-Powered Language Learning App** is a fully digital service that delivers educational content electronically. Unlike physical products, our service does not involve traditional shipping or physical delivery.
+    The **Language Anki Deck Generator** is a fully digital service that delivers educational content electronically. Unlike physical products, our service does not involve traditional shipping or physical delivery.
 
     ## 2. Service Delivery Method
 
@@ -155,7 +155,7 @@ def render_shipping_delivery_page():
     # Navigation back to main app
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
+        if st.button("← Back to Language Anki Deck Generator", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
 

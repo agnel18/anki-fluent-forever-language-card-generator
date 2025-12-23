@@ -226,7 +226,7 @@ def render_contact_us_page():
     # Navigation back to main app
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
+        if st.button("← Back to Language Anki Deck Generator", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
 

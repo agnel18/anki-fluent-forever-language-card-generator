@@ -13,7 +13,7 @@ def render_refund_policy_page():
     st.markdown("""
     ## 1. Overview
 
-    The **AI-Powered Language Learning App** is primarily a free educational service. While we accept voluntary donations to support development, our core language learning features are provided at no cost. This refund policy explains our approach to donations, cancellations, and any future paid services.
+    The **Language Anki Deck Generator** is primarily a free educational service. While we accept voluntary donations to support development, our core language learning features are provided at no cost. This refund policy explains our approach to donations, cancellations, and any future paid services.
 
     ## 2. Free Service Policy
 
@@ -143,7 +143,7 @@ def render_refund_policy_page():
     # Navigation back to main app
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("← Back to Language Learning App", use_container_width=True, type="primary"):
+        if st.button("← Back to Language Anki Deck Generator", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
 
