@@ -22,118 +22,177 @@ def render_auth_handler_page():
         "messagingSenderId": "144901974646",
         "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
     }
+    # Debug: Show current configuration
+    st.write("### 🔧 Firebase Configuration Check")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("**API Key:**", f"`{FIREBASE_API_KEY[:20]}...`" if FIREBASE_API_KEY else "❌ Missing")
+        st.write("**Project ID:**", f"`{FIREBASE_PROJECT_ID}`" if FIREBASE_PROJECT_ID else "❌ Missing")
+        st.write("**Auth Domain:**", f"`{firebase_config['authDomain']}`")
+    with col2:
+        st.write("**Storage Bucket:**", f"`{firebase_config['storageBucket']}`")
+        st.write("**App ID:**", f"`{firebase_config['appId']}`")
+        st.write("**Current URL:**", f"`{st.query_params}`")
 
+    # Check if we're on Streamlit Cloud
+    is_streamlit_cloud = "streamlit.app" in str(st.query_params).lower()
+    st.write(f"**Environment:** {'🌐 Streamlit Cloud' if is_streamlit_cloud else '💻 Local Development'}")
+
+    if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
+        st.error("❌ Firebase configuration is incomplete. Please check your secrets.")
+        return
     # JavaScript for Firebase Auth
     firebase_auth_js = f"""
     <script type="module">
-        console.log('Loading Firebase Auth module...');
+        console.log('🔄 Loading Firebase Auth module...');
 
-        // Import Firebase modules
-        import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import {{ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        // Show loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'firebase-loading';
+        loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
+        loadingDiv.textContent = '🔄 Loading Firebase...';
+        document.body.appendChild(loadingDiv);
 
-        console.log('Firebase modules imported successfully');
+        try {{
+            // Import Firebase modules
+            console.log('📦 Importing Firebase modules...');
+            const {{ initializeApp }} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            const {{ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
 
-        // Firebase configuration
-        const firebaseConfig = {json.dumps(firebase_config)};
+            console.log('✅ Firebase modules imported successfully');
 
-        console.log('Initializing Firebase app...');
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+            // Firebase configuration
+            const firebaseConfig = {json.dumps(firebase_config)};
 
-        console.log('Firebase initialized, setting up auth...');
+            console.log('🚀 Initializing Firebase app...');
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-        // Configure Google provider
-        provider.setCustomParameters({{
-            prompt: 'select_account'
-        }});
+            console.log('🔐 Firebase initialized, setting up auth...');
 
-        // Auth state observer
-        onAuthStateChanged(auth, (user) => {{
-            console.log('Auth state changed:', user ? 'signed in' : 'signed out');
-            if (user) {{
-                // User is signed in
-                console.log('User signed in:', user.email);
-                const userData = {{
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    emailVerified: user.emailVerified,
-                    isAnonymous: user.isAnonymous,
-                    providerData: user.providerData
-                }};
+            // Configure Google provider
+            provider.setCustomParameters({{
+                prompt: 'select_account'
+            }});
 
-                // Redirect with user data as query parameters
-                const userDataStr = encodeURIComponent(JSON.stringify(userData));
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('firebase_auth_type', 'success');
-                currentUrl.searchParams.set('user_data', userDataStr);
-                console.log('Redirecting to:', currentUrl.toString());
-                window.location.href = currentUrl.toString();
-            }} else {{
-                // User is signed out - redirect to sign out
-                console.log('User signed out');
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('firebase_auth_type', 'signout');
-                window.location.href = currentUrl.toString();
-            }}
-        }});
+            // Update loading indicator
+            loadingDiv.textContent = '✅ Firebase Ready';
+            loadingDiv.style.background = '#4CAF50';
+            setTimeout(() => loadingDiv.remove(), 3000);
 
-        // Make functions available globally
-        window.firebaseAuth = {{
-            signIn: () => {{
-                console.log('signIn function called');
-                signInWithPopup(auth, provider)
-                    .then((result) => {{
-                        console.log('Sign in successful:', result.user.email);
-                    }})
-                    .catch((error) => {{
-                        console.error('Sign in error:', error);
+            // Auth state observer
+            onAuthStateChanged(auth, (user) => {{
+                console.log('🔄 Auth state changed:', user ? 'signed in' : 'signed out');
+                if (user) {{
+                    // User is signed in
+                    console.log('✅ User signed in:', user.email);
+                    const userData = {{
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        emailVerified: user.emailVerified,
+                        isAnonymous: user.isAnonymous,
+                        providerData: user.providerData
+                    }};
+
+                    // Redirect with user data as query parameters
+                    const userDataStr = encodeURIComponent(JSON.stringify(userData));
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('firebase_auth_type', 'success');
+                    currentUrl.searchParams.set('user_data', userDataStr);
+                    console.log('🔀 Redirecting to:', currentUrl.toString());
+                    window.location.href = currentUrl.toString();
+                }} else {{
+                    // User is signed out - redirect to sign out
+                    console.log('🚪 User signed out');
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('firebase_auth_type', 'signout');
+                    window.location.href = currentUrl.toString();
+                }}
+            }});
+
+            // Make functions available globally
+            window.firebaseAuth = {{
+                signIn: async () => {{
+                    console.log('🚀 signIn function called');
+                    try {{
+                        const result = await signInWithPopup(auth, provider);
+                        console.log('✅ Sign in successful:', result.user.email);
+                    }} catch (error) {{
+                        console.error('❌ Sign in error:', error);
+                        // Show error to user
+                        alert('Sign in failed: ' + error.message);
+
                         // Redirect with error
                         const currentUrl = new URL(window.location.href);
                         currentUrl.searchParams.set('firebase_auth_type', 'error');
                         currentUrl.searchParams.set('error', encodeURIComponent(error.message));
                         window.location.href = currentUrl.toString();
-                    }});
-            }},
-            signOut: () => {{
-                console.log('signOut function called');
-                signOut(auth)
-                    .then(() => {{
-                        console.log('Sign out successful');
-                    }})
-                    .catch((error) => {{
-                        console.error('Sign out error:', error);
-                    }});
-            }}
-        }};
+                    }}
+                }},
+                signOut: async () => {{
+                    console.log('🚪 signOut function called');
+                    try {{
+                        await signOut(auth);
+                        console.log('✅ Sign out successful');
+                    }} catch (error) {{
+                        console.error('❌ Sign out error:', error);
+                    }}
+                }}
+            }};
 
-        console.log('Firebase Auth setup complete, window.firebaseAuth available:', !!window.firebaseAuth);
+            console.log('✅ Firebase Auth setup complete, window.firebaseAuth available:', !!window.firebaseAuth);
 
-        // Listen for messages from Streamlit
-        window.addEventListener('message', (event) => {{
-            console.log('Received message:', event.data);
-            if (event.data.type === 'trigger-sign-in') {{
-                window.firebaseAuth.signIn();
-            }} else if (event.data.type === 'trigger-sign-out') {{
-                window.firebaseAuth.signOut();
-            }}
-        }});
+            // Listen for messages from Streamlit
+            window.addEventListener('message', (event) => {{
+                console.log('📨 Received message:', event.data);
+                if (event.data.type === 'trigger-sign-in') {{
+                    window.firebaseAuth.signIn();
+                }} else if (event.data.type === 'trigger-sign-out') {{
+                    window.firebaseAuth.signOut();
+                }}
+            }});
+
+        }} catch (error) {{
+            console.error('❌ Firebase initialization error:', error);
+            loadingDiv.textContent = '❌ Firebase Error';
+            loadingDiv.style.background = '#f44336';
+            alert('Firebase initialization failed: ' + error.message);
+        }}
     </script>
     """
 
     # Inject Firebase Auth JavaScript
     st.markdown(firebase_auth_js, unsafe_allow_html=True)
 
-    # Handle authentication messages from JavaScript
-    if 'auth_message' not in st.session_state:
-        st.session_state.auth_message = None
-
-    # JavaScript message handler (this will be called via rerun)
-    auth_message_placeholder = st.empty()
+    # Add a manual trigger button as backup
+    st.markdown("---")
+    st.markdown("**Alternative: Manual Sign-In**")
+    if st.button("🚀 Manual Firebase Sign-In", key="manual_signin"):
+        # This will trigger the JavaScript via a different method
+        st.markdown("""
+        <script>
+            // Wait a bit for Firebase to load, then try to sign in
+            setTimeout(() => {
+                try {
+                    if (window.firebaseAuth && window.firebaseAuth.signIn) {
+                        console.log('Manual trigger: Calling Firebase sign in...');
+                        window.firebaseAuth.signIn();
+                    } else {
+                        console.error('Manual trigger: Firebase Auth not available');
+                        alert('Firebase is still loading. Please wait a moment and try again.');
+                    }
+                } catch (error) {
+                    console.error('Manual trigger error:', error);
+                    alert('Error: ' + error.message);
+                }
+            }, 2000); // Wait 2 seconds for Firebase to load
+        </script>
+        """, unsafe_allow_html=True)
+        st.info("⏳ Attempting to sign in... Check the popup that should open.")
 
     # Sign in button
     if not is_signed_in():
@@ -172,11 +231,19 @@ def render_auth_handler_page():
         </div>
         """, unsafe_allow_html=True)
 
-        # Add fallback link in case JavaScript fails
-        st.markdown("---")
-        st.markdown("**Having trouble?** Try the direct sign-in link:")
-        auth_url = f"https://accounts.google.com/o/oauth2/auth?client_id={st.secrets.get('GOOGLE_CLIENT_ID', '')}&redirect_uri={st.secrets.get('REDIRECT_URI', '')}&scope=openid%20email%20profile&response_type=code&state=firebase_auth&prompt=select_account"
-        st.markdown(f"[🔗 Direct Google Sign-In]({auth_url})", unsafe_allow_html=True)
+        # Add debug information
+        with st.expander("🔧 Debug Information (for troubleshooting)"):
+            st.code(f"""
+Firebase Config:
+- API Key: {FIREBASE_API_KEY[:20]}...
+- Project ID: {FIREBASE_PROJECT_ID}
+- Auth Domain: {FIREBASE_PROJECT_ID}.firebaseapp.com
+
+Current URL: {st.query_params}
+            """)
+
+            if st.button("🔄 Reload Firebase Auth", key="reload_firebase"):
+                st.rerun()
 
         st.markdown("---")
         st.markdown("**Why sign in?**")
