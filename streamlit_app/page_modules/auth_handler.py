@@ -55,12 +55,16 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
             console.log('🔄 Firebase Auth JavaScript loaded and executing!');
             console.log('Current URL:', window.location.href);
 
-            // Show loading indicator
-            var loadingDiv = document.createElement('div');
-            loadingDiv.id = 'firebase-loading';
-            loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
-            loadingDiv.textContent = '🔄 Loading Firebase...';
-            document.body.appendChild(loadingDiv);
+            // Show loading indicator (only if document.body is available)
+            if (document.body) {
+                var loadingDiv = document.createElement('div');
+                loadingDiv.id = 'firebase-loading';
+                loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
+                loadingDiv.textContent = '🔄 Loading Firebase...';
+                document.body.appendChild(loadingDiv);
+            } else {
+                console.log('Document body not available, skipping loading indicator');
+            }
 
             // Load Firebase scripts dynamically
             function loadScript(src, callback) {{
@@ -93,9 +97,11 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
                         }});
 
                         // Update loading indicator
-                        loadingDiv.textContent = '✅ Firebase Ready';
-                        loadingDiv.style.background = '#4CAF50';
-                        setTimeout(function() {{ loadingDiv.remove(); }}, 3000);
+                        if (loadingDiv) {
+                            loadingDiv.textContent = '✅ Firebase Ready';
+                            loadingDiv.style.background = '#4CAF50';
+                            setTimeout(function() {{ if (loadingDiv) loadingDiv.remove(); }}, 3000);
+                        }
 
                         // Auth state observer
                         firebase.auth().onAuthStateChanged(function(user) {{
@@ -160,8 +166,10 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
 
                     }} catch (error) {{
                         console.error('❌ Firebase initialization error:', error);
-                        loadingDiv.textContent = '❌ Firebase Error';
-                        loadingDiv.style.background = '#f44336';
+                        if (loadingDiv) {{
+                            loadingDiv.textContent = '❌ Firebase Error';
+                            loadingDiv.style.background = '#f44336';
+                        }}
                         alert('Firebase setup failed: ' + error.message);
                     }}
                 }});
@@ -234,12 +242,7 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
                         window.firebaseAuth.signIn();
                     } else {
                         console.error('Firebase Auth not available');
-                        // Show error message
-                        const errorDiv = document.createElement('div');
-                        errorDiv.style.cssText = 'color: red; padding: 10px; border: 1px solid red; border-radius: 4px; margin: 10px 0; background: #ffe6e6;';
-                        errorDiv.textContent = 'Firebase Auth is not loaded yet. Please wait a moment and try again, or refresh the page.';
-                        document.body.appendChild(errorDiv);
-                        setTimeout(() => errorDiv.remove(), 5000);
+                        alert('Firebase Auth is not loaded yet. Please wait a moment and try again, or refresh the page.');
                     }
                 } catch (error) {
                     console.error('Error triggering sign in:', error);
