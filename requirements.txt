@@ -1,7 +1,7 @@
 # Streamlit app
 streamlit>=1.28.0
 streamlit-option-menu>=0.3.6
-git+https://github.com/cmayoracurzio/streamlit_firebase_auth.git
+streamlit-firebase-auth
 
 # Core dependencies
 pandas>=2.0.0

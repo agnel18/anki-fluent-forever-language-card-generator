@@ -1,9 +1,32 @@
 # auth_handler.py - Firebase Auth using streamlit-firebase-auth component
 
 import streamlit as st
-from streamlit_firebase_auth import firebase_auth
+try:
+    from streamlit_firebase_auth import FirebaseAuth
+    FIREBASE_AUTH_AVAILABLE = True
+except ImportError:
+    FIREBASE_AUTH_AVAILABLE = False
 import json
 from firebase_manager import migrate_guest_data_to_user
+
+# Local auth functions to avoid circular imports
+def is_signed_in():
+    """Check if user is authenticated."""
+    return st.session_state.get('user') is not None
+
+def get_current_user():
+    """Get current authenticated user info."""
+    if is_signed_in():
+        return st.session_state.user
+    return None
+
+def sign_out():
+    """Sign out user and clear authentication state."""
+    if 'user' in st.session_state:
+        del st.session_state.user
+    if 'data_migrated' in st.session_state:
+        del st.session_state.data_migrated
+    st.session_state.is_guest = True
 
 # Firebase configuration
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
@@ -21,38 +44,51 @@ def get_firebase_config():
 
 def firebase_auth_component():
     """Render the Firebase Auth component."""
+    if not FIREBASE_AUTH_AVAILABLE:
+        st.error("Firebase authentication is not available. Please contact support.")
+        return None
+
     config = get_firebase_config()
 
     if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
         st.error("❌ Firebase configuration is incomplete. Please check your Streamlit Cloud secrets.")
         return None
 
-    # Use the streamlit-firebase-auth component
-    user = firebase_auth(
-        config=config,
-        login_button_text="Sign in with Google",
-        logout_button_text="Sign Out",
-        login_button_color="#4285f4",
-        key="firebase_auth"
-    )
+    # Initialize FirebaseAuth
+    auth = FirebaseAuth(config=config)
+
+    # Check current session
+    user = auth.check_session()
 
     if user:
-        # User is authenticated
-        user_data = {
-            'uid': user['user']['uid'],
-            'email': user['user']['email'],
-            'displayName': user['user']['displayName'],
-            'photoURL': user['user'].get('photoURL')
-        }
-        # Store in session state
-        st.session_state.user = user_data
-        st.session_state.is_guest = False
-        # Migrate guest data
-        migrate_guest_data_to_user(user_data['uid'])
-        return user_data
+        # User is authenticated - show logout option
+        if auth.logout_form():
+            # User logged out
+            st.session_state.user = None
+            st.session_state.is_guest = True
+            st.rerun()
+        return user
     else:
-        # Not authenticated
-        return None
+        # User not authenticated - show login form
+        result = auth.login_form()
+        if result['success']:
+            # User logged in successfully
+            user_data = result['user']
+            user_info = {
+                'uid': user_data['uid'],
+                'email': user_data['email'],
+                'displayName': user_data.get('displayName'),
+                'photoURL': user_data.get('photoURL')
+            }
+            # Store in session state
+            st.session_state.user = user_info
+            st.session_state.is_guest = False
+            # Migrate guest data
+            migrate_guest_data_to_user(user_info['uid'])
+            st.rerun()
+            return user_info
+
+    return None
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""
