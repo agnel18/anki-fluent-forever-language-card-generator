@@ -1,5 +1,5 @@
 # Firebase authentication module
-# Extracted from firebase_manager.py for better separation of concerns
+# Updated for Firebase Auth SDK integration
 
 import logging
 import uuid
@@ -42,6 +42,8 @@ def sign_out():
         import streamlit as st
         if 'user' in st.session_state:
             del st.session_state.user
+        if 'data_migrated' in st.session_state:
+            del st.session_state.data_migrated
         st.session_state.is_guest = True
         logger.info("User signed out successfully")
     except Exception as e:
@@ -56,3 +58,16 @@ def get_current_user():
         return None
     except:
         return None
+
+def get_current_user_id() -> Optional[str]:
+    """Get current authenticated user's Firebase UID."""
+    user = get_current_user()
+    return user.get('uid') if user else None
+
+def is_guest_user() -> bool:
+    """Check if current user is a guest (not authenticated)."""
+    try:
+        import streamlit as st
+        return st.session_state.get('is_guest', True)
+    except:
+        return True

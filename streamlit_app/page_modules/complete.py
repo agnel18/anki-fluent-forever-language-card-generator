@@ -133,6 +133,8 @@ def render_complete_page():
 
         **All done!** Your {st.session_state.selected_lang} deck with {total_cards} cards is ready to study.
 
+        **Import multiple times?** Use Anki's Browse → Change Deck to merge.
+
         Cards include audio, images, and phonetic guides (IPA) for pronunciation.
         """)
 

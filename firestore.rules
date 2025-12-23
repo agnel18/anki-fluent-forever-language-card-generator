@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own data
+    match /users/{userId} {
+      // Allow read/write for authenticated users to their own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow read for guest users (limited access for migration)
+      allow read: if request.auth == null && userId.matches("guest_.*");
+
+      // Allow write for guest users (for initial data creation)
+      allow write: if request.auth == null && userId.matches("guest_.*")
+                   && (!resource.exists || request.time - resource.data.last_updated < duration.value(24, 'h'));
+    }
+
+    // Public read access for app configuration (if needed in future)
+    match /config/{document} {
+      allow read: if true;
+    }
+  }
+}

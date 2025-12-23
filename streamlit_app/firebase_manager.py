@@ -654,6 +654,99 @@ def get_current_user():
 
 
 # ============================================================================
+# DATA MIGRATION
+# ============================================================================
+
+def migrate_guest_data_to_user(firebase_uid: str) -> bool:
+    """
+    Migrate guest session data to authenticated Firebase user account.
+
+    Args:
+        firebase_uid: The Firebase UID of the authenticated user
+
+    Returns:
+        True if migration successful, False otherwise
+    """
+    if not firebase_initialized:
+        logger.warning("Firebase not initialized, cannot migrate data")
+        return False
+
+    try:
+        import streamlit as st
+        db = firestore.client()
+
+        # Get current guest session data
+        guest_session_id = st.session_state.get('session_id')
+        if not guest_session_id:
+            logger.warning("No guest session ID found for migration")
+            return False
+
+        logger.info(f"Migrating data from guest session {guest_session_id} to user {firebase_uid}")
+
+        # Migrate settings
+        guest_settings = load_settings_from_firebase(guest_session_id)
+        if guest_settings:
+            # Save settings under Firebase UID
+            user_settings_ref = db.collection("users").document(firebase_uid).collection("metadata").document("settings")
+            user_settings_ref.set(guest_settings, merge=True)
+            logger.info("Migrated settings to user account")
+
+        # Migrate progress data for each language
+        # Get all progress documents for the guest session
+        progress_docs = db.collection("users").document(guest_session_id).collection("progress").stream()
+        for doc in progress_docs:
+            progress_data = doc.to_dict()
+            # Save under Firebase UID
+            user_progress_ref = db.collection("users").document(firebase_uid).collection("progress").document(doc.id)
+            user_progress_ref.set(progress_data, merge=True)
+            logger.info(f"Migrated progress for language: {doc.id}")
+
+        # Migrate word stats
+        word_stats_docs = db.collection("users").document(guest_session_id).collection("word_stats").stream()
+        for doc in word_stats_docs:
+            stats_data = doc.to_dict()
+            user_stats_ref = db.collection("users").document(firebase_uid).collection("word_stats").document(doc.id)
+            user_stats_ref.set(stats_data, merge=True)
+            logger.info(f"Migrated word stats for language: {doc.id}")
+
+        # Migrate usage statistics
+        guest_usage = load_usage_stats_from_firebase(guest_session_id)
+        if guest_usage:
+            # Merge guest usage stats with any existing user stats
+            merge_guest_stats_to_firebase(firebase_uid, guest_usage)
+            logger.info("Migrated usage statistics")
+
+        # Migrate generation history
+        history_docs = db.collection("users").document(guest_session_id).collection("history").stream()
+        for doc in history_docs:
+            history_data = doc.to_dict()
+            # Create new document under user account
+            user_history_ref = db.collection("users").document(firebase_uid).collection("history").document()
+            user_history_ref.set(history_data)
+            logger.info("Migrated generation history entry")
+
+        # Mark migration as complete in user metadata
+        migration_data = {
+            "migrated_from_session": guest_session_id,
+            "migration_timestamp": datetime.now().isoformat(),
+            "migration_version": "1.0"
+        }
+        migration_ref = db.collection("users").document(firebase_uid).collection("metadata").document("migration")
+        migration_ref.set(migration_data)
+
+        # Update session state to reflect migration
+        st.session_state.data_migrated = True
+        st.session_state.migrated_from_session = guest_session_id
+
+        logger.info(f"✅ Successfully migrated all guest data to user {firebase_uid}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error migrating guest data to user: {e}")
+        return False
+
+
+# ============================================================================
 # INITIALIZATION
 # ============================================================================
 

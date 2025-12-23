@@ -59,7 +59,7 @@ def render_sidebar():
     # Documentation button
     if st.sidebar.button("📖 Documentation", key="sidebar_docs", use_container_width=True):
         import webbrowser
-        webbrowser.open("https://github.com/agnel18/language-anki-deck-generator")
+        webbrowser.open("https://github.com/agnel18/anki-fluent-forever-language-card-generator")
         st.sidebar.success("Opening documentation...")
 
     st.sidebar.markdown("---")

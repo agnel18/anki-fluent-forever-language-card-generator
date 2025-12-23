@@ -1,219 +1,203 @@
-# auth_handler.py - Google OAuth authentication handler page
+# auth_handler.py - Firebase Auth SDK integration for Streamlit
 
 import streamlit as st
-import time
 import json
-import requests
-from firebase_manager import is_signed_in, get_current_user
+from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_to_user
 
-# Google OAuth configuration
-GOOGLE_CLIENT_ID = st.secrets.get("GOOGLE_CLIENT_ID", "")
-GOOGLE_CLIENT_SECRET = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
-REDIRECT_URI = st.secrets.get("REDIRECT_URI", "http://localhost:8501")
-
-# Google OAuth endpoints
-AUTH_URL = "https://accounts.google.com/o/oauth2/auth"
-TOKEN_URL = "https://oauth2.googleapis.com/token"
-USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+# Firebase configuration
+FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
+FIREBASE_PROJECT_ID = st.secrets.get("FIREBASE_PROJECT_ID", "")
 
 def render_auth_handler_page():
-    """Handle Google OAuth authentication flow."""
+    """Handle Firebase Authentication with Google Sign-In."""
     st.title("🔐 Sign In with Google")
-    st.markdown("Please complete the Google authentication...")
+    st.markdown("Connect your Google account to save progress across devices!")
 
-    # Debug info
-    st.write("**Debug Info:**")
-    st.write(f"Client ID configured: {bool(GOOGLE_CLIENT_ID)}")
-    st.write(f"Client Secret configured: {bool(GOOGLE_CLIENT_SECRET)}")
-    st.write(f"Redirect URI: {REDIRECT_URI}")
-    st.write(f"Auth URL: {AUTH_URL}")
+    # Firebase Auth SDK integration
+    firebase_config = {
+        "apiKey": FIREBASE_API_KEY,
+        "authDomain": f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
+        "projectId": FIREBASE_PROJECT_ID,
+        "storageBucket": f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
+        "messagingSenderId": "144901974646",
+        "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
+    }
 
-    # Check if we have authorization code
-    if st.query_params.get("code"):
-        code = st.query_params.get("code")
-        st.write(f"**Received authorization code:** {code[:20]}...")
+    # JavaScript for Firebase Auth
+    firebase_auth_js = f"""
+    <script type="module">
+        // Import Firebase modules
+        import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import {{ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        # Exchange code for token
-        try:
-            # Exchange authorization code for access token
-            token_data = {
-                'client_id': GOOGLE_CLIENT_ID,
-                'client_secret': GOOGLE_CLIENT_SECRET,
-                'code': code,
-                'grant_type': 'authorization_code',
-                'redirect_uri': REDIRECT_URI
-            }
+        // Firebase configuration
+        const firebaseConfig = {json.dumps(firebase_config)};
 
-            st.write("**Exchanging code for token...**")
-            st.write(f"**Client ID:** {GOOGLE_CLIENT_ID}")
-            st.write(f"**Client Secret:** {GOOGLE_CLIENT_SECRET[:10]}...")
-            st.write(f"**Redirect URI:** {REDIRECT_URI}")
-            st.write(f"**Code:** {code[:20]}...")
-            
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            token_response = requests.post(TOKEN_URL, data=token_data, headers=headers)
-            st.write(f"**Token response status:** {token_response.status_code}")
-            st.write(f"**Token response headers:** {dict(token_response.headers)}")
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-            token_json = token_response.json()
-            st.write(f"**Token response:** {token_json}")
+        // Configure Google provider
+        provider.setCustomParameters({{
+            prompt: 'select_account'
+        }});
 
-            if 'access_token' in token_json:
-                access_token = token_json['access_token']
-                st.write("**Got access token, fetching user info...**")
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {{
+            if (user) {{
+                // User is signed in
+                const userData = {{
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    emailVerified: user.emailVerified,
+                    isAnonymous: user.isAnonymous,
+                    providerData: user.providerData
+                }};
 
-                # Get user info from Google
-                headers = {'Authorization': f'Bearer {access_token}'}
-                user_response = requests.get(USERINFO_URL, headers=headers)
-                st.write(f"**User info response status:** {user_response.status_code}")
+                // Redirect with user data as query parameters
+                const userDataStr = encodeURIComponent(JSON.stringify(userData));
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('firebase_auth_type', 'success');
+                currentUrl.searchParams.set('user_data', userDataStr);
+                window.location.href = currentUrl.toString();
+            }} else {{
+                // User is signed out - redirect to sign out
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('firebase_auth_type', 'signout');
+                window.location.href = currentUrl.toString();
+            }}
+        }});
 
-                user_info = user_response.json()
-                st.write(f"**User info:** {user_info}")
+        // Make functions available globally
+        window.firebaseAuth = {{
+            signIn: () => {{
+                signInWithPopup(auth, provider)
+                    .then((result) => {{
+                        console.log('Sign in successful');
+                    }})
+                    .catch((error) => {{
+                        console.error('Sign in error:', error);
+                        // Redirect with error
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('firebase_auth_type', 'error');
+                        currentUrl.searchParams.set('error', encodeURIComponent(error.message));
+                        window.location.href = currentUrl.toString();
+                    }});
+            }},
+            signOut: () => {{
+                signOut(auth)
+                    .then(() => {{
+                        console.log('Sign out successful');
+                    }})
+                    .catch((error) => {{
+                        console.error('Sign out error:', error);
+                    }});
+            }}
+        }};
 
-                if user_info.get('email'):
-                    # Create user object
-                    user = {
-                        'email': user_info.get('email', ''),
-                        'uid': user_info.get('id', ''),
-                        'display_name': user_info.get('name', ''),
-                        'photo_url': user_info.get('picture', ''),
-                        'email_verified': user_info.get('verified_email', False)
-                    }
+        // Listen for messages from Streamlit
+        window.addEventListener('message', (event) => {{
+            if (event.data.type === 'trigger-sign-in') {{
+                window.firebaseAuth.signIn();
+            }} else if (event.data.type === 'trigger-sign-out') {{
+                window.firebaseAuth.signOut();
+            }}
+        }});
+    </script>
+    """
 
-                    # Store user in session state
-                    st.session_state.user = user
-                    st.session_state.is_guest = False
+    # Inject Firebase Auth JavaScript
+    st.markdown(firebase_auth_js, unsafe_allow_html=True)
 
-                    # Load cloud data if available
-                    try:
-                        from sync_manager import load_cloud_data
-                        load_cloud_data()
-                    except Exception as e:
-                        st.warning(f"Could not load cloud data: {e}")
+    # Handle authentication messages from JavaScript
+    if 'auth_message' not in st.session_state:
+        st.session_state.auth_message = None
 
-                    st.success("✅ Successfully signed in with Google!")
-                    st.info("Your settings will now sync across devices.")
+    # JavaScript message handler (this will be called via rerun)
+    auth_message_placeholder = st.empty()
 
-                    # Show user info
-                    st.markdown("---")
-                    st.markdown("**Welcome!**")
-                    st.markdown(f"**Name:** {user['display_name']}")
-                    st.markdown(f"**Email:** {user['email']}")
+    # Sign in button
+    if not is_signed_in():
+        if st.button("🔐 Sign In with Google", type="primary", use_container_width=True):
+            # Trigger sign in via JavaScript
+            st.markdown("""
+            <script>
+                if (window.firebaseAuth) {
+                    window.firebaseAuth.signIn();
+                } else {
+                    alert('Firebase Auth not loaded yet. Please refresh the page.');
+                }
+            </script>
+            """, unsafe_allow_html=True)
 
-                    # Clear query params
-                    st.query_params.clear()
+        st.markdown("---")
+        st.markdown("**Why sign in?**")
+        st.markdown("✅ Save your progress across devices")
+        st.markdown("✅ Backup your API keys securely")
+        st.markdown("✅ Access advanced statistics")
+        st.markdown("✅ Never lose your learning data")
 
-                    # Auto-redirect after success
-                    time.sleep(3)
-                    st.session_state.page = "main"
-                    st.rerun()
-                else:
-                    st.error("❌ Failed to get user information from Google")
-            else:
-                st.error(f"❌ Failed to get access token: {token_json.get('error_description', 'Unknown error')}")
-        except Exception as e:
-            st.error(f"❌ Authentication failed: {e}")
-            import traceback
-            st.code(traceback.format_exc())
     else:
-        # Start OAuth flow
-        if st.button("🔐 Sign In with Google", type="primary"):
-            # Build authorization URL with proper encoding
-            from urllib.parse import urlencode
-
-            auth_params = {
-                'client_id': GOOGLE_CLIENT_ID,
-                'redirect_uri': REDIRECT_URI,
-                'scope': 'openid email profile',
-                'response_type': 'code',
-                'access_type': 'offline',
-                'prompt': 'consent'
-            }
-
-            auth_url = f"{AUTH_URL}?{urlencode(auth_params)}"
-            st.write(f"**Authorization URL:** {auth_url}")
-            st.markdown(f'<meta http-equiv="refresh" content="0; url={auth_url}">', unsafe_allow_html=True)
-            st.stop()
-
-
-def render_sign_in_page():
-    """Render the sign-in page for users."""
-    st.title("🚀 Enable Cloud Sync")
-    st.markdown("Sign in with Google to backup your settings and sync across devices.")
-
-    st.markdown("---")
-    st.markdown("### Benefits of Cloud Sync:")
-    st.markdown("✅ **Backup your API keys** securely in the cloud")
-    st.markdown("✅ **Access your settings** on any device")
-    st.markdown("✅ **Never lose your configuration**")
-    st.markdown("✅ **Secure encryption** protects your data")
-
-    st.markdown("---")
-
-    # Check if Google OAuth is configured
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
-        st.warning("⚠️ Google OAuth is not configured. Using demo authentication instead.")
-
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("🔐 Try Demo Sign In", use_container_width=True, type="primary"):
-                st.session_state.page = "auth_handler"
-                st.rerun()
-
-            if st.button("❌ Continue as Guest", use_container_width=True):
-                st.session_state.page = "main"
-                st.rerun()
-    else:
-        # Real Google OAuth
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("🔐 Sign In with Google", use_container_width=True, type="primary"):
-                st.session_state.page = "auth_handler"
-                st.rerun()
-
-            if st.button("❌ Continue as Guest", use_container_width=True):
-                st.session_state.page = "main"
-                st.rerun()
-
-    st.markdown("---")
-    st.caption("🔒 Your privacy is protected. We only store what you choose to save.")
-
-
-def render_user_profile():
-    """Render user profile information in sidebar."""
-    if is_signed_in():
+        # User is signed in
         user = get_current_user()
         if user:
-            st.sidebar.markdown("---")
-            st.sidebar.markdown("### 👤 Account")
+            st.success(f"✅ Signed in as {user.get('display_name', user.get('email', 'User'))}")
 
-            # User info
-            email = user.get('email', 'Unknown')
-            name = user.get('display_name', email.split('@')[0])
+            # Show user info
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if user.get('photo_url'):
+                    st.image(user['photo_url'], width=60)
+                else:
+                    st.markdown("👤")
+            with col2:
+                st.markdown(f"**{user.get('display_name', 'User')}**")
+                st.markdown(f"*{user.get('email', '')}*")
 
-            # Show profile picture if available
-            photo_url = user.get('photo_url')
-            if photo_url:
-                st.sidebar.image(photo_url, width=50, caption=name)
+            st.markdown("---")
+
+            if st.button("🚪 Sign Out", use_container_width=True):
+                # Trigger sign out via JavaScript
+                st.markdown("""
+                <script>
+                    if (window.firebaseAuth) {
+                        window.firebaseAuth.signOut();
+                    } else {
+                        // Fallback: clear session state directly
+                        window.location.href = window.location.href.split('?')[0] + '?firebase_auth_type=signout';
+                    }
+                </script>
+                """, unsafe_allow_html=True)
+
+            # Migration status
+            if st.session_state.get('data_migrated', False):
+                st.info("✅ Your data has been migrated to the cloud!")
             else:
-                st.sidebar.markdown(f"**{name}**")
+                if st.button("☁️ Migrate My Data to Cloud", type="secondary", use_container_width=True):
+                    with st.spinner("Migrating your data..."):
+                        success = migrate_guest_data_to_user(user['uid'])
+                        if success:
+                            st.session_state.data_migrated = True
+                            st.success("✅ Data migrated successfully!")
+                            st.rerun()
+                        else:
+                            st.error("❌ Failed to migrate data. Please try again.")
 
-            st.sidebar.markdown(f"*{email}*")
+    # Instructions
+    st.markdown("---")
+    st.markdown("### 📋 Instructions")
+    st.markdown("1. Click 'Sign In with Google' above")
+    st.markdown("2. Choose your Google account in the popup")
+    st.markdown("3. Grant permission to access your basic profile")
+    st.markdown("4. Your data will be securely synced to the cloud!")
 
-            # Sign out button
-            if st.sidebar.button("🚪 Sign Out", key="sidebar_signout"):
-                from firebase_manager import sign_out
-                sign_out()
-                st.sidebar.success("✅ Signed out successfully")
-                st.rerun()
-        else:
-            st.sidebar.markdown("---")
-            st.sidebar.markdown("### 👤 Account")
-            st.sidebar.markdown("*User data not available*")
-    else:
-        # Show sign-in option
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### 👤 Account")
-        if st.sidebar.button("🔐 Sign In", key="sidebar_signin_profile", help="Sign in with Google to enable cloud sync"):
-            st.session_state.page = "auth_handler"
-            st.rerun()
+    # Privacy notice
+    st.markdown("---")
+    st.markdown("### 🔒 Privacy & Security")
+    st.markdown("• We only access your basic Google profile (name, email, photo)")
+    st.markdown("• Your data is encrypted and stored securely in Firebase")
+    st.markdown("• You can delete your account and data anytime")
+    st.markdown("• [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
