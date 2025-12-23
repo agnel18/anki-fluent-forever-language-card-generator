@@ -1,6 +1,7 @@
 # auth_handler.py - Firebase Auth SDK integration for Streamlit
 
 import streamlit as st
+import streamlit.components.v1 as components
 import json
 from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_to_user
 
@@ -184,8 +185,8 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
     </script>
     """
 
-    # Inject Firebase Auth JavaScript
-    st.markdown(firebase_auth_js, unsafe_allow_html=True)
+    # Inject Firebase Auth JavaScript using components for better Streamlit Cloud compatibility
+    components.html(firebase_auth_js, height=0, width=0)
     
     # Status indicator
     st.success("✅ Firebase JavaScript has been injected into the page!")
@@ -196,7 +197,7 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
     st.markdown("**Alternative: Manual Sign-In**")
     if st.button("🚀 Manual Firebase Sign-In", key="manual_signin"):
         # This will trigger the JavaScript via a different method
-        st.markdown("""
+        manual_trigger_js = """
         <script>
             // Wait a bit for Firebase to load, then try to sign in
             setTimeout(() => {
@@ -214,7 +215,8 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
                 }
             }, 2000); // Wait 2 seconds for Firebase to load
         </script>
-        """, unsafe_allow_html=True)
+        """
+        components.html(manual_trigger_js, height=0, width=0)
         st.info("⏳ Attempting to sign in... Check the popup that should open.")
 
     # Sign in button
@@ -224,7 +226,7 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
 
         if st.button("🔐 Sign In with Google", type="primary", use_container_width=True):
             # Trigger sign in via JavaScript with better error handling
-            st.markdown("""
+            signin_trigger_js = """
             <script>
                 try {
                     if (window.firebaseAuth && window.firebaseAuth.signIn) {
@@ -244,7 +246,8 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
                     alert('Error starting sign in process. Please refresh the page and try again.');
                 }
             </script>
-            """, unsafe_allow_html=True)
+            """
+            components.html(signin_trigger_js, height=0, width=0)
 
         # Show loading status
         st.markdown("""
@@ -296,7 +299,7 @@ Current URL: {st.query_params}
 
             if st.button("🚪 Sign Out", use_container_width=True):
                 # Trigger sign out via JavaScript
-                st.markdown("""
+                signout_js = """
                 <script>
                     if (window.firebaseAuth) {
                         window.firebaseAuth.signOut();
@@ -305,7 +308,8 @@ Current URL: {st.query_params}
                         window.location.href = window.location.href.split('?')[0] + '?firebase_auth_type=signout';
                     }
                 </script>
-                """, unsafe_allow_html=True)
+                """
+                components.html(signout_js, height=0, width=0)
 
             # Migration status
             if st.session_state.get('data_migrated', False):
