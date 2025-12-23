@@ -3,7 +3,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import json
-from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_to_user
+from firebase_manager import is_signed_in, get_current_user, migrate_guest_data_to_user, sign_out
 
 # Firebase configuration
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
@@ -49,22 +49,22 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
         """)
         return
     # JavaScript for Firebase Auth - Working version with traditional script loading
-    firebase_auth_js = f"""
+    firebase_auth_js = """
     <script>
         (function() {{
             console.log('🔄 Firebase Auth JavaScript loaded and executing!');
             console.log('Current URL:', window.location.href);
 
             // Show loading indicator (only if document.body is available)
-            if (document.body) {
+            if (document.body) {{
                 var loadingDiv = document.createElement('div');
                 loadingDiv.id = 'firebase-loading';
                 loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
                 loadingDiv.textContent = '🔄 Loading Firebase...';
                 document.body.appendChild(loadingDiv);
-            } else {
+            }} else {{
                 console.log('Document body not available, skipping loading indicator');
-            }
+            }}
 
             // Load Firebase scripts dynamically
             function loadScript(src, callback) {{
@@ -75,14 +75,14 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
             }}
 
             // Firebase configuration
-            var firebaseConfig = {json.dumps(firebase_config)};
+            var firebaseConfig = {firebase_config_json};
 
             // Load Firebase App first
-            loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js', function() {{
+            loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js', function() {{
                 console.log('📦 Firebase App loaded');
 
                 // Load Firebase Auth
-                loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js', function() {{
+                loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js', function() {{
                     console.log('🔐 Firebase Auth loaded');
 
                     try {{
@@ -97,11 +97,11 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
                         }});
 
                         // Update loading indicator
-                        if (loadingDiv) {
+                        if (loadingDiv) {{
                             loadingDiv.textContent = '✅ Firebase Ready';
                             loadingDiv.style.background = '#4CAF50';
                             setTimeout(function() {{ if (loadingDiv) loadingDiv.remove(); }}, 3000);
-                        }
+                        }}
 
                         // Auth state observer
                         firebase.auth().onAuthStateChanged(function(user) {{
@@ -191,7 +191,7 @@ FIREBASE_PROJECT_ID = "your-project-id-here"
 
         }})();
     </script>
-    """
+    """.format(firebase_config_json=json.dumps(firebase_config))
 
     # Inject Firebase Auth JavaScript using components for better Streamlit Cloud compatibility
     components.html(firebase_auth_js, height=0, width=0)
