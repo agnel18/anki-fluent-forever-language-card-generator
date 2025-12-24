@@ -45,7 +45,7 @@ def get_firebase_config():
 
 def firebase_auth_component():
     """Render the authentication component using Streamlit's built-in OIDC."""
-    if not st.user.is_logged_in:
+    if not is_signed_in():
         # User not logged in - show login button
         page_id = st.session_state.get('page', 'main')
         col1, col2 = st.columns([1, 1])
@@ -77,7 +77,7 @@ def render_auth_handler_page():
     st.title("ðŸ” Sign In with Google")
     st.markdown("Connect your Google account to save progress across devices!")
 
-    if not st.user.is_logged_in:
+    if not is_signed_in():
         # User not logged in - show login button
         col1, col2 = st.columns([1, 1])
         with col1:
