@@ -8,17 +8,19 @@ if not hasattr(st, "session_state") or st.session_state is None:
 import streamlit.components.v1 as components
 
 # Local auth functions for backward compatibility
+
 def is_signed_in():
     """Check if user is authenticated using Streamlit's built-in auth."""
-    return st.user.is_logged_in
+    return hasattr(st, "user") and hasattr(st.user, "is_logged_in") and st.user.is_logged_in
+
 
 def get_current_user():
     """Get current authenticated user info using Streamlit's built-in auth."""
     if is_signed_in():
         return {
-            'uid': st.user.email,  # Use email as unique identifier
-            'email': st.user.email,
-            'displayName': getattr(st.user, 'name', st.user.email),
+            'uid': getattr(st.user, 'email', None),
+            'email': getattr(st.user, 'email', None),
+            'displayName': getattr(st.user, 'name', getattr(st.user, 'email', 'User')),
             'photoURL': getattr(st.user, 'picture', None)
         }
     return None
