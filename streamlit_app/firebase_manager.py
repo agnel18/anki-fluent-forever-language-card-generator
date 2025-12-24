@@ -153,12 +153,14 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
         return True
 
     try:
+        print("DEBUG: Starting Firebase initialization...")
         # First try to initialize with Streamlit secrets
         try:
             import streamlit as st
             project_id = st.secrets.get("FIREBASE_PROJECT_ID")
 
             if project_id:
+                print(f"DEBUG: Found project_id: {project_id}")
                 logger.info("Initializing Firebase with Streamlit secrets...")
 
                 # For Firebase Admin SDK, we need service account credentials
@@ -185,11 +187,13 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
                     cred = credentials.Certificate(cred_dict)
 
                     logger.info("Initializing Firebase app...")
+                    print("DEBUG: Calling firebase_admin.initialize_app...")
                     firebase_admin.initialize_app(cred, {
                         'projectId': project_id
                     })
 
                     firebase_initialized = True
+                    print("DEBUG: Firebase initialized successfully")
                     logger.info("✅ Firebase initialized successfully with Streamlit secrets")
                     return True
                 else:
@@ -198,6 +202,7 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
                 logger.debug(f"Firebase project_id not found in secrets")
 
         except Exception as secrets_error:
+            print(f"DEBUG: Streamlit secrets initialization failed: {secrets_error}")
             logger.error(f"Streamlit secrets initialization failed: {secrets_error}")
             logger.debug(f"Secrets error details: {str(secrets_error)}")
 
@@ -224,6 +229,7 @@ def init_firebase(config_path: Optional[Path] = None) -> bool:
         return True
 
     except Exception as e:
+        print(f"DEBUG: Firebase initialization failed: {e}")
         logger.warning(f"Firebase initialization failed: {e}")
         logger.info("Continuing without Firebase sync...")
         return False
