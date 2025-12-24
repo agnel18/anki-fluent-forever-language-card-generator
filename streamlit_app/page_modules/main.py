@@ -8,20 +8,9 @@ from firebase_manager import is_signed_in, get_current_user, sign_out
 
 
 def handle_auth_callback():
-    """Checks URL for auth data, saves to session, and cleans URL."""
-    params = st.query_params
-    # Keep the old check for backward compatibility
-    if "auth_success" in params:
-        try:
-            user_data = json.loads(params.get("user_data", "{}"))
-            if user_data:
-                st.session_state.user = user_data
-                st.session_state.is_guest = False
-                st.query_params.clear()
-                st.rerun()
-        except Exception as e:
-            st.error(f"Login failed: {e}")
-            st.query_params.clear()
+    """Handle OAuth callback from URL parameters."""
+    from page_modules.auth_handler import handle_auth_callback as auth_callback
+    auth_callback()
 
 def render_main_page():
     """Render the main overview page with introduction and start button."""

@@ -1,8 +1,42 @@
-﻿# auth_handler.py - Firebase Authentication
+﻿# auth_handler.py - Firebase Authentication using httpx-oauth
 
 import streamlit as st
+import firebase_admin
+from firebase_admin import auth, exceptions, credentials, initialize_app
+import asyncio
+from httpx_oauth.clients.google import GoogleOAuth2
+import jwt
+from typing import Optional
 import streamlit.components.v1 as components
-from streamlit_firebase_auth import login
+
+# Initialize Firebase Admin
+try:
+    firebase_admin.get_app()
+except ValueError:
+    # Initialize with your Firebase config
+    cred = credentials.Certificate({
+        "type": "service_account",
+        "project_id": st.secrets.get("FIREBASE_PROJECT_ID", ""),
+        "private_key_id": st.secrets.get("FIREBASE_PRIVATE_KEY_ID", ""),
+        "private_key": st.secrets.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
+        "client_email": st.secrets.get("FIREBASE_CLIENT_EMAIL", ""),
+        "client_id": st.secrets.get("FIREBASE_CLIENT_ID", ""),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{st.secrets.get('FIREBASE_CLIENT_EMAIL', '')}"
+    })
+    initialize_app(cred)
+
+# Initialize Google OAuth2 client
+client_id = st.secrets.get("GOOGLE_CLIENT_ID", "")
+client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
+redirect_url = st.secrets.get("GOOGLE_REDIRECT_URL", "")
+
+if client_id and client_secret and redirect_url:
+    client = GoogleOAuth2(client_id=client_id, client_secret=client_secret)
+else:
+    client = None
 
 # Local auth functions for backward compatibility
 def is_signed_in():
@@ -17,19 +51,100 @@ def sign_out():
     """Sign out user."""
     st.session_state.user = None
 
-# Firebase configuration
-FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
-FIREBASE_PROJECT_ID = st.secrets.get("FIREBASE_PROJECT_ID", "")
+def decode_user(token: str):
+    """Decode JWT token to get user info."""
+    decoded_data = jwt.decode(jwt=token, options={"verify_signature": False})
+    return decoded_data
 
-def get_firebase_config():
-    """Get Firebase configuration from secrets."""
-    return {
-        "apiKey": FIREBASE_API_KEY,
-        "authDomain": f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
-        "projectId": FIREBASE_PROJECT_ID,
-        "storageBucket": f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
-        "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
-    }
+async def get_authorization_url(client: GoogleOAuth2, redirect_url: str) -> str:
+    """Get Google OAuth authorization URL."""
+    authorization_url = await client.get_authorization_url(
+        redirect_url,
+        scope=["openid", "email", "profile"],
+        extras_params={"access_type": "offline"},
+    )
+    return authorization_url
+
+async def get_access_token(client: GoogleOAuth2, redirect_url: str, code: str):
+    """Exchange authorization code for access token."""
+    token = await client.get_access_token(code, redirect_url)
+    return token
+
+def get_access_token_from_query_params(client: GoogleOAuth2, redirect_url: str):
+    """Get access token from URL query parameters."""
+    query_params = st.query_params
+    if "code" in query_params:
+        code = query_params["code"]
+        token = asyncio.run(get_access_token(client=client, redirect_url=redirect_url, code=code))
+        # Clear query params
+        st.query_params.clear()
+        return token
+    return None
+
+def markdown_button(url: str, text: Optional[str] = None, color="#4285f4", sidebar: bool = True):
+    """Create a styled HTML button for OAuth."""
+    markdown = st.sidebar.markdown if sidebar else st.markdown
+    markdown(
+        f"""
+        <a href="{url}" target="_self">
+            <div style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 400;
+                padding: 0.5rem 1rem;
+                border-radius: 0.25rem;
+                margin: 0px;
+                margin-bottom: 2px;
+                line-height: 1.6;
+                width: auto;
+                user-select: none;
+                background-color: {color};
+                color: rgb(255, 255, 255);
+                border: 1px solid {color};
+                text-decoration: none;
+                text-align: center;
+                cursor: pointer;
+                font-size: 16px;
+            ">
+                🔐 {text}
+            </div>
+        </a>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def show_login_button(text: Optional[str] = "Sign In with Google", color="#4285f4", sidebar: bool = True):
+    """Show the Google sign-in button."""
+    if client and not is_signed_in():
+        authorization_url = asyncio.run(get_authorization_url(client=client, redirect_url=redirect_url))
+        markdown_button(authorization_url, text, color, sidebar)
+
+def handle_auth_callback():
+    """Handle OAuth callback from URL parameters."""
+    if client:
+        try:
+            token = get_access_token_from_query_params(client, redirect_url)
+            if token and "id_token" in token:
+                user_info = decode_user(token=token["id_token"])
+                if user_info and "email" in user_info:
+                    # Create or get Firebase user
+                    try:
+                        user = auth.get_user_by_email(user_info["email"])
+                    except exceptions.FirebaseError:
+                        user = auth.create_user(email=user_info["email"])
+
+                    # Store user info in session
+                    st.session_state.user = {
+                        "uid": user.uid,
+                        "email": user_info["email"],
+                        "displayName": user_info.get("name", user_info["email"]),
+                        "photoURL": user_info.get("picture", ""),
+                    }
+                    st.session_state.is_guest = False
+                    st.rerun()
+        except Exception as e:
+            st.error(f"Authentication failed: {e}")
 
 def firebase_auth_component():
     """Render the authentication component."""
@@ -37,9 +152,7 @@ def firebase_auth_component():
         # User not logged in - show login button
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button("🔐 Sign In with Google", type="primary", use_container_width=True, key="auth_component_signin_main"):
-                st.session_state.page = "auth_handler"
-                st.rerun()
+            show_login_button("Sign In with Google", "#4285f4", sidebar=False)
         with col2:
             st.info("Optional - Guest mode available")
         return None
@@ -47,52 +160,6 @@ def firebase_auth_component():
         # User is logged in - show logout option
         user_info = get_current_user()
         return user_info
-
-def get_firebase_config():
-    """Get Firebase configuration from secrets."""
-    firebase_config = {
-        "apiKey": FIREBASE_API_KEY,
-        "authDomain": f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
-        "projectId": FIREBASE_PROJECT_ID,
-        "storageBucket": f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
-        "messagingSenderId": "144901974646",
-        "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
-    }
-    return firebase_config if FIREBASE_API_KEY and FIREBASE_PROJECT_ID else None
-
-def render_auth_handler_page():
-    """Handle authentication using Firebase."""
-    st.title("🔐 Sign In with Google")
-    st.markdown("Connect your Google account to save progress across devices!")
-
-    user = login()
-    if user:
-        st.session_state.user = user
-        st.session_state.page = "main"
-        st.rerun()
-    else:
-        st.markdown("---")
-        st.markdown("**Why sign in?**")
-        st.markdown("✅ Save your progress across devices")
-        st.markdown("✅ Backup your API keys securely")
-        st.markdown("✅ Access advanced statistics")
-        st.markdown("✅ Never lose your learning data")
-
-        # Instructions
-        st.markdown("---")
-        st.markdown("### 📋 How to Sign In")
-        st.markdown("1. Click 'Sign In with Google' above")
-        st.markdown("2. Choose your Google account in the popup")
-        st.markdown("3. Grant permission to access your basic Google profile")
-        st.markdown("4. Your data will be securely synced to the cloud!")
-
-        # Privacy notice
-        st.markdown("---")
-        st.markdown("### 🔒 Privacy & Security")
-        st.markdown("• We only access your basic Google profile (name, email, photo)")
-        st.markdown("• Your data is encrypted and stored securely")
-        st.markdown("• You can delete your account and data anytime")
-        st.markdown("• [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
 
 def render_user_profile():
     """Render user profile section in sidebar."""
@@ -126,3 +193,41 @@ def render_user_profile():
             st.rerun()
 
         st.caption("Optional - Guest mode available")
+
+def render_auth_handler_page():
+    """Handle authentication page."""
+    st.title("🔐 Sign In with Google")
+    st.markdown("Connect your Google account to save progress across devices!")
+
+    if not is_signed_in():
+        show_login_button("Sign In with Google", "#4285f4", sidebar=False)
+
+        st.markdown("---")
+        st.markdown("**Why sign in?**")
+        st.markdown("✅ Save your progress across devices")
+        st.markdown("✅ Backup your API keys securely")
+        st.markdown("✅ Access advanced statistics")
+        st.markdown("✅ Never lose your learning data")
+
+        # Instructions
+        st.markdown("---")
+        st.markdown("### 📋 How to Sign In")
+        st.markdown("1. Click 'Sign In with Google' above")
+        st.markdown("2. Choose your Google account in the popup")
+        st.markdown("3. Grant permission to access your basic Google profile")
+        st.markdown("4. Your data will be securely synced to the cloud!")
+
+        # Privacy notice
+        st.markdown("---")
+        st.markdown("### 🔒 Privacy & Security")
+        st.markdown("• We only access your basic Google profile (name, email, photo)")
+        st.markdown("• Your data is encrypted and stored securely")
+        st.markdown("• You can delete your account and data anytime")
+        st.markdown("• [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
+    else:
+        st.success("You're already signed in!")
+        user = get_current_user()
+        st.write(f"Welcome back, {user.get('displayName', 'User')}!")
+        if st.button("Go to Main App"):
+            st.session_state.page = "main"
+            st.rerun()
