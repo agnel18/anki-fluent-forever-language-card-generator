@@ -206,10 +206,6 @@ def main():
         else:
             return str(num)
 
-    # Initialize languages and firebase settings early
-    initialize_languages_config()
-    initialize_firebase_settings()
-
     # Handle auto sync
     handle_auto_sync()
 
@@ -257,6 +253,10 @@ def main():
         st.session_state.selected_topics = []
     if "custom_topics" not in st.session_state:
         st.session_state.custom_topics = []
+
+    # Initialize languages and firebase settings
+    initialize_languages_config()
+    initialize_firebase_settings()
 
     # Route to the appropriate page
     route_to_page(current_page)
