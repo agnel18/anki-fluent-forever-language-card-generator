@@ -399,10 +399,13 @@ def save_settings_to_firebase(session_id: str, settings: Dict) -> bool:
 
 def load_settings_from_firebase(session_id: str) -> Optional[Dict]:
     """Load settings from Firebase."""
+    print(f"DEBUG: load_settings_from_firebase called with session_id: {session_id}")
     if not firebase_initialized:
+        print("DEBUG: Firebase not initialized")
         return None
     
     try:
+        print("DEBUG: Creating Firestore client")
         db = firestore.client()
         
         doc = db.collection("users").document(session_id).collection("metadata").document("settings").get()
@@ -416,6 +419,7 @@ def load_settings_from_firebase(session_id: str) -> Optional[Dict]:
         return None
         
     except Exception as e:
+        print(f"DEBUG: Error loading settings from Firebase: {e}")
         logger.error(f"Error loading settings: {e}")
         return None
 
