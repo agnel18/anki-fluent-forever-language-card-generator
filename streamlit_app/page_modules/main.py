@@ -29,9 +29,6 @@ def render_main_page():
     # Check if user is in session state or firebase_manager
     current_user = st.session_state.get("user") or (get_current_user() if is_signed_in() else None)
 
-    # Temporary debug
-    st.write(f"Debug: st.user = {st.user}, is_signed_in = {is_signed_in()}, current_user = {current_user}")
-
     # Header with authentication status
     col_logo, col_title, col_auth = st.columns([0.3, 1, 0.4])
     with col_logo:
