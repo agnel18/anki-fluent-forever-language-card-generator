@@ -74,17 +74,37 @@ try:
         # Import Excel data if database is empty
         import_excel_to_db()
     else:
-        # Ensure schema is up to date
-        init_database()
-        # Check if we need to import data
-        import sqlite3
-        conn = sqlite3.connect(str(DB_PATH))
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM words")
-        count = cursor.fetchone()[0]
-        conn.close()
-        if count == 0:
-            logger.info("Database exists but is empty, importing Excel data...")
-            import_excel_to_db()
+        # Check database integrity and handle corruption
+        try:
+            import sqlite3
+            conn = sqlite3.connect(str(DB_PATH))
+            cursor = conn.cursor()
+            # Test database integrity
+            cursor.execute("PRAGMA integrity_check")
+            result = cursor.fetchone()
+            if result and result[0] != "ok":
+                logger.warning(f"Database integrity check failed: {result[0]}, recreating database")
+                conn.close()
+                delete_database()
+                init_database()
+                import_excel_to_db()
+            else:
+                # Ensure schema is up to date
+                init_database()
+                # Check if we need to import data
+                cursor.execute("SELECT COUNT(*) FROM words")
+                count = cursor.fetchone()[0]
+                if count == 0:
+                    logger.info("Database exists but is empty, importing Excel data...")
+                    import_excel_to_db()
+            conn.close()
+        except sqlite3.DatabaseError as e:
+            logger.error(f"Database corruption detected: {e}, recreating database")
+            try:
+                delete_database()
+                init_database()
+                import_excel_to_db()
+            except Exception as recreate_error:
+                logger.error(f"Failed to recreate database: {recreate_error}")
 except Exception as e:
     logger.error(f"Database initialization error: {e}")
