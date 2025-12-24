@@ -1,33 +1,31 @@
-# auth_handler.py - Firebase Auth using streamlit-firebase-auth component
+﻿# auth_handler.py - Streamlit OIDC Authentication with Google
 
 import streamlit as st
-import streamlit.components.v1 as components
-try:
-    from streamlit_firebase_auth import FirebaseAuth
-    FIREBASE_AUTH_AVAILABLE = True
-except ImportError:
-    FIREBASE_AUTH_AVAILABLE = False
-import json
-from firebase_manager import migrate_guest_data_to_user
 
-# Local auth functions to avoid circular imports
+# Session state guard for Streamlit bug workaround
+if not hasattr(st, "session_state") or st.session_state is None:
+    st.session_state = {}
+import streamlit.components.v1 as components
+
+# Local auth functions for backward compatibility
 def is_signed_in():
-    """Check if user is authenticated."""
-    return st.session_state.get('user') is not None
+    """Check if user is authenticated using Streamlit's built-in auth."""
+    return st.user.is_logged_in
 
 def get_current_user():
-    """Get current authenticated user info."""
+    """Get current authenticated user info using Streamlit's built-in auth."""
     if is_signed_in():
-        return st.session_state.user
+        return {
+            'uid': st.user.email,  # Use email as unique identifier
+            'email': st.user.email,
+            'displayName': getattr(st.user, 'name', st.user.email),
+            'photoURL': getattr(st.user, 'picture', None)
+        }
     return None
 
 def sign_out():
-    """Sign out user and clear authentication state."""
-    if 'user' in st.session_state:
-        del st.session_state.user
-    if 'data_migrated' in st.session_state:
-        del st.session_state.data_migrated
-    st.session_state.is_guest = True
+    """Sign out user using Streamlit's built-in auth."""
+    st.logout()
 
 # Firebase configuration
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
@@ -44,59 +42,21 @@ def get_firebase_config():
     }
 
 def firebase_auth_component():
-    """Render the Firebase Auth component."""
-    if not FIREBASE_AUTH_AVAILABLE:
-        st.error("Firebase authentication is not available. Please contact support.")
+    """Render the authentication component using Streamlit's built-in OIDC."""
+    if not st.user.is_logged_in:
+        # User not logged in - show login button
+        page_id = st.session_state.get('page', 'main')
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("🔐 Sign In with Google", type="primary", use_container_width=True, key=f"auth_component_signin_{page_id}"):
+                st.login("google")
+        with col2:
+            st.info("Optional - Guest mode available")
         return None
-
-    config = get_firebase_config()
-
-    if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
-        st.error("❌ Firebase configuration is incomplete. Please check your Streamlit Cloud secrets.")
-        return None
-
-    # Initialize FirebaseAuth
-    auth = FirebaseAuth(
-        apiKey=FIREBASE_API_KEY,
-        authDomain=f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
-        projectId=FIREBASE_PROJECT_ID,
-        storageBucket=f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
-        messagingSenderId="144901974646",
-        appId="1:144901974646:web:5f677d6632d5b79f2c4d57"
-    )
-
-    # Check current session
-    user = auth.check_session()
-
-    if user:
-        # User is authenticated - show logout option
-        if auth.logout_form():
-            # User logged out
-            st.session_state.user = None
-            st.session_state.is_guest = True
-            st.rerun()
-        return user
     else:
-        # User not authenticated - show login form
-        result = auth.login_form()
-        if result['success']:
-            # User logged in successfully
-            user_data = result['user']
-            user_info = {
-                'uid': user_data['uid'],
-                'email': user_data['email'],
-                'displayName': user_data.get('displayName'),
-                'photoURL': user_data.get('photoURL')
-            }
-            # Store in session state
-            st.session_state.user = user_info
-            st.session_state.is_guest = False
-            # Migrate guest data
-            migrate_guest_data_to_user(user_info['uid'])
-            st.rerun()
-            return user_info
-
-    return None
+        # User is logged in - show logout option
+        user_info = get_current_user()
+        return user_info
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""
@@ -111,369 +71,68 @@ def get_firebase_config():
     return firebase_config if FIREBASE_API_KEY and FIREBASE_PROJECT_ID else None
 
 def render_auth_handler_page():
-    """Handle Firebase Authentication with Google Sign-In."""
-    st.title("🔐 Sign In with Google")
+    """Handle authentication using Streamlit's built-in OIDC."""
+    st.title("ðŸ” Sign In with Google")
     st.markdown("Connect your Google account to save progress across devices!")
 
-    # Firebase Auth SDK integration
-    firebase_config = {
-        "apiKey": FIREBASE_API_KEY,
-        "authDomain": f"{FIREBASE_PROJECT_ID}.firebaseapp.com",
-        "projectId": FIREBASE_PROJECT_ID,
-        "storageBucket": f"{FIREBASE_PROJECT_ID}.firebasestorage.app",
-        "messagingSenderId": "144901974646",
-        "appId": "1:144901974646:web:5f677d6632d5b79f2c4d57"
-    }
-    # Debug: Show current configuration
-    st.write("### 🔧 Firebase Configuration Check")
-    col1, col2 = st.columns(2)
-    with col1:
-        api_key_display = f"`{FIREBASE_API_KEY[:20]}...`" if FIREBASE_API_KEY else "❌ Missing"
-        st.write("**API Key:**", api_key_display)
-        st.write("**Project ID:**", f"`{FIREBASE_PROJECT_ID}`" if FIREBASE_PROJECT_ID else "❌ Missing")
-        st.write("**Auth Domain:**", f"`{firebase_config['authDomain']}`")
-    with col2:
-        st.write("**Storage Bucket:**", f"`{firebase_config['storageBucket']}`")
-        st.write("**App ID:**", f"`{firebase_config['appId']}`")
-        st.write("**Current URL:**", f"`{st.query_params}`")
-
-    # Check if we're on Streamlit Cloud
-    is_streamlit_cloud = "streamlit.app" in str(st.query_params).lower()
-    st.write(f"**Environment:** {'🌐 Streamlit Cloud' if is_streamlit_cloud else '💻 Local Development'}")
-
-    if not FIREBASE_API_KEY or not FIREBASE_PROJECT_ID:
-        st.error("❌ Firebase configuration is incomplete. Please check your Streamlit Cloud secrets.")
-        st.info("**Required secrets in Streamlit Cloud:**")
-        st.code("""
-FIREBASE_WEB_API_KEY = "your-api-key-here"
-FIREBASE_PROJECT_ID = "your-project-id-here"
-        """)
-        return
-    # JavaScript for Firebase Auth - Working version with traditional script loading
-    firebase_auth_js = """
-    <script>
-        (function() {{
-            console.log('🔄 Firebase Auth JavaScript loaded and executing!');
-            console.log('Current URL:', window.location.href);
-
-            // Show loading indicator (only if document.body is available)
-            if (document.body) {{
-                var loadingDiv = document.createElement('div');
-                loadingDiv.id = 'firebase-loading';
-                loadingDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #2196F3; color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;';
-                loadingDiv.textContent = '🔄 Loading Firebase...';
-                document.body.appendChild(loadingDiv);
-            }} else {{
-                console.log('Document body not available, skipping loading indicator');
-            }}
-
-            // Load Firebase scripts dynamically
-            function loadScript(src, callback) {{
-                var script = document.createElement('script');
-                script.src = src;
-                script.onload = callback;
-                document.head.appendChild(script);
-            }}
-
-            // Firebase configuration
-            var firebaseConfig = {firebase_config_json};
-
-            // Load Firebase App first
-            loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js', function() {{
-                console.log('📦 Firebase App loaded');
-
-                // Load Firebase Auth
-                loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js', function() {{
-                    console.log('🔐 Firebase Auth loaded');
-
-                    try {{
-                        // Initialize Firebase
-                        firebase.initializeApp(firebaseConfig);
-                        var auth = firebase.auth();
-
-                        // Configure Google provider
-                        var provider = new firebase.auth.GoogleAuthProvider();
-                        provider.setCustomParameters({{
-                            prompt: 'select_account'
-                        }});
-
-                        // Update loading indicator
-                        if (loadingDiv) {{
-                            loadingDiv.textContent = '✅ Firebase Ready';
-                            loadingDiv.style.background = '#4CAF50';
-                            setTimeout(function() {{ if (loadingDiv) loadingDiv.remove(); }}, 3000);
-                        }}
-
-                        // Auth state observer
-                        firebase.auth().onAuthStateChanged(function(user) {{
-                            console.log('🔄 Auth state changed:', user ? 'signed in' : 'signed out');
-                            if (user) {{
-                                console.log('✅ User signed in:', user.email);
-                                var userData = {{
-                                    uid: user.uid,
-                                    email: user.email,
-                                    displayName: user.displayName,
-                                    photoURL: user.photoURL,
-                                    emailVerified: user.emailVerified,
-                                    isAnonymous: user.isAnonymous,
-                                    providerData: user.providerData
-                                }};
-
-                                // Redirect with user data
-                                var userDataStr = encodeURIComponent(JSON.stringify(userData));
-                                var currentUrl = new URL(window.location.href);
-                                currentUrl.searchParams.set('firebase_auth_type', 'success');
-                                currentUrl.searchParams.set('user_data', userDataStr);
-                                console.log('🔀 Redirecting to:', currentUrl.toString());
-                                window.location.href = currentUrl.toString();
-                            }} else {{
-                                console.log('🚪 User signed out');
-                                var currentUrl = new URL(window.location.href);
-                                currentUrl.searchParams.set('firebase_auth_type', 'signout');
-                                window.location.href = currentUrl.toString();
-                            }}
-                        }});
-
-                        // Make functions globally available
-                        window.firebaseAuth = {{
-                            signIn: function() {{
-                                console.log('🚀 signIn called');
-                                firebase.auth().signInWithPopup(provider)
-                                    .then(function(result) {{
-                                        console.log('✅ Sign in successful:', result.user.email);
-                                    }})
-                                    .catch(function(error) {{
-                                        console.error('❌ Sign in error:', error);
-                                        alert('Sign in failed: ' + error.message);
-                                        var currentUrl = new URL(window.location.href);
-                                        currentUrl.searchParams.set('firebase_auth_type', 'error');
-                                        currentUrl.searchParams.set('error', encodeURIComponent(error.message));
-                                        window.location.href = currentUrl.toString();
-                                    }});
-                            }},
-                            signOut: function() {{
-                                console.log('🚪 signOut called');
-                                firebase.auth().signOut()
-                                    .then(function() {{
-                                        console.log('✅ Sign out successful');
-                                    }})
-                                    .catch(function(error) {{
-                                        console.error('❌ Sign out error:', error);
-                                    }});
-                            }}
-                        }};
-
-                        console.log('✅ Firebase Auth setup complete');
-
-                    }} catch (error) {{
-                        console.error('❌ Firebase initialization error:', error);
-                        if (loadingDiv) {{
-                            loadingDiv.textContent = '❌ Firebase Error';
-                            loadingDiv.style.background = '#f44336';
-                        }}
-                        alert('Firebase setup failed: ' + error.message);
-                    }}
-                }});
-            }});
-
-            // Listen for messages from Streamlit
-            window.addEventListener('message', function(event) {{
-                console.log('📨 Received message:', event.data);
-                if (event.data && event.data.type === 'trigger-sign-in') {{
-                    if (window.firebaseAuth && window.firebaseAuth.signIn) {{
-                        window.firebaseAuth.signIn();
-                    }}
-                }} else if (event.data && event.data.type === 'trigger-sign-out') {{
-                    if (window.firebaseAuth && window.firebaseAuth.signOut) {{
-                        window.firebaseAuth.signOut();
-                    }}
-                }}
-            }});
-
-        }})();
-    </script>
-    """.format(firebase_config_json=json.dumps(firebase_config))
-
-    # Inject Firebase Auth JavaScript using components for better Streamlit Cloud compatibility
-    components.html(firebase_auth_js, height=0, width=0)
-    
-    # Status indicator
-    st.success("✅ Firebase JavaScript has been injected into the page!")
-    st.info("🔄 If you don't see Firebase loading messages in your browser console, try refreshing the page.")
-
-    # Add a manual trigger button as backup
-    st.markdown("---")
-    st.markdown("**Alternative: Manual Sign-In**")
-    if st.button("🚀 Manual Firebase Sign-In", key="manual_signin"):
-        # This will trigger the JavaScript via a different method
-        manual_trigger_js = """
-        <script>
-            // Find the iframe containing Firebase and send message
-            var iframes = document.querySelectorAll('iframe');
-            var firebaseIframe = null;
-            
-            // Look for iframe with Firebase content
-            for (var i = 0; i < iframes.length; i++) {
-                try {
-                    // Check if this iframe contains our Firebase code
-                    if (iframes[i].contentWindow && iframes[i].contentWindow.postMessage) {
-                        firebaseIframe = iframes[i];
-                        break;
-                    }
-                } catch (e) {
-                    // Cross-origin restriction, skip this iframe
-                    continue;
-                }
-            }
-            
-            // Wait a bit for Firebase to load, then try to sign in
-            setTimeout(() => {
-                if (firebaseIframe) {
-                    console.log('Manual trigger: Sending sign-in message to Firebase iframe...');
-                    firebaseIframe.contentWindow.postMessage({
-                        type: 'trigger-sign-in'
-                    }, '*');
-                } else {
-                    console.error('Manual trigger: Could not find Firebase iframe');
-                    alert('Firebase iframe not found. Please refresh the page and try again.');
-                }
-            }, 2000); // Wait 2 seconds for Firebase to load
-        </script>
-        """
-        components.html(manual_trigger_js, height=0, width=0)
-        st.info("⏳ Attempting to sign in... Check the popup that should open.")
-
-    # Sign in button
-    if not is_signed_in():
-        # Add a container for status messages
-        status_container = st.empty()
-
-        if st.button("🔐 Sign In with Google", type="primary", use_container_width=True):
-            # Send message to iframe to trigger sign in
-            signin_trigger_js = """
-            <script>
-                // Find the iframe containing Firebase and send message
-                var iframes = document.querySelectorAll('iframe');
-                var firebaseIframe = null;
-                
-                // Look for iframe with Firebase content
-                for (var i = 0; i < iframes.length; i++) {
-                    try {
-                        // Check if this iframe contains our Firebase code
-                        if (iframes[i].contentWindow && iframes[i].contentWindow.postMessage) {
-                            firebaseIframe = iframes[i];
-                            break;
-                        }
-                    } catch (e) {
-                        // Cross-origin restriction, skip this iframe
-                        continue;
-                    }
-                }
-                
-                if (firebaseIframe) {
-                    console.log('Sending sign-in message to Firebase iframe...');
-                    firebaseIframe.contentWindow.postMessage({
-                        type: 'trigger-sign-in'
-                    }, '*');
-                } else {
-                    console.error('Could not find Firebase iframe');
-                    alert('Firebase is not loaded yet. Please wait a moment and try again.');
-                }
-            </script>
-            """
-            components.html(signin_trigger_js, height=0, width=0)
-
-        # Show loading status
-        st.markdown("""
-        <div style="margin: 20px 0; padding: 10px; background: #e8f4fd; border-left: 4px solid #1e88e5; border-radius: 4px;">
-            <strong>🔄 Ready to sign in!</strong><br>
-            Click the button above to open Google sign-in popup.
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Add debug information
-        with st.expander("🔧 Debug Information (for troubleshooting)"):
-            st.code(f"""
-Firebase Config:
-- API Key: {FIREBASE_API_KEY[:20]}...
-- Project ID: {FIREBASE_PROJECT_ID}
-- Auth Domain: {FIREBASE_PROJECT_ID}.firebaseapp.com
-
-Current URL: {st.query_params}
-            """)
-
-            if st.button("🔄 Reload Firebase Auth", key="reload_firebase"):
-                st.rerun()
+    if not st.user.is_logged_in:
+        # User not logged in - show login button
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("🔐 Sign In with Google", type="primary", use_container_width=True, key="auth_page_signin"):
+                st.login()
+        with col2:
+            st.info("Optional - Guest mode available")
 
         st.markdown("---")
         st.markdown("**Why sign in?**")
-        st.markdown("✅ Save your progress across devices")
-        st.markdown("✅ Backup your API keys securely")
-        st.markdown("✅ Access advanced statistics")
-        st.markdown("✅ Never lose your learning data")
+        st.markdown("âœ… Save your progress across devices")
+        st.markdown("âœ… Backup your API keys securely")
+        st.markdown("âœ… Access advanced statistics")
+        st.markdown("âœ… Never lose your learning data")
 
+        # Instructions
+        st.markdown("---")
+        st.markdown("### ðŸ“‹ How to Sign In")
+        st.markdown("1. Click 'Sign In with Google' above")
+        st.markdown("2. Choose your Google account in the popup")
+        st.markdown("3. Grant permission to access your basic Google profile")
+        st.markdown("4. Your data will be securely synced to the cloud!")
+
+        # Privacy notice
+        st.markdown("---")
+        st.markdown("### ðŸ”’ Privacy & Security")
+        st.markdown("â€¢ We only access your basic Google profile (name, email, photo)")
+        st.markdown("â€¢ Your data is encrypted and stored securely")
+        st.markdown("â€¢ You can delete your account and data anytime")
+        st.markdown("â€¢ [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
     else:
-        # User is signed in
+        # User is logged in
         user = get_current_user()
         if user:
-            st.success(f"✅ Signed in as {user.get('display_name', user.get('email', 'User'))}")
+            st.success(f"âœ… Signed in as {user.get('displayName', user.get('email', 'User'))}")
 
             # Show user info
             col1, col2 = st.columns([1, 3])
             with col1:
-                if user.get('photo_url'):
-                    st.image(user['photo_url'], width=60)
+                if user.get('photoURL'):
+                    st.image(user['photoURL'], width=60)
                 else:
-                    st.markdown("👤")
+                    st.markdown("ðŸ‘¤")
             with col2:
-                st.markdown(f"**{user.get('display_name', 'User')}**")
+                st.markdown(f"**{user.get('displayName', 'User')}**")
                 st.markdown(f"*{user.get('email', '')}*")
 
             st.markdown("---")
 
-            if st.button("🚪 Sign Out", use_container_width=True):
-                # Trigger sign out via JavaScript
-                signout_js = """
-                <script>
-                    if (window.firebaseAuth) {
-                        window.firebaseAuth.signOut();
-                    } else {
-                        // Fallback: clear session state directly
-                        window.location.href = window.location.href.split('?')[0] + '?firebase_auth_type=signout';
-                    }
-                </script>
-                """
-                components.html(signout_js, height=0, width=0)
+            if st.button("ðŸšª Sign Out", use_container_width=True):
+                st.logout()
 
-            # Migration status
+            # Migration status (if applicable)
             if st.session_state.get('data_migrated', False):
-                st.info("✅ Your data has been migrated to the cloud!")
+                st.info("âœ… Your data has been migrated to the cloud!")
             else:
-                if st.button("☁️ Migrate My Data to Cloud", type="secondary", use_container_width=True):
-                    with st.spinner("Migrating your data..."):
-                        success = migrate_guest_data_to_user(user['uid'])
-                        if success:
-                            st.session_state.data_migrated = True
-                            st.success("✅ Data migrated successfully!")
-                            st.rerun()
-                        else:
-                            st.error("❌ Failed to migrate data. Please try again.")
-
-    # Instructions
-    st.markdown("---")
-    st.markdown("### 📋 Instructions")
-    st.markdown("1. Click 'Sign In with Google' above")
-    st.markdown("2. Choose your Google account in the popup")
-    st.markdown("3. Grant permission to access your basic profile")
-    st.markdown("4. Your data will be securely synced to the cloud!")
-
-    # Privacy notice
-    st.markdown("---")
-    st.markdown("### 🔒 Privacy & Security")
-    st.markdown("• We only access your basic Google profile (name, email, photo)")
-    st.markdown("• Your data is encrypted and stored securely in Firebase")
-    st.markdown("• You can delete your account and data anytime")
-    st.markdown("• [Privacy Policy](https://agnel18.github.io/anki-fluent-forever-language-card-generator/privacy-policy.html)")
+                st.info("â˜ï¸ Your data is automatically synced to the cloud!")
 
 def render_user_profile():
     """Render user profile section in sidebar."""
@@ -486,23 +145,23 @@ def render_user_profile():
                 if user.get('photoURL'):
                     st.image(user['photoURL'], width=40)
                 else:
-                    st.markdown("👤")
+                    st.markdown("ðŸ‘¤")
             with col2:
                 st.markdown(f"**{user.get('displayName', 'User')}**")
                 st.caption(user.get('email', ''))
 
             # Sign out button
-            if st.button("🚪 Sign Out", key="sign_out_sidebar", use_container_width=True):
+            if st.button("ðŸšª Sign Out", key="sign_out_sidebar", use_container_width=True):
                 sign_out()
                 st.rerun()
         else:
             st.error("User data not available")
     else:
         # Show sign-in option
-        st.markdown("### ☁️ Cloud Sync")
+        st.markdown("### â˜ï¸ Cloud Sync")
         st.markdown("Save progress across devices!")
 
-        if st.button("🔐 Sign In", key="sign_in_sidebar", use_container_width=True):
+        if st.button("ðŸ” Sign In", key="sign_in_sidebar", use_container_width=True):
             st.session_state.page = "auth_handler"
             st.rerun()
 

@@ -48,9 +48,9 @@ def route_to_page(current_page):
         elif current_page == "contact_us":
             from page_modules.contact_us import render_contact_us_page
             render_contact_us_page()
-        elif current_page == "auth_handler":
-            from page_modules.auth_handler import render_auth_handler_page
-            render_auth_handler_page()
+        # elif current_page == "auth_handler":
+        #     from page_modules.auth_handler import render_auth_handler_page
+        #     render_auth_handler_page()
         else:
             # Default to main page
             print(f"Warning: Unknown page '{current_page}', defaulting to main")

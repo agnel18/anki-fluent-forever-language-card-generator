@@ -1,4 +1,8 @@
 import streamlit as st
+
+# Session state guard for Streamlit bug workaround
+if not hasattr(st, "session_state") or st.session_state is None:
+    st.session_state = {}
 import logging
 import io
 import atexit

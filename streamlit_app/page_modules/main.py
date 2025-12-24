@@ -41,18 +41,9 @@ def render_main_page():
         st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
     with col_auth:
-        if current_user:
-            st.markdown(f"**Hello, {current_user.get('displayName', 'User')}!**")
-            if st.button("🚪 Sign Out"):
-                sign_out()
-                st.session_state.user = None
-                st.rerun()
-        else:
-            # Show sign-in component
-            st.markdown("### ☁️ Cloud Sync")
-            from page_modules.auth_handler import firebase_auth_component
-            firebase_auth_component()
-            st.caption("Optional - Guest mode available")
+        from page_modules.auth_handler import firebase_auth_component
+        firebase_auth_component()
+        st.caption("Optional - Guest mode available")
 
     st.markdown("---")
 

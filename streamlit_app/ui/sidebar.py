@@ -1,4 +1,8 @@
 import streamlit as st
+
+# Session state guard for Streamlit bug workaround
+if not hasattr(st, "session_state") or st.session_state is None:
+    st.session_state = {}
 import os
 import datetime
 from constants import GROQ_CALL_LIMIT, GROQ_TOKEN_LIMIT, PIXABAY_CALL_LIMIT
