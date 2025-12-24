@@ -10,24 +10,39 @@ import streamlit.components.v1 as components
 # Local auth functions for backward compatibility
 
 def is_signed_in():
-    """Check if user is authenticated using Streamlit's built-in auth."""
-    return hasattr(st, "user") and hasattr(st.user, "is_logged_in") and st.user.is_logged_in
+    """Check if user is authenticated using Streamlit's built-in auth or session state."""
+    return (hasattr(st, "user") and hasattr(st.user, "is_logged_in") and st.user.is_logged_in) or st.session_state.get("user") is not None
 
 
 def get_current_user():
-    """Get current authenticated user info using Streamlit's built-in auth."""
+    """Get current authenticated user info."""
     if is_signed_in():
-        return {
-            'uid': getattr(st.user, 'email', None),
-            'email': getattr(st.user, 'email', None),
-            'displayName': getattr(st.user, 'name', getattr(st.user, 'email', 'User')),
-            'photoURL': getattr(st.user, 'picture', None)
-        }
+        if hasattr(st, "user") and hasattr(st.user, "is_logged_in") and st.user.is_logged_in:
+            return {
+                'uid': getattr(st.user, 'email', None),
+                'email': getattr(st.user, 'email', None),
+                'displayName': getattr(st.user, 'name', getattr(st.user, 'email', 'User')),
+                'photoURL': getattr(st.user, 'picture', None)
+            }
+        else:
+            # Use session_state (Firebase auth)
+            user = st.session_state.get("user")
+            if user:
+                return {
+                    'uid': user.get('uid'),
+                    'email': user.get('email'),
+                    'displayName': user.get('displayName', user.get('email', 'User')),
+                    'photoURL': user.get('photoURL')
+                }
     return None
 
 def sign_out():
-    """Sign out user using Streamlit's built-in auth."""
-    st.logout()
+    """Sign out user."""
+    if hasattr(st, "user") and hasattr(st.user, "is_logged_in"):
+        st.logout()
+    # Also clear session state for Firebase auth
+    if "user" in st.session_state:
+        del st.session_state.user
 
 # Firebase configuration
 FIREBASE_API_KEY = st.secrets.get("FIREBASE_WEB_API_KEY", "")
@@ -44,21 +59,46 @@ def get_firebase_config():
     }
 
 def firebase_auth_component():
-    """Render the authentication component using Streamlit's built-in OIDC."""
+    """Render the authentication component using Firebase auth."""
     if not is_signed_in():
-        # User not logged in - show login button
-        page_id = st.session_state.get('page', 'main')
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("🔐 Sign In with Google", type="primary", use_container_width=True, key=f"auth_component_signin_{page_id}"):
-                st.login("google")
-        with col2:
-            st.info("Optional - Guest mode available")
-        return None
+        firebase_config = get_firebase_config()
+        if firebase_config:
+            # Use components to render Firebase auth
+            html = f"""
+            <div id="firebase-auth"></div>
+            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+            <script>
+            const firebaseConfig = {firebase_config};
+            if (!firebase.apps.length) {{
+                firebase.initializeApp(firebaseConfig);
+            }}
+            const auth = firebase.auth();
+            auth.onAuthStateChanged((user) => {{
+                if (user) {{
+                    const userData = {{
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL
+                    }};
+                    // Send to Streamlit via query params
+                    window.location.href = window.location.href.split('?')[0] + '?auth_success=1&user_data=' + encodeURIComponent(JSON.stringify(userData));
+                }}
+            }});
+            function signIn() {{
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider);
+            }}
+            document.getElementById('firebase-auth').innerHTML = '<button onclick="signIn()" style="background-color: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">🔐 Sign In with Google</button>';
+            </script>
+            """
+            components.html(html, height=50)
+        else:
+            st.error("Firebase not configured")
     else:
-        # User is logged in - show logout option
-        user_info = get_current_user()
-        return user_info
+        user = get_current_user()
+        return user
 
 def get_firebase_config():
     """Get Firebase configuration from secrets."""
