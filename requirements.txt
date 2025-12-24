@@ -3,6 +3,9 @@ streamlit>=1.28.0
 streamlit-option-menu>=0.3.6
 streamlit-firebase-auth
 
+# Authentication
+Authlib>=1.3.2
+
 # Core dependencies
 pandas>=2.0.0
 requests>=2.31.0
