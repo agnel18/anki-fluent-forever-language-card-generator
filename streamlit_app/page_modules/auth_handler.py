@@ -33,10 +33,16 @@ client_id = st.secrets.get("GOOGLE_CLIENT_ID", "")
 client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
 redirect_url = st.secrets.get("GOOGLE_REDIRECT_URL", "")
 
+print(f"DEBUG: OAuth client_id: {client_id[:20]}..." if client_id else "DEBUG: No client_id")
+print(f"DEBUG: OAuth client_secret: {'***' + client_secret[-4:] if client_secret else 'No client_secret'}")
+print(f"DEBUG: OAuth redirect_url: {redirect_url}")
+
 if client_id and client_secret and redirect_url:
     client = GoogleOAuth2(client_id=client_id, client_secret=client_secret)
+    print("DEBUG: OAuth client initialized successfully")
 else:
     client = None
+    print("DEBUG: OAuth client not initialized - missing credentials")
 
 # Local auth functions for backward compatibility
 def is_signed_in():
@@ -67,18 +73,39 @@ async def get_authorization_url(client: GoogleOAuth2, redirect_url: str) -> str:
 
 async def get_access_token(client: GoogleOAuth2, redirect_url: str, code: str):
     """Exchange authorization code for access token."""
-    token = await client.get_access_token(code, redirect_url)
-    return token
+    print(f"DEBUG: get_access_token called with redirect_url: {redirect_url}")
+    print(f"DEBUG: Code length: {len(code) if code else 0}")
+    try:
+        token = await client.get_access_token(code, redirect_url)
+        print("DEBUG: Token exchange successful")
+        return token
+    except Exception as e:
+        print(f"DEBUG: Token exchange exception: {e}")
+        print(f"DEBUG: Exception type: {type(e)}")
+        raise
 
 def get_access_token_from_query_params(client: GoogleOAuth2, redirect_url: str):
     """Get access token from URL query parameters."""
+    print("DEBUG: get_access_token_from_query_params called")
     query_params = st.query_params
+    print(f"DEBUG: Query params: {query_params}")
     if "code" in query_params:
         code = query_params["code"]
-        token = asyncio.run(get_access_token(client=client, redirect_url=redirect_url, code=code))
-        # Clear query params
-        st.query_params.clear()
-        return token
+        print(f"DEBUG: Authorization code found: {code[:20]}...")
+        print(f"DEBUG: Redirect URL: {redirect_url}")
+        try:
+            token = asyncio.run(get_access_token(client=client, redirect_url=redirect_url, code=code))
+            print(f"DEBUG: Token exchange result: {token is not None}")
+            if token:
+                print(f"DEBUG: Token keys: {list(token.keys()) if token else 'None'}")
+            # Clear query params
+            st.query_params.clear()
+            return token
+        except Exception as e:
+            print(f"DEBUG: Token exchange failed: {e}")
+            raise
+    else:
+        print("DEBUG: No authorization code in query params")
     return None
 
 def markdown_button(url: str, text: Optional[str] = None, color="#4285f4", sidebar: bool = True):
@@ -122,17 +149,26 @@ def show_login_button(text: Optional[str] = "Sign In with Google", color="#4285f
 
 def handle_auth_callback():
     """Handle OAuth callback from URL parameters."""
+    print("DEBUG: handle_auth_callback called")
     if client:
+        print("DEBUG: OAuth client is available")
         try:
+            print("DEBUG: Calling get_access_token_from_query_params")
             token = get_access_token_from_query_params(client, redirect_url)
+            print(f"DEBUG: Token received: {token is not None}")
             if token and "id_token" in token:
+                print("DEBUG: Decoding user token")
                 user_info = decode_user(token=token["id_token"])
+                print(f"DEBUG: User info decoded: {user_info is not None}")
                 if user_info and "email" in user_info:
+                    print(f"DEBUG: User email: {user_info['email']}")
                     # Create or get Firebase user
                     try:
                         user = auth.get_user_by_email(user_info["email"])
+                        print("DEBUG: Existing Firebase user found")
                     except exceptions.FirebaseError:
                         user = auth.create_user(email=user_info["email"])
+                        print("DEBUG: New Firebase user created")
 
                     # Store user info in session
                     st.session_state.user = {
@@ -142,9 +178,17 @@ def handle_auth_callback():
                         "photoURL": user_info.get("picture", ""),
                     }
                     st.session_state.is_guest = False
+                    print("DEBUG: User session updated, rerunning")
                     st.rerun()
+                else:
+                    print("DEBUG: No email in user info")
+            else:
+                print("DEBUG: No valid token or id_token")
         except Exception as e:
+            print(f"DEBUG: Authentication failed with error: {e}")
             st.error(f"Authentication failed: {e}")
+    else:
+        print("DEBUG: OAuth client is not available")
 
 def firebase_auth_component():
     """Render the authentication component."""
