@@ -113,37 +113,32 @@ def get_access_token_from_query_params(client: GoogleOAuth2, redirect_url: str):
     return None
 
 def markdown_button(url: str, text: Optional[str] = None, color="#4285f4", sidebar: bool = True):
-    """Create a styled HTML button for OAuth."""
-    markdown = st.sidebar.markdown if sidebar else st.markdown
-    markdown(
-        f"""
-        <a href="{url}" target="_top">
-            <div style="
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 400;
-                padding: 0.5rem 1rem;
-                border-radius: 0.25rem;
-                margin: 0px;
-                margin-bottom: 2px;
-                line-height: 1.6;
-                width: auto;
-                user-select: none;
-                background-color: {color};
-                color: rgb(255, 255, 255);
-                border: 1px solid {color};
-                text-decoration: none;
-                text-align: center;
-                cursor: pointer;
-                font-size: 16px;
-            ">
-                🔐 {text}
-            </div>
-        </a>
-        """,
-        unsafe_allow_html=True,
-    )
+    """Create a styled button that forcedly breaks out of the Streamlit iframe."""
+    # Custom CSS for the button appearance
+    button_html = f"""
+    <div style="display: flex; justify-content: center;">
+        <button onclick="window.open('{url}', '_top')" style="
+            background-color: {color};
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: sans-serif;
+            font-weight: 500;
+            width: 100%;
+        ">
+            🔐 {text}
+        </button>
+    </div>
+    """
+
+    if sidebar:
+        with st.sidebar:
+            components.html(button_html, height=60)
+    else:
+        components.html(button_html, height=60)
 
 def show_login_button(text: Optional[str] = "Sign In with Google", color="#4285f4", sidebar: bool = True):
     """Show the Google sign-in button."""
