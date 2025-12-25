@@ -64,10 +64,14 @@ def decode_user(token: str):
 
 async def get_authorization_url(client: GoogleOAuth2, redirect_url: str) -> str:
     """Get Google OAuth authorization URL."""
+    # Ensure no trailing spaces in redirect_url
+    clean_redirect = redirect_url.strip()
+    
     authorization_url = await client.get_authorization_url(
-        redirect_url,
+        clean_redirect,
         scope=["openid", "email", "profile"],
-        extras_params={"access_type": "offline"},
+        # prompt="select_account" forces the account chooser to work properly
+        extras_params={"access_type": "offline", "prompt": "select_account"},
     )
     return authorization_url
 
@@ -94,16 +98,16 @@ def get_access_token_from_query_params(client: GoogleOAuth2, redirect_url: str):
         print(f"DEBUG: Authorization code found: {code[:20]}...")
         print(f"DEBUG: Redirect URL: {redirect_url}")
         try:
-            token = asyncio.run(get_access_token(client=client, redirect_url=redirect_url, code=code))
-            print(f"DEBUG: Token exchange result: {token is not None}")
-            if token:
-                print(f"DEBUG: Token keys: {list(token.keys()) if token else 'None'}")
-            # Clear query params
+            # More robust async handling for Streamlit
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            token = loop.run_until_complete(get_access_token(client, redirect_url, code))
+            
             st.query_params.clear()
             return token
         except Exception as e:
-            print(f"DEBUG: Token exchange failed: {e}")
-            raise
+            st.error(f"Authentication Error: {e}")
+            return None
     else:
         print("DEBUG: No authorization code in query params")
     return None
@@ -113,7 +117,7 @@ def markdown_button(url: str, text: Optional[str] = None, color="#4285f4", sideb
     markdown = st.sidebar.markdown if sidebar else st.markdown
     markdown(
         f"""
-        <a href="{url}" target="_self">
+        <a href="{url}" target="_top">
             <div style="
                 display: inline-flex;
                 align-items: center;
@@ -144,7 +148,11 @@ def markdown_button(url: str, text: Optional[str] = None, color="#4285f4", sideb
 def show_login_button(text: Optional[str] = "Sign In with Google", color="#4285f4", sidebar: bool = True):
     """Show the Google sign-in button."""
     if client and not is_signed_in():
-        authorization_url = asyncio.run(get_authorization_url(client=client, redirect_url=redirect_url))
+        # Handle async URL generation
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        authorization_url = loop.run_until_complete(get_authorization_url(client, redirect_url))
+        
         markdown_button(authorization_url, text, color, sidebar)
 
 def handle_auth_callback():
