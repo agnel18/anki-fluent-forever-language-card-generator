@@ -120,10 +120,6 @@ def main():
     # Google Site Verification Meta Tag
     st.markdown('<meta name="google-site-verification" content="YUTo7TlPD5g4Yz_i6pCEEnIMTKlwplPMIukMKhOyfnw" />', unsafe_allow_html=True)
 
-    # Handle Firebase Auth messages from JavaScript
-    from page_modules.main import handle_auth_callback
-    handle_auth_callback()
-
     # Inject global CSS to fix accessibility and contrast issues app-wide
     st.markdown("""
     <style>

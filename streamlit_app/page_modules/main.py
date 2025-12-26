@@ -5,13 +5,6 @@ import os
 import json
 from firebase_manager import is_signed_in, get_current_user, sign_out
 
-
-
-def handle_auth_callback():
-    """Handle OAuth callback from URL parameters."""
-    from page_modules.auth_handler import handle_auth_callback as auth_callback
-    auth_callback()
-
 def render_main_page():
     """Render the main overview page with introduction and start button."""
 
