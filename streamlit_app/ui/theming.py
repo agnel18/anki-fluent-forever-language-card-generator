@@ -77,7 +77,8 @@ def apply_theme_css():
                 }}
 
                 .stSidebar {{
-                    background-color: var(--secondary-bg) !important;
+                    background-color: {'#161b22' if is_dark else '#f6f8fa'} !important;
+                    color: {'#e6edf3' if is_dark else '#0c0c0c'} !important;
                 }}
 
                 .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {{

@@ -221,13 +221,14 @@ def main():
 
     # Add sidebar navigation (except on login page)
     if current_page != "login":
+        # Apply theme CSS before rendering sidebar
+        apply_theme_css()
+        
         theme_changed = render_sidebar()
 
         # Apply theme change if needed
         if theme_changed:
             st.rerun()
-
-    apply_theme_css()
 
 
     # Ensure critical session state variables are initialized (mobile compatibility)

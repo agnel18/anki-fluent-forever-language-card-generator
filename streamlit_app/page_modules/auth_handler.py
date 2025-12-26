@@ -6,6 +6,9 @@ from firebase_admin import auth, firestore, exceptions, credentials, initialize_
 from typing import Optional, Dict, Any
 import streamlit.components.v1 as components
 import re
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Initialize Firebase Admin
 try:
@@ -28,6 +31,89 @@ except ValueError:
 
 # Initialize Firestore
 db = firestore.client()
+
+def send_verification_email(email: str, verification_link: str) -> bool:
+    """Send verification email using SMTP."""
+    try:
+        # Email configuration from secrets
+        smtp_server = st.secrets.get("EMAIL_SMTP_SERVER", "")
+        smtp_port = int(st.secrets.get("EMAIL_SMTP_PORT", "587"))
+        username = st.secrets.get("EMAIL_USERNAME", "")
+        password = st.secrets.get("EMAIL_PASSWORD", "")
+        from_email = st.secrets.get("EMAIL_FROM", username)
+        from_name = st.secrets.get("EMAIL_FROM_NAME", "Language Learning App")
+
+        print(f"Email config - Server: {smtp_server}, Port: {smtp_port}, User: {username}, From: {from_email}")
+
+        if not all([smtp_server, smtp_port, username, password]):
+            print("Email configuration incomplete - missing required fields")
+            return False
+
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = "Verify Your Email - Language Learning App"
+        msg['From'] = f"{from_name} <{from_email}>"
+        msg['To'] = email
+
+        # HTML content
+        html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #333;">Welcome to Language Learning App! 🎓</h2>
+            <p>Thank you for creating an account. To complete your registration, please verify your email address by clicking the button below:</p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{verification_link}" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email Address</a>
+            </div>
+
+            <p><strong>Verification Link:</strong><br>
+            <a href="{verification_link}">{verification_link}</a></p>
+
+            <p>If you didn't create an account, you can safely ignore this email.</p>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 12px;">This email was sent by Language Learning App. If you have any questions, please contact support.</p>
+        </body>
+        </html>
+        """
+
+        # Plain text content
+        text = f"""
+        Welcome to Language Learning App!
+
+        Thank you for creating an account. To complete your registration, please verify your email address by clicking this link:
+
+        {verification_link}
+
+        If you didn't create an account, you can safely ignore this email.
+
+        This email was sent by Language Learning App.
+        """
+
+        # Attach parts
+        part1 = MIMEText(text, 'plain')
+        part2 = MIMEText(html, 'html')
+        msg.attach(part1)
+        msg.attach(part2)
+
+        # Send email
+        print(f"Connecting to SMTP server {smtp_server}:{smtp_port}")
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        print(f"Logging in as {username}")
+        server.login(username, password)
+        print(f"Sending email to {email}")
+        server.sendmail(from_email, email, msg.as_string())
+        server.quit()
+
+        print(f"Verification email sent successfully to {email}")
+        return True
+
+    except Exception as e:
+        print(f"Failed to send verification email to {email}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 # Firebase Auth JavaScript component for client-side authentication
 def firebase_auth_component():
@@ -272,6 +358,11 @@ def login_form():
     """Display login form."""
     st.subheader("🔐 Sign In")
 
+    # Check if we need to show verification options (set from previous login attempt)
+    if st.session_state.get('show_verification_options'):
+        _show_verification_options()
+        return
+
     with st.form("login_form"):
         # Email field with label
         st.markdown("**📧 Email Address**")
@@ -331,30 +422,10 @@ def login_form():
                         st.info("Please check your email and click the verification link before signing in.")
                         st.markdown("💡 **Didn't receive the verification email?**")
 
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button("📧 Resend Verification Email", key="resend_verification"):
-                                try:
-                                    # Generate and send verification link using Admin SDK
-                                    link = auth.generate_email_verification_link(user.email)
-                                    # In production, you'd send this via email service
-                                    st.success("Verification email sent! Please check your inbox.")
-                                except Exception as e:
-                                    st.error(f"Failed to resend verification: {e}")
-
-                        with col2:
-                            if st.button("🔄 Check Verification Status", key="check_verification"):
-                                try:
-                                    # Reload user data
-                                    updated_user = auth.get_user(user.uid)
-                                    if updated_user.email_verified:
-                                        st.success("✅ Email verified! You can now sign in.")
-                                        st.rerun()
-                                    else:
-                                        st.warning("Email still not verified. Please check your email.")
-                                except Exception as e:
-                                    st.error(f"Failed to check verification: {e}")
-
+                        # Set flag to show verification options outside the form
+                        st.session_state.show_verification_options = True
+                        st.session_state.verification_email = email
+                        st.rerun()
                         return
 
                     # Email is verified - proceed with login
@@ -363,24 +434,95 @@ def login_form():
                     # Create user profile in Firestore if it doesn't exist
                     user_profile = get_user_profile(user.uid)
                     if not user_profile:
-                        create_user_profile(user.uid, user.email, user.display_name)
+                        create_user_profile(user.uid, user.email, str(user.display_name or user.email.split('@')[0]))
 
-                    st.session_state.user = {{
+                    st.session_state.user = {
                         'uid': user.uid,
                         'email': user.email,
-                        'displayName': user.display_name or user.email.split('@')[0],
+                        'displayName': str(user.display_name or user.email.split('@')[0]),
                         'emailVerified': user.email_verified
-                    }}
+                    }
                     st.session_state.is_guest = False
                     update_user_last_login(user.uid)
                     st.rerun()
 
                 except exceptions.FirebaseError as e:
-                    st.error(f"Login failed: {str(e)}")
+                    error_message = str(e)
+                    if 'INVALID_PASSWORD' in error_message or 'USER_NOT_FOUND' in error_message:
+                        st.error("❌ Invalid email or password. Please check your credentials.")
+                    else:
+                        st.error(f"❌ Login failed: {error_message}")
+                except Exception as e:
+                    st.error(f"❌ An unexpected error occurred: {str(e)}")
+
+def _show_verification_options():
+    """Show email verification options outside the form."""
+    email = st.session_state.get('verification_email', '')
+
+    st.subheader("📧 Email Verification Required")
+    st.info(f"Please verify your email address: **{email}**")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("📧 Resend Verification Email", key="resend_verification"):
+            try:
+                # Generate verification link using Admin SDK
+                link = auth.generate_email_verification_link(email)
+
+                # Actually send the email
+                if send_verification_email(email, link):
+                    st.success("✅ Verification email sent! Please check your inbox (and spam folder).")
+                else:
+                    st.warning("⚠️ Email configuration not set up. Here's your verification link:")
+                    st.code(link)
+                    st.info("📋 Copy and paste this link into your browser to verify your email.")
+
+                print(f"Verification link generated for {email}: {link}")
+            except Exception as e:
+                st.error(f"❌ Failed to generate verification link: {e}")
+                print(f"Error generating verification link for {email}: {e}")
+
+    with col2:
+        if st.button("🔄 Check Verification Status", key="check_verification"):
+            try:
+                # Reload user data
+                user = auth.get_user_by_email(email)
+                if user.email_verified:
+                    st.success("✅ Email verified! You can now sign in.")
+                    # Clear verification flags
+                    st.session_state.show_verification_options = False
+                    del st.session_state.verification_email
+                    st.rerun()
+                else:
+                    st.warning("Email still not verified. Please check your email.")
+            except Exception as e:
+                st.error(f"Failed to check verification: {e}")
+
+    with col3:
+        if st.button("⬅️ Back to Sign In", key="back_to_login"):
+            # Clear verification flags
+            st.session_state.show_verification_options = False
+            if 'verification_email' in st.session_state:
+                del st.session_state.verification_email
+            st.rerun()
 
 def registration_form():
     """Display registration form."""
     st.subheader("📝 Create Account")
+
+    # Debug: Check if Firebase auth is loaded
+    st.markdown("""
+    <script>
+    setTimeout(() => {
+        if (window.firebaseAuth) {
+            console.log('Firebase Auth loaded successfully');
+        } else {
+            console.error('Firebase Auth NOT loaded');
+        }
+    }, 2000);
+    </script>
+    """, unsafe_allow_html=True)
 
     with st.form("register_form"):
         # Email field with label
@@ -434,36 +576,65 @@ def registration_form():
 
             # Show loading spinner
             with st.spinner("Creating your account..."):
-                # Use client-side Firebase Auth with email verification
-                auth_result = None
+                try:
+                    # Use Firebase Admin SDK for more reliable user creation
+                    user = auth.create_user(
+                        email=email,
+                        password=password,
+                        display_name=display_name or email.split('@')[0]
+                    )
 
-                # JavaScript call to register user
-                js_code = f"""
-                <script>
-                (async () => {{
-                    try {{
-                        const result = await window.firebaseAuth.register('{email}', '{password}', '{display_name or ""}');
-                        window.authResult = result;
-                    }} catch (error) {{
-                        window.authResult = {{ success: false, error: error.message }};
-                    }}
-                }})();
-                </script>
-                """
+                    # Generate email verification link and send email
+                    verification_link = auth.generate_email_verification_link(email)
 
-                components.html(js_code, height=0)
+                    # Send verification email
+                    email_sent = send_verification_email(email, verification_link)
 
-                # Wait a moment for JavaScript to execute
-                import time
-                time.sleep(2)
+                    # Store user info in session for later use
+                    st.session_state.pending_verification_user = {
+                        'uid': user.uid,
+                        'email': user.email,
+                        'display_name': str(user.display_name or email.split('@')[0])
+                    }
 
-                # Check result (this is a simplified approach - in production you'd use proper async handling)
-                st.success("Account created successfully!")
-                st.info("📧 **Please check your email and click the verification link before signing in.**")
-                st.markdown("💡 **Didn't receive the email?** Check your spam folder or try signing in to resend the verification email.")
+                    st.success("✅ Account created successfully!")
 
-                # Don't clear session state here - let the form reset naturally on rerun
-                st.rerun()
+                    if email_sent:
+                        st.info("📧 **Verification email sent!** Please check your email and click the verification link.")
+                        st.markdown("💡 **Check your spam folder** if you don't see it in your inbox.")
+                    else:
+                        st.warning("⚠️ **Email not configured.** Here's your verification link - copy and paste it into your browser:")
+                        st.code(verification_link)
+
+                    st.markdown(f"💡 **Account created for:** {email}")
+
+                    # Log successful registration
+                    print(f"User registered successfully: {email} (UID: {user.uid})")
+                    if email_sent:
+                        print(f"Verification email sent to: {email}")
+                    else:
+                        print(f"Email not sent - verification link: {verification_link}")
+
+                    # Don't rerun immediately - let user see the success message
+
+                except exceptions.FirebaseError as e:
+                    error_code = e.code if hasattr(e, 'code') else 'unknown'
+                    error_message = str(e)
+
+                    print(f"Registration failed for {email}: {error_code} - {error_message}")
+
+                    if 'EMAIL_EXISTS' in error_code:
+                        st.error("❌ An account with this email already exists. Try signing in instead.")
+                    elif 'INVALID_EMAIL' in error_code:
+                        st.error("❌ Invalid email address format.")
+                    elif 'WEAK_PASSWORD' in error_code:
+                        st.error("❌ Password is too weak. Please choose a stronger password.")
+                    else:
+                        st.error(f"❌ Registration failed: {error_message}")
+
+                except Exception as e:
+                    print(f"Unexpected error during registration: {str(e)}")
+                    st.error(f"❌ An unexpected error occurred: {str(e)}")
 
 def password_reset_form():
     """Display password reset form."""
