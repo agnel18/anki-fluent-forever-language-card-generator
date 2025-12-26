@@ -441,9 +441,27 @@ def render_auth_handler_page():
         if user_profile:
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Account Created", user_profile.get('createdAt', 'Unknown'))
+                created_at = user_profile.get('createdAt')
+                if created_at:
+                    # Convert DatetimeWithNanoseconds to readable string
+                    if hasattr(created_at, 'strftime'):
+                        created_at_str = created_at.strftime('%Y-%m-%d %H:%M')
+                    else:
+                        created_at_str = str(created_at).split('+')[0]  # Fallback
+                    st.metric("Account Created", created_at_str)
+                else:
+                    st.metric("Account Created", "Unknown")
             with col2:
-                st.metric("Last Login", user_profile.get('lastLogin', 'Unknown'))
+                last_login = user_profile.get('lastLogin')
+                if last_login:
+                    # Convert DatetimeWithNanoseconds to readable string
+                    if hasattr(last_login, 'strftime'):
+                        last_login_str = last_login.strftime('%Y-%m-%d %H:%M')
+                    else:
+                        last_login_str = str(last_login).split('+')[0]  # Fallback
+                    st.metric("Last Login", last_login_str)
+                else:
+                    st.metric("Last Login", "Unknown")
 
         if st.button("Go to Main App"):
             st.session_state.page = "main"

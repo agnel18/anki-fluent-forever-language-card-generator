@@ -67,7 +67,72 @@ def render_settings_page():
                             st.success("✅ Signed out successfully!")
                             st.rerun()
 
-                    # Data deletion (with confirmation)
+                    # Deck Library Section (only for signed-in users)
+                    st.markdown("**Your Deck Library:**")
+                    try:
+                        # Fetch user's decks from Firebase
+                        import firebase_admin
+                        from firebase_admin import firestore
+                        db = firestore.client()
+                        
+                        decks_ref = db.collection('users').document(st.session_state.user['uid']).collection('decks')
+                        decks = decks_ref.order_by('created_at', direction=firestore.Query.DESCENDING).limit(10).get()
+                        
+                        if decks:
+                            st.markdown("### 📚 Your Generated Decks")
+                            
+                            for deck_doc in decks:
+                                deck_data = deck_doc.to_dict()
+                                
+                                # Convert created_at to readable string
+                                created_at = deck_data.get('created_at', 'Unknown')
+                                if created_at != 'Unknown':
+                                    if hasattr(created_at, 'strftime'):
+                                        created_at_display = created_at.strftime('%Y-%m-%d')
+                                        created_at_full = created_at.strftime('%Y-%m-%d %H:%M')
+                                    else:
+                                        created_at_display = str(created_at).split('+')[0][:10]  # Fallback
+                                        created_at_full = str(created_at).split('+')[0][:16].replace('T', ' ')
+                                else:
+                                    created_at_display = 'Unknown'
+                                    created_at_full = 'Unknown'
+                                
+                                with st.expander(f"📖 {deck_data.get('deck_name', 'Unnamed Deck')} - {created_at_display}", expanded=False):
+                                    col_info, col_stats = st.columns([2, 1])
+                                    
+                                    with col_info:
+                                        st.markdown(f"**Language:** {deck_data.get('language', 'Unknown')}")
+                                        st.markdown(f"**Words:** {deck_data.get('word_count', 0)}")
+                                        st.markdown(f"**Cards:** {deck_data.get('card_count', 0)}")
+                                        st.markdown(f"**Created:** {created_at_full}")
+                                        
+                                        # Show generation settings
+                                        settings = deck_data.get('generation_settings', {})
+                                        if settings:
+                                            st.markdown("**Settings Used:**")
+                                            st.caption(f"Difficulty: {settings.get('difficulty', 'Unknown')}")
+                                            st.caption(f"Sentences/word: {settings.get('sentences_per_word', 'Unknown')}")
+                                    
+                                    with col_stats:
+                                        file_size = deck_data.get('file_size', 0)
+                                        if file_size > 0:
+                                            # Convert bytes to MB
+                                            size_mb = file_size / (1024 * 1024)
+                                            st.metric("File Size", f"{size_mb:.1f} MB")
+                                        
+                                        # Note that actual deck files are not stored in cloud
+                                        st.caption("*Decks are downloaded locally to Anki*")
+                            
+                            if len(decks) >= 10:
+                                st.info("Showing your 10 most recent decks. Older decks are still saved in your account.")
+                        else:
+                            st.info("📝 No decks generated yet. Create your first deck to see it here!")
+                            
+                    except Exception as e:
+                        st.warning(f"Could not load deck library: {e}")
+                        st.caption("Deck history will be available when Firebase is accessible.")
+
+                    st.markdown("---")
                     st.markdown("**Danger Zone:**")
                     with st.expander("🗑️ Delete Cloud Data", expanded=False):
                         st.warning("⚠️ This will permanently delete all your data from the cloud.")
@@ -547,6 +612,88 @@ def render_settings_page():
     if st.button("Save Settings", key="perlang_save_btn", type="primary"):
         st.session_state.per_language_settings[selected_lang] = settings.copy()
         st.success(f"Settings saved for {selected_lang}!")
+    st.markdown("---")
+
+    # --- Guest Data Export/Import Section (for non-signed-in users) ---
+    try:
+        if not is_signed_in():
+            st.markdown("## 💾 Guest Data Backup")
+            st.info("As a guest user, your data is stored locally. Export your settings to backup or transfer to another device.")
+
+            guest_col1, guest_col2 = st.columns([1, 1])
+
+            with guest_col1:
+                if st.button("📤 Export Guest Data", key="export_guest_data", help="Download your settings and API keys as JSON", use_container_width=True):
+                    # Collect guest data for export
+                    guest_data = {
+                        'exported_at': datetime.datetime.now().isoformat(),
+                        'version': '1.0',
+                        'settings': {
+                            'groq_api_key': st.session_state.get('groq_api_key', ''),
+                            'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
+                            'theme': st.session_state.get('theme', 'dark'),
+                            'audio_speed': st.session_state.get('audio_speed', 0.8),
+                            'selected_voice': st.session_state.get('selected_voice', None),
+                            'sentences_per_word': st.session_state.get('sentences_per_word', 10),
+                            'sentence_length_range': st.session_state.get('sentence_length_range', [6, 16]),
+                            'difficulty': st.session_state.get('difficulty', 'intermediate'),
+                            'enable_topics': st.session_state.get('enable_topics', False),
+                            'selected_topics': st.session_state.get('selected_topics', []),
+                            'sync_preferences': st.session_state.get('sync_preferences', ["API Keys", "Theme Settings", "Audio Preferences"]),
+                            'learned_languages': st.session_state.get('learned_languages', [])
+                        },
+                        'usage_stats': st.session_state.get('persistent_usage_stats', {}),
+                        'note': 'This is a guest data export. Import this file on another device to restore your settings.'
+                    }
+
+                    import json
+                    st.download_button(
+                        label="📥 Download Backup",
+                        data=json.dumps(guest_data, indent=2),
+                        file_name=f"language_app_guest_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                        mime="application/json",
+                        key="download_guest_backup"
+                    )
+                    st.success("✅ Guest data exported! Download the file above.")
+
+            with guest_col2:
+                uploaded_backup = st.file_uploader(
+                    "📥 Import Guest Data",
+                    type=['json'],
+                    key="import_guest_data",
+                    help="Upload a previously exported guest data file to restore your settings"
+                )
+
+                if uploaded_backup:
+                    try:
+                        import json
+                        backup_data = json.loads(uploaded_backup.getvalue().decode('utf-8'))
+
+                        # Validate backup format
+                        if 'settings' not in backup_data:
+                            st.error("❌ Invalid backup file format")
+                        else:
+                            # Restore settings
+                            settings = backup_data['settings']
+                            for key, value in settings.items():
+                                st.session_state[key] = value
+
+                            # Restore usage stats if present
+                            if 'usage_stats' in backup_data:
+                                st.session_state['persistent_usage_stats'] = backup_data['usage_stats']
+
+                            st.success("✅ Guest data imported successfully!")
+                            st.info("🔄 Refreshing page to apply imported settings...")
+                            time.sleep(2)
+                            st.rerun()
+
+                    except Exception as e:
+                        st.error(f"❌ Failed to import backup: {e}")
+                        st.info("Make sure you're uploading a valid guest data export file.")
+
+    except Exception as e:
+        st.error(f"Guest data management error: {e}")
+
     st.markdown("---")
 
     # --- Cache Management Section ---
