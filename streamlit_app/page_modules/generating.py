@@ -254,6 +254,13 @@ def render_generating_page():
                 log_message(f"[DEBUG] Progress: {progress_pct:.1%} - Word: '{current_word}' - Status: {status}")
 
             # Call the comprehensive generation function with error recovery
+            # Initialize retry counter if not exists
+            if 'generation_retry_count' not in st.session_state:
+                st.session_state['generation_retry_count'] = 0
+            
+            retry_count = st.session_state['generation_retry_count']
+            max_retries = 2  # Allow up to 2 automatic retries for temporary failures
+            
             log_message_local(f"[DEBUG] Starting generate_complete_deck with params:")
             log_message_local(f"[DEBUG] - Words: {selected_words}")
             log_message_local(f"[DEBUG] - Language: {selected_lang}")
@@ -264,10 +271,12 @@ def render_generating_page():
             log_message_local(f"[DEBUG] - Audio speed: {audio_speed}")
             log_message_local(f"[DEBUG] - Voice: {voice}")
             log_message_local(f"[DEBUG] - API keys present: Groq={bool(groq_api_key)}, Pixabay={bool(pixabay_api_key)}")
+            log_message_local(f"[DEBUG] - Retry attempt: {retry_count + 1}/{max_retries + 1}")
             
             log_message(f"[DEBUG] Starting generate_complete_deck with {len(selected_words)} words")
             log_message(f"[DEBUG] Language: {selected_lang}, Output dir: {output_dir}")
             log_message(f"[DEBUG] API keys configured: Groq={'YES' if groq_api_key else 'NO'}, Pixabay={'YES' if pixabay_api_key else 'NO'}")
+            log_message(f"[DEBUG] Retry attempt: {retry_count + 1}/{max_retries + 1}")
             
             # Call the comprehensive generation function with error recovery
             result = generate_complete_deck(
@@ -285,6 +294,31 @@ def render_generating_page():
                 progress_callback=progress_callback,
                 topics=selected_topics if enable_topics else None
             )
+
+            # Check if we should retry for temporary failures
+            should_retry = False
+            if not result.get('success') and retry_count < max_retries:
+                errors = result.get('errors', [])
+                # Retry for API rate limits, network issues, or temporary failures
+                retryable_errors = ['rate limit', 'timeout', 'connection', 'network', 'temporary', '429', '503', '502']
+                for error in errors:
+                    error_msg = error.get('error', '').lower()
+                    if any(retryable_term in error_msg for retryable_term in retryable_errors):
+                        should_retry = True
+                        break
+                
+                if should_retry:
+                    st.session_state['generation_retry_count'] = retry_count + 1
+                    log_message_local(f"<b>🔄 Automatic retry #{retry_count + 1} due to temporary failure...</b>")
+                    log_message(f"[RETRY] Attempting retry #{retry_count + 1} due to temporary failure")
+                    time.sleep(3)  # Brief pause before retry
+                    st.rerun()
+                else:
+                    # Reset retry counter for next generation
+                    st.session_state['generation_retry_count'] = 0
+            else:
+                # Reset retry counter for next generation
+                st.session_state['generation_retry_count'] = 0
 
             # Store results
             progress = st.session_state['generation_progress']
@@ -341,6 +375,48 @@ def render_generating_page():
                         st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_{timestamp}_deck.apkg"
                         log_message_local(f"<b>📁 APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
                         log_message(f"[DEBUG] APKG file loaded: {len(st.session_state.apkg_file)} bytes, filename: {st.session_state.apkg_filename}")
+                        
+                        # Save deck metadata to Firebase (for logged-in users)
+                        try:
+                            from firebase_manager import is_signed_in
+                            if is_signed_in():
+                                deck_metadata = {
+                                    'deck_name': f"{selected_lang} Learning Deck",
+                                    'language': selected_lang,
+                                    'word_count': len(selected_words),
+                                    'card_count': len(selected_words) * 3,  # 3 cards per word
+                                    'created_at': datetime.datetime.now().isoformat(),
+                                    'file_size': len(st.session_state.apkg_file),
+                                    'filename': st.session_state.apkg_filename,
+                                    'generation_settings': {
+                                        'sentences_per_word': num_sentences,
+                                        'sentence_length_range': [min_length, max_length],
+                                        'difficulty': difficulty,
+                                        'audio_speed': audio_speed,
+                                        'voice': voice,
+                                        'enable_topics': st.session_state.get('enable_topics', False),
+                                        'selected_topics': st.session_state.get('selected_topics', [])
+                                    },
+                                    'words_used': selected_words
+                                }
+                                
+                                # Save to Firebase
+                                import firebase_admin
+                                from firebase_admin import firestore
+                                db = firestore.client()
+                                
+                                # Create deck document with auto-generated ID
+                                deck_ref = db.collection('users').document(st.session_state.user['uid']).collection('decks').document()
+                                deck_ref.set(deck_metadata)
+                                
+                                log_message_local(f"<b>💾 Deck metadata saved to cloud</b>")
+                                log_message(f"[DEBUG] Deck metadata saved for user {st.session_state.user['uid']}: {deck_metadata['deck_name']}")
+                            else:
+                                log_message(f"[DEBUG] User not signed in, skipping deck metadata save")
+                        except Exception as e:
+                            log_message_local(f"<b>⚠️ Could not save deck metadata:</b> {e}")
+                            log_message(f"[WARNING] Failed to save deck metadata: {e}")
+                        
                     else:
                         log_message_local(f"<b>⚠️ APKG file not found at path:</b> {apkg_path}")
                         log_message(f"[ERROR] APKG file not found at path: {apkg_path}")
@@ -378,6 +454,74 @@ def render_generating_page():
 
                 if error_summary:
                     log_message_local(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
+
+                # Enhanced Error Recovery Section
+                st.markdown("---")
+                st.markdown("### 🔧 Error Recovery Options")
+                
+                recovery_col1, recovery_col2 = st.columns(2)
+                
+                with recovery_col1:
+                    st.markdown("**Quick Fixes:**")
+                    
+                    # Check for common issues and provide solutions
+                    has_api_errors = any(error.get('component', '').startswith(('API', 'Groq', 'Pixabay')) for error in errors)
+                    has_audio_errors = any('audio' in error.get('component', '').lower() for error in errors)
+                    has_image_errors = any('image' in error.get('component', '').lower() for error in errors)
+                    
+                    if has_api_errors:
+                        st.error("🔑 **API Issues Detected**")
+                        st.info("• Check your API keys in Settings\n• Verify API limits/quota\n• Try again in a few minutes")
+                        
+                        if st.button("🔑 Go to API Settings", key="fix_api_keys"):
+                            st.session_state.page = "settings"
+                            st.rerun()
+                    
+                    if has_audio_errors:
+                        st.warning("🔊 **Audio Generation Issues**")
+                        st.info("• Audio will be skipped (cards still work)\n• Check internet connection\n• Try different voice settings")
+                    
+                    if has_image_errors:
+                        st.warning("🖼️ **Image Generation Issues**")
+                        st.info("• Images will be skipped (cards still work)\n• Check internet connection\n• Try again later")
+
+                with recovery_col2:
+                    st.markdown("**Recovery Actions:**")
+                    
+                    # Offer retry with reduced settings
+                    if st.button("🔄 Retry with Safer Settings", key="retry_safer", help="Reduce sentences per word and try again"):
+                        # Reduce sentences per word for retry
+                        original_sentences = st.session_state.get('sentences_per_word', 10)
+                        st.session_state['sentences_per_word'] = max(3, original_sentences // 2)
+                        st.session_state['generation_progress'] = {
+                            'step': 0, 'result': None, 'success': False, 'error': None, 'errors': [], 'error_summary': '',
+                            'tsv_path': None, 'media_dir': None, 'output_dir': None, 'apkg_ready': False, 'apkg_path': None, 'partial_success': False
+                        }
+                        st.success("🔄 Retrying with reduced settings...")
+                        time.sleep(1)
+                        st.rerun()
+                    
+                    # Offer to continue with partial results
+                    if result.get('partial_success') and result.get('tsv_path'):
+                        if st.button("📦 Create Partial Deck", key="create_partial", help="Create deck with successfully generated content only"):
+                            try:
+                                partial_apkg_path = create_apkg_export(
+                                    deck_name=f"{selected_lang} Learning Deck (Partial)",
+                                    tsv_path=result['tsv_path'],
+                                    media_dir=result['media_dir'],
+                                    output_dir=result['output_dir']
+                                )
+                                if partial_apkg_path and os.path.exists(partial_apkg_path):
+                                    with open(partial_apkg_path, 'rb') as f:
+                                        st.session_state.apkg_file = f.read()
+                                    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                                    st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_partial_{timestamp}_deck.apkg"
+                                    progress['apkg_path'] = partial_apkg_path
+                                    progress['apkg_ready'] = True
+                                    st.success("✅ Partial deck created! Some content may be missing.")
+                                    st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to create partial deck: {e}")
 
                 progress_bar.progress(1.0)
                 current_status.markdown("⚠️ **Deck generation completed with issues**")
