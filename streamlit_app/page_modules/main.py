@@ -11,9 +11,6 @@ def render_main_page():
     # Check if user is in session state or firebase_manager
     current_user = st.session_state.get("user") or (get_current_user() if is_signed_in() else None)
 
-    # Temporary debug
-    st.write(f"Debug: st.user = {st.user}, is_signed_in = {is_signed_in()}, current_user = {current_user}")
-
     # Header with authentication status
     col_logo, col_title, col_auth = st.columns([0.3, 1, 0.4])
     with col_logo:
@@ -28,7 +25,6 @@ def render_main_page():
     with col_auth:
         from page_modules.auth_handler import firebase_auth_component
         firebase_auth_component()
-        st.caption("Optional - Guest mode available")
 
     st.markdown("---")
 
@@ -86,23 +82,6 @@ def render_main_page():
             st.markdown(f"**{i}. {title}** - {desc}")
 
         st.markdown("*Each step is on a separate page so you can focus without confusion.*")
-        st.markdown("---")
-
-    # Guest conversion prompt - only show for guests
-    if st.session_state.get("is_guest", True) and not is_signed_in():
-        with st.container():
-            st.info("💡 **Want to save your progress?** Create a free account to backup your API keys, preferences, and generated decks across all your devices!")
-
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button("📝 Create Account", help="Sign up for free to save your progress", use_container_width=True):
-                    st.session_state.page = "auth_handler"
-                    st.rerun()
-            with col2:
-                if st.button("🔐 Sign In", help="Already have an account? Sign in to restore your data", use_container_width=True):
-                    st.session_state.page = "auth_handler"
-                    st.rerun()
-
         st.markdown("---")
 
     # Quick start section - moved to bottom, left-aligned with bigger button
