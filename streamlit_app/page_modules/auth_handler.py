@@ -197,9 +197,15 @@ def login_form():
     st.subheader("🔐 Sign In")
 
     with st.form("login_form"):
-        email = st.text_input("Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_password")
-        submitted = st.form_submit_button("Sign In")
+        # Email field with label
+        st.markdown("**📧 Email Address**")
+        email = st.text_input("Enter your email address", key="login_email", help="Enter the email you used to create your account")
+
+        # Password field with label
+        st.markdown("**🔒 Password**")
+        password = st.text_input("Enter your password", type="password", key="login_password", help="Your account password")
+
+        submitted = st.form_submit_button("🔓 Sign In", use_container_width=True)
 
         if submitted:
             if not email or not password:
@@ -233,11 +239,36 @@ def registration_form():
     st.subheader("📝 Create Account")
 
     with st.form("register_form"):
-        email = st.text_input("Email", key="register_email")
-        password = st.text_input("Password", type="password", key="register_password")
-        confirm_password = st.text_input("Confirm Password", type="password", key="confirm_password")
-        display_name = st.text_input("Display Name (optional)", key="display_name")
-        submitted = st.form_submit_button("Create Account")
+        # Email field with label
+        st.markdown("**📧 Email Address**")
+        email = st.text_input("Enter your email address", key="register_email", help="We'll use this to create your account and send important updates")
+
+        # Password field with label and requirements
+        st.markdown("**🔒 Password**")
+        password = st.text_input("Create a strong password", type="password", key="register_password",
+                                help="Must be at least 8 characters with uppercase, lowercase, and numbers")
+
+        # Password requirements shown inline
+        with st.expander("💡 Password Requirements", expanded=False):
+            st.markdown("""
+            Your password must contain:
+            - At least 8 characters
+            - One uppercase letter (A-Z)
+            - One lowercase letter (a-z)
+            - One number (0-9)
+            """)
+
+        # Confirm password field
+        st.markdown("**🔄 Confirm Password**")
+        confirm_password = st.text_input("Re-enter your password", type="password", key="confirm_password",
+                                       help="Enter the same password again to confirm")
+
+        # Display name field
+        st.markdown("**👤 Display Name** *(optional)*")
+        display_name = st.text_input("Choose a display name", key="display_name",
+                                   help="This will be shown in your profile. If left blank, we'll use your email username")
+
+        submitted = st.form_submit_button("🚀 Create Account", use_container_width=True)
 
         if submitted:
             if not email or not password:
@@ -277,8 +308,12 @@ def password_reset_form():
     st.subheader("🔑 Reset Password")
 
     with st.form("reset_form"):
-        email = st.text_input("Email", key="reset_email")
-        submitted = st.form_submit_button("Send Reset Email")
+        # Email field with label
+        st.markdown("**📧 Account Email**")
+        email = st.text_input("Enter your account email", key="reset_email",
+                            help="We'll send a password reset link to this email address")
+
+        submitted = st.form_submit_button("📤 Send Reset Email", use_container_width=True)
 
         if submitted:
             if not email:
@@ -298,7 +333,9 @@ def password_reset_form():
 
 def show_auth_forms():
     """Display authentication forms with tabs."""
-    tab1, tab2, tab3 = st.tabs(["Sign In", "Create Account", "Reset Password"])
+    st.markdown("### Choose an option below:")
+
+    tab1, tab2, tab3 = st.tabs(["🔐 Sign In", "📝 Create Account", "🔑 Reset Password"])
 
     with tab1:
         login_form()
@@ -361,11 +398,24 @@ def render_auth_handler_page():
         show_auth_forms()
 
         st.markdown("---")
-        st.markdown("**Why create an account?**")
-        st.markdown("✅ Save your progress across devices")
-        st.markdown("✅ Backup your API keys securely")
-        st.markdown("✅ Access advanced statistics")
-        st.markdown("✅ Never lose your learning data")
+
+        # Why create an account section
+        with st.expander("💡 Why create an account?", expanded=False):
+            st.markdown("""
+            **🌟 Benefits of having an account:**
+
+            ✅ **Save Progress Across Devices** - Access your learning data from any computer or mobile device
+
+            ✅ **Secure API Key Storage** - Your Groq and Pixabay API keys are encrypted and stored safely in the cloud
+
+            ✅ **Advanced Statistics** - Track your learning progress over time with detailed analytics
+
+            ✅ **Never Lose Your Data** - Your generated decks, preferences, and settings are backed up automatically
+
+            ✅ **Personalized Experience** - Your preferences and custom settings sync across all your devices
+
+            **Your privacy matters!** We only store the data you choose to save, and you can delete your account anytime.
+            """)
 
         st.markdown("---")
         st.markdown("**Password Requirements:**")

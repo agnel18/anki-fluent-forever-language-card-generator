@@ -153,6 +153,25 @@ def render_complete_page():
 
     st.divider()
 
+    # Guest conversion prompt - only show for guests who just completed a deck
+    from firebase_manager import is_signed_in
+    if st.session_state.get("is_guest", True) and not is_signed_in():
+        with st.container():
+            st.success("🎉 **Congratulations on creating your deck!**")
+            st.info("💾 **Save this deck for future access?** Create a free account to store your generated decks, API keys, and preferences in the cloud!")
+
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("📝 Create Account", help="Save your deck and progress permanently", use_container_width=True, type="primary"):
+                    st.session_state.page = "auth_handler"
+                    st.rerun()
+            with col2:
+                if st.button("🔐 Sign In", help="Already have an account? Sign in to save this deck", use_container_width=True):
+                    st.session_state.page = "auth_handler"
+                    st.rerun()
+
+        st.markdown("---")
+
     # Navigation buttons
     col_back, col_new, col_keys = st.columns([1, 1, 1])
     with col_back:
