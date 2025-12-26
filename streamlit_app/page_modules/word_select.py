@@ -17,6 +17,9 @@ def render_word_select_page():
 
     st.markdown("---")
 
+    # MAXIMUM 10 WORDS LIMIT - Clear messaging
+    st.warning("⚠️ **Maximum 10 words per deck** - This keeps generation fast and API costs low!")
+    
     # Initialize selected words if not exists
     if "selected_words" not in st.session_state:
         st.session_state.selected_words = []
@@ -26,9 +29,18 @@ def render_word_select_page():
     if st.session_state.get('selected_language', None) and st.session_state.get('selected_language') not in st.session_state.current_page:
         st.session_state.current_page[st.session_state.get('selected_language')] = 1
 
-    # Show current selection summary
+    # Show current selection summary with limit indicator
     selected_count = len(st.session_state.selected_words)
-    st.markdown(f"### 📝 Current Selection: **{selected_count} word(s)**")
+    remaining_slots = max(0, 10 - selected_count)
+    
+    if selected_count >= 10:
+        st.error(f"❌ **Word limit reached!** You've selected the maximum of 10 words. Remove some words to add different ones.")
+    elif selected_count > 0:
+        st.success(f"✅ **{selected_count}/10 words selected** - {remaining_slots} slots remaining")
+    else:
+        st.info("ℹ️ **0/10 words selected** - Choose up to 10 words for your deck")
+    
+    st.markdown(f"### 📝 Current Selection: **{selected_count}/10 word(s)**")
     if selected_count > 0:
         with st.expander("View selected words", expanded=False):
             if selected_count <= 20:
@@ -60,12 +72,20 @@ def render_word_select_page():
         tab_frequency, tab_custom, tab_typed = st.tabs(["📊 Frequency List", "📥 Import Your Own Words", "✍️ Type Your Own Words"])
 
         with tab_typed:
-            st.markdown("""
+            remaining_slots = max(0, 10 - len(st.session_state.selected_words))
+            st.markdown(f"""
             **Type or paste your own words below.**
             - Separate words with commas, spaces, or new lines.
             - Example: `apple, banana, orange` or one word per line.
-            - Max 10 words per batch. Recommended: 5-10 words for optimal processing. Duplicates will be removed.
+            - **Maximum {remaining_slots} more words** (total limit: 10 words per deck).
+            - Duplicates will be removed automatically.
             """)
+            
+            # Disable input if limit reached
+            input_disabled = remaining_slots == 0
+            if input_disabled:
+                st.warning("⚠️ **Word limit reached!** You've already selected 10 words. Remove some words from your selection to add new ones.")
+            
             # Text area for manual word input
             # Use a flag to control clearing instead of modifying session state directly
             clear_text_area = st.session_state.get('clear_typed_words_input', False)
@@ -80,22 +100,31 @@ def render_word_select_page():
                 value=default_value,
                 height=120,
                 placeholder="e.g. apple, banana, orange or one per line",
-                key="typed_words_input"
+                key="typed_words_input",
+                disabled=input_disabled
             )
 
-            # Process Words button always visible, disabled when no content
-            if st.button("🔍 Process Words", key="process_typed_words", type="secondary", use_container_width=True, disabled=not typed_words_raw.strip()):
+            # Process Words button always visible, disabled when no content or limit reached
+            can_process = typed_words_raw.strip() and not input_disabled
+            if st.button("🔍 Process Words", key="process_typed_words", type="secondary", use_container_width=True, disabled=not can_process):
                 # Process the words
                 import re
                 typed_words_list = re.split(r'[\s,\n]+', typed_words_raw)
                 typed_words_list = [w.strip() for w in typed_words_list if w.strip()]
-                typed_words_list = list(dict.fromkeys(typed_words_list))[:10]  # Remove duplicates and limit
+                typed_words_list = list(dict.fromkeys(typed_words_list))  # Remove duplicates
+                
+                # Respect the remaining slots limit
+                available_slots = max(0, 10 - len(st.session_state.selected_words))
+                typed_words_list = typed_words_list[:available_slots]
 
                 if typed_words_list:
                     st.success(f"✅ **{len(typed_words_list)} word(s) processed!** Ready to add to your selection.")
                     st.session_state.processed_words = typed_words_list
                 else:
-                    st.warning("No valid words found. Please enter some words.")
+                    if input_disabled:
+                        st.warning("Cannot process words - word limit reached.")
+                    else:
+                        st.warning("No valid words found. Please enter some words.")
                     st.session_state.processed_words = []
 
             # Check if words are processed
@@ -114,25 +143,35 @@ def render_word_select_page():
                     for i, word in enumerate(typed_words_list):
                         cols[i % 3].write(f"• {word}")
                 
-                # Add words button
+                # Add words button - check if we can add more
+                can_add_words = len(st.session_state.selected_words) < 10
+                if not can_add_words:
+                    st.warning("⚠️ **Cannot add more words** - you've reached the 10-word limit. Remove some words first.")
+                
                 col_add, col_clear = st.columns([1, 1])
                 with col_add:
-                    if st.button("➕ Add These Words", key="add_typed_words", type="primary", use_container_width=True):
-                        # Add to selected words, avoiding duplicates
-                        existing_words = set(st.session_state.selected_words)
-                        new_words = [w for w in typed_words_list if w not in existing_words]
-                        st.session_state.selected_words.extend(new_words)
-                        # Detailed confirmation
-                        if new_words:
-                            st.success(f"✅ Successfully added {len(new_words)} new word(s): {', '.join(new_words)}")
-                            time.sleep(2)  # Keep the success message visible for 2 seconds
-                            # Clear the text area using flag instead of direct session state modification
-                            st.session_state.clear_typed_words_input = True
-                        else:
-                            st.info("All words were already in your selection.")
-                            time.sleep(2)  # Keep the info message visible for 2 seconds
-                            # Clear the text area using flag instead of direct session state modification
-                            st.session_state.clear_typed_words_input = True
+                    if st.button("➕ Add These Words", key="add_typed_words", type="primary", use_container_width=True, disabled=not can_add_words):
+                        if can_add_words:
+                            # Add to selected words, avoiding duplicates
+                            existing_words = set(st.session_state.selected_words)
+                            new_words = [w for w in typed_words_list if w not in existing_words]
+                            
+                            # Double-check we don't exceed limit
+                            available_slots = max(0, 10 - len(st.session_state.selected_words))
+                            new_words = new_words[:available_slots]
+                            
+                            st.session_state.selected_words.extend(new_words)
+                            # Detailed confirmation
+                            if new_words:
+                                st.success(f"✅ Successfully added {len(new_words)} new word(s): {', '.join(new_words)}")
+                                time.sleep(2)  # Keep the success message visible for 2 seconds
+                                # Clear the text area using flag instead of direct session state modification
+                                st.session_state.clear_typed_words_input = True
+                            else:
+                                st.info("All words were already in your selection or limit reached.")
+                                time.sleep(2)  # Keep the info message visible for 2 seconds
+                                # Clear the text area using flag instead of direct session state modification
+                                st.session_state.clear_typed_words_input = True
                 
                 with col_clear:
                     if st.button("🗑️ Clear Text", key="clear_typed_words", use_container_width=True):
@@ -151,13 +190,25 @@ def render_word_select_page():
             total_pages = (total_words + page_size - 1) // page_size
 
             st.markdown("#### Select words to include in your deck:")
-            st.markdown(f"**Selected: {len(st.session_state.selected_words)} words**")
+            st.markdown(f"**Selected: {len(st.session_state.selected_words)}/10 words**")
 
             # Single-click selection with visual feedback
             for idx, row in words_df.iterrows():
                 is_selected = row['Word'] in st.session_state.selected_words
-                button_text = f"✅ {row['Word']}" if is_selected else f"➕ {row['Word']}"
-                button_type = "secondary" if is_selected else "primary"
+                can_add_more = len(st.session_state.selected_words) < 10
+                
+                if is_selected:
+                    button_text = f"✅ {row['Word']}"
+                    button_type = "secondary"
+                    disabled = False
+                elif can_add_more:
+                    button_text = f"➕ {row['Word']}"
+                    button_type = "primary"
+                    disabled = False
+                else:
+                    button_text = f"🚫 {row['Word']}"
+                    button_type = "secondary"
+                    disabled = True
                 
                 col1, col2 = st.columns([2, 1])
                 with col1:
@@ -168,11 +219,12 @@ def render_word_select_page():
                         st.caption("Not studied")
                 with col2:
                     if st.button(button_text, key=f"word_select_{row['Word']}_{idx}", 
-                               type=button_type, use_container_width=True):
+                               type=button_type, use_container_width=True, disabled=disabled):
                         if is_selected:
                             st.session_state.selected_words.remove(row['Word'])
-                        else:
+                        elif can_add_more:
                             st.session_state.selected_words.append(row['Word'])
+                        # Don't add if limit reached
                         st.rerun()
 
             st.divider()
@@ -220,19 +272,32 @@ def render_word_select_page():
                         st.markdown(f"#### Words from custom list ({len(custom_words)})")
                         for idx, word in enumerate(custom_words[:100]):  # Limit display to 100
                             is_selected = word in st.session_state.selected_words
-                            button_text = f"✅ {word}" if is_selected else f"➕ {word}"
-                            button_type = "secondary" if is_selected else "primary"
+                            can_add_more = len(st.session_state.selected_words) < 10
+                            
+                            if is_selected:
+                                button_text = f"✅ {word}"
+                                button_type = "secondary"
+                                disabled = False
+                            elif can_add_more:
+                                button_text = f"➕ {word}"
+                                button_type = "primary"
+                                disabled = False
+                            else:
+                                button_text = f"🚫 {word}"
+                                button_type = "secondary"
+                                disabled = True
                             
                             col1, col2 = st.columns([3, 1])
                             with col1:
                                 st.markdown(f"**{idx + 1}. {word}**")
                             with col2:
                                 if st.button(button_text, key=f"custom_word_select_{word}_{idx}", 
-                                           type=button_type, use_container_width=True):
+                                           type=button_type, use_container_width=True, disabled=disabled):
                                     if is_selected:
                                         st.session_state.selected_words.remove(word)
-                                    else:
+                                    elif can_add_more:
                                         st.session_state.selected_words.append(word)
+                                    # Don't add if limit reached
                                     st.rerun()
     else:
         st.warning("No frequency data available for the selected language. Please use the custom import or type your own words.")
