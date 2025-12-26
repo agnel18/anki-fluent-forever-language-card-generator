@@ -462,11 +462,7 @@ def registration_form():
                 st.info("📧 **Please check your email and click the verification link before signing in.**")
                 st.markdown("💡 **Didn't receive the email?** Check your spam folder or try signing in to resend the verification email.")
 
-                # Clear form
-                st.session_state.register_email = ""
-                st.session_state.register_password = ""
-                st.session_state.confirm_password = ""
-                st.session_state.display_name = ""
+                # Don't clear session state here - let the form reset naturally on rerun
                 st.rerun()
 
 def password_reset_form():
