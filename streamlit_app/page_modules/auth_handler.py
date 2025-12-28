@@ -59,7 +59,7 @@ def send_verification_email(email: str, verification_link: str) -> bool:
         html = f"""
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #333;">Welcome to Language Learning App! 🎓</h2>
+            <h2 style="color: #333;">Welcome to Language Anki Deck Generator! 🎓</h2>
             <p>Thank you for creating an account. To complete your registration, please verify your email address by clicking the button below:</p>
 
             <div style="text-align: center; margin: 30px 0;">
@@ -72,14 +72,14 @@ def send_verification_email(email: str, verification_link: str) -> bool:
             <p>If you didn't create an account, you can safely ignore this email.</p>
 
             <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">This email was sent by Language Learning App. If you have any questions, please contact support.</p>
+            <p style="color: #666; font-size: 12px;">This email was sent by Language Anki Deck Generator. If you have any questions, please contact support.</p>
         </body>
         </html>
         """
 
         # Plain text content
         text = f"""
-        Welcome to Language Learning App!
+        Welcome to Language Anki Deck Generator!
 
         Thank you for creating an account. To complete your registration, please verify your email address by clicking this link:
 
@@ -87,7 +87,7 @@ def send_verification_email(email: str, verification_link: str) -> bool:
 
         If you didn't create an account, you can safely ignore this email.
 
-        This email was sent by Language Learning App.
+        This email was sent by Language Anki Deck Generator.
         """
 
         # Attach parts
@@ -746,11 +746,11 @@ def render_user_profile():
 
 def render_auth_handler_page():
     """Handle authentication page."""
-    st.title("🔐 Sign In")
-    st.markdown("Create an account or sign in to save progress across devices!")
-    st.markdown("📧 **Email verification required** - You'll need to verify your email before you can sign in.")
-
     if not is_signed_in():
+        st.title("🔐 Sign In")
+        st.markdown("Create an account or sign in to save progress across devices!")
+        st.markdown("📧 **Email verification required** - You'll need to verify your email before you can sign in.")
+
         show_auth_forms()
 
         st.markdown("---")
