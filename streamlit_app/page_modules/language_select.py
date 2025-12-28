@@ -94,11 +94,11 @@ def render_language_select_page():
         st.markdown("""
         <style>
         .language-select-container {
-            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            background: var(--gradient-primary);
             padding: 25px;
             border-radius: 20px;
             margin: 25px 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow);
         }
         .language-select-label {
             color: white;

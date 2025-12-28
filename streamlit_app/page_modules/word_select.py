@@ -69,7 +69,7 @@ def render_word_select_page():
     if total_words > 0:
         st.markdown(f"### Pick from **Top Words Used in** {st.session_state.get('selected_language', '')}")
         # Add third option: Type Your Own Words
-        tab_frequency, tab_custom, tab_typed = st.tabs(["📊 Frequency List", "📥 Import Your Own Words", "✍️ Type Your Own Words"])
+        tab_frequency, tab_custom, tab_my_lists, tab_typed = st.tabs(["📊 Frequency List", "📥 Import Your Own Words", "📝 My Saved Lists", "✍️ Type Your Own Words"])
 
         with tab_typed:
             remaining_slots = max(0, 10 - len(st.session_state.selected_words))
@@ -299,6 +299,152 @@ def render_word_select_page():
                                         st.session_state.selected_words.append(word)
                                     # Don't add if limit reached
                                     st.rerun()
+
+                        # Save custom list option (only for signed-in users)
+                        from firebase_manager import is_signed_in
+                        if is_signed_in() and custom_words:
+                            st.divider()
+                            st.markdown("**💾 Save this custom list for future use**")
+
+                            col_save, col_name = st.columns([1, 2])
+                            with col_name:
+                                list_name = st.text_input(
+                                    "List name",
+                                    key="custom_list_name",
+                                    placeholder="e.g., Medical Terms, Business Vocabulary",
+                                    help="Give your word list a memorable name"
+                                )
+                            with col_save:
+                                can_save = bool(list_name.strip())
+                                if st.button("💾 Save List", key="save_custom_list", type="secondary",
+                                           use_container_width=True, disabled=not can_save):
+                                    try:
+                                        from custom_lists_manager import save_custom_word_list
+                                        user_id = st.session_state.user['uid']
+                                        success = save_custom_word_list(
+                                            user_id=user_id,
+                                            list_name=list_name.strip(),
+                                            words=custom_words,
+                                            language=st.session_state.get('selected_language')
+                                        )
+                                        if success:
+                                            st.success(f"✅ Custom list '{list_name}' saved! You can reuse it anytime.")
+                                            # Update achievements
+                                            from achievements_manager import check_and_update_achievements
+                                            check_and_update_achievements(user_id)
+                                        else:
+                                            st.error("❌ Failed to save custom list. Please try again.")
+                                    except Exception as e:
+                                        st.error(f"❌ Error saving list: {e}")
+
+                            # Show saved lists
+                            try:
+                                from custom_lists_manager import get_user_custom_lists
+                                user_id = st.session_state.user['uid']
+                                saved_lists = get_user_custom_lists(user_id)
+
+                                if saved_lists:
+                                    st.markdown("**📚 Your saved custom lists:**")
+                                    for saved_list in saved_lists[:5]:  # Show up to 5
+                                        col_info, col_load, col_delete = st.columns([2, 1, 1])
+                                        with col_info:
+                                            favorite_icon = "⭐" if saved_list['is_favorite'] else ""
+                                            st.caption(f"{favorite_icon} {saved_list['name']} ({saved_list['word_count']} words)")
+                                        with col_load:
+                                            if st.button("📥 Load", key=f"load_list_{saved_list['id']}",
+                                                       use_container_width=True):
+                                                try:
+                                                    from custom_lists_manager import get_custom_list_words
+                                                    words, progress = get_custom_list_words(user_id, saved_list['id'])
+                                                    if words:
+                                                        # Replace current custom words
+                                                        st.session_state.custom_words = words
+                                                        st.success(f"✅ Loaded '{saved_list['name']}' with {len(words)} words!")
+                                                        st.rerun()
+                                                except Exception as e:
+                                                    st.error(f"❌ Failed to load list: {e}")
+                                        with col_delete:
+                                            if st.button("🗑️", key=f"delete_list_{saved_list['id']}",
+                                                       use_container_width=True):
+                                                try:
+                                                    from custom_lists_manager import delete_custom_list
+                                                    success = delete_custom_list(user_id, saved_list['id'])
+                                                    if success:
+                                                        st.success(f"✅ Deleted '{saved_list['name']}'")
+                                                        st.rerun()
+                                                    else:
+                                                        st.error("❌ Failed to delete list")
+                                                except Exception as e:
+                                                    st.error(f"❌ Error deleting list: {e}")
+                            except Exception as e:
+                                st.warning(f"Could not load saved lists: {e}")
+
+        with tab_my_lists:
+            from firebase_manager import is_signed_in
+            if not is_signed_in():
+                st.info("🔐 Sign in to access your saved custom word lists.")
+                if st.button("Sign In", key="signin_from_word_select"):
+                    st.session_state.page = "auth_handler"
+                    st.rerun()
+            else:
+                st.markdown("**Use your saved custom word lists** for deck generation.")
+
+                # Check if a list was loaded from My Word Lists page
+                loaded_list = st.session_state.get('loaded_custom_list')
+                if loaded_list:
+                    st.success(f"📥 **Loaded from 'My Word Lists':** {loaded_list['name']}")
+
+                    words = loaded_list['words']
+                    progress = loaded_list.get('progress', {})
+
+                    st.markdown(f"#### Words from '{loaded_list['name']}' ({len(words)})")
+
+                    # Show words with progress
+                    for idx, word in enumerate(words[:100]):  # Limit display to 100
+                        is_selected = word in st.session_state.selected_words
+                        can_add_more = len(st.session_state.selected_words) < 10
+                        is_completed = progress.get(word, {}).get('completed', False)
+
+                        if is_selected:
+                            button_text = f"✅ {word}"
+                            button_type = "secondary"
+                            disabled = False
+                        elif can_add_more:
+                            button_text = f"➕ {word}"
+                            button_type = "primary"
+                            disabled = False
+                        else:
+                            button_text = f"🚫 {word}"
+                            button_type = "secondary"
+                            disabled = True
+
+                        col1, col2 = st.columns([3, 1])
+                        with col1:
+                            status_icon = "✅" if is_completed else "⬜"
+                            st.markdown(f"**{idx + 1}. {status_icon} {word}**")
+                        with col2:
+                            if st.button(button_text, key=f"my_list_word_select_{word}_{idx}",
+                                       type=button_type, use_container_width=True, disabled=disabled):
+                                if is_selected:
+                                    st.session_state.selected_words.remove(word)
+                                elif can_add_more:
+                                    st.session_state.selected_words.append(word)
+                                # Don't add if limit reached
+                                st.rerun()
+
+                    # Clear loaded list button
+                    if st.button("🗑️ Clear Loaded List", key="clear_loaded_list"):
+                        del st.session_state.loaded_custom_list
+                        st.rerun()
+
+                else:
+                    st.info("💡 No list loaded. Go to **My Word Lists** page to load a saved list, then return here to use it.")
+
+                    # Quick access to My Word Lists page
+                    if st.button("📝 Go to My Word Lists", key="goto_my_lists", type="secondary"):
+                        st.session_state.page = "my_word_lists"
+                        st.rerun()
+
     else:
         st.warning("No frequency data available for the selected language. Please use the custom import or type your own words.")
 

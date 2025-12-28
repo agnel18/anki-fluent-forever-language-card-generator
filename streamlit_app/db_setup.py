@@ -56,7 +56,77 @@ def init_database():
             )
         """)
 
-        conn.commit()
+        # User app usage tracking (for streaks and analytics)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS app_usage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                date DATE NOT NULL,
+                decks_generated INTEGER DEFAULT 0,
+                words_generated INTEGER DEFAULT 0,
+                languages_used TEXT, -- JSON array of languages
+                session_duration INTEGER DEFAULT 0, -- in seconds
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, date)
+            )
+        """)
+
+        # Custom word lists (user-uploaded lists)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_word_lists (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                list_name TEXT NOT NULL,
+                language TEXT,
+                words TEXT NOT NULL, -- JSON array of words
+                word_count INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_used TIMESTAMP,
+                is_favorite BOOLEAN DEFAULT 0,
+                UNIQUE(user_id, list_name)
+            )
+        """)
+
+        # Custom word list progress tracking
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_word_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                list_id INTEGER,
+                word TEXT NOT NULL,
+                completed BOOLEAN DEFAULT 0,
+                times_generated INTEGER DEFAULT 0,
+                last_generated TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (list_id) REFERENCES custom_word_lists (id),
+                UNIQUE(user_id, list_id, word)
+            )
+        """)
+
+        # Achievement system
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS achievements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                achievement_type TEXT NOT NULL, -- 'streak', 'decks', 'words', 'languages', 'custom_lists'
+                achievement_key TEXT NOT NULL, -- specific achievement identifier
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                icon TEXT NOT NULL,
+                unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                progress_value INTEGER DEFAULT 0, -- current progress toward achievement
+                target_value INTEGER NOT NULL, -- target value to unlock
+                is_unlocked BOOLEAN DEFAULT 0,
+                UNIQUE(user_id, achievement_type, achievement_key)
+            )
+        """)
+
+        # Indexes for performance
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_app_usage_user_date ON app_usage(user_id, date)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_custom_lists_user ON custom_word_lists(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_custom_progress_user_list ON custom_word_progress(user_id, list_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_achievements_user ON achievements(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_achievements_unlocked ON achievements(user_id, is_unlocked)")
         logger.info(f"Database initialized at {DB_PATH}")
         return True
 

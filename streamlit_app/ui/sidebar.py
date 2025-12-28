@@ -31,6 +31,8 @@ def handle_auto_sync():
 
 def render_sidebar():
     """Render the main sidebar content."""
+    from page_modules.auth_handler import is_signed_in, sign_out
+    
     # Center the logo vertically in the sidebar using HTML/CSS
     # Center the sidebar logo horizontally using HTML
     logo_path = os.path.join(os.path.dirname(__file__), "..", "logo.svg")
@@ -55,6 +57,12 @@ def render_sidebar():
         st.session_state.page = "statistics"
         st.rerun()
 
+    # My Word Lists button (only for signed-in users)
+    if is_signed_in():
+        if st.sidebar.button("📝 My Lists", key="sidebar_lists", use_container_width=True):
+            st.session_state.page = "my_word_lists"
+            st.rerun()
+
     # Documentation button
     if st.sidebar.button("📖 Documentation", key="sidebar_docs", use_container_width=True):
         import webbrowser
@@ -64,7 +72,6 @@ def render_sidebar():
     st.sidebar.markdown("---")
 
     # Authentication section - prominent placement
-    from page_modules.auth_handler import is_signed_in, sign_out
     if is_signed_in():
         user = st.session_state.get("user", {})
         st.sidebar.markdown(f"**👋 Welcome, {user.get('displayName', 'User')}!**")
@@ -76,6 +83,41 @@ def render_sidebar():
             st.session_state.page = "auth_handler"
             st.rerun()
         st.sidebar.caption("Save progress across devices")
+
+    # Achievements section (only for signed-in users)
+    if is_signed_in():
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### Achievements")
+
+        try:
+            from achievements_manager import get_user_achievements, get_achievement_stats
+            user_id = st.session_state.user['uid']
+            achievements = get_user_achievements(user_id)
+            stats = get_achievement_stats(user_id)
+
+            # Show completion percentage
+            completion_pct = stats.get('completion_percentage', 0)
+            st.sidebar.metric("Progress", f"{completion_pct:.1f}%")
+
+            # Show recent unlocks
+            from achievements_manager import get_recent_unlocks
+            recent = get_recent_unlocks(user_id, days=7)
+            if recent:
+                st.sidebar.markdown("**Recent Unlocks:**")
+                for achievement in recent[:3]:  # Show up to 3 recent
+                    st.sidebar.caption(f"{achievement['icon']} {achievement['title']}")
+
+            # Show next achievable
+            locked_achievements = [a for a in achievements if not a['unlocked']]
+            if locked_achievements:
+                next_achievement = min(locked_achievements, key=lambda x: x['target'] - x['progress'])
+                progress_pct = next_achievement['progress_percentage']
+                st.sidebar.markdown(f"**Next:** {next_achievement['icon']} {next_achievement['title']}")
+                st.sidebar.progress(progress_pct / 100)
+                st.sidebar.caption(f"{next_achievement['progress']}/{next_achievement['target']}")
+
+        except Exception as e:
+            st.sidebar.caption("Could not load achievements")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### API Usage")

@@ -39,14 +39,14 @@ except ImportError as e:
 
 # Import from deck_exporter module
 try:
-    from deck_exporter import create_anki_tsv, create_apkg_export
+    from deck_exporter import create_apkg_export
     logger.info("Successfully imported from deck_exporter")
 except ImportError as e:
     logger.warning(f"Failed to import from deck_exporter: {e}. Using fallback implementations.")
 
 # Import from generation_utils module
 try:
-    from generation_utils import estimate_api_costs, parse_csv_upload
+    from generation_utils import estimate_api_costs, parse_csv_upload, generate_image_keywords
     logger.info("Successfully imported from generation_utils")
 except ImportError as e:
     logger.warning(f"Failed to import from generation_utils: {e}. Using fallback implementations.")
@@ -133,8 +133,14 @@ def generate_complete_deck(
 
                 # 3. Generate images (with graceful degradation)
                 try:
+                    # Generate unique keywords for each sentence
+                    queries = []
+                    for s in sentences:
+                        keywords = generate_image_keywords(s['sentence'], s['translation'], word, groq_api_key)
+                        queries.append(keywords)
+                    
                     image_filenames, used_image_urls = generate_images_pixabay(
-                        [s.get('image_keywords', word) for s in sentences],
+                        queries,
                         str(media_dir),
                         batch_name=word,
                         num_images=1,
@@ -167,22 +173,23 @@ def generate_complete_deck(
                 partial_success = False
                 continue
 
-        # 5. Create TSV
-        tsv_path = output_path / "ANKI_IMPORT.tsv"
-        if not create_anki_tsv(words_data, str(tsv_path)):
+        # 5. Create APKG
+        apkg_path = output_path / f"{language.replace(' ', '_')}_deck.apkg"
+        if not create_apkg_export(words_data, str(media_dir), str(apkg_path), language, "Language Learning"):
             errors.append({
-                "component": "TSV creation",
-                "error": "Failed to create TSV file",
+                "component": "APKG creation",
+                "error": "Failed to create APKG file",
                 "critical": True
             })
             return {
                 "success": False,
-                "tsv_path": None,
+                "apkg_path": None,
                 "media_dir": None,
                 "output_dir": None,
-                "error": "Failed to create TSV file",
+                "error": "Failed to create APKG file",
                 "errors": errors,
-                "error_summary": _create_error_summary(errors)
+                "error_summary": _create_error_summary(errors),
+                "partial_success": False
             }
 
         # Check for critical errors
@@ -191,7 +198,7 @@ def generate_complete_deck(
 
         result = {
             "success": success,
-            "tsv_path": str(tsv_path),
+            "apkg_path": str(apkg_path),
             "media_dir": str(media_dir),
             "output_dir": str(output_path),
             "error": None if success else f"Completed with {len(critical_errors)} critical errors",
@@ -209,7 +216,7 @@ def generate_complete_deck(
         logger.error(f"Complete deck generation error: {e}")
         return {
             "success": False,
-            "tsv_path": None,
+            "apkg_path": None,
             "media_dir": None,
             "output_dir": None,
             "error": str(e),
@@ -253,11 +260,12 @@ def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, la
         "sentence": safe_str(sent.get("sentence", "")),
         "ipa": safe_str(final_ipa),
         "english": safe_str(sent.get("english_translation", "")),
-        "context": safe_str(sent.get("context", "")),
-        "image_keywords": safe_str(sent.get("image_keywords", "")),
-        "role_of_word": safe_str(sent.get("role_of_word", "")),
         "audio": safe_str(f"[sound:{audio_name}]" if audio_name else ""),
         "image": safe_str(f'<img src="{image_name}">') if image_name else "",
+        "image_keywords": safe_str(sent.get("image_keywords", "")),
+        "colored_sentence": safe_str(sent.get("colored_sentence", sent.get("sentence", ""))),
+        "word_explanations": sent.get("word_explanations", []),
+        "grammar_summary": safe_str(sent.get("grammar_summary", "")),
         "tags": "",
     })
 

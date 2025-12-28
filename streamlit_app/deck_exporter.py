@@ -26,7 +26,7 @@ def create_anki_tsv(
     rows: list[dict],
     output_path: str,
 ) -> bool:
-    """Create Anki TSV without headers in expected field order."""
+    """Create Anki TSV with headers for proper field mapping."""
     try:
         columns = [
             "File Name",
@@ -38,11 +38,23 @@ def create_anki_tsv(
             "Sound",
             "Image",
             "Image Keywords",
+            "Colored Sentence",
+            "Word Explanations",
+            "Grammar Summary",
             "Tags",
         ]
 
         formatted_rows = []
         for r in rows:
+            # Convert word explanations list to JSON string for TSV
+            word_explanations_json = ""
+            if r.get("word_explanations"):
+                try:
+                    import json
+                    word_explanations_json = json.dumps(r["word_explanations"], ensure_ascii=False)
+                except Exception:
+                    word_explanations_json = str(r.get("word_explanations", ""))
+
             formatted_rows.append({
                 "File Name": r.get("file_name", ""),
                 "What is the Word?": r.get("word", ""),
@@ -53,11 +65,14 @@ def create_anki_tsv(
                 "Sound": r.get("audio", ""),
                 "Image": r.get("image", ""),
                 "Image Keywords": r.get("image_keywords", ""),
+                "Colored Sentence": r.get("colored_sentence", ""),
+                "Word Explanations": word_explanations_json,
+                "Grammar Summary": r.get("grammar_summary", ""),
                 "Tags": r.get("tags", ""),
             })
 
-        df = pd.DataFrame(formatted_rows, columns=columns)
-        df.to_csv(output_path, sep="\t", index=False, header=False, encoding="utf-8")
+        df = pd.DataFrame(formatted_rows)
+        df.to_csv(output_path, sep="\t", index=False, header=False, encoding="utf-8", quoting=0)  # QUOTE_MINIMAL
         return True
 
     except Exception as e:
@@ -158,46 +173,30 @@ def read_tsv_rows(tsv_path: str) -> List[Dict[str, Any]]:
         return []
 
 def create_apkg_export(
-    deck_name: str,
-    tsv_path: str,
+    rows: List[Dict[str, Any]],
     media_dir: str,
-    output_dir: str,
-    language: str = "English"
-) -> str:
+    output_path: str,
+    language: str = "English",
+    deck_name: str = "Language Learning"
+) -> bool:
     """
-    Create .apkg file (Anki deck package) from TSV data.
+    Create .apkg file (Anki deck package) from card data.
 
     Args:
-        deck_name: Name of the Anki deck
-        tsv_path: Path to the TSV file
+        rows: List of card data dicts
         media_dir: Path to media folder (contains audio + images)
-        output_dir: Directory to save .apkg file
+        output_path: Path to save .apkg file
         language: Target language name
+        deck_name: Name of the Anki deck
 
     Returns:
-        Path to created .apkg file, or empty string if failed
+        True if successful, False otherwise
     """
     try:
-        # Read TSV data
-        rows = read_tsv_rows(tsv_path)
-        if not rows:
-            logger.error(f"No data found in TSV file: {tsv_path}")
-            return ""
-
-        # Create output path
-        output_apkg = str(Path(output_dir) / f"{deck_name.replace(' ', '_')}.apkg")
-
-        # Call the original function with correct parameters
-        success = _create_apkg_from_rows(rows, media_dir, output_apkg, language, deck_name)
-
-        if success:
-            return output_apkg
-        else:
-            return ""
-
+        return _create_apkg_from_rows(rows, media_dir, output_path, language, deck_name)
     except Exception as e:
         logger.error(f"Error creating APKG export: {e}")
-        return ""
+        return False
 
 def _create_apkg_from_rows(
     rows: List[Dict[str, Any]],
@@ -232,7 +231,7 @@ def _create_apkg_from_rows(
         logger.error(f"Failed to create output parent directory: {output_path.parent}")
         return False
 
-    # Create note model with 9 fields and 3 card templates
+    # Create note model with 12 fields and 3 card templates
     model_id = random.randrange(1 << 30, 1 << 31)
     model = genanki.Model(
         model_id,
@@ -246,26 +245,30 @@ def _create_apkg_from_rows(
             {'name': 'English Translation'},
             {'name': 'Sound'},
             {'name': 'Image'},
-            {'name': 'Image Keywords'}
+            {'name': 'Image Keywords'},
+            {'name': 'Colored Sentence'},
+            {'name': 'Word Explanations'},
+            {'name': 'Grammar Summary'},
+            {'name': 'Tags'}
         ],
         templates=[
             {
                 'name': 'Card 1: Listening',
                 'qfmt': '''<div class="hint">🎧 Listen and understand</div>\n<div class="sound">{{Sound}}</div>''',
-                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sentence">{{Sentence}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="colored-sentence">{{Colored Sentence}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="grammar-summary">{{Grammar Summary}}</div>\n{{#Word Explanations}}<div class="explanations-toggle">📚 Show Grammar Explanations</div>{{/Word Explanations}}\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
             },
             {
                 'name': 'Card 2: Production',
                 'qfmt': '''<div class="hint">💬 Say this in ''' + language + ''':</div>\n<div class="english-prompt">{{English Translation}}</div>''',
-                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sentence">{{Sentence}}</div>\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="colored-sentence">{{Colored Sentence}}</div>\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="grammar-summary">{{Grammar Summary}}</div>\n{{#Word Explanations}}<div class="explanations-toggle">📚 Show Grammar Explanations</div>{{/Word Explanations}}\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
             },
             {
                 'name': 'Card 3: Reading',
-                'qfmt': '''<div class="hint">📖 Read and understand:</div>\n<div class="sentence">{{Sentence}}</div>''',
-                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
+                'qfmt': '''<div class="hint">📖 Read and understand:</div>\n<div class="colored-sentence">{{Colored Sentence}}</div>''',
+                'afmt': '''{{FrontSide}}\n<hr id="answer">\n<div class="sound">{{Sound}}</div>\n<div class="image">{{Image}}</div>\n<div class="english">{{English Translation}}</div>\n<div class="ipa">{{IPA Transliteration}}</div>\n<div class="word-info"><strong>Word:</strong> {{What is the Word?}} ({{Meaning of the Word}})</div>\n<div class="grammar-summary">{{Grammar Summary}}</div>\n{{#Word Explanations}}<div class="explanations-toggle">📚 Show Grammar Explanations</div>{{/Word Explanations}}\n<div class="keywords">Keywords: {{Image Keywords}}</div>'''
             }
         ],
-        css='''.card {\n    font-family: arial;\n    font-size: 20px;\n    text-align: center;\n    color: var(--text-color, black);\n    background-color: var(--card-bg, white);\n}\n\n.hint {\n    font-size: 16px;\n    color: var(--subtle-text, #666);\n    margin: 10px;\n    font-style: italic;\n}\n\n.sentence {\n    font-size: 32px;\n    color: var(--accent-color, #0066cc);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.english-prompt {\n    font-size: 28px;\n    color: var(--accent-secondary, #009900);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.sound {\n    margin: 20px;\n}\n\n.english {\n    font-size: 22px;\n    color: var(--accent-secondary, #009900);\n    margin: 15px;\n}\n\n.ipa {\n    font-size: 16px;\n    color: var(--subtle-text, #666);\n    font-family: "Charis SIL", "Doulos SIL", serif;\n    margin: 10px;\n}\n\n.word-info {\n    font-size: 14px;\n    color: var(--text-color, #333);\n    margin: 15px;\n}\n\n.keywords {\n    font-size: 12px;\n    color: var(--subtle-text, #999);\n    margin: 10px;\n    font-style: italic;\n}\n\n.image {\n    margin: 20px auto;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.image img {\n    display: block;\n    margin: 0 auto;\n    max-width: 95vw;\n    max-height: 40vh;\n    width: auto;\n    height: auto;\n    object-fit: contain;\n    border-radius: 10px;\n    box-shadow: 0 2px 12px rgba(0,0,0,0.2);\n}\n\n.instructions {\n    font-size: 18px;\n    color: var(--text-color, #333);\n    margin: 15px;\n    line-height: 1.5;\n}\n\n.user-recording {\n    font-size: 16px;\n    color: var(--accent-color, #0066cc);\n    margin: 15px;\n}\n\n.tts-voice {\n    font-size: 16px;\n    color: var(--accent-secondary, #009900);\n    margin: 15px;\n}\n\n.comparison-instructions {\n    font-size: 14px;\n    color: var(--subtle-text, #666);\n    margin: 15px;\n    font-style: italic;\n}'''
+        css='''.card {\n    font-family: arial;\n    font-size: 20px;\n    text-align: center;\n    color: var(--text-color, black);\n    background-color: var(--card-bg, white);\n}\n\n.hint {\n    font-size: 16px;\n    color: var(--subtle-text, #666);\n    margin: 10px;\n    font-style: italic;\n}\n\n.sentence {\n    font-size: 32px;\n    color: var(--accent-color, #0066cc);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.colored-sentence {\n    font-size: 32px;\n    margin: 20px;\n    font-weight: bold;\n    line-height: 1.4;\n}\n\n.colored-sentence span {\n    display: inline;\n    margin: 0 2px;\n}\n\n.english-prompt {\n    font-size: 28px;\n    color: var(--accent-secondary, #009900);\n    margin: 20px;\n    font-weight: bold;\n}\n\n.sound {\n    margin: 20px;\n}\n\n.english {\n    font-size: 22px;\n    color: var(--accent-secondary, #009900);\n    margin: 15px;\n}\n\n.ipa {\n    font-size: 16px;\n    color: var(--subtle-text, #666);\n    font-family: "Charis SIL", "Doulos SIL", serif;\n    margin: 10px;\n}\n\n.word-info {\n    font-size: 14px;\n    color: var(--text-color, #333);\n    margin: 15px;\n}\n\n.grammar-summary {\n    font-size: 16px;\n    color: var(--text-color, #555);\n    margin: 15px;\n    font-style: italic;\n    background-color: var(--card-bg-secondary, #f9f9f9);\n    padding: 10px;\n    border-radius: 5px;\n    border-left: 4px solid var(--accent-color, #0066cc);\n}\n\n.explanations-toggle {\n    font-size: 14px;\n    color: var(--accent-color, #0066cc);\n    margin: 10px;\n    cursor: pointer;\n    text-decoration: underline;\n    font-weight: bold;\n}\n\n.word-explanations {\n    font-size: 12px;\n    color: var(--text-color, #444);\n    margin: 10px;\n    background-color: var(--card-bg-secondary, #f5f5f5);\n    padding: 8px;\n    border-radius: 3px;\n    max-height: 150px;\n    overflow-y: auto;\n}\n\n.keywords {\n    font-size: 12px;\n    color: var(--subtle-text, #999);\n    margin: 10px;\n    font-style: italic;\n}\n\n.image {\n    margin: 20px auto;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    width: 100%;\n    max-width: 100vw;\n}\n\n.image img {\n    display: block;\n    margin: 0 auto;\n    max-width: 95vw;\n    max-height: 40vh;\n    width: auto;\n    height: auto;\n    object-fit: contain;\n    border-radius: 10px;\n    box-shadow: 0 2px 12px rgba(0,0,0,0.2);\n}\n\n.instructions {\n    font-size: 18px;\n    color: var(--text-color, #333);\n    margin: 15px;\n    line-height: 1.5;\n}\n\n.user-recording {\n    font-size: 16px;\n    color: var(--accent-color, #0066cc);\n    margin: 15px;\n}\n\n.tts-voice {\n    font-size: 16px;\n    color: var(--accent-secondary, #009900);\n    margin: 15px;\n}\n\n.comparison-instructions {\n    font-size: 14px;\n    color: var(--subtle-text, #666);\n    margin: 15px;\n    font-style: italic;\n}'''
     )
 
     # Create deck
@@ -329,7 +332,11 @@ def _create_apkg_from_rows(
                 _s(row.get('english', '')),
                 _s(row.get('audio', '')),
                 _s(row.get('image', '')),
-                _s(row.get('image_keywords', ''))
+                _s(row.get('image_keywords', '')),
+                _s(row.get('colored_sentence', '')),
+                _s(row.get('word_explanations', '')),
+                _s(row.get('grammar_summary', '')),
+                _s(row.get('tags', ''))
             ]
         )
         deck.add_note(note)

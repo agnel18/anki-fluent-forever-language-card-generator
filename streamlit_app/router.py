@@ -33,6 +33,9 @@ def route_to_page(current_page):
         elif current_page == "statistics":
             from page_modules.statistics import render_statistics_page
             render_statistics_page()
+        elif current_page == "my_word_lists":
+            from page_modules.my_word_lists import render_my_word_lists_page
+            render_my_word_lists_page()
         elif current_page == "privacy_policy":
             from page_modules.privacy_policy import render_privacy_policy_page
             render_privacy_policy_page()

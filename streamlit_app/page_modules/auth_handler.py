@@ -302,6 +302,13 @@ def create_user_profile(uid: str, email: str, display_name: str = None):
     }
     user_ref.set(user_data)
 
+    # Initialize achievements for new user
+    try:
+        from achievements_manager import initialize_achievements
+        initialize_achievements(uid)
+    except Exception as e:
+        print(f"Warning: Could not initialize achievements for user {uid}: {e}")
+
 def update_user_last_login(uid: str):
     """Update user's last login timestamp."""
     user_ref = db.collection('users').document(uid)

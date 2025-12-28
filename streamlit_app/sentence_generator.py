@@ -152,8 +152,21 @@ def generate_sentences(
         # Combine with word/meaning metadata
         final_sentences = []
         for result in enriched_results:
+            sentence_text = result.get("sentence", "")
+
+            # PASS 3: Grammar analysis and coloring (only for valid sentences)
+            grammar_analysis = {}
+            if sentence_text and result.get("valid", False):
+                logger.info(f"PASS 3: Analyzing grammar for sentence: {sentence_text[:50]}...")
+                grammar_analysis = analyze_grammar_and_color(
+                    sentence=sentence_text,
+                    word=word,
+                    language=language,
+                    groq_api_key=groq_api_key,
+                )
+
             final_sentences.append({
-                "sentence": result.get("sentence", ""),
+                "sentence": sentence_text,
                 "english_translation": result.get("english_translation", ""),
                 "context": result.get("context", "general"),
                 "ipa": result.get("ipa", ""),
@@ -161,9 +174,13 @@ def generate_sentences(
                 "role_of_word": result.get("role_of_word", ""),
                 "word": word,
                 "meaning": meaning,
+                # New grammar analysis fields
+                "colored_sentence": grammar_analysis.get("colored_sentence", sentence_text),
+                "word_explanations": grammar_analysis.get("word_explanations", []),
+                "grammar_summary": grammar_analysis.get("grammar_summary", ""),
             })
 
-        logger.info(f"✓ Completed 2-pass generation for '{word}': {len(final_sentences)} sentences")
+        logger.info(f"✓ Completed 3-pass generation for '{word}': {len(final_sentences)} sentences")
         return final_sentences
     except Exception as exc:
         logger.error(f"2-pass sentence generation error: {exc}")
@@ -398,3 +415,153 @@ IMPORTANT:
             "image_keywords": "",
             "role_of_word": "",
         } for s in sentences]
+
+# ============================================================================
+# PASS 3: GRAMMATICAL ANALYSIS (AI-powered POS tagging and coloring)
+# ============================================================================
+@cached_api_call("groq_grammar_analysis", ttl_seconds=2592000)  # Cache for 30 days (permanent)
+@resilient_groq_call(max_retries=3)
+@with_fallback(fallback_func=lambda sentence, word, language, groq_api_key=None, **kwargs: {
+    "colored_sentence": sentence,
+    "word_explanations": [],
+    "grammar_summary": "Analysis unavailable"
+})
+def analyze_grammar_and_color(
+    sentence: str,
+    word: str,
+    language: str,
+    groq_api_key: str = None,
+) -> Dict[str, Any]:
+    """
+    PASS 3: Analyze sentence grammar and assign colors to words based on POS.
+    Provides educational coloring for language learning cards.
+
+    Args:
+        sentence: The sentence to analyze
+        word: Target word being learned
+        language: Language name (e.g., "Spanish", "Hindi")
+        groq_api_key: Groq API key
+
+    Returns:
+        Dict with keys:
+        - colored_sentence: HTML with color-coded words
+        - word_explanations: List of [word, pos, color, explanation] tuples
+        - grammar_summary: Brief grammar explanation
+    """
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+
+    client = Groq(api_key=groq_api_key)
+
+    # Color mapping for different POS categories
+    color_map = {
+        "noun": "#FF6B6B",        # Red - things/objects
+        "verb": "#4ECDC4",        # Teal - actions
+        "adjective": "#45B7D1",   # Blue - descriptions
+        "adverb": "#96CEB4",      # Green - how/when/where
+        "pronoun": "#FFEAA7",     # Yellow - replacements
+        "preposition": "#DDA0DD", # Plum - relationships
+        "conjunction": "#98D8C8", # Mint - connections
+        "article": "#F7DC6F",     # Light yellow - determiners
+        "interjection": "#FF9999", # Light red - exclamations
+        "other": "#CCCCCC"        # Gray - other parts
+    }
+
+    prompt = f"""You are a linguistics expert specializing in {language} grammar analysis for language learners.
+
+TASK: Analyze this {language} sentence and provide grammatical coloring information.
+
+SENTENCE: "{sentence}"
+TARGET WORD: "{word}"
+
+INSTRUCTIONS:
+1. Break down the sentence into individual words/tokens
+2. For each word, identify its part of speech (POS) category
+3. Assign an appropriate color based on POS
+4. Provide a brief explanation for each word's grammatical role
+
+COLOR CATEGORIES (use these exact names):
+- noun (red): people, places, things, ideas
+- verb (teal): actions, states, occurrences
+- adjective (blue): descriptions of nouns
+- adverb (green): modify verbs, adjectives, other adverbs
+- pronoun (yellow): replace nouns (he, she, it, they, etc.)
+- preposition (plum): show relationships (in, on, at, with, etc.)
+- conjunction (mint): connect clauses (and, but, or, because, etc.)
+- article (light yellow): determiners (the, a, an)
+- interjection (light red): exclamations (oh, wow, hey)
+- other (gray): numbers, punctuation, unclassified words
+
+OUTPUT FORMAT: Return ONLY a valid JSON object with this exact structure:
+{{
+  "colored_sentence": "<span style='color: #COLOR1'>word1</span> <span style='color: #COLOR2'>word2</span> ...",
+  "word_explanations": [
+    ["word1", "pos_category", "#COLOR1", "brief explanation of grammatical role"],
+    ["word2", "pos_category", "#COLOR2", "brief explanation of grammatical role"],
+    ...
+  ],
+  "grammar_summary": "Brief 1-2 sentence summary of the sentence's grammatical structure"
+}}
+
+IMPORTANT:
+- Use the exact color hex codes from the categories above
+- colored_sentence must be valid HTML with inline styles
+- Each word explanation should be educational and helpful for learners
+- Maintain original sentence structure and punctuation
+- Target word should be clearly identified in explanations
+- Return ONLY the JSON object, no markdown or extra text"""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,  # Low temperature for consistency
+            max_tokens=1500,
+        )
+
+        response_text = response.choices[0].message.content.strip()
+
+        # Extract JSON if wrapped in markdown
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+
+        result = json.loads(response_text)
+
+        # Validate required fields
+        if not all(key in result for key in ["colored_sentence", "word_explanations", "grammar_summary"]):
+            raise ValueError("Missing required fields in grammar analysis response")
+
+        # --- API USAGE TRACKING ---
+        try:
+            import streamlit as st
+            if "groq_api_calls" not in st.session_state:
+                st.session_state.groq_api_calls = 0
+            if "groq_tokens_used" not in st.session_state:
+                st.session_state.groq_tokens_used = 0
+            st.session_state.groq_api_calls += 1
+            # Estimate tokens used (prompt + response)
+            st.session_state.groq_tokens_used += 150  # rough estimate for grammar analysis
+        except Exception:
+            pass
+        # -------------------------
+
+        logger.info(f"✓ Grammar analysis completed for sentence: {sentence[:50]}...")
+        return result
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Grammar analysis JSON parse error: {e}")
+        # Return fallback
+        return {
+            "colored_sentence": sentence,
+            "word_explanations": [],
+            "grammar_summary": "Grammar analysis unavailable"
+        }
+    except Exception as e:
+        logger.error(f"Grammar analysis error: {e}")
+        return {
+            "colored_sentence": sentence,
+            "word_explanations": [],
+            "grammar_summary": "Grammar analysis unavailable"
+        }

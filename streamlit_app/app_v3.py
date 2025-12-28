@@ -219,6 +219,11 @@ def main():
         current_page = "main"
         st.session_state.page = current_page
 
+    # Initialize session start time for usage tracking
+    if 'session_start_time' not in st.session_state:
+        import time
+        st.session_state.session_start_time = time.time()
+
     # Add sidebar navigation (except on login page)
     if current_page != "login":
         # Apply theme CSS before rendering sidebar

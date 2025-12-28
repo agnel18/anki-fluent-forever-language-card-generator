@@ -68,3 +68,34 @@ def parse_csv_upload(file_content: bytes) -> list[dict]:
     except Exception as e:
         logger.error(f"CSV parse error: {e}")
         return []
+
+
+def generate_image_keywords(sentence: str, translation: str, target_word: str, groq_api_key: str) -> str:
+    """
+    Generate AI-powered keywords for image search based on sentence content.
+
+    Args:
+        sentence: The sentence text
+        translation: English translation
+        target_word: The target word being learned
+        groq_api_key: Groq API key
+
+    Returns:
+        Comma-separated keywords string
+    """
+    if not groq_api_key:
+        logger.warning("Groq API key not available, using fallback keywords")
+        return f"{target_word}, language, learning"
+
+    try:
+        client = Groq(api_key=groq_api_key)
+        response = client.chat.completions.create(
+            model="mixtral-8x7b-32768",
+            messages=[{"role": "user", "content": f"Generate 3-5 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Keywords should be in English and suitable for image search."}],
+            max_tokens=100
+        )
+        keywords = response.choices[0].message.content.strip()
+        return keywords
+    except Exception as e:
+        logger.error(f"Error generating image keywords: {e}")
+        return f"{target_word}, language, learning"

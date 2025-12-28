@@ -350,6 +350,29 @@ def render_generating_page():
                 status_text.success("🎉 Deck generation completed successfully!")
                 detail_text.markdown("*Your Anki deck is ready. Moving to export...*")
 
+                # Track usage for achievements and analytics
+                try:
+                    from firebase_manager import is_signed_in
+                    if is_signed_in():
+                        user_id = st.session_state.user['uid']
+                        # Log app usage
+                        from usage_tracker import log_app_usage
+                        log_app_usage(
+                            user_id=user_id,
+                            decks_generated=1,
+                            words_generated=len(selected_words),
+                            languages_used=[selected_lang],
+                            session_duration=int(time.time() - st.session_state.get('session_start_time', time.time()))
+                        )
+
+                        # Update achievements
+                        from achievements_manager import check_and_update_achievements
+                        check_and_update_achievements(user_id)
+
+                        log_message(f"[DEBUG] Usage tracked for user {user_id}: 1 deck, {len(selected_words)} words")
+                except Exception as e:
+                    log_message(f"[WARNING] Failed to track usage: {e}")
+
                 # Create APKG file
                 log_message_local("<b>📦 Creating APKG file...</b>")
                 log_message("[DEBUG] Starting APKG creation")
