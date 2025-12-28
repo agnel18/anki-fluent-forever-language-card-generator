@@ -4,6 +4,7 @@
 import logging
 import pandas as pd
 from typing import List, Dict
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 
