@@ -7,11 +7,6 @@ import os
 import datetime
 from constants import GROQ_CALL_LIMIT, GROQ_TOKEN_LIMIT, PIXABAY_CALL_LIMIT
 
-def render_sidebar_auth_section():
-    """Render authentication section in sidebar."""
-    from page_modules.auth_handler import render_user_profile
-    render_user_profile()
-
 def handle_auto_sync():
     """Handle automatic sync operations."""
     from firebase_manager import is_signed_in
@@ -65,6 +60,22 @@ def render_sidebar():
         import webbrowser
         webbrowser.open("https://github.com/agnel18/anki-fluent-forever-language-card-generator")
         st.sidebar.success("Opening documentation...")
+
+    st.sidebar.markdown("---")
+
+    # Authentication section - prominent placement
+    from page_modules.auth_handler import is_signed_in, sign_out
+    if is_signed_in():
+        user = st.session_state.get("user", {})
+        st.sidebar.markdown(f"**👋 Welcome, {user.get('displayName', 'User')}!**")
+        if st.sidebar.button("🚪 Sign Out", key="sidebar_sign_out", use_container_width=True):
+            sign_out()
+            st.rerun()
+    else:
+        if st.sidebar.button("🔐 Sign In", key="sidebar_sign_in", use_container_width=True):
+            st.session_state.page = "auth_handler"
+            st.rerun()
+        st.sidebar.caption("Save progress across devices")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### API Usage")
@@ -152,10 +163,6 @@ def render_sidebar():
     if st.sidebar.button("📞 Contact Us", key="sidebar_contact", use_container_width=True):
         st.session_state.page = "contact_us"
         st.rerun()
-
-    # Cloud Sync Authentication Section
-    st.sidebar.markdown("---")
-    render_sidebar_auth_section()
 
     # Show generation status if in progress
     if st.session_state.get('page') == 'generating':
