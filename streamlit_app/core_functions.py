@@ -136,7 +136,7 @@ def generate_complete_deck(
                     # Generate unique keywords for each sentence
                     queries = []
                     for s in sentences:
-                        keywords = generate_image_keywords(s['sentence'], s['translation'], word, groq_api_key)
+                        keywords = generate_image_keywords(s['sentence'], s['english_translation'], word, groq_api_key)
                         queries.append(keywords)
                     
                     image_filenames, used_image_urls = generate_images_pixabay(
