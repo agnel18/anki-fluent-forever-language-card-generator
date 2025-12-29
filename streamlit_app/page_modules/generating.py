@@ -519,72 +519,12 @@ def render_generating_page():
                         st.success("🔄 Retrying with reduced settings...")
                         time.sleep(1)
                         st.rerun()
-                    
-                    # Offer to continue with partial results
-                    if result.get('partial_success') and result.get('tsv_path'):
-                        if st.button("📦 Create Partial Deck", key="create_partial", help="Create deck with successfully generated content only"):
-                            try:
-                                partial_apkg_path = create_apkg_export(
-                                    deck_name=f"{selected_lang} Learning Deck (Partial)",
-                                    tsv_path=result['tsv_path'],
-                                    media_dir=result['media_dir'],
-                                    output_dir=result['output_dir']
-                                )
-                                if partial_apkg_path and os.path.exists(partial_apkg_path):
-                                    with open(partial_apkg_path, 'rb') as f:
-                                        st.session_state.apkg_file = f.read()
-                                    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                                    st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_partial_{timestamp}_deck.apkg"
-                                    progress['apkg_path'] = partial_apkg_path
-                                    progress['apkg_ready'] = True
-                                    st.success("✅ Partial deck created! Some content may be missing.")
-                                    st.rerun()
-                            except Exception as e:
-                                st.error(f"Failed to create partial deck: {e}")
 
                 progress_bar.progress(1.0)
                 current_status.markdown("⚠️ **Deck generation completed with issues**")
                 step_indicator.markdown("⚠️ **Partial Success**")
                 status_text.warning("⚠️ Deck generation completed with some issues")
                 detail_text.markdown(f"*Errors encountered: {error_summary}*")
-
-                # Still try to create APKG if we have partial results
-                if result.get('tsv_path') and result.get('partial_success'):
-                    log_message("[DEBUG] Attempting partial APKG creation")
-                    try:
-                        apkg_path = create_apkg_export(
-                            deck_name=f"{selected_lang} Learning Deck (Partial)",
-                            tsv_path=result['tsv_path'],
-                            media_dir=result['media_dir'],
-                            output_dir=result['output_dir']
-                        )
-                        progress['apkg_path'] = apkg_path
-                        progress['apkg_ready'] = True
-                        log_message_local(f"<b>📦 Partial APKG file created:</b> {apkg_path}")
-                        log_message(f"[SUCCESS] Partial APKG created: {apkg_path}")
-                        detail_text.markdown("*Despite errors, a partial deck was created and is available for download.*")
-                        
-                        # Read APKG file and store in session state for download
-                        if apkg_path and os.path.exists(apkg_path):
-                            with open(apkg_path, 'rb') as f:
-                                st.session_state.apkg_file = f.read()
-                            # Generate timestamp for unique filename
-                            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                            st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_{timestamp}_deck_partial.apkg"
-                            log_message_local(f"<b>📁 Partial APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
-                            log_message(f"[DEBUG] Partial APKG loaded: {len(st.session_state.apkg_file)} bytes")
-                        else:
-                            log_message_local(f"<b>⚠️ Partial APKG file not found at path:</b> {apkg_path}")
-                            log_message(f"[ERROR] Partial APKG not found: {apkg_path}")
-                            progress['apkg_ready'] = False
-                            
-                    except Exception as e:
-                        log_message_local(f"<b>❌ APKG creation also failed:</b> {e}")
-                        log_message(f"[ERROR] Partial APKG creation failed: {e}")
-                        progress['apkg_ready'] = False
-                else:
-                    log_message("[DEBUG] No partial success - skipping APKG creation")
-                    progress['apkg_ready'] = False
 
                 progress['step'] = 2  # Move to completion
                 st.session_state['generation_progress'] = progress
