@@ -93,7 +93,7 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         client = Groq(api_key=groq_api_key)
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": f"Generate 3-5 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Return only a comma-separated list of keywords, no explanations or formatting."}],
+            messages=[{"role": "user", "content": f"Generate exactly 3 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Return only a comma-separated list of 3 keywords, no explanations or formatting."}],
             max_tokens=100
         )
         raw_response = response.choices[0].message.content.strip()
@@ -118,7 +118,7 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         
         # If we found numbered/listed keywords, join them
         if keywords_list:
-            keywords = ', '.join(keywords_list[:5])  # Limit to 5 keywords
+            keywords = ', '.join(keywords_list[:3])  # Limit to 3 keywords
         else:
             # Fallback: try to extract comma-separated keywords
             keywords = re.sub(r'[^\w\s,]', '', raw_response)  # Remove special chars
