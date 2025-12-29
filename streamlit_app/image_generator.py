@@ -107,11 +107,21 @@ def generate_images_pixabay(
                         pixabay_logger.info(f"Selected image from top 10: {image_url}")
                         break
 
-            # 3. If all top 10 are used, fallback to first (allow duplicate)
+            # 3. If all top 10 are used, allow controlled duplication using sentence index
             if not image_url:
-                image_url = hits[0].get("webformatURL")
-                used_image_urls.add(image_url)
-                pixabay_logger.info(f"Fallback to first image: {image_url}")
+                available_urls = [hit.get("webformatURL") for hit in hits[:10] if hit.get("webformatURL")]
+                if available_urls:
+                    # Use sentence index for round-robin selection to ensure different images
+                    # even when sentences have identical keywords
+                    selected_index = i % len(available_urls)
+                    image_url = available_urls[selected_index]
+                    used_image_urls.add(image_url)
+                    pixabay_logger.info(f"Selected image with controlled duplication (sentence {i}, index {selected_index}): {image_url}")
+                else:
+                    # Ultimate fallback
+                    image_url = hits[0].get("webformatURL")
+                    used_image_urls.add(image_url)
+                    pixabay_logger.info(f"Ultimate fallback to first image: {image_url}")
 
             pixabay_logger.info(f"Downloading image: {image_url}")
             # Download image
