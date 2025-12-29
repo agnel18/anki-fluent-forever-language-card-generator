@@ -89,7 +89,6 @@ def generate_complete_deck(
         words_data = []
         audio_files = []
         image_files = []
-        used_image_urls = set()  # Track used URLs across all words
 
         for idx, word in enumerate(words):
             if progress_callback:
@@ -139,13 +138,15 @@ def generate_complete_deck(
                         keywords = generate_image_keywords(s['sentence'], s['english_translation'], word, groq_api_key)
                         queries.append(keywords)
                     
+                    # Reset used_image_urls for each word to allow image reuse across different words
+                    used_image_urls = set()
                     image_filenames, used_image_urls = generate_images_pixabay(
                         queries,
                         str(media_dir),
                         batch_name=word,
                         num_images=1,
                         pixabay_api_key=pixabay_api_key,
-                        used_image_urls=used_image_urls  # Pass the global set
+                        used_image_urls=used_image_urls  # Pass the word-specific set
                     )
                     image_files.extend(image_filenames)
                 except Exception as e:
@@ -253,6 +254,18 @@ def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, la
             return str(val)
         return str(val)
 
+    # Format word explanations as HTML
+    word_explanations_html = ""
+    explanations = sent.get("word_explanations", [])
+    if explanations and len(explanations) > 0:
+        explanation_items = []
+        for exp in explanations:
+            if len(exp) >= 4:
+                word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]
+                explanation_items.append(f'<div class="explanation-item"><span class="word-highlight" style="color: {color};"><strong>{word}</strong></span> ({pos}): {explanation}</div>')
+        if explanation_items:
+            word_explanations_html = '<div class="word-explanations"><strong>Grammar Explanations:</strong><br>' + ''.join(explanation_items) + '</div>'
+
     words_data.append({
         "file_name": safe_str(file_base),
         "word": safe_str(word),
@@ -264,7 +277,7 @@ def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, la
         "image": safe_str(f'<img src="{image_name}">') if image_name else "",
         "image_keywords": safe_str(sent.get("image_keywords", "")),
         "colored_sentence": safe_str(sent.get("colored_sentence", sent.get("sentence", ""))),
-        "word_explanations": sent.get("word_explanations", []),
+        "word_explanations": word_explanations_html,  # Now formatted as HTML string
         "grammar_summary": safe_str(sent.get("grammar_summary", "")),
         "tags": "",
     })

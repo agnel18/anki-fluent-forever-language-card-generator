@@ -154,16 +154,24 @@ def generate_sentences(
         for result in enriched_results:
             sentence_text = result.get("sentence", "")
 
-            # PASS 3: Grammar analysis and coloring (only for valid sentences)
+            # PASS 3: Grammar analysis and coloring (attempt for all sentences)
             grammar_analysis = {}
-            if sentence_text and result.get("valid", False):
+            if sentence_text:
                 logger.info(f"PASS 3: Analyzing grammar for sentence: {sentence_text[:50]}...")
-                grammar_analysis = analyze_grammar_and_color(
-                    sentence=sentence_text,
-                    word=word,
-                    language=language,
-                    groq_api_key=groq_api_key,
-                )
+                try:
+                    grammar_analysis = analyze_grammar_and_color(
+                        sentence=sentence_text,
+                        word=word,
+                        language=language,
+                        groq_api_key=groq_api_key,
+                    )
+                except Exception as e:
+                    logger.warning(f"Grammar analysis failed for sentence '{sentence_text[:50]}...': {e}")
+                    grammar_analysis = {
+                        "colored_sentence": sentence_text,
+                        "word_explanations": [],
+                        "grammar_summary": "Grammar analysis unavailable"
+                    }
 
             final_sentences.append({
                 "sentence": sentence_text,
@@ -551,7 +559,20 @@ IMPORTANT:
             if last_valid_pos != -1:
                 json_part = json_part[:last_valid_pos+1]
 
-        result = json.loads(json_part)
+        # Try to parse JSON, with fallback attempts
+        try:
+            result = json.loads(json_part)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Initial JSON parse failed: {e}, attempting cleanup...")
+            # Try to clean up common issues
+            json_part = json_part.replace('\n', ' ').replace('\r', ' ')
+            json_part = ' '.join(json_part.split())  # normalize whitespace
+            try:
+                result = json.loads(json_part)
+            except json.JSONDecodeError:
+                # Last resort: try to extract just the core content
+                logger.error(f"Failed to parse grammar analysis JSON after cleanup, using fallback. Raw response: {response_text[:200]}...")
+                raise
 
         # Validate required fields
         if not all(key in result for key in ["colored_sentence", "word_explanations", "grammar_summary"]):

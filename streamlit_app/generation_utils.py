@@ -91,7 +91,7 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
     try:
         client = Groq(api_key=groq_api_key)
         response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": f"Generate 3-5 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Keywords should be in English and suitable for image search."}],
             max_tokens=100
         )
