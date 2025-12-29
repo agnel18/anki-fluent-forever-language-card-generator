@@ -521,13 +521,37 @@ IMPORTANT:
 
         response_text = response.choices[0].message.content.strip()
 
-        # Extract JSON if wrapped in markdown
+        # Extract JSON if wrapped in markdown - be more robust
         if "```json" in response_text:
-            response_text = response_text.split("```json")[1].split("```")[0].strip()
+            json_part = response_text.split("```json")[1].split("```")[0].strip()
         elif "```" in response_text:
-            response_text = response_text.split("```")[1].split("```")[0].strip()
+            json_part = response_text.split("```")[1].split("```")[0].strip()
+        else:
+            # Try to find JSON object directly
+            start_idx = response_text.find('{')
+            end_idx = response_text.rfind('}')
+            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                json_part = response_text[start_idx:end_idx+1]
+            else:
+                json_part = response_text
 
-        result = json.loads(response_text)
+        # Clean up any trailing content after JSON
+        json_part = json_part.strip()
+        if json_part.endswith('}'):
+            # Find the last complete JSON object
+            brace_count = 0
+            last_valid_pos = -1
+            for i, char in enumerate(json_part):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        last_valid_pos = i
+            if last_valid_pos != -1:
+                json_part = json_part[:last_valid_pos+1]
+
+        result = json.loads(json_part)
 
         # Validate required fields
         if not all(key in result for key in ["colored_sentence", "word_explanations", "grammar_summary"]):

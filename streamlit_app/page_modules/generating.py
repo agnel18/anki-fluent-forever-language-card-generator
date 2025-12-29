@@ -8,7 +8,7 @@ import datetime
 import time
 from pathlib import Path
 from utils import get_secret, log_message
-from core_functions import generate_complete_deck, create_apkg_export
+from core_functions import generate_complete_deck
 
 
 def render_generating_page():
@@ -373,25 +373,20 @@ def render_generating_page():
                 except Exception as e:
                     log_message(f"[WARNING] Failed to track usage: {e}")
 
-                # Create APKG file
-                log_message_local("<b>📦 Creating APKG file...</b>")
-                log_message("[DEBUG] Starting APKG creation")
+                # Use APKG file created by generate_complete_deck
+                log_message_local("<b>📦 Using APKG file from generation...</b>")
+                log_message("[DEBUG] Using APKG file from generate_complete_deck")
                 
                 try:
-                    apkg_path = create_apkg_export(
-                        deck_name=f"{selected_lang} Learning Deck",
-                        tsv_path=result['tsv_path'],
-                        media_dir=result['media_dir'],
-                        output_dir=result['output_dir']
-                    )
-                    progress['apkg_path'] = apkg_path
-                    progress['apkg_ready'] = True
-                    
-                    log_message(f"[DEBUG] APKG creation result: {apkg_path}")
-                    log_message_local(f"<b>📦 APKG file created:</b> {apkg_path}")
-                    
-                    # Read APKG file and store in session state for download
+                    apkg_path = result.get('apkg_path')
                     if apkg_path and os.path.exists(apkg_path):
+                        progress['apkg_path'] = apkg_path
+                        progress['apkg_ready'] = True
+                        
+                        log_message(f"[DEBUG] APKG path from result: {apkg_path}")
+                        log_message_local(f"<b>📦 APKG file found:</b> {apkg_path}")
+                        
+                        # Read APKG file and store in session state for download
                         with open(apkg_path, 'rb') as f:
                             st.session_state.apkg_file = f.read()
                         # Generate timestamp for unique filename
@@ -447,8 +442,8 @@ def render_generating_page():
                         progress['apkg_ready'] = False
                         
                 except Exception as e:
-                    log_message_local(f"<b>⚠️ APKG creation failed:</b> {e}")
-                    log_message(f"[ERROR] APKG creation failed: {e}")
+                    log_message_local(f"<b>⚠️ Failed to load APKG file:</b> {e}")
+                    log_message(f"[ERROR] Failed to load APKG file: {e}")
                     progress['apkg_ready'] = False
 
                 progress['step'] = 2  # Move to completion
