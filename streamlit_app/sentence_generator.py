@@ -3,6 +3,7 @@
 
 import json
 import logging
+import time
 from typing import Optional, List, Dict, Any, Tuple
 from groq import Groq
 
@@ -215,6 +216,10 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
         # Clean up any quotes
         meaning = meaning.strip('"\'')
         logger.info(f"Generated meaning for '{word}': {meaning}")
+        
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
+        
         return meaning if meaning else word
 
     except Exception as e:
@@ -416,6 +421,9 @@ IMPORTANT:
             ipa_list.append("")
         while len(keywords) < len(sentences):
             keywords.append(f"{word}, language, learning")
+
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
 
         return {
             'meaning': meaning,
@@ -653,6 +661,10 @@ IMPORTANT
         # Split by newlines and filter empty lines
         sentences = [s.strip() for s in response_text.split("\n") if s.strip()]
         logger.info(f"PASS 1 parsed sentences: {sentences}")
+        
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
+        
         return sentences[:num_sentences]
     except Exception as e:
         logger.error(f"PASS 1 (sentence generation) error: {e}")
@@ -772,6 +784,9 @@ IMPORTANT:
                     "image_keywords": result.get("image_keywords", ""),
                     "role_of_word": result.get("role_of_word", ""),
                 })
+
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
 
         return validated_results
 
@@ -1062,6 +1077,10 @@ IMPORTANT:
         # -------------------------
 
         logger.info(f"✓ Generic grammar analysis completed for sentence: {sentence[:50]}...")
+        
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
+        
         return result
 
     except json.JSONDecodeError as e:
@@ -1203,6 +1222,7 @@ Return ONLY the JSON array, no additional text."""
         )
 
         response_text = response.choices[0].message.content.strip()
+        logger.info(f"PASS 3 raw response: {response_text[:500]}...")  # Log first 500 chars
 
         # Extract JSON
         if "```json" in response_text:
@@ -1258,6 +1278,10 @@ Return ONLY the JSON array, no additional text."""
         # -------------------------
 
         logger.info(f"✓ Batch grammar analysis completed for {len(sentences)} sentences")
+        
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
+        
         return processed_results
 
     except Exception as e:

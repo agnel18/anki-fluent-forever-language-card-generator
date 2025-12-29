@@ -4,6 +4,7 @@
 import logging
 import pandas as pd
 import re
+import time
 from typing import List, Dict
 from groq import Groq
 
@@ -98,6 +99,9 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         )
         raw_response = response.choices[0].message.content.strip()
         
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
+        
         # Extract just the keywords from the response
         # Remove any introductory text and formatting
         lines = raw_response.split('\n')
@@ -181,6 +185,9 @@ Sentence 2: keyword1, keyword2, keyword3
         )
 
         raw_response = response.choices[0].message.content.strip()
+
+        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        time.sleep(2)
 
         # Parse the response
         results = []
