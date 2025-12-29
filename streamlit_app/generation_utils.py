@@ -3,6 +3,7 @@
 
 import logging
 import pandas as pd
+import re
 from typing import List, Dict
 from groq import Groq
 
@@ -92,10 +93,42 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         client = Groq(api_key=groq_api_key)
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": f"Generate 3-5 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Keywords should be in English and suitable for image search."}],
+            messages=[{"role": "user", "content": f"Generate 3-5 relevant keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Return only a comma-separated list of keywords, no explanations or formatting."}],
             max_tokens=100
         )
-        keywords = response.choices[0].message.content.strip()
+        raw_response = response.choices[0].message.content.strip()
+        
+        # Extract just the keywords from the response
+        # Remove any introductory text and formatting
+        lines = raw_response.split('\n')
+        keywords_list = []
+        
+        for line in lines:
+            line = line.strip()
+            # Skip empty lines and explanatory text
+            if not line or line.startswith(('Here are', 'These keywords', 'The keywords', 'Keywords:')):
+                continue
+            # Remove numbering like "1. " or "- "
+            line = re.sub(r'^\d+\.\s*', '', line)
+            line = re.sub(r'^-\s*', '', line)
+            # Clean up the line
+            line = line.strip()
+            if line and not line.startswith(('These', 'The', 'Keywords')):
+                keywords_list.append(line)
+        
+        # If we found numbered/listed keywords, join them
+        if keywords_list:
+            keywords = ', '.join(keywords_list[:5])  # Limit to 5 keywords
+        else:
+            # Fallback: try to extract comma-separated keywords
+            keywords = re.sub(r'[^\w\s,]', '', raw_response)  # Remove special chars
+            keywords = re.sub(r'\s+', ' ', keywords)  # Normalize spaces
+            keywords = keywords.strip()
+        
+        # Ensure we have something useful
+        if not keywords or len(keywords.split(',')) < 2:
+            keywords = f"{target_word}, language, learning"
+            
         return keywords
     except Exception as e:
         logger.error(f"Error generating image keywords: {e}")
