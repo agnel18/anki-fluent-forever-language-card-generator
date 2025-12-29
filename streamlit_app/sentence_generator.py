@@ -217,8 +217,8 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
         meaning = meaning.strip('"\'')
         logger.info(f"Generated meaning for '{word}': {meaning}")
         
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
         
         return meaning if meaning else word
 
@@ -422,8 +422,8 @@ IMPORTANT:
         while len(keywords) < len(sentences):
             keywords.append(f"{word}, language, learning")
 
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
 
         return {
             'meaning': meaning,
@@ -662,8 +662,8 @@ IMPORTANT
         sentences = [s.strip() for s in response_text.split("\n") if s.strip()]
         logger.info(f"PASS 1 parsed sentences: {sentences}")
         
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
         
         return sentences[:num_sentences]
     except Exception as e:
@@ -785,8 +785,8 @@ IMPORTANT:
                     "role_of_word": result.get("role_of_word", ""),
                 })
 
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
 
         return validated_results
 
@@ -1078,8 +1078,8 @@ IMPORTANT:
 
         logger.info(f"✓ Generic grammar analysis completed for sentence: {sentence[:50]}...")
         
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
         
         return result
 
@@ -1279,8 +1279,8 @@ Return ONLY the JSON array, no additional text."""
 
         logger.info(f"✓ Batch grammar analysis completed for {len(sentences)} sentences")
         
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
-        time.sleep(2)
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
         
         return processed_results
 
