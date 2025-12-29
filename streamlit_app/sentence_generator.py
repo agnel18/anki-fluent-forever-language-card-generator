@@ -330,6 +330,11 @@ SENTENCES:
 2. [sentence 2 in {language}]
 3. [sentence 3 in {language}]
 
+IPA:
+1. [IPA transcription for sentence 1]
+2. [IPA transcription for sentence 2]
+3. [IPA transcription for sentence 3]
+
 KEYWORDS:
 1. [keyword1, keyword2, keyword3]
 2. [keyword1, keyword2, keyword3]
@@ -338,6 +343,7 @@ KEYWORDS:
 IMPORTANT:
 - Return ONLY the formatted text, no extra explanation
 - Sentences must be in {language} only
+- IPA must use official IPA symbols only (not pinyin or other romanizations)
 - Keywords must be comma-separated
 - Ensure exactly {num_sentences} sentences and keywords"""
 
@@ -354,6 +360,7 @@ IMPORTANT:
         # Parse text format
         meaning = ""
         sentences = []
+        ipa_list = []
         keywords = []
 
         # Extract meaning
@@ -362,8 +369,8 @@ IMPORTANT:
             meaning = meaning_part.strip()
 
         # Extract sentences
-        if "SENTENCES:" in response_text and "KEYWORDS:" in response_text:
-            sentences_part = response_text.split("SENTENCES:")[1].split("KEYWORDS:")[0].strip()
+        if "SENTENCES:" in response_text and "IPA:" in response_text:
+            sentences_part = response_text.split("SENTENCES:")[1].split("IPA:")[0].strip()
             # Split by numbered lines
             for line in sentences_part.split("\n"):
                 line = line.strip()
@@ -372,6 +379,17 @@ IMPORTANT:
                     sentence = line.split(".", 1)[1].strip() if "." in line else line
                     if sentence:
                         sentences.append(sentence)
+
+        # Extract IPA
+        if "IPA:" in response_text and "KEYWORDS:" in response_text:
+            ipa_part = response_text.split("IPA:")[1].split("KEYWORDS:")[0].strip()
+            for line in ipa_part.split("\n"):
+                line = line.strip()
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    # Remove the number prefix
+                    ipa = line.split(".", 1)[1].strip() if "." in line else line
+                    if ipa:
+                        ipa_list.append(ipa)
 
         # Extract keywords
         if "KEYWORDS:" in response_text:
@@ -384,21 +402,25 @@ IMPORTANT:
                     if kw:
                         keywords.append(kw)
 
-        logger.info(f"PASS 1 parsed: meaning='{meaning}', sentences={len(sentences)}, keywords={len(keywords)}")
+        logger.info(f"PASS 1 parsed: meaning='{meaning}', sentences={len(sentences)}, ipa={len(ipa_list)}, keywords={len(keywords)}")
 
         # Ensure we have the right number of items
         sentences = sentences[:num_sentences]
+        ipa_list = ipa_list[:len(sentences)]  # Match IPA to sentences
         keywords = keywords[:len(sentences)]  # Match keywords to sentences
 
         # Pad if necessary
         while len(sentences) < num_sentences:
             sentences.append(f"This is a sample sentence with {word}.")
+        while len(ipa_list) < len(sentences):
+            ipa_list.append("")
         while len(keywords) < len(sentences):
             keywords.append(f"{word}, language, learning")
 
         return {
             'meaning': meaning,
             'sentences': sentences,
+            'ipa': ipa_list,
             'keywords': keywords
         }
 
@@ -465,6 +487,7 @@ def generate_sentences(
 
         meaning = combined_result['meaning']
         raw_sentences = combined_result['sentences']
+        raw_ipa = combined_result.get('ipa', [])
         raw_keywords = combined_result['keywords']
 
         logger.info(f"Generated meaning: {meaning}")
