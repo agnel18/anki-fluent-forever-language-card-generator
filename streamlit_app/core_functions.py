@@ -95,16 +95,8 @@ def generate_complete_deck(
                 progress_callback(idx / max(1, len(words)), f"Generating for '{word}'", "Generating sentences...")
 
             try:
-                # 1. Generate sentences (with error recovery)
-                meaning = generate_word_meaning(word, language, groq_api_key)
-                if not meaning or meaning == word:
-                    errors.append({
-                        "component": f"Meaning generation for '{word}'",
-                        "error": "Failed to generate meaning, using word as fallback",
-                        "critical": False
-                    })
-
-                sentences = generate_sentences(word, meaning, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics)
+                # 1. Generate meaning + sentences + keywords (combined in one API call)
+                meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics)
                 if sentences is None:
                     sentences = []
                 if not sentences:
@@ -132,11 +124,8 @@ def generate_complete_deck(
 
                 # 3. Generate images (with graceful degradation)
                 try:
-                    # Generate unique keywords for each sentence
-                    queries = []
-                    for s in sentences:
-                        keywords = generate_image_keywords(s['sentence'], s['english_translation'], word, groq_api_key)
-                        queries.append(keywords)
+                    # Extract keywords from sentences (already generated in combined first pass)
+                    queries = [s.get('image_keywords', f"{word}, language, learning") for s in sentences]
                     
                     # Reset used_image_urls for each word to allow image reuse across different words
                     used_image_urls = set()

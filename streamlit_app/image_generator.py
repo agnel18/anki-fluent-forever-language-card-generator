@@ -68,6 +68,7 @@ def generate_images_pixabay(
             # Search Pixabay
             # Convert comma-separated keywords to space-separated for Pixabay
             search_query = " ".join(query.split(",")).strip()
+            print(f"PIXABAY SEARCH QUERY FOR SENTENCE {i+1}: '{search_query}'")  # EXACT query sent to Pixabay
 
             params = {
                 "key": pixabay_api_key,
@@ -88,40 +89,50 @@ def generate_images_pixabay(
                 continue
 
             image_url = None
-            # 1. Try to pick a unique image from the top 3
+            # 1. Try to pick from top 3, but NEVER reuse images within the same batch
             for hit in hits[:3]:
                 url = hit.get("webformatURL")
                 if url and url not in used_image_urls:
                     image_url = url
                     used_image_urls.add(url)
-                    pixabay_logger.info(f"Selected image from top 3: {image_url}")
+                    pixabay_logger.info(f"Selected unique image from top 3: {image_url}")
                     break
 
-            # 2. If all top 3 are used, expand to top 10
+            # 2. If no unique image found, try top 10 with strict uniqueness
             if not image_url:
                 for hit in hits[:10]:
                     url = hit.get("webformatURL")
                     if url and url not in used_image_urls:
                         image_url = url
                         used_image_urls.add(url)
-                        pixabay_logger.info(f"Selected image from top 10: {image_url}")
+                        pixabay_logger.info(f"Selected unique image from top 10: {image_url}")
                         break
 
-            # 3. If all top 10 are used, allow controlled duplication using sentence index
+            # 3. If still no unique image, use query-based deterministic selection
             if not image_url:
-                available_urls = [hit.get("webformatURL") for hit in hits[:10] if hit.get("webformatURL")]
+                available_urls = [hit.get("webformatURL") for hit in hits[:10] if hit.get("webformatURL") and hit.get("webformatURL") not in used_image_urls]
                 if available_urls:
-                    # Use sentence index for round-robin selection to ensure different images
-                    # even when sentences have identical keywords
-                    selected_index = i % len(available_urls)
+                    # Use query-based selection to ensure variety - different queries get different images
+                    import hashlib
+                    query_hash = hashlib.md5(query.encode()).hexdigest()
+                    selected_index = int(query_hash[:8], 16) % len(available_urls)
                     image_url = available_urls[selected_index]
                     used_image_urls.add(image_url)
-                    pixabay_logger.info(f"Selected image with controlled duplication (sentence {i}, index {selected_index}): {image_url}")
+                    pixabay_logger.info(f"Selected unique image with query-based selection: {image_url}")
                 else:
-                    # Ultimate fallback
-                    image_url = hits[0].get("webformatURL")
-                    used_image_urls.add(image_url)
-                    pixabay_logger.info(f"Ultimate fallback to first image: {image_url}")
+                    # Ultimate fallback - use query hash to select from all available, allowing reuse but ensuring different queries get different images
+                    available_urls = [hit.get("webformatURL") for hit in hits[:10] if hit.get("webformatURL")]
+                    if available_urls:
+                        # Use query hash to deterministically select different images for different queries
+                        import hashlib
+                        query_hash = hashlib.md5(query.encode()).hexdigest()
+                        selected_index = int(query_hash[:8], 16) % len(available_urls)
+                        image_url = available_urls[selected_index]
+                        used_image_urls.add(image_url)
+                        pixabay_logger.warning(f"Using deterministic selection due to limited unique results (query: {query}): {image_url}")
+                    else:
+                        pixabay_logger.error(f"No images available for query: {query}")
+                        continue
 
             pixabay_logger.info(f"Downloading image: {image_url}")
             # Download image
