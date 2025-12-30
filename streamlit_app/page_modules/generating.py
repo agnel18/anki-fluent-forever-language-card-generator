@@ -261,13 +261,10 @@ Combine all components into a professional Anki deck.
 
         # Display current log in the container
         with messages_container:
-            if st.session_state.get('generation_log'):
-                # Strip HTML tags for raw log display
-                raw_log = "\n".join(st.session_state['generation_log'])
-                # Simple HTML stripping
-                import re
-                raw_log = re.sub(r'<[^>]+>', '', raw_log)
-                st.code(raw_log, language=None)
+            if st.session_state.get('generation_logs'):
+                st.code(st.session_state['generation_logs'], language=None)
+            else:
+                st.code("Generation logs will appear here...", language=None)
 
     # Get generation parameters
     groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
@@ -316,6 +313,7 @@ Combine all components into a professional Anki deck.
         
         # Clear the log completely for fresh start
         st.session_state['generation_log'] = []
+        st.session_state['generation_logs'] = ""  # Clear the new logs accumulator
         
         # Start generation
         current_status.markdown("🚀 **Starting deck generation...**")
@@ -419,6 +417,41 @@ Combine all components into a professional Anki deck.
             log_message(f"[DEBUG] Language: {selected_lang}, Output dir: {output_dir}")
             log_message(f"[DEBUG] API keys configured: Groq={'YES' if groq_api_key else 'NO'}, Pixabay={'YES' if pixabay_api_key else 'NO'}")
             log_message(f"[DEBUG] Retry attempt: {retry_count + 1}/{max_retries + 1}")
+            
+            # Define progress callback for real-time updates
+            def progress_callback(progress, status, detail):
+                """Update UI with real-time progress information."""
+                # Update progress bar
+                progress_pct = int(progress * 100)
+                progress_bar.progress(progress_pct / 100)
+                
+                # Update status text
+                current_status.markdown(f"**{status}**")
+                
+                # Update detail text
+                if detail:
+                    detail_text.markdown(f"*{detail}*")
+                
+                # Update pass indicator
+                if 'PASS' in status:
+                    try:
+                        pass_num = int(re.search(r'PASS (\d+)', status).group(1))
+                        pass_indicator.markdown(f"**Pass {pass_num}/6**")
+                    except:
+                        pass
+                
+                # Accumulate logs
+                if 'generation_logs' not in st.session_state:
+                    st.session_state['generation_logs'] = ""
+                
+                timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+                st.session_state['generation_logs'] += f"[{timestamp}] {status}\n"
+                if detail:
+                    st.session_state['generation_logs'] += f"  └─ {detail}\n"
+                
+                # Update log display in real-time
+                with messages_container:
+                    st.code(st.session_state['generation_logs'], language=None)
             
             # Call the comprehensive generation function with error recovery
             result = generate_complete_deck(

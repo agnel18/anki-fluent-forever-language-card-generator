@@ -40,6 +40,7 @@ streamlit run streamlit_app/app_v3.py
 - **AI Sentences** — Groq generates 10 contextual sentences per word
 - **Native Audio** — Edge TTS with 200+ voices, adjustable speed & pitch
 - **Beautiful Images** — Pixabay API with keyword extraction
+- **IPA Transcriptions** — Official phonetic transcriptions ([IPA Chart](https://www.ipachart.com/) for reference)
 - **3-Card Anki Template** — Listening, Production, Reading cards
 - **Direct Anki Import** — `.apkg` files ready to use
 - **Progress Tracking** — SQLite database saves your progress
