@@ -13,105 +13,51 @@ from core_functions import generate_complete_deck
 
 def render_generating_page():
     """Render the deck generation page with comprehensive error recovery."""
-
-    # Add minimal CSS to ensure visibility without overriding theme
-    st.markdown("""
-    <style>
-    /* Ensure log container is visible */
-    .log-container {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 8px;
-        padding: 10px 14px;
-        max-height: 400px;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 14px;
-        margin: 10px 0;
-        color: var(--text-color);
-    }
-    </style>
-    """, unsafe_allow_html=True)
     
     st.markdown("# ⚙️ Generating Your Deck")
-    st.markdown(f"**Language:** {st.session_state.selected_lang} | **Words:** {len(st.session_state.selected_words)}")
+
+    # Safety check: ensure required session state exists
+    try:
+        # Ensure st.session_state is a dict-like object
+        if not hasattr(st.session_state, 'get'):
+            st.error("❌ **Session state corrupted!** Please restart the application.")
+            return
+            
+        required_vars = [
+            'selected_lang', 'selected_words', 'sentences_per_word', 
+            'sentence_length_range', 'difficulty', 'audio_speed', 'selected_voice'
+        ]
+        
+        missing_vars = []
+        for var in required_vars:
+            try:
+                if var not in st.session_state:
+                    missing_vars.append(var)
+            except (TypeError, AttributeError) as e:
+                st.error(f"❌ **Session state access error for {var}:** {str(e)}")
+                return
+        
+        if missing_vars:
+            st.error("❌ **Missing required data!** Please complete the setup process first.")
+            st.markdown(f"**Missing:** {', '.join(missing_vars)}")
+            st.markdown("**Required:** Language selection, word selection, and sentence settings must be completed first.")
+            if st.button("← Go Back to Setup", type="primary"):
+                st.switch_page("pages/language_select.py")
+            return
+    except Exception as e:
+        st.error(f"❌ **Critical session state error:** {str(e)}")
+        st.error("Please restart the application and complete the setup process.")
+        return
+    
+    selected_lang = st.session_state.selected_lang
+    selected_words = st.session_state.selected_words
+    
+    # Get topics settings (needed throughout the function)
+    enable_topics = st.session_state.get("enable_topics", False)
+    selected_topics = st.session_state.get("selected_topics", [])
+    
+    st.markdown(f"**Language:** {selected_lang} | **Words:** {len(selected_words)}")
     st.divider()
-
-    # --- Generation Summary ---
-    with st.container():
-        st.markdown("## 📋 Generation Summary")
-        
-        # Get all parameters for display
-        selected_words = st.session_state.selected_words
-        selected_lang = st.session_state.selected_lang
-        num_sentences = st.session_state.sentences_per_word
-        min_length, max_length = st.session_state.sentence_length_range
-        difficulty = st.session_state.difficulty
-        audio_speed = st.session_state.audio_speed
-        voice = st.session_state.selected_voice
-        enable_topics = st.session_state.get("enable_topics", False)
-        selected_topics = st.session_state.get("selected_topics", [])
-        
-        # Main settings overview
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("### 🌍 **Language**")
-            st.info(f"**{selected_lang}**")
-            
-            st.markdown("### 📝 **Words Selected**")
-            st.info(f"**{len(selected_words)} words**")
-            
-        with col2:
-            st.markdown("### ⚙️ **Sentences per Word**")
-            st.info(f"**{num_sentences} sentences**")
-            
-            st.markdown("### 🔊 **Audio Voice**")
-            st.info(f"**{voice}**")
-            
-        with col3:
-            st.markdown("### 🎵 **Audio Speed**")
-            st.info(f"**{audio_speed}x**")
-            
-            st.markdown("### 🎯 **Topics Selected**")
-            if enable_topics and selected_topics:
-                st.info(f"**{len(selected_topics)} topics**")
-                topics_text = ", ".join(selected_topics)
-                if len(topics_text) > 80:
-                    topics_text = topics_text[:77] + "..."
-                st.caption(f"{topics_text}")
-            else:
-                st.info("**No topics**")
-        
-        # Separate section for viewing selected words
-        st.markdown("---")
-        st.markdown("### 👀 **View Selected Words**")
-        if selected_words:
-            with st.expander("Click to view all selected words", expanded=False):
-                # Display words in a nice grid
-                cols = st.columns(4)
-                for i, word in enumerate(selected_words):
-                    cols[i % 4].write(f"• {word}")
-        else:
-            st.warning("No words selected!")
-        
-        st.markdown("---")
-
-    # Enhanced progress display with animations
-    progress_container = st.container()
-    with progress_container:
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        detail_text = st.empty()
-
-        # Add animated status indicators
-        status_col1, status_col2 = st.columns([3, 1])
-        with status_col1:
-            current_status = st.empty()
-        with status_col2:
-            step_indicator = st.empty()
-
-        messages_container = st.container()
 
     # Initialize generation progress if not exists
     if 'generation_progress' not in st.session_state:
@@ -130,32 +76,200 @@ def render_generating_page():
             'partial_success': False
         }
 
-    # Initialize logging
+    step = st.session_state['generation_progress']['step']
+
+    # Helper to log and update UI (defined early so it can be used throughout)
+    def log_message_local(msg):
+        st.session_state['generation_log'].append(msg)
+        # Write to persistent log file
+        st.session_state['log_stream'].write(msg + '\n')
+        st.session_state['log_stream'].flush()
+
+    # Show summary only if not yet generating
+    if step == 0:
+        # --- Generation Summary ---
+        with st.container():
+            st.markdown("## 📋 Generation Summary")
+            
+            # Get all parameters for display
+            num_sentences = st.session_state.sentences_per_word
+            min_length, max_length = st.session_state.sentence_length_range
+            difficulty = st.session_state.difficulty
+            audio_speed = st.session_state.audio_speed
+            voice = st.session_state.selected_voice
+            
+            # Main settings overview
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("### 🌍 **Language**")
+                st.info(f"**{selected_lang}**")
+                
+                st.markdown("### 📝 **Words Selected**")
+                st.info(f"**{len(selected_words)} words**")
+                
+            with col2:
+                st.markdown("### ⚙️ **Sentences per Word**")
+                st.info(f"**{num_sentences} sentences**")
+                
+                st.markdown("### 🔊 **Audio Voice**")
+                st.info(f"**{voice}**")
+                
+            with col3:
+                st.markdown("### 🎵 **Audio Speed**")
+                st.info(f"**{audio_speed}x**")
+                
+                st.markdown("### 🎯 **Topics Selected**")
+                if enable_topics and selected_topics:
+                    st.info(f"**{len(selected_topics)} topics**")
+                    topics_text = ", ".join(selected_topics)
+                    if len(topics_text) > 80:
+                        topics_text = topics_text[:77] + "..."
+                    st.caption(f"{topics_text}")
+                else:
+                    st.info("**No topics**")
+            
+            # Separate section for viewing selected words
+            st.markdown("---")
+            st.markdown("### 👀 **Selected Words**")
+            if selected_words:
+                # Display words in a simple grid (no expander needed for 5 words max)
+                cols = st.columns(4)
+                for i, word in enumerate(selected_words):
+                    cols[i % 4].write(f"• {word}")
+            else:
+                st.warning("No words selected!")
+            
+    # Clear any previous content when transitioning to generation
+    elif step > 0:
+        # Force clear of any lingering summary content
+        st.empty()
+        
+        # Show generation summary at the top (compact format for active generation)
+        st.markdown("## 📋 **Generation Summary**")
+        st.markdown("**Settings Used:**")
+        
+        # Get all parameters for display
+        num_sentences = st.session_state.sentences_per_word
+        min_length, max_length = st.session_state.sentence_length_range
+        difficulty = st.session_state.difficulty
+        audio_speed = st.session_state.audio_speed
+        voice = st.session_state.selected_voice
+        total_cards = len(selected_words) * num_sentences
+        
+        # Compact 2-column layout for generation page
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f"🌍 **Language:** {selected_lang}")
+            st.markdown(f"📝 **Words:** {len(selected_words)}")
+            st.markdown(f"🎯 **Difficulty:** {difficulty}")
+            st.markdown(f"📏 **Sentence Length:** {min_length}-{max_length} words")
+            
+        with col2:
+            st.markdown(f"⚙️ **Sentences per Word:** {num_sentences}")
+            if enable_topics and selected_topics:
+                topics_str = ", ".join(selected_topics)
+                if len(topics_str) > 30:
+                    topics_str = topics_str[:27] + "..."
+                st.markdown(f"🎨 **Topics:** {topics_str}")
+            else:
+                st.markdown("🎨 **Topics:** None")
+            st.markdown(f"🎵 **Audio Speed:** {audio_speed}x")
+            st.markdown(f"🔊 **Voice:** {voice}")
+        
+        st.markdown(f"**Total Cards:** {total_cards} ({len(selected_words)} words × {num_sentences} cards)")
+        st.markdown("*Ready to import!* 🚀")
+        
+        st.markdown("---")
+        
+        # Show process overview only when generating
+        st.markdown("## 📖 **6-Pass Generation Process**")
+        st.markdown("Your deck is created through a comprehensive 6-pass process, each building on the previous for optimal learning:")
+        
+        # Simplified, user-focused timeline format
+        st.markdown("""
+**1. 🔤 Smart Sentences**  
+Generate contextual sentences with pronunciation and visual cues.  
+*Foundation for quality learning - creates the core content efficiently.*
+
+**2. ✅ Quality Validation**  
+Ensure natural speech patterns and add translations.  
+*Quality control - catches issues before expensive media generation.*
+
+**3. 🎨 Grammar Analysis**  
+Break down sentence structure with color-coded explanations.  
+*Transforms vocabulary into comprehensive grammar lessons.*
+
+**4. 🔊 Audio Generation**  
+Create natural-sounding pronunciations with adjustable speed.  
+*Builds listening skills - makes learning active and accessible.*
+
+**5. 🖼️ Visual Media**  
+Find and download relevant images for memory reinforcement.  
+*Dual-coding theory - improves recall by combining text and visuals.*
+
+**6. 📦 Final Assembly**  
+Combine all components into a professional Anki deck.  
+*Creates ready-to-use flashcards with multimedia support.*
+""")
+        
+        st.markdown("---")
+
+    # Initialize logging (persistent to ./logs/) - moved up so logs show during generation
     if 'generation_log' not in st.session_state:
         st.session_state['generation_log'] = []
         st.session_state['generation_log_active'] = True
-        st.session_state['log_stream'] = tempfile.NamedTemporaryFile(delete=False, mode="w+", encoding="utf-8")
-        st.session_state['log_file_path'] = None
+        
+        # Create logs directory if it doesn't exist
+        logs_dir = Path("./logs")
+        logs_dir.mkdir(exist_ok=True)
+        
+        # Create persistent log file with timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_filename = f"generation_{timestamp}.log"
+        log_filepath = logs_dir / log_filename
+        
+        st.session_state['log_file_path'] = str(log_filepath)
+        st.session_state['log_stream'] = open(log_filepath, "w+", encoding="utf-8")
+        
+        log_message_local(f"<b>📝 Generation log started:</b> {log_filename}")
+        log_message(f"[LOG] Generation log started: {log_filename}")
 
-    # Helper to log and update UI
-    def log_message_local(msg):
-        st.session_state['generation_log'].append(msg)
+    # Enhanced progress display with animations (always available for generation)
+    st.markdown("## 📊 **Real-Time Progress**")
+
+    progress_container = st.container()
+    with progress_container:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        detail_text = st.empty()
+
+        # Define progress elements before columns
+        current_status = st.empty()
+        step_indicator = st.empty()
+        pass_indicator = st.empty()
+
+        # Add animated status indicators
+        status_col1, status_col2 = st.columns([3, 1])
+        with status_col1:
+            pass
+        with status_col2:
+            pass
+
+        messages_container = st.container()
+
+        # Display current log in the container
         with messages_container:
-            st.markdown('<div class="log-container">'+"<br>".join(st.session_state['generation_log'])+"</div>", unsafe_allow_html=True)
-        # Write to backend log stream for download
-        st.session_state['log_stream'].write(msg + '\n')
-        st.session_state['log_stream'].flush()
-        # Update temp file for download
-        st.session_state['log_stream'].seek(0)
-        full_log = st.session_state['log_stream'].read()
-        tmp_log = tempfile.NamedTemporaryFile(delete=False, suffix="_generation_log.txt", mode="w", encoding="utf-8")
-        tmp_log.write(full_log)
-        tmp_log.close()
-        st.session_state['log_file_path'] = tmp_log.name
+            if st.session_state.get('generation_log'):
+                # Strip HTML tags for raw log display
+                raw_log = "\n".join(st.session_state['generation_log'])
+                # Simple HTML stripping
+                import re
+                raw_log = re.sub(r'<[^>]+>', '', raw_log)
+                st.code(raw_log, language=None)
 
     # Get generation parameters
-    selected_words = st.session_state.selected_words
-    selected_lang = st.session_state.selected_lang
     groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
     pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
     num_sentences = st.session_state.sentences_per_word
@@ -194,8 +308,13 @@ def render_generating_page():
     step = st.session_state['generation_progress']['step']
 
     if step == 0:
-        # Clear previous generation log for fresh UI display
+        # Clear previous generation log for fresh UI display with delay
         # (detailed log stream for export is preserved)
+        if st.session_state.get('generation_log') and len(st.session_state['generation_log']) > 0:
+            log_message_local("<b>🧹 Clearing previous log in 2 seconds...</b>")
+            time.sleep(2)  # 2-second delay as requested
+        
+        # Clear the log completely for fresh start
         st.session_state['generation_log'] = []
         
         # Start generation
@@ -210,11 +329,11 @@ def render_generating_page():
         st.rerun()
 
     # Check word limit before generation
-    elif len(selected_words) > 10:
+    elif len(selected_words) > 5:
         current_status.markdown("⚠️ **Generation Limit Exceeded**")
         step_indicator.markdown("❌ **Too Many Words**")
         log_message_local("<b>❌ Generation cancelled - too many words selected</b>")
-        status_text.error(f"You selected {len(selected_words)} words, but the maximum is 10 words per generation.")
+        status_text.error(f"You selected {len(selected_words)} words, but the maximum is 5 words per generation.")
         detail_text.markdown("*This limit helps prevent API rate limits and ensures reliable generation.*")
         
         # Show selected words and ask user to reduce
@@ -246,7 +365,29 @@ def render_generating_page():
         try:
             # Progress callback for UI updates and detailed logging
             def progress_callback(progress_pct, current_word, status):
-                progress_bar.progress(progress_pct)
+                # Update progress bar based on pass
+                pass_progress = {
+                    "PASS 1": 16.67,
+                    "PASS 2": 33.33,
+                    "PASS 3": 50.0,
+                    "PASS 4": 66.67,
+                    "PASS 5": 83.33,
+                    "PASS 6": 100.0
+                }
+                for pass_name, pct in pass_progress.items():
+                    if pass_name in status:
+                        progress_bar.progress(pct)
+                        break
+                else:
+                    progress_bar.progress(progress_pct)  # fallback to original
+                
+                # Update pass indicator
+                import re
+                pass_match = re.search(r'PASS (\d+)', status)
+                if pass_match:
+                    pass_num = pass_match.group(1)
+                    pass_indicator.markdown(f"**Current Pass:** {pass_num}/6")
+                
                 detail_text.markdown(f"*{status}*")
                 status_text.info(f"⚙️ {current_word}: {status}")
                 
@@ -293,8 +434,20 @@ def render_generating_page():
                 audio_speed=audio_speed,
                 voice=voice,
                 progress_callback=progress_callback,
-                topics=selected_topics if enable_topics else None
+                topics=selected_topics if enable_topics else None,
+                native_language="English",  # Default to English, will be configurable later
             )
+
+            # Safety check: ensure result is not None
+            if result is None:
+                log_message_local("<b>❌ CRITICAL ERROR: generate_complete_deck() returned None</b>")
+                log_message(f"[CRITICAL] generate_complete_deck() returned None for {len(selected_words)} words")
+                result = {
+                    'success': False,
+                    'error': 'Function returned None - critical error',
+                    'errors': [{'error': 'generate_complete_deck() returned None'}],
+                    'error_summary': 'Critical: generation function failed to return result'
+                }
 
             # Check if we should retry for temporary failures
             should_retry = False
@@ -303,10 +456,11 @@ def render_generating_page():
                 # Retry for API rate limits, network issues, or temporary failures
                 retryable_errors = ['rate limit', 'timeout', 'connection', 'network', 'temporary', '429', '503', '502']
                 for error in errors:
-                    error_msg = error.get('error', '').lower()
-                    if any(retryable_term in error_msg for retryable_term in retryable_errors):
-                        should_retry = True
-                        break
+                    if error and isinstance(error, dict):  # Safety check for None or non-dict errors
+                        error_msg = error.get('error', '').lower()
+                        if any(retryable_term in error_msg for retryable_term in retryable_errors):
+                            should_retry = True
+                            break
                 
                 if should_retry:
                     st.session_state['generation_retry_count'] = retry_count + 1
@@ -353,17 +507,18 @@ def render_generating_page():
                 # Track usage for achievements and analytics
                 try:
                     from firebase_manager import is_signed_in
-                    if is_signed_in():
-                        user_id = st.session_state.user['uid']
-                        # Log app usage
-                        from usage_tracker import log_app_usage
-                        log_app_usage(
-                            user_id=user_id,
-                            decks_generated=1,
-                            words_generated=len(selected_words),
-                            languages_used=[selected_lang],
-                            session_duration=int(time.time() - st.session_state.get('session_start_time', time.time()))
-                        )
+                    if is_signed_in() and 'user' in st.session_state and st.session_state.user:
+                        user_id = st.session_state.user.get('uid')
+                        if user_id:
+                            # Log app usage
+                            from usage_tracker import log_app_usage
+                            log_app_usage(
+                                user_id=user_id,
+                                decks_generated=1,
+                                words_generated=len(selected_words),
+                                languages_used=[selected_lang],
+                                session_duration=int(time.time() - st.session_state.get('session_start_time', time.time()))
+                            )
 
                         # Update achievements
                         from achievements_manager import check_and_update_achievements
@@ -544,18 +699,22 @@ def render_generating_page():
 
     elif step == 2:
         # Generation complete - show results and move to complete page
-        result = st.session_state['generation_progress'].get('result', {})
+        progress = st.session_state.get('generation_progress', {})
+        if progress is None:
+            progress = {}
+        
+        result = progress.get('result', {})
 
         # Reset generating flag since generation is complete
         st.session_state.generating_deck = False
 
-        if result.get('success'):
+        if result and isinstance(result, dict) and result.get('success'):
             st.session_state.page = "complete"
             st.rerun()
         else:
             # Show error details and options
-            error = st.session_state['generation_progress'].get('error', 'Unknown error')
-            error_summary = st.session_state['generation_progress'].get('error_summary', '')
+            error = progress.get('error', 'Unknown error')
+            error_summary = progress.get('error_summary', '')
 
             status_text.error("❌ Deck generation encountered issues")
             detail_text.markdown(f"**Error:** {error}")
@@ -565,12 +724,25 @@ def render_generating_page():
                     st.markdown(error_summary)
 
             # Show download options for partial results
-            if st.session_state['generation_progress'].get('apkg_ready'):
+            if progress.get('apkg_ready'):
                 st.success("📦 Despite errors, a partial deck was created and is available for download.")
                 st.session_state.page = "complete"
                 st.rerun()
             else:
                 st.warning("❌ No usable deck could be created due to critical errors.")
+                
+                # Show log download option for debugging
+                if "log_file_path" in st.session_state and st.session_state['log_file_path'] and os.path.exists(st.session_state['log_file_path']):
+                    st.markdown("### 📝 Download Generation Log for Debugging")
+                    with open(st.session_state['log_file_path'], "rb") as f:
+                        st.download_button(
+                            label="⬇️ Download Error Log (TXT)",
+                            data=f.read(),
+                            file_name="generation_error_log.txt",
+                            mime="text/plain",
+                            use_container_width=True,
+                            key="error_log_download"
+                        )
 
             col1, col2 = st.columns(2)
             with col1:

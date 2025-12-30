@@ -38,6 +38,8 @@ user_full_state.json
 user_settings.json
 PRESENTATION_SCRIPT.md
 PPT_SLIDES.md
+MASTER_PROMPT.md
+MECE_ANALYSIS_REPORT.md
 
 # Streamlit secrets
 .streamlit/secrets.toml

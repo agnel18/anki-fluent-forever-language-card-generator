@@ -58,64 +58,94 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             return self._get_beginner_prompt(sentence, target_word)
 
     def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate beginner-level grammar analysis prompt with detailed explanations"""
-        base_prompt = """Analyze this Chinese (Simplified) sentence in detail: SENTENCE_PLACEHOLDER
+        """Generate beginner-level grammar analysis prompt with detailed character-by-character explanations"""
+        base_prompt = """Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
 
-For EACH character/word, provide:
-- Its grammatical role and function
-- What it means in this context
-- How it's used in Chinese grammar
-- Common alternate uses or forms
+For EACH INDIVIDUAL CHARACTER, provide:
+- Its individual meaning and pronunciation
+- Its grammatical role and function in this context
+- How it combines with adjacent characters (if applicable)
+- Common words it forms and their meanings
 - Why it's important for learners
 
 Focus on the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with detailed analysis:
+Return a JSON object with detailed character analysis:
 {
-  "elements": {
-    "pronouns": [{"word": "你", "function": "subject pronoun", "meaning": "you (singular)", "usage": "Used as sentence subject", "alternates": "您(formal), 你们(plural)"}],
-    "verbs": [{"word": "是", "function": "linking verb", "meaning": "to be/am/are/is", "usage": "Links subject to description", "alternates": "等于(equals), 成为(become)"}],
-    "particles": [{"word": "的", "function": "possessive particle", "meaning": "possessive marker", "usage": "Shows ownership/relationship", "alternates": "地(adverbial), 得(complement)"}],
-    "nouns": [{"word": "朋友", "function": "object noun", "meaning": "friend", "usage": "Direct object of sentence", "alternates": "好友(close friend), 老友(old friend)"}]
-  },
+  "characters": [
+    {
+      "character": "这",
+      "individual_meaning": "this (demonstrative pronoun)",
+      "pronunciation": "zhè",
+      "grammatical_role": "demonstrative pronoun",
+      "combinations": ["这个 (zhège) - this (with measure word)", "这里 (zhèlǐ) - here"],
+      "importance": "Essential for indicating proximity and specificity"
+    },
+    {
+      "character": "是",
+      "individual_meaning": "to be/am/are/is (linking verb)",
+      "pronunciation": "shì",
+      "grammatical_role": "linking verb",
+      "combinations": ["不是 (búshì) - is not", "还是 (háishì) - or/still"],
+      "importance": "Fundamental linking verb for equations and identities"
+    }
+  ],
+  "word_combinations": [
+    {
+      "word": "这本书",
+      "characters": ["这", "本", "书"],
+      "combined_meaning": "this book",
+      "grammatical_structure": "demonstrative pronoun + measure word + noun",
+      "usage_notes": "Measure word '本' is used for books and similar bound objects"
+    }
+  ],
   "explanations": {
-    "pronouns": "Pronouns replace nouns and show person/number. '你' is the informal 'you' used with peers",
-    "verbs": "Verbs show actions or states. '是' links subjects to their identities/descriptions",
-    "particles": "Particles modify relationships. '的' shows possession but has multiple uses",
-    "nouns": "Nouns name people/places/things. Learn measure words and plural forms",
-    "sentence_structure": "Subject-Verb-Object word order with particles showing relationships"
+    "character_analysis": "Each Chinese character has its own meaning and can combine to form compound words",
+    "measure_words": "Measure words (量词) are required between numbers/demonstratives and nouns",
+    "sentence_structure": "Subject-Verb-Object word order with characters combining into meaningful units"
   }
 }
 
-Provide specific, educational explanations for language learning!"""
+Provide specific, educational explanations for each character and their combinations!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate intermediate-level grammar analysis prompt"""
-        base_prompt = """Analyze this Chinese (Simplified) sentence for intermediate grammatical concepts: SENTENCE_PLACEHOLDER
+        """Generate intermediate-level grammar analysis prompt with character-level analysis"""
+        base_prompt = """Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
 
-Focus on:
-        - Aspect markers and temporal relationships
-        - Complex particle usage
+For EACH INDIVIDUAL CHARACTER, provide:
+- Character meaning, pronunciation, and grammatical role
+- How it functions in compound words and phrases
+- Aspect markers and temporal relationships it creates
+- Complex particle usage and structural functions
+
+Focus on the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with:
 {
-  "elements": {
-    "topics": [{"word": "我", "function": "topic/subject"}],
-    "predicates": [{"word": "吃", "function": "main verb"}],
-    "possessive_particles": [{"word": "的", "function": "possessive particle"}],
-    "aspect_markers": [{"word": "正在", "function": "progressive aspect"}],
-    "perfective_markers": [{"word": "了", "function": "perfective aspect"}],
-    "question_particles": [{"word": "吗", "function": "question particle"}]
-  },
+  "characters": [
+    {
+      "character": "正",
+      "individual_meaning": "just/right/correct",
+      "pronunciation": "zhèng",
+      "grammatical_role": "aspect marker component",
+      "combinations": ["正在 (zhèngzài) - progressive aspect 'is doing'", "正 (zhèng) - just/now"],
+      "aspect_function": "Part of progressive aspect marker indicating ongoing action"
+    }
+  ],
+  "word_combinations": [
+    {
+      "word": "正在吃",
+      "characters": ["正", "在", "吃"],
+      "combined_meaning": "is eating (progressive aspect)",
+      "grammatical_structure": "progressive aspect marker + main verb",
+      "usage_notes": "Indicates action in progress at the time of speaking"
+    }
+  ],
   "explanations": {
-    "topics": "Topics (主题) are the core elements being discussed in the sentence",
-    "predicates": "Predicates (谓语) express actions or states about the topics",
-    "possessive_particles": "Possessive particles (的) show relationships and ownership",
-    "aspect_markers": "Aspect markers indicate how actions unfold over time",
-    "perfective_markers": "Perfective markers indicate completed actions",
-    "question_particles": "Question particles (吗/呢) turn statements into questions",
-    "sentence_structure": "Intermediate sentence structure with aspect markers"
+    "aspect_system": "Aspect markers show how actions unfold over time, not just tense",
+    "character_combinations": "Characters combine to create complex grammatical meanings",
+    "sentence_structure": "Intermediate sentence structure with aspect markers and complex particles"
   }
 }
 
@@ -123,38 +153,47 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate advanced-level grammar analysis prompt"""
-        base_prompt = """Perform advanced grammatical analysis of this Chinese (Simplified) sentence: SENTENCE_PLACEHOLDER
+        """Generate advanced-level grammar analysis prompt with character-level analysis"""
+        base_prompt = """Perform advanced grammatical analysis of this Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
 
-Analyze:
-        - Modal and discourse particles
-        - Complex aspectual and pragmatic functions
+For EACH INDIVIDUAL CHARACTER, analyze:
+- Modal and discourse particles it creates
+- Complex aspectual and pragmatic functions
+- Character-level contributions to sentence meaning
+- Advanced grammatical combinations and transformations
+
+Focus on the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with:
 {
-  "elements": {
-    "topics": [{"word": "我", "function": "topic/subject"}],
-    "predicates": [{"word": "吃", "function": "main verb"}],
-    "possessive_particles": [{"word": "的", "function": "attributive particle"}],
-    "aspect_markers": [{"word": "正在", "function": "progressive aspect"}],
-    "perfective_markers": [{"word": "了", "function": "perfective aspect"}],
-    "modal_particles": [{"word": "吧", "function": "suggestion particle"}],
-    "structural_particles": [{"word": "把", "function": "structural particle"}],
-    "discourse_markers": [{"word": "但是", "function": "contrast marker"}],
-    "sentence_final_particles": [{"word": "呢", "function": "emphasis particle"}]
-  },
+  "characters": [
+    {
+      "character": "把",
+      "individual_meaning": "to hold/grasp",
+      "pronunciation": "bǎ",
+      "grammatical_role": "structural particle",
+      "combinations": ["把字句 (bǎzìjù) - 'ba' construction for disposal/formal objects"],
+      "pragmatic_function": "Introduces formal object in disposal constructions",
+      "advanced_usage": "Creates topic-comment structure with object fronting"
+    }
+  ],
+  "word_combinations": [
+    {
+      "word": "把书",
+      "characters": ["把", "书"],
+      "combined_meaning": "the book (as formal object)",
+      "grammatical_structure": "structural particle + formal object",
+      "usage_notes": "Object is fronted and marked as affected by the action"
+    }
+  ],
   "explanations": {
-    "topics": "Topics (主题) are the core elements being discussed in the sentence",
-    "predicates": "Predicates (谓语) express actions or states about the topics",
-    "possessive_particles": "Possessive particles (的) show relationships and ownership",
-    "aspect_markers": "Aspect markers indicate how actions unfold over time",
-    "perfective_markers": "Perfective markers indicate completed actions",
     "modal_particles": "Modal particles express speaker attitude and discourse functions",
-    "structural_particles": "Structural particles organize sentence grammar",
+    "structural_particles": "Structural particles organize complex sentence grammar",
     "discourse_markers": "Discourse markers connect ideas and show relationships",
     "sentence_final_particles": "Sentence-final particles add emphasis or tone",
     "aspect_system": "Complex aspectual distinctions and temporal relationships",
-    "discourse_structure": "Advanced discourse organization and pragmatic functions"
+    "discourse_structure": "Advanced discourse organization and pragmatic functions",
+    "character_level_analysis": "Each character contributes to complex grammatical meanings"
   }
 }
 
@@ -162,9 +201,8 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
-        """Parse AI response into structured Chinese (Simplified) grammar analysis"""
+        """Parse AI response into structured Chinese character-level grammar analysis"""
         try:
-
             # Try to extract JSON from response
             json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
             if json_match:
@@ -186,7 +224,6 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
 
             # Fallback: extract structured information from text
             return self._parse_text_response(ai_response, sentence)
-
 
         except Exception as e:
             logger.error(f"Failed to parse {self.language_name} grammar response: {e}")
@@ -238,33 +275,36 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
         return schemes[complexity]
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
-        """Validate Chinese (Simplified) grammar analysis quality (85% threshold required)"""
+        """Validate Chinese character-level grammar analysis quality (85% threshold required)"""
 
         try:
             # Check if essential elements are present
-            elements = parsed_data.get('elements', {})
+            characters = parsed_data.get('characters', [])
+            word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
 
             # Basic validation checks
-            has_elements = len(elements) > 0
+            has_characters = len(characters) > 0
+            has_combinations = len(word_combinations) > 0
             has_explanations = len(explanations) > 0
 
-            # Check if target word appears in analysis
-            sentence_words = set(original_sentence.lower().split())
-            analyzed_words = set()
+            # Check character coverage in sentence
+            sentence_chars = set(original_sentence)
+            analyzed_chars = set()
 
-            for element_list in elements.values():
-                for item in element_list:
-                    if isinstance(item, dict) and 'word' in item:
-                        analyzed_words.add(item['word'].lower())
+            for char_data in characters:
+                char = char_data.get('character', '')
+                if char:
+                    analyzed_chars.add(char)
 
-            word_coverage = len(sentence_words.intersection(analyzed_words)) / len(sentence_words)
+            char_coverage = len(sentence_chars.intersection(analyzed_chars)) / len(sentence_chars) if sentence_chars else 0
 
             # Calculate confidence score
-            base_score = 0.9 if (has_elements and has_explanations) else 0.6
-            coverage_bonus = word_coverage * 0.1
+            base_score = 0.9 if (has_characters and has_explanations) else 0.6
+            coverage_bonus = char_coverage * 0.1
+            combination_bonus = 0.05 if has_combinations else 0
 
-            confidence = min(base_score + coverage_bonus, 1.0)
+            confidence = min(base_score + coverage_bonus + combination_bonus, 1.0)
 
             return confidence
 
@@ -274,10 +314,11 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
 
 
     def _parse_text_response(self, ai_response: str, sentence: str) -> Dict[str, Any]:
-        """Parse text response when JSON extraction fails - extract Chinese grammatical elements"""
+        """Parse text response when JSON extraction fails - extract Chinese character-level elements"""
         try:
             # Initialize empty structure
-            elements = {}
+            characters = []
+            word_combinations = []
             explanations = {}
 
             # Extract sentence (first line or first 100 chars)
@@ -285,73 +326,48 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
             if len(sentence) > 100:
                 sentence = sentence[:100] + "..."
 
-            # Look for grammatical element patterns in text
+            # Look for character analysis patterns in text
             text_lower = ai_response.lower()
 
-            # Map Chinese grammatical functions to categories
-            category_mappings = {
-                "topics": ["topic", "subject", "主语", "主题"],
-                "predicates": ["predicate", "verb", "predicate", "谓语", "动词"],
-                "possessive_particles": ["possessive", "的", "de", "attributive", "定语"],
-                "aspect_markers": ["aspect", "progressive", "perfective", "着", "了", "过"],
-                "question_particles": ["question", "吗", "呢", "吧", "interrogative"],
-                "modal_particles": ["modal", "呢", "吧", "嘛", "呀", "attitude"],
-                "structural_particles": ["structural", "把", "被", "给", "structural"],
-                "discourse_markers": ["discourse", "但是", "而且", "所以", "不过", "connective"],
-                "sentence_final_particles": ["sentence final", "sentence-final", "final particle", "语气词"]
-            }
+            # Extract individual Chinese characters from the sentence
+            chinese_chars = re.findall(r'[\u4e00-\u9fff]', sentence)
 
-            # Extract elements by looking for patterns
-            for category, keywords in category_mappings.items():
-                category_elements = []
-                for keyword in keywords:
-                    if keyword in text_lower:
-                        # Try to find associated words near the keyword
-                        keyword_index = text_lower.find(keyword)
-                        if keyword_index >= 0:
-                            # Extract surrounding context (simple approach)
-                            start = max(0, keyword_index - 50)
-                            end = min(len(ai_response), keyword_index + 50)
-                            context = ai_response[start:end]
+            # Create basic character entries
+            for char in chinese_chars[:10]:  # Limit to first 10 characters
+                characters.append({
+                    "character": char,
+                    "individual_meaning": f"Character '{char}' (meaning needs analysis)",
+                    "pronunciation": "unknown",
+                    "grammatical_role": "unknown",
+                    "combinations": [],
+                    "importance": "Part of the sentence structure"
+                })
 
-                            # Look for Chinese characters in context
-                            chinese_chars = re.findall(r'[\u4e00-\u9fff]+', context)
-                            if chinese_chars:
-                                for char in chinese_chars[:2]:  # Limit to 2 per category
-                                    if len(char) >= 1:  # At least 1 character
-                                        category_elements.append({
-                                            "word": char,
-                                            "function": f"{keyword} ({category})"
-                                        })
-
-                if category_elements:
-                    elements[category] = category_elements
+            # Look for word combination patterns
+            # Find sequences of 2-4 characters that appear in the text
+            for i in range(len(chinese_chars) - 1):
+                for j in range(i + 2, min(i + 5, len(chinese_chars) + 1)):
+                    word = ''.join(chinese_chars[i:j])
+                    if word in ai_response:
+                        word_combinations.append({
+                            "word": word,
+                            "characters": list(word),
+                            "combined_meaning": f"Word '{word}' (compound meaning)",
+                            "grammatical_structure": "character combination",
+                            "usage_notes": "Forms a meaningful unit in Chinese"
+                        })
 
             # Generate explanations based on found elements
-            if elements:
-                for category in elements.keys():
-                    if category == "topics":
-                        explanations[category] = "Topics (主题) are the core elements being discussed in the sentence"
-                    elif category == "predicates":
-                        explanations[category] = "Predicates (谓语) express actions or states about the topics"
-                    elif category == "possessive_particles":
-                        explanations[category] = "Possessive particles (的) show relationships and ownership"
-                    elif category == "aspect_markers":
-                        explanations[category] = "Aspect markers indicate how actions unfold over time"
-                    elif category == "question_particles":
-                        explanations[category] = "Question particles (吗/呢) turn statements into questions"
-                    elif category == "modal_particles":
-                        explanations[category] = "Modal particles express speaker attitude and tone"
-                    elif category == "structural_particles":
-                        explanations[category] = "Structural particles organize sentence grammar"
-                    elif category == "discourse_markers":
-                        explanations[category] = "Discourse markers connect ideas and show relationships"
-                    elif category == "sentence_final_particles":
-                        explanations[category] = "Sentence-final particles add emphasis or tone"
+            if characters:
+                explanations["character_analysis"] = "Each Chinese character has its own meaning and can combine to form compound words"
+            if word_combinations:
+                explanations["word_combinations"] = "Characters combine to create compound words with specific meanings"
+            explanations["sentence_structure"] = "Chinese sentence structure relies on character combinations and grammatical particles"
 
             return {
                 'sentence': sentence,
-                'elements': elements,
+                'characters': characters,
+                'word_combinations': word_combinations,
                 'explanations': explanations
             }
 
@@ -363,21 +379,28 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
         """Generate HTML output for Chinese text with character-level coloring"""
         colors = self.get_color_scheme(complexity)
-        elements = parsed_data.get('elements', {})
+        characters = parsed_data.get('characters', [])
+        word_combinations = parsed_data.get('word_combinations', [])
         sentence = parsed_data.get('sentence', '')
 
         # Create a mapping of each character to its grammatical category
         char_to_category = {}
 
-        # Build character-to-category mapping
-        for element_type, element_list in elements.items():
-            for element in element_list:
-                word = element.get('word', '')
-                if word:
-                    # For Chinese, each character in a word gets the same category
-                    for char in word:
-                        if char.strip():  # Skip empty characters
-                            char_to_category[char] = element_type
+        # Build character-to-category mapping from individual characters
+        # NOTE: We prioritize individual character colors over word combination colors
+        # to ensure character-level analysis is preserved in the Colored Sentence
+        for char_data in characters:
+            char = char_data.get('character', '')
+            grammatical_role = char_data.get('grammatical_role', '')
+
+            # Map grammatical roles to color categories
+            if char and grammatical_role:
+                category = self._map_grammatical_role_to_category(grammatical_role)
+                char_to_category[char] = category
+
+        # NOTE: Word combinations are handled in explanations, not in Colored Sentence HTML
+        # This ensures the Colored Sentence shows individual character colors that match
+        # the Grammar Explanations, providing authentic character-level learning
 
         # Generate HTML by coloring each character individually
         html_parts = []
@@ -390,6 +413,29 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
                 html_parts.append(char)
 
         return ''.join(html_parts)
+
+    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        """Map grammatical role descriptions to color category names"""
+        role_lower = grammatical_role.lower()
+
+        # Map various grammatical roles to color categories
+        # Order matters: more specific checks first
+        if any(keyword in role_lower for keyword in ['particle', 'marker', 'aspect', 'modal', 'structural']):
+            return 'particles'
+        elif any(keyword in role_lower for keyword in ['pronoun', 'demonstrative', 'personal']):
+            return 'pronouns'
+        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state']):
+            return 'verbs'
+        elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject']):
+            return 'nouns'
+        elif any(keyword in role_lower for keyword in ['adjective', 'description', 'quality']):
+            return 'adjectives'
+        elif any(keyword in role_lower for keyword in ['adverb', 'manner', 'time', 'place']):
+            return 'adverbs'
+        elif any(keyword in role_lower for keyword in ['measure', 'quantity', 'classifier']):
+            return 'measure_words'
+        else:
+            return 'other'
 
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:

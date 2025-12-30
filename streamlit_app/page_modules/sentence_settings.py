@@ -29,9 +29,9 @@ def render_sentence_settings_page():
             st.markdown("**Sentence Length (words)**")
             current_length = st.session_state.sentence_length_range
             st.session_state.sentence_length_range = st.slider(
-                "",
+                "Sentence Length Range",
                 min_value=4,
-                max_value=30,
+                max_value=20,
                 value=current_length,
                 step=1,
                 help="Min and max words per sentence.",
@@ -41,7 +41,7 @@ def render_sentence_settings_page():
             st.markdown("**Sentences Per Word**")
             current_sentences = st.session_state.sentences_per_word
             st.session_state.sentences_per_word = st.slider(
-                "",
+                "Sentences Per Word",
                 min_value=3,
                 max_value=15,
                 value=current_sentences,

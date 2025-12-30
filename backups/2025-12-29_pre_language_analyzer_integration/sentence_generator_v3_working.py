@@ -453,7 +453,6 @@ def generate_sentences(
     difficulty: str = "intermediate",
     groq_api_key: str = None,
     topics: Optional[List[str]] = None,
-    native_language: str = "English",
 ) -> Tuple[str, List[Dict[str, Any]]]:
     """
     Generate sentences using optimized 3-pass architecture with COMBINED first pass:
@@ -472,7 +471,6 @@ def generate_sentences(
         difficulty: "beginner", "intermediate", "advanced"
         groq_api_key: Groq API key
         topics: List of topics to focus sentence generation around (optional)
-        native_language: User's native language for explanations (default: "English")
 
     Returns:
         Tuple of (meaning, sentences_list) where sentences_list contains dicts with keys:
@@ -546,24 +544,15 @@ def generate_sentences(
                     word=word,
                     language=language,
                     groq_api_key=groq_api_key,
-                    complexity_level=difficulty,  # Map difficulty to complexity level
-                    native_language=native_language,
                 )
 
                 # Update final_sentences with batch results
                 for i, grammar_result in enumerate(batch_grammar_results):
                     if i < len(final_sentences):
-                        # Handle different analyzer output formats
-                        colored_sentence = grammar_result.get("colored_sentence", final_sentences[i]["sentence"])
-                        grammar_summary = grammar_result.get("grammar_summary", "")
-
-                        # Convert character-based analysis to word_explanations format
-                        word_explanations = _convert_analyzer_output_to_explanations(grammar_result, language)
-
                         final_sentences[i].update({
-                            "colored_sentence": colored_sentence,
-                            "word_explanations": word_explanations,
-                            "grammar_summary": grammar_summary,
+                            "colored_sentence": grammar_result.get("colored_sentence", final_sentences[i]["sentence"]),
+                            "word_explanations": grammar_result.get("word_explanations", []),
+                            "grammar_summary": grammar_result.get("grammar_summary", ""),
                         })
             else:
                 logger.warning("No valid sentences to analyze grammar for")
@@ -1116,22 +1105,16 @@ def _batch_analyze_grammar_and_color(
     word: str,
     language: str,
     groq_api_key: str = None,
-    complexity_level: str = "beginner",
-    native_language: str = "English",
 ) -> List[Dict[str, Any]]:
     """
     PASS 3 (Batched): Analyze grammar and assign colors for MULTIPLE sentences in ONE API call.
     Much more efficient than individual calls - saves API quota and reduces latency.
-
-    NOW INTEGRATED: Uses language-specific analyzers when available for authentic grammar analysis.
 
     Args:
         sentences: List of sentences to analyze
         word: Target word being learned
         language: Language name (e.g., "Spanish", "Hindi")
         groq_api_key: Groq API key
-        complexity_level: Complexity level ('beginner', 'intermediate', 'advanced')
-        native_language: User's native language for explanations (default: "English")
 
     Returns:
         List of dicts, each with keys:
@@ -1162,61 +1145,39 @@ def _batch_analyze_grammar_and_color(
     sentences_text = "\n".join([f"{i+1}. {s}" for i, s in enumerate(sentences)])
 
     if analyzer:
-        # ✅ LANGUAGE-SPECIFIC ANALYZER INTEGRATION
+        # Use language-specific analyzer with batch processing
         logger.info(f"Using {language_code} analyzer for batch grammar analysis of {len(sentences)} sentences")
 
-        # For analyzers that support character-level analysis (like Chinese), use individual analysis
-        # For efficiency, we'll analyze sentences individually but still batch the API calls with delays
-        processed_results = []
+        prompt = f"""You are a native linguist specializing in {language} ({language_code.upper()}).
 
-        for i, sentence in enumerate(sentences):
-            try:
-                # Get analyzer-specific prompt
-                prompt = analyzer.get_grammar_prompt(complexity_level, sentence, word)
+Task: Analyze the grammar of ALL sentences below and provide detailed grammatical coloring.
 
-                # Make API call with rate limiting
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.3,
-                    max_tokens=2000,
-                )
+Sentences:
+{sentences_text}
 
-                response_text = response.choices[0].message.content.strip()
+For EACH sentence, provide:
+- Complete grammatical analysis with part-of-speech tagging
+- Color-coded HTML output using the analyzer's color scheme
+- Word-by-word explanations of grammatical roles
+- Overall grammar summary for the sentence
 
-                # Parse analyzer-specific response
-                parsed_data = analyzer.parse_grammar_response(response_text, complexity_level, sentence)
+Return a JSON array with one object per sentence (in order):
 
-                # Generate HTML output using analyzer
-                colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
+[
+  {{
+    "sentence_index": 1,
+    "colored_sentence": "<span style='color: #FF6B6B'>Subject</span> <span style='color: #4ECDC4'>verb</span> <span style='color: #45B7D1'>object</span>",
+    "word_explanations": [
+      ["word1", "part_of_speech", "#color_code", "explanation"],
+      ["word2", "part_of_speech", "#color_code", "explanation"]
+    ],
+    "grammar_summary": "Brief explanation of sentence grammar structure"
+  }},
+  ...
+]
 
-                # Convert to word_explanations format
-                word_explanations = _convert_analyzer_output_to_explanations(parsed_data, language)
-
-                # Create grammar summary
-                grammar_summary = parsed_data.get('explanations', {}).get('sentence_structure',
-                    f"This sentence uses {language_code} grammatical structures appropriate for {complexity_level} learners.")
-
-                processed_results.append({
-                    "colored_sentence": colored_sentence,
-                    "word_explanations": word_explanations,
-                    "grammar_summary": grammar_summary,
-                })
-
-                # Rate limiting between analyzer calls
-                if i < len(sentences) - 1:  # Don't delay after last call
-                    time.sleep(5)  # 5 second delay between calls
-
-            except Exception as e:
-                logger.error(f"Failed to analyze sentence {i+1} with {language_code} analyzer: {e}")
-                # Fallback to basic analysis
-                processed_results.append({
-                    "colored_sentence": sentence,
-                    "word_explanations": [],
-                    "grammar_summary": f"Analysis failed for {language_code} sentence",
-                })
-
-        return processed_results
+Use the {language_code} analyzer's color scheme and grammatical categories.
+Return ONLY valid JSON array, no markdown, no explanation."""
 
     else:
         # Fallback to generic batch analysis
@@ -1234,10 +1195,10 @@ For EACH sentence, return analysis in this exact JSON format:
     "sentence_index": 1,
     "colored_sentence": "<span style='color: #FF6B6B'>Subject</span> <span style='color: #4ECDC4'>verb</span> <span style='color: #45B7D1'>object</span>",
     "word_explanations": [
-      ["word1", "noun", "#FF6B6B", "explanation in {native_language}"],
-      ["word2", "verb", "#4ECDC4", "explanation in {native_language}"]
+      ["word1", "noun", "#FF6B6B", "subject of the sentence"],
+      ["word2", "verb", "#4ECDC4", "main action"]
     ],
-    "grammar_summary": "Brief explanation of sentence grammar structure in {native_language}"
+    "grammar_summary": "Sentence structure explanation"
   }},
   ...
 ]
@@ -1250,7 +1211,7 @@ Color codes to use:
 - #FFEAA7: pronouns/articles (yellow)
 - #CCCCCC: other (gray)
 
-Provide explanations in {native_language}. Return ONLY the JSON array, no additional text."""
+Return ONLY the JSON array, no additional text."""
 
     try:
         response = client.chat.completions.create(
@@ -1331,98 +1292,3 @@ Provide explanations in {native_language}. Return ONLY the JSON array, no additi
             "word_explanations": [],
             "grammar_summary": "Grammar analysis unavailable"
         } for sentence in sentences]
-
-
-def _convert_analyzer_output_to_explanations(grammar_result: Dict[str, Any], language: str) -> List[List[Any]]:
-    """
-    Convert analyzer output to word_explanations format [word, pos, color, explanation].
-    Handles both traditional word-based and new character-based analysis formats.
-    """
-    explanations = []
-
-    # Check if this is character-based analysis (Chinese analyzer)
-    if 'characters' in grammar_result:
-        # Character-based analysis (Chinese)
-        characters = grammar_result.get('characters', [])
-        word_combinations = grammar_result.get('word_combinations', [])
-
-        # Add individual character explanations
-        for char_data in characters:
-            char = char_data.get('character', '')
-            meaning = char_data.get('individual_meaning', '')
-            role = char_data.get('grammatical_role', '')
-            pronunciation = char_data.get('pronunciation', '')
-
-            if char:
-                # Map grammatical role to color category
-                color_category = _map_grammatical_role_to_color_category(role)
-                color = _get_color_for_category(color_category, language)
-
-                explanation = f"{meaning}"
-                if pronunciation and pronunciation != 'unknown':
-                    explanation += f" ({pronunciation})"
-                if role:
-                    explanation += f" - {role}"
-
-                explanations.append([char, role, color, explanation])
-
-        # Add word combination explanations
-        for combo_data in word_combinations:
-            word = combo_data.get('word', '')
-            meaning = combo_data.get('combined_meaning', '')
-            structure = combo_data.get('grammatical_structure', '')
-
-            if word and len(word) > 1:  # Only for actual combinations
-                color_category = _map_grammatical_role_to_color_category(structure)
-                color = _get_color_for_category(color_category, language)
-
-                explanation = f"{meaning} - {structure}"
-                explanations.append([word, structure, color, explanation])
-
-    else:
-        # Traditional word-based analysis
-        word_explanations = grammar_result.get('word_explanations', [])
-        explanations.extend(word_explanations)
-
-    return explanations
-
-
-def _map_grammatical_role_to_color_category(role: str) -> str:
-    """Map grammatical role to color category"""
-    role_lower = role.lower()
-
-    if any(kw in role_lower for kw in ['pronoun', 'demonstrative']):
-        return 'pronouns'
-    elif any(kw in role_lower for kw in ['verb', 'linking', 'action']):
-        return 'verbs'
-    elif any(kw in role_lower for kw in ['particle', 'marker']):
-        return 'particles'
-    elif any(kw in role_lower for kw in ['noun', 'object', 'subject']):
-        return 'nouns'
-    elif any(kw in role_lower for kw in ['adjective', 'description']):
-        return 'adjectives'
-    elif any(kw in role_lower for kw in ['adverb', 'manner']):
-        return 'adverbs'
-    else:
-        return 'other'
-
-
-def _get_color_for_category(category: str, language: str) -> str:
-    """Get color for grammatical category based on language"""
-    # Use the analyzer's color scheme if available
-    analyzer = get_analyzer(LANGUAGE_NAME_TO_CODE.get(language))
-    if analyzer:
-        color_scheme = analyzer.get_color_scheme('beginner')  # Default to beginner
-        return color_scheme.get(category, '#CCCCCC')
-
-    # Fallback colors
-    fallback_colors = {
-        'pronouns': '#FF4444',
-        'verbs': '#44FF44',
-        'particles': '#4444FF',
-        'nouns': '#FFAA00',
-        'adjectives': '#FF44FF',
-        'adverbs': '#44FFFF',
-        'other': '#888888'
-    }
-    return fallback_colors.get(category, '#CCCCCC')

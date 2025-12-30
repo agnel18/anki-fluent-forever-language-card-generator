@@ -62,13 +62,12 @@ def render_generate_page():
     
     # Separate section for viewing selected words
     st.markdown("---")
-    st.markdown("### 👀 **View Selected Words**")
+    st.markdown("### 👀 **Selected Words**")
     if selected_words:
-        with st.expander("Click to view all selected words", expanded=False):
-            # Display words in a nice grid
-            cols = st.columns(4)
-            for i, word in enumerate(selected_words):
-                cols[i % 4].write(f"• {word}")
+        # Display words in a simple grid (no expander needed for 5 words max)
+        cols = st.columns(4)
+        for i, word in enumerate(selected_words):
+            cols[i % 4].write(f"• {word}")
     else:
         st.warning("No words selected!")
 

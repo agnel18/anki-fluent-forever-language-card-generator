@@ -70,7 +70,6 @@ def generate_complete_deck(
     all_words: list = None,
     progress_callback: callable = None,
     topics: list = None,
-    native_language: str = "English",
 ) -> dict:
     """
     Main orchestrator for deck generation. Returns dict with success, tsv_path, media_dir, output_dir, error.
@@ -97,7 +96,7 @@ def generate_complete_deck(
 
             try:
                 # 1. Generate meaning + sentences + keywords (combined in one API call)
-                meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics, native_language)
+                meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics)
                 if sentences is None:
                     sentences = []
                 if not sentences:

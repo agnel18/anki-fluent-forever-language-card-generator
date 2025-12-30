@@ -60,6 +60,9 @@ def route_to_page(current_page):
             from page_modules.main import render_main_page
             render_main_page()
     except Exception as page_error:
+        print(f"DEBUG: Page loading error for '{current_page}': {type(page_error).__name__}: {page_error}")
+        import traceback
+        print(f"DEBUG: Full traceback:\n{traceback.format_exc()}")
         st.error(f"Error loading page '{current_page}': {page_error}")
         st.write("Falling back to main page...")
         try:
