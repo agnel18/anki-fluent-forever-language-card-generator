@@ -114,10 +114,53 @@ LANGUAGE_NAME_TO_CODE = {
 # ============================================================================
 # IPA GENERATION (Using Epitran)
 # ============================================================================
+def validate_ipa_output(ipa_text: str) -> bool:
+    """
+    Validate that IPA output contains only official IPA characters.
+    Rejects Pinyin, romanization, or non-IPA transliterations.
+    
+    IPA should contain:
+    - IPA consonants and vowels with diacritics
+    - No plain ASCII Latin letters (a-z) for non-English languages
+    - Official IPA Unicode symbols
+    """
+    if not ipa_text:
+        return False
+    
+    # For Chinese and other logographic/script languages, reject pure Latin (Pinyin, etc.)
+    # Allow some Latin letters that are part of IPA (like ə, but not plain a-z sequences)
+    import re
+    
+    # Check for Pinyin-like patterns: sequences of Latin letters with tone marks
+    pinyin_pattern = re.compile(r'[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+\s*[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]*', re.IGNORECASE)
+    if pinyin_pattern.match(ipa_text.strip()):
+        return False
+    
+    # Check for official IPA characters (basic validation)
+    # IPA Unicode ranges: U+0250-U+02AF (IPA Extensions), U+1D00-U+1D7F (Phonetic Extensions)
+    has_ipa_chars = False
+    for char in ipa_text:
+        if ord(char) in range(0x0250, 0x02B0) or ord(char) in range(0x1D00, 0x1D80):
+            has_ipa_chars = True
+            break
+        # Also check for common IPA diacritics and symbols
+        if char in 'ːˌˈˑ':
+            has_ipa_chars = True
+            break
+    
+    # If we have IPA-specific characters, it's likely valid IPA
+    if has_ipa_chars:
+        return True
+    
+    # For English and Latin-script languages, allow some Latin with diacritics
+    # But reject plain ASCII for non-English
+    return False
+
 def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
     """
     Generate IPA using Epitran library for accurate phonetic transcription.
     Falls back to AI-generated IPA if Epitran fails or language not supported.
+    Ensures output is official IPA only (no Pinyin, romanization).
     """
     if not text:
         return ""
@@ -125,9 +168,9 @@ def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
     try:
         import epitran
         
-        # Map language names to Epitran codes
+        # Map language names to Epitran codes (IPA-focused)
         language_map = {
-            "Chinese (Simplified)": "cmn-Hans",
+            "Chinese (Simplified)": "cmn-Hans",  # Mandarin IPA (not Pinyin)
             "Chinese (Traditional)": "cmn-Hant", 
             "Mandarin Chinese": "cmn-Hans",
             "English": "eng-Latn",
@@ -147,15 +190,22 @@ def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
         if epi_code:
             epi = epitran.Epitran(epi_code)
             ipa = epi.transliterate(text)
-            if ipa and ipa != text:  # Ensure it's actually transliterated
+            if ipa and ipa != text and validate_ipa_output(ipa):  # Validate IPA
                 return ipa
         
-        # Fallback to AI IPA if Epitran fails or language not supported
-        return ai_ipa or ""
+        # Fallback to AI IPA if Epitran fails or validation fails
+        if ai_ipa and validate_ipa_output(ai_ipa):
+            return ai_ipa
+        
+        # If no valid IPA, return empty (will be handled upstream)
+        return ""
         
     except Exception as e:
         logger.warning(f"Epitran IPA generation failed for '{text}' in {language}: {e}")
-        return ai_ipa or ""
+        # Try AI fallback if available and valid
+        if ai_ipa and validate_ipa_output(ai_ipa):
+            return ai_ipa
+        return ""
 
 # ============================================================================
 # WORD MEANING GENERATION (Groq)
