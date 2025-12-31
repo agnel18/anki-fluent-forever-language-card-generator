@@ -2,10 +2,7 @@
 
 import os
 import streamlit as st
-try:
-    from constants import *
-except ImportError:
-    from streamlit_app.constants import *
+from constants import *
 
 
 def log_message(message: str) -> None:

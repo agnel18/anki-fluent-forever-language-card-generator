@@ -40,7 +40,7 @@ streamlit run streamlit_app/app_v3.py
 - **AI Sentences** — Groq generates 10 contextual sentences per word
 - **Native Audio** — Edge TTS with 200+ voices, adjustable speed & pitch
 - **Beautiful Images** — Pixabay API with keyword extraction
-- **IPA Transcriptions** — Official phonetic transcriptions ([IPA Chart](https://www.ipachart.com/) for reference)
+- **IPA Transcriptions** — Official phonetic transcriptions ([IPA Chart Reference](https://www.ipachart.com/))
 - **3-Card Anki Template** — Listening, Production, Reading cards
 - **Direct Anki Import** — `.apkg` files ready to use
 - **Progress Tracking** — SQLite database saves your progress
@@ -83,7 +83,38 @@ Each word generates 3 cards for comprehensive learning:
 
 ---
 
-## 🛠️ Troubleshooting
+## � **Understanding IPA Transcriptions**
+
+**IPA (International Phonetic Alphabet)** is the universal system for accurately representing pronunciation using special symbols.
+
+### Why IPA Matters for Language Learning
+- **Accurate Pronunciation**: Learn exactly how native speakers pronounce words
+- **Consistent System**: Same symbols mean the same sounds across all languages
+- **Scientific Standard**: Used by linguists, dictionaries, and language teachers worldwide
+
+### How to Use IPA in Your Learning
+1. **Compare Sounds**: Match IPA symbols to sounds in your native language
+2. **Practice Pronunciation**: Use IPA as a guide for speaking practice
+3. **Identify Differences**: Spot sounds that don't exist in your language
+
+### Interactive IPA Learning
+Visit **[ipachart.com](https://www.ipachart.com/)** for:
+- **Interactive Chart**: Click any IPA symbol to hear it pronounced
+- **Audio Examples**: Real human recordings of each sound
+- **Mobile-Friendly**: Learn on any device
+- **Free Access**: No login required, no ads blocking content
+
+**Example**: The English word "think" is transcribed as `/θɪŋk/` in IPA.
+- `/θ/` = "th" as in "think" (not "this")
+- `/ɪ/` = "i" as in "sit"
+- `/ŋ/` = "ng" as in "sing"
+- `/k/` = "k" as in "cat"
+
+📖 **For a comprehensive IPA learning guide**, see [docs/guides/IPA_GUIDE.md](docs/guides/IPA_GUIDE.md)
+
+---
+
+## �🛠️ Troubleshooting
 
 ### "Images show as filenames instead of pictures"
 - ✅ **Fixed in v3.1** — Images now display properly in Anki

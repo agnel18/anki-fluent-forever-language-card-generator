@@ -7,12 +7,9 @@ import tempfile
 import datetime
 import time
 import re
+from pathlib import Path
 from utils import get_secret, log_message
 from core_functions import generate_complete_deck
-from services.generation.log_manager import LogManager
-from services.generation.progress_tracker import ProgressTracker
-from services.generation.session_validator import SessionValidator
-from services.generation.file_manager import FileManager
 
 
 def render_generating_page():
@@ -20,30 +17,67 @@ def render_generating_page():
     
     st.markdown("# ⚙️ Generating Your Deck")
 
-    # Initialize session validator and validate session state
-    session_validator = SessionValidator()
-    if not session_validator.validate_session_state():
+    # Safety check: ensure required session state exists
+    try:
+        # Ensure st.session_state is a dict-like object
+        if not hasattr(st.session_state, 'get'):
+            st.error("❌ **Session state corrupted!** Please restart the application.")
+            return
+            
+        required_vars = [
+            'selected_lang', 'selected_words', 'sentences_per_word', 
+            'sentence_length_range', 'difficulty', 'audio_speed', 'selected_voice'
+        ]
+        
+        missing_vars = []
+        for var in required_vars:
+            try:
+                if var not in st.session_state:
+                    missing_vars.append(var)
+            except (TypeError, AttributeError) as e:
+                st.error(f"❌ **Session state access error for {var}:** {str(e)}")
+                return
+        
+        if missing_vars:
+            st.error("❌ **Missing required data!** Please complete the setup process first.")
+            st.markdown(f"**Missing:** {', '.join(missing_vars)}")
+            st.markdown("**Required:** Language selection, word selection, and sentence settings must be completed first.")
+            if st.button("← Go Back to Setup", type="primary"):
+                st.switch_page("pages/language_select.py")
+            return
+    except Exception as e:
+        st.error(f"❌ **Critical session state error:** {str(e)}")
+        st.error("Please restart the application and complete the setup process.")
         return
-
-    # Get generation settings from session validator
-    settings = session_validator.get_generation_settings()
-    selected_lang = settings['selected_lang']
-    selected_words = settings['selected_words']
-    enable_topics = settings['enable_topics']
-    selected_topics = settings['selected_topics']
+    
+    selected_lang = st.session_state.selected_lang
+    selected_words = st.session_state.selected_words
+    
+    # Get topics settings (needed throughout the function)
+    enable_topics = st.session_state.get("enable_topics", False)
+    selected_topics = st.session_state.get("selected_topics", [])
     
     st.markdown(f"**Language:** {selected_lang} | **Words:** {len(selected_words)}")
     st.divider()
 
-    # Initialize generation progress and logging
-    session_validator.initialize_generation_progress()
-    session_validator.initialize_logging()
+    # Initialize generation progress if not exists
+    if 'generation_progress' not in st.session_state:
+        st.session_state['generation_progress'] = {
+            'step': 0,  # 0: not started, 1: generating, 2: complete
+            'result': None,
+            'success': False,
+            'error': None,
+            'errors': [],
+            'error_summary': '',
+            'tsv_path': None,
+            'media_dir': None,
+            'output_dir': None,
+            'apkg_ready': False,
+            'apkg_path': None,
+            'partial_success': False
+        }
 
-    # Initialize LogManager service (always available after logging is set up)
-    if 'log_stream' in st.session_state:
-        st.session_state['log_manager'] = LogManager(st.session_state['log_stream'])
-
-    step = session_validator.get_generation_step()
+    step = st.session_state['generation_progress']['step']
 
     # Show summary only if not yet generating
     if step == 0:
@@ -108,15 +142,13 @@ def render_generating_page():
         # Show generation summary at the top (compact format for active generation)
         st.markdown("## 📋 **Generation Summary**")
         st.markdown("**Settings Used:**")
-
-        # Get all parameters for display using SessionValidator
-        settings = session_validator.get_generation_settings()
-        num_sentences = settings['num_sentences']
-        min_length = settings['min_length']
-        max_length = settings['max_length']
-        difficulty = settings['difficulty']
-        audio_speed = settings['audio_speed']
-        voice = settings['voice']
+        
+        # Get all parameters for display
+        num_sentences = st.session_state.sentences_per_word
+        min_length, max_length = st.session_state.sentence_length_range
+        difficulty = st.session_state.difficulty
+        audio_speed = st.session_state.audio_speed
+        voice = st.session_state.selected_voice
         total_cards = len(selected_words) * num_sentences
         
         # Compact 2-column layout for generation page
@@ -178,7 +210,25 @@ Combine all components into a professional Anki deck.
         
         st.markdown("---")
 
-    # Logging is now initialized by SessionValidator above
+    # Initialize logging (persistent to ./logs/) - moved up so logs show during generation
+    if 'generation_log' not in st.session_state:
+        st.session_state['generation_log'] = []
+        st.session_state['generation_log_active'] = True
+        
+        # Create logs directory if it doesn't exist
+        logs_dir = Path("./logs")
+        logs_dir.mkdir(exist_ok=True)
+        
+        # Create persistent log file with timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_filename = f"generation_{timestamp}.log"
+        log_filepath = logs_dir / log_filename
+        
+        st.session_state['log_file_path'] = str(log_filepath)
+        st.session_state['log_stream'] = open(log_filepath, "w+", encoding="utf-8")
+        
+        log_message_local(f"<b>📝 Generation log started:</b> {log_filename}")
+        log_message(f"[LOG] Generation log started: {log_filename}")
 
     # Enhanced progress display with animations (always available for generation)
     st.markdown("## 📊 **Real-Time Progress**")
@@ -220,28 +270,30 @@ Combine all components into a professional Anki deck.
         # Create an empty placeholder for real-time log updates
         log_display = st.empty()
 
-        # Initialize services (log_manager is now always available)
-        progress_tracker = ProgressTracker(
-            progress_bar=progress_bar,
-            status_text=status_text,
-            detail_text=detail_text,
-            pass_indicator=pass_indicator,
-            log_manager=st.session_state['log_manager'],
-            log_display=log_display
-        )
-
-        # Initialize FileManager service
-        file_manager = FileManager(log_manager=st.session_state['log_manager'])
-
-        # Define log update function for real-time updates
-        def update_log_display(msg, display_element):
-            """Update log display in real-time during generation."""
-            st.session_state['log_manager'].log_message(msg)
-            display_element.code(st.session_state['log_manager'].get_display_logs(), language=None)
-            time.sleep(0.05)  # Brief pause for UI update
-
         # Display initial log content
-        log_display.code(st.session_state['log_manager'].get_display_logs(), language=None)
+        if st.session_state.get('generation_logs'):
+            log_display.code(st.session_state['generation_logs'], language=None)
+        else:
+            log_display.code("Generation logs will appear here...", language=None)
+
+    # Helper to log and update UI (defined after UI elements so it can access log_display)
+    def log_message_local(msg):
+        st.session_state['generation_log'].append(msg)
+        # Write to persistent log file
+        st.session_state['log_stream'].write(msg + '\n')
+        st.session_state['log_stream'].flush()
+        
+        # Also update the UI display logs
+        if 'generation_logs' not in st.session_state:
+            st.session_state['generation_logs'] = ""
+        
+        # Clean HTML tags for display and add timestamp
+        clean_msg = re.sub(r'<[^>]+>', '', msg)  # Remove HTML tags
+        timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+        st.session_state['generation_logs'] += f"[{timestamp}] {clean_msg}\n"
+        
+        # Update the display
+        log_display.code(st.session_state['generation_logs'], language=None)
 
     # Get generation parameters
     groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
@@ -251,11 +303,32 @@ Combine all components into a professional Anki deck.
     difficulty = st.session_state.difficulty
     audio_speed = st.session_state.audio_speed
     voice = st.session_state.selected_voice
-    import pathlib
-    output_dir = str(pathlib.Path("./output"))
+    output_dir = str(Path("./output"))
 
-    # Clear output directories using FileManager
-    file_manager.clear_output_directories()
+    # Clear output directories at start
+    if 'output_dirs_cleared' not in st.session_state:
+        media_dir = str(Path(output_dir) / "media")
+        if os.path.exists(media_dir):
+            try:
+                shutil.rmtree(media_dir)
+                log_message_local(f"<b>🧹 Cleared existing media directory:</b> {media_dir}")
+                log_message(f"[DEBUG] Cleared media directory: {media_dir}")
+            except Exception as e:
+                log_message_local(f"<b>⚠️ Could not clear media directory:</b> {e}")
+                log_message(f"[WARNING] Could not clear media directory {media_dir}: {e}")
+
+        images_dir = str(Path(output_dir) / "images")
+        if os.path.exists(images_dir):
+            try:
+                shutil.rmtree(images_dir)
+                log_message_local(f"<b>🧹 Cleared existing images directory:</b> {images_dir}")
+                log_message(f"[DEBUG] Cleared images directory: {images_dir}")
+            except Exception as e:
+                log_message_local(f"<b>⚠️ Could not clear images directory:</b> {e}")
+                log_message(f"[WARNING] Could not clear images directory {images_dir}: {e}")
+
+        st.session_state['output_dirs_cleared'] = True
+        log_message(f"[DEBUG] Output directories cleared. Media: {media_dir}, Images: {images_dir}")
 
     # Generation logic with comprehensive error recovery
     step = st.session_state['generation_progress']['step']
@@ -264,18 +337,17 @@ Combine all components into a professional Anki deck.
         # Clear previous generation log for fresh UI display with delay
         # (detailed log stream for export is preserved)
         if st.session_state.get('generation_log') and len(st.session_state['generation_log']) > 0:
-            st.session_state['log_manager'].log_message("<b>🧹 Clearing previous log in 2 seconds...</b>")
+            log_message_local("<b>🧹 Clearing previous log in 2 seconds...</b>")
             time.sleep(2)  # 2-second delay as requested
         
         # Clear the log completely for fresh start
         st.session_state['generation_log'] = []
-        if 'log_manager' in st.session_state:
-            st.session_state['log_manager'].clear_logs()
+        st.session_state['generation_logs'] = ""  # Clear the new logs accumulator
         
         # Start generation
         current_status.markdown("🚀 **Starting deck generation...**")
         step_indicator.markdown("⚙️ **Initializing**")
-        st.session_state['log_manager'].log_message("<b>🚀 Starting comprehensive deck generation with error recovery...</b>")
+        log_message_local("<b>🚀 Starting comprehensive deck generation with error recovery...</b>")
         status_text.info("🚀 Initializing deck generation...")
         detail_text.markdown("*Setting up generation with comprehensive error recovery and graceful degradation...*")
 
@@ -287,7 +359,7 @@ Combine all components into a professional Anki deck.
     elif len(selected_words) > 5:
         current_status.markdown("⚠️ **Generation Limit Exceeded**")
         step_indicator.markdown("❌ **Too Many Words**")
-        st.session_state['log_manager'].log_message("<b>❌ Generation cancelled - too many words selected</b>")
+        log_message_local("<b>❌ Generation cancelled - too many words selected</b>")
         status_text.error(f"You selected {len(selected_words)} words, but the maximum is 5 words per generation.")
         detail_text.markdown("*This limit helps prevent API rate limits and ensures reliable generation.*")
         
@@ -310,194 +382,126 @@ Combine all components into a professional Anki deck.
                 st.rerun()
 
     elif step == 1:
-        # Perform progressive generation - process one word at a time for real-time UI updates
+        # Perform generation using the resilient generate_complete_deck function
         current_status.markdown("⚙️ **Generating your complete deck...**")
         step_indicator.markdown("🔄 **Processing**")
+        log_message_local("<b>⚙️ Running comprehensive deck generation...</b>")
+        status_text.info("⚙️ Generating your complete deck...")
+        detail_text.markdown("*This process includes error recovery - if any component fails, we'll continue with the rest...*")
 
-        # Initialize progressive generation state
-        if 'generation_substep' not in st.session_state:
-            st.session_state['generation_substep'] = 0
-            st.session_state['generation_results'] = {
-                'words_data': [],
-                'audio_files': [],
-                'image_files': [],
-                'errors': [],
-                'partial_success': True
-            }
-            st.session_state['log_manager'].log_message("<b>⚙️ Starting progressive deck generation...</b>")
-            status_text.info("⚙️ Starting progressive deck generation...")
-            detail_text.markdown("*Processing words one by one for real-time updates...*")
-
-        # Get current substep
-        substep = st.session_state['generation_substep']
-        results = st.session_state['generation_results']
-
-        # If we've processed all words, finalize the generation
-        if substep >= len(selected_words):
-            # All words processed - finalize the deck
-            st.session_state['log_manager'].log_message("<b>📦 FINAL PASS: Deck Assembly</b>")
-            st.session_state['log_manager'].log_message("Combining all word components into a professional Anki deck...")
-            status_text.info("📦 Finalizing deck assembly...")
-
-            try:
-                from core_functions import create_apkg_from_word_data
-                import pathlib
-
-                output_path = pathlib.Path(output_dir)
-                media_dir = output_path / "media"
-
-                # Create the final APKG file
-                apkg_file_path = output_path / f"{selected_lang}_Learning_Deck.apkg"
-                success = create_apkg_from_word_data(
-                    results['words_data'],
-                    str(media_dir),
-                    str(apkg_file_path),
-                    selected_lang
-                )
+        try:
+            # Progress callback for UI updates and detailed logging
+            def progress_callback(progress_pct, current_word, status):
+                # Update progress bar based on pass
+                pass_progress = {
+                    "PASS 1": 16.67,
+                    "PASS 2": 33.33,
+                    "PASS 3": 50.0,
+                    "PASS 4": 66.67,
+                    "PASS 5": 83.33,
+                    "PASS 6": 100.0
+                }
+                for pass_name, pct in pass_progress.items():
+                    if pass_name in status:
+                        progress_bar.progress(pct)
+                        break
+                else:
+                    progress_bar.progress(progress_pct)  # fallback to original
                 
-                if success and apkg_file_path.exists():
-                    apkg_path = str(apkg_file_path)
-                    
-                    # Load the APKG file into session state for download
-                    if not file_manager.load_apkg_file(apkg_path):
-                        raise Exception("Failed to load created APKG file for download")
-                    
-                    # Success!
-                    result = {
-                        'success': True,
-                        'apkg_path': apkg_path,
-                        'tsv_path': str(output_path / "ANKI_IMPORT.tsv"),
-                        'media_dir': str(media_dir),
-                        'output_dir': output_dir,
-                        'errors': results['errors'],
-                        'partial_success': results['partial_success']
-                    }
+                # Update pass indicator
+                import re
+                pass_match = re.search(r'PASS (\d+)', status)
+                if pass_match:
+                    pass_num = pass_match.group(1)
+                    pass_indicator.markdown(f"**Current Pass:** {pass_num}/6")
+                
+                detail_text.markdown(f"*{status}*")
+                status_text.info(f"⚙️ {current_word}: {status}")
+                
+                # Add detailed technical logs for debugging
+                log_message_local(f"[DEBUG] Progress: {progress_pct:.1%} - Word: '{current_word}' - Status: {status}")
+                log_message(f"[DEBUG] Progress: {progress_pct:.1%} - Word: '{current_word}' - Status: {status}")
 
-                    st.session_state['log_manager'].log_message("<b>✅ Deck assembly completed successfully!</b>")
-                    st.session_state['log_manager'].log_message(f"Created Anki deck with {len(results['words_data'])} words, {len(results['audio_files'])} audio files, {len(results['image_files'])} images")
-                    progress_bar.progress(1.0)
-                    current_status.markdown("🎉 **Deck generation completed!**")
-                    step_indicator.markdown("✅ **Success!**")
-                    status_text.success("🎉 Deck generation completed successfully!")
-                    detail_text.markdown("*Your Anki deck is ready. Moving to export...*")
+            # Call the comprehensive generation function with error recovery
+            # Initialize retry counter if not exists
+            if 'generation_retry_count' not in st.session_state:
+                st.session_state['generation_retry_count'] = 0
+            
+            retry_count = st.session_state['generation_retry_count']
+            max_retries = 2  # Allow up to 2 automatic retries for temporary failures
+            
+            log_message_local(f"[DEBUG] Starting generate_complete_deck with params:")
+            log_message_local(f"[DEBUG] - Words: {selected_words}")
+            log_message_local(f"[DEBUG] - Language: {selected_lang}")
+            log_message_local(f"[DEBUG] - Output dir: {output_dir}")
+            log_message_local(f"[DEBUG] - Sentences per word: {num_sentences}")
+            log_message_local(f"[DEBUG] - Sentence length range: {min_length}-{max_length}")
+            log_message_local(f"[DEBUG] - Difficulty: {difficulty}")
+            log_message_local(f"[DEBUG] - Audio speed: {audio_speed}")
+            log_message_local(f"[DEBUG] - Voice: {voice}")
+            log_message_local(f"[DEBUG] - API keys present: Groq={bool(groq_api_key)}, Pixabay={bool(pixabay_api_key)}")
+            log_message_local(f"[DEBUG] - Retry attempt: {retry_count + 1}/{max_retries + 1}")
+            
+            log_message(f"[DEBUG] Starting generate_complete_deck with {len(selected_words)} words")
+            log_message(f"[DEBUG] Language: {selected_lang}, Output dir: {output_dir}")
+            log_message(f"[DEBUG] API keys configured: Groq={'YES' if groq_api_key else 'NO'}, Pixabay={'YES' if pixabay_api_key else 'NO'}")
+            log_message(f"[DEBUG] Retry attempt: {retry_count + 1}/{max_retries + 1}")
+            
+            # Define progress callback for real-time updates
+            def progress_callback(progress, status, detail):
+                """Update UI with real-time progress information."""
+                # Update progress bar
+                progress_pct = int(progress * 100)
+                progress_bar.progress(progress_pct / 100)
+                
+                # Update status text
+                current_status.markdown(f"**{status}**")
+                
+                # Update detail text
+                if detail:
+                    detail_text.markdown(f"*{detail}*")
+                
+                # Update pass indicator
+                if 'PASS' in status:
+                    try:
+                        pass_num = int(re.search(r'PASS (\d+)', status).group(1))
+                        pass_indicator.markdown(f"**Pass {pass_num}/6**")
+                    except:
+                        pass
+                
+                # Accumulate logs
+                if 'generation_logs' not in st.session_state:
+                    st.session_state['generation_logs'] = ""
+                
+                timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+                st.session_state['generation_logs'] += f"[{timestamp}] {status}\n"
+                if detail:
+                    st.session_state['generation_logs'] += f"  └─ {detail}\n"
+                
+                # Update log display in real-time using the empty placeholder
+                log_display.code(st.session_state['generation_logs'], language=None)
+            
+            # Call the comprehensive generation function with error recovery
+            result = generate_complete_deck(
+                words=selected_words,
+                language=selected_lang,
+                groq_api_key=groq_api_key,
+                pixabay_api_key=pixabay_api_key,
+                output_dir=output_dir,
+                num_sentences=num_sentences,
+                min_length=min_length,
+                max_length=max_length,
+                difficulty=difficulty,
+                audio_speed=audio_speed,
+                voice=voice,
+                progress_callback=progress_callback,
+                topics=selected_topics if enable_topics else None,
+                native_language="English",  # Default to English, will be configurable later
+            )
 
-                    # Update log display one final time
-                    log_display.code(st.session_state['log_manager'].get_display_logs(), language=None)
-
-                    # Store results and move to completion
-                    progress = st.session_state['generation_progress']
-                    progress['result'] = result
-                    progress['success'] = True
-                    progress['step'] = 2
-                    st.session_state['generation_progress'] = progress
-
-                    # Clean up progressive generation state
-                    del st.session_state['generation_substep']
-                    del st.session_state['generation_results']
-
-                    st.rerun()
-                else:
-                    raise Exception("APKG file creation failed")
-
-            except Exception as e:
-                st.session_state['log_manager'].log_message(f"<b>❌ Deck finalization failed:</b> {e}")
-                result = {
-                    'success': False,
-                    'error': f'Deck finalization failed: {e}',
-                    'errors': results['errors'] + [{'error': f'Finalization failed: {e}'}],
-                    'partial_success': False
-                }
-
-                # Update log display for error
-                log_display.code(st.session_state['log_manager'].get_display_logs(), language=None)
-
-                # Store results and move to completion
-                progress = st.session_state['generation_progress']
-                progress['result'] = result
-                progress['success'] = False
-                progress['step'] = 2
-                st.session_state['generation_progress'] = progress
-
-                # Clean up progressive generation state
-                del st.session_state['generation_substep']
-                del st.session_state['generation_results']
-
-                st.rerun()
-
-        else:
-            # Process the current word using core_functions
-            current_word = selected_words[substep]
-            word_progress = (substep + 1) / len(selected_words)
-
-            st.session_state['log_manager'].log_message(f"<b>🔤 Processing word {substep + 1}/{len(selected_words)}: '{current_word}'</b>")
-            progress_bar.progress(word_progress)
-            status_text.info(f"🔤 Processing word {substep + 1}/{len(selected_words)}: '{current_word}'")
-            detail_text.markdown(f"*Generating sentences, audio, and images for '{current_word}'...*")
-
-            try:
-                from core_functions import generate_deck_progressive
-
-                # Generate the word using core_functions with log callback
-                result = generate_deck_progressive(
-                    word=current_word,
-                    language=selected_lang,
-                    groq_api_key=groq_api_key,
-                    pixabay_api_key=pixabay_api_key,
-                    output_dir=output_dir,
-                    num_sentences=num_sentences,
-                    min_length=min_length,
-                    max_length=max_length,
-                    difficulty=difficulty,
-                    audio_speed=audio_speed,
-                    voice=voice,
-                    topics=selected_topics if enable_topics else None,
-                    native_language="English",
-                    log_callback=lambda msg: update_log_display(msg, log_display)
-                )
-
-                if result['success']:
-                    # Add successful word data to results
-                    results['words_data'].append(result['word_data'])
-                    results['audio_files'].extend(result['audio_files'])
-                    results['image_files'].extend(result['image_files'])
-                else:
-                    # Handle partial failure
-                    results['words_data'].append(result['word_data'])  # Add empty data to maintain structure
-                    results['errors'].extend(result['errors'])
-                    results['partial_success'] = False
-
-            except Exception as e:
-                error_msg = f"Failed to process word '{current_word}': {e}"
-                st.session_state['log_manager'].log_message(f"<b>⚠️ {error_msg}</b>")
-                results['errors'].append({
-                    'component': f"Word processing for '{current_word}'",
-                    'error': str(e),
-                    'critical': False
-                })
-                results['partial_success'] = False
-
-                # Continue with empty data for this word to maintain structure
-                word_data = {
-                    'word': current_word,
-                    'meaning': '',
-                    'sentences': [],
-                    'audio_files': ["" for _ in range(num_sentences)],
-                    'image_files': ["" for _ in range(num_sentences)]
-                }
-                results['words_data'].append(word_data)
-
-            # Move to next word
-            st.session_state['generation_substep'] = substep + 1
-            st.session_state['generation_results'] = results
-
-            # Update log display in real-time
-            log_display.code(st.session_state['log_manager'].get_display_logs(), language=None)
-
-            # Trigger UI update
-            time.sleep(0.1)  # Brief pause for UI stability
-            st.rerun()
+            # Safety check: ensure result is not None
             if result is None:
-                st.session_state['log_manager'].log_message("<b>❌ CRITICAL ERROR: generate_complete_deck() returned None</b>")
+                log_message_local("<b>❌ CRITICAL ERROR: generate_complete_deck() returned None</b>")
                 log_message(f"[CRITICAL] generate_complete_deck() returned None for {len(selected_words)} words")
                 result = {
                     'success': False,
@@ -521,7 +525,7 @@ Combine all components into a professional Anki deck.
                 
                 if should_retry:
                     st.session_state['generation_retry_count'] = retry_count + 1
-                    st.session_state['log_manager'].log_message(f"<b>🔄 Automatic retry #{retry_count + 1} due to temporary failure...</b>")
+                    log_message_local(f"<b>🔄 Automatic retry #{retry_count + 1} due to temporary failure...</b>")
                     log_message(f"[RETRY] Attempting retry #{retry_count + 1} due to temporary failure")
                     time.sleep(3)  # Brief pause before retry
                     st.rerun()
@@ -545,15 +549,15 @@ Combine all components into a professional Anki deck.
             progress['partial_success'] = result.get('partial_success', False)
 
             # Log detailed results
-            st.session_state['log_manager'].log_message(f"[DEBUG] Generation result: success={result.get('success', False)}")
-            st.session_state['log_manager'].log_message(f"[DEBUG] Result details: {result}")
+            log_message_local(f"[DEBUG] Generation result: success={result.get('success', False)}")
+            log_message_local(f"[DEBUG] Result details: {result}")
             log_message(f"[DEBUG] Generation completed. Success: {result.get('success', False)}")
             log_message(f"[DEBUG] TSV path: {result.get('tsv_path')}")
             log_message(f"[DEBUG] Media dir: {result.get('media_dir')}")
             log_message(f"[DEBUG] Errors: {len(result.get('errors', []))}")
 
             if result.get('success'):
-                st.session_state['log_manager'].log_message("<b>✅ Deck generation completed successfully!</b>")
+                log_message_local("<b>✅ Deck generation completed successfully!</b>")
                 log_message("[SUCCESS] Deck generation completed successfully!")
                 progress_bar.progress(1.0)
                 current_status.markdown("🎉 **Deck generation completed!**")
@@ -586,7 +590,7 @@ Combine all components into a professional Anki deck.
                     log_message(f"[WARNING] Failed to track usage: {e}")
 
                 # Use APKG file created by generate_complete_deck
-                st.session_state['log_manager'].log_message("<b>📦 Using APKG file from generation...</b>")
+                log_message_local("<b>📦 Using APKG file from generation...</b>")
                 log_message("[DEBUG] Using APKG file from generate_complete_deck")
                 
                 try:
@@ -596,12 +600,16 @@ Combine all components into a professional Anki deck.
                         progress['apkg_ready'] = True
                         
                         log_message(f"[DEBUG] APKG path from result: {apkg_path}")
-                        st.session_state['log_manager'].log_message(f"<b>📦 APKG file found:</b> {apkg_path}")
+                        log_message_local(f"<b>📦 APKG file found:</b> {apkg_path}")
                         
                         # Read APKG file and store in session state for download
-                        if not file_manager.load_apkg_file(apkg_path):
-                            st.error("Failed to load APKG file for download")
-                            return
+                        with open(apkg_path, 'rb') as f:
+                            st.session_state.apkg_file = f.read()
+                        # Generate timestamp for unique filename
+                        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        st.session_state.apkg_filename = f"{selected_lang.replace(' ', '_')}_{timestamp}_deck.apkg"
+                        log_message_local(f"<b>📁 APKG file loaded for download:</b> {len(st.session_state.apkg_file)} bytes")
+                        log_message(f"[DEBUG] APKG file loaded: {len(st.session_state.apkg_file)} bytes, filename: {st.session_state.apkg_filename}")
                         
                         # Save deck metadata to Firebase (for logged-in users)
                         try:
@@ -636,21 +644,21 @@ Combine all components into a professional Anki deck.
                                 deck_ref = db.collection('users').document(st.session_state.user['uid']).collection('decks').document()
                                 deck_ref.set(deck_metadata)
                                 
-                                st.session_state['log_manager'].log_message(f"<b>💾 Deck metadata saved to cloud</b>")
+                                log_message_local(f"<b>💾 Deck metadata saved to cloud</b>")
                                 log_message(f"[DEBUG] Deck metadata saved for user {st.session_state.user['uid']}: {deck_metadata['deck_name']}")
                             else:
                                 log_message(f"[DEBUG] User not signed in, skipping deck metadata save")
                         except Exception as e:
-                            st.session_state['log_manager'].log_message(f"<b>⚠️ Could not save deck metadata:</b> {e}")
+                            log_message_local(f"<b>⚠️ Could not save deck metadata:</b> {e}")
                             log_message(f"[WARNING] Failed to save deck metadata: {e}")
                         
                     else:
-                        st.session_state['log_manager'].log_message(f"<b>⚠️ APKG file not found at path:</b> {apkg_path}")
+                        log_message_local(f"<b>⚠️ APKG file not found at path:</b> {apkg_path}")
                         log_message(f"[ERROR] APKG file not found at path: {apkg_path}")
                         progress['apkg_ready'] = False
                         
                 except Exception as e:
-                    st.session_state['log_manager'].log_message(f"<b>⚠️ Failed to load APKG file:</b> {e}")
+                    log_message_local(f"<b>⚠️ Failed to load APKG file:</b> {e}")
                     log_message(f"[ERROR] Failed to load APKG file: {e}")
                     progress['apkg_ready'] = False
 
@@ -664,13 +672,13 @@ Combine all components into a professional Anki deck.
                 error_summary = result.get('error_summary', '')
                 errors = result.get('errors', [])
 
-                st.session_state['log_manager'].log_message(f"<b>❌ Deck generation completed with errors:</b> {error_msg}")
+                log_message_local(f"<b>❌ Deck generation completed with errors:</b> {error_msg}")
                 log_message(f"[ERROR] Deck generation failed: {error_msg}")
                 log_message(f"[ERROR] Error summary: {error_summary}")
                 log_message(f"[ERROR] Total errors: {len(errors)}")
                 
                 if error_summary:
-                    st.session_state['log_manager'].log_message(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
+                    log_message_local(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
                     log_message(f"[ERROR] Details: {error_summary}")
                 
                 # Log individual errors
@@ -680,7 +688,7 @@ Combine all components into a professional Anki deck.
                         log_message(f"[CRITICAL] {error.get('component', 'Unknown')} failed critically")
 
                 if error_summary:
-                    st.session_state['log_manager'].log_message(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
+                    log_message_local(f"<b>Error Details:</b><br>{error_summary.replace(chr(10), '<br>')}")
 
                 # Enhanced Error Recovery Section
                 st.markdown("---")
@@ -738,6 +746,18 @@ Combine all components into a professional Anki deck.
                 st.session_state['generation_progress'] = progress
                 st.rerun()
 
+        except Exception as e:
+            progress = st.session_state['generation_progress']
+            progress['error'] = f"Unexpected error during generation: {e}"
+            progress['step'] = 2  # Move to completion with error
+            st.session_state['generation_progress'] = progress
+            log_message_local(f"<b>💥 Critical error:</b> {e}")
+            log_message(f"[CRITICAL] Unexpected error during generation: {e}")
+            log_message(f"[CRITICAL] Error type: {type(e).__name__}")
+            import traceback
+            log_message(f"[CRITICAL] Traceback: {traceback.format_exc()}")
+            st.rerun()
+
     elif step == 2:
         # Generation complete - show results and move to complete page
         progress = st.session_state.get('generation_progress', {})
@@ -773,17 +793,17 @@ Combine all components into a professional Anki deck.
                 st.warning("❌ No usable deck could be created due to critical errors.")
                 
                 # Show log download option for debugging
-                log_data = file_manager.get_log_file_data()
-                if log_data:
+                if "log_file_path" in st.session_state and st.session_state['log_file_path'] and os.path.exists(st.session_state['log_file_path']):
                     st.markdown("### 📝 Download Generation Log for Debugging")
-                    st.download_button(
-                        label="⬇️ Download Error Log (TXT)",
-                        data=log_data["data"],
-                        file_name=log_data["filename"],
-                        mime=log_data["mime_type"],
-                        use_container_width=True,
-                        key="error_log_download"
-                    )
+                    with open(st.session_state['log_file_path'], "rb") as f:
+                        st.download_button(
+                            label="⬇️ Download Error Log (TXT)",
+                            data=f.read(),
+                            file_name="generation_error_log.txt",
+                            mime="text/plain",
+                            use_container_width=True,
+                            key="error_log_download"
+                        )
 
             col1, col2 = st.columns(2)
             with col1:

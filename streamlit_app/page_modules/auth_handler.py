@@ -1,188 +1,112 @@
-﻿# auth_handler.py - Firebase Email/Password Authentication
+﻿# auth_handler.py - Firebase Email/Password Authentication UI
 
 import streamlit as st
-import firebase_admin
-from firebase_admin import auth, firestore, exceptions, credentials, initialize_app
 from typing import Optional, Dict, Any
 import streamlit.components.v1 as components
 import re
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import time
+import sys
+import os
 
-# Initialize Firebase Admin
-try:
-    firebase_admin.get_app()
-except ValueError:
-    # Initialize with your Firebase config
-    cred = credentials.Certificate({
-        "type": "service_account",
-        "project_id": st.secrets.get("FIREBASE_PROJECT_ID", ""),
-        "private_key_id": st.secrets.get("FIREBASE_PRIVATE_KEY_ID", ""),
-        "private_key": st.secrets.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
-        "client_email": st.secrets.get("FIREBASE_CLIENT_EMAIL", ""),
-        "client_id": st.secrets.get("FIREBASE_CLIENT_ID", ""),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{st.secrets.get('FIREBASE_CLIENT_EMAIL', '')}"
-    })
-    initialize_app(cred)
+# Add the parent directory to the path so we can import services
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Initialize Firestore
-db = firestore.client()
+# Import authentication services
+from services.auth.auth_service import AuthService
+from services.auth.email_service import EmailService
+from services.auth.session_manager import SessionManager
 
-def send_verification_email(email: str, verification_link: str) -> bool:
-    """Send verification email using SMTP."""
-    try:
-        # Email configuration from secrets
-        smtp_server = st.secrets.get("EMAIL_SMTP_SERVER", "")
-        smtp_port = int(st.secrets.get("EMAIL_SMTP_PORT", "587"))
-        username = st.secrets.get("EMAIL_USERNAME", "")
-        password = st.secrets.get("EMAIL_PASSWORD", "")
-        from_email = st.secrets.get("EMAIL_FROM", username)
-        from_name = st.secrets.get("EMAIL_FROM_NAME", "Language Learning App")
-
-        print(f"Email config - Server: {smtp_server}, Port: {smtp_port}, User: {username}, From: {from_email}")
-
-        if not all([smtp_server, smtp_port, username, password]):
-            print("Email configuration incomplete - missing required fields")
-            return False
-
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Verify Your Email - Language Learning App"
-        msg['From'] = f"{from_name} <{from_email}>"
-        msg['To'] = email
-
-        # HTML content
-        html = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #333;">Welcome to Language Anki Deck Generator! 🎓</h2>
-            <p>Thank you for creating an account. To complete your registration, please verify your email address by clicking the button below:</p>
-
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{verification_link}" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email Address</a>
-            </div>
-
-            <p><strong>Verification Link:</strong><br>
-            <a href="{verification_link}">{verification_link}</a></p>
-
-            <p>If you didn't create an account, you can safely ignore this email.</p>
-
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">This email was sent by Language Anki Deck Generator. If you have any questions, please contact support.</p>
-        </body>
-        </html>
-        """
-
-        # Plain text content
-        text = f"""
-        Welcome to Language Anki Deck Generator!
-
-        Thank you for creating an account. To complete your registration, please verify your email address by clicking this link:
-
-        {verification_link}
-
-        If you didn't create an account, you can safely ignore this email.
-
-        This email was sent by Language Anki Deck Generator.
-        """
-
-        # Attach parts
-        part1 = MIMEText(text, 'plain')
-        part2 = MIMEText(html, 'html')
-        msg.attach(part1)
-        msg.attach(part2)
-
-        # Send email
-        print(f"Connecting to SMTP server {smtp_server}:{smtp_port}")
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        print(f"Logging in as {username}")
-        server.login(username, password)
-        print(f"Sending email to {email}")
-        server.sendmail(from_email, email, msg.as_string())
-        server.quit()
-
-        print(f"Verification email sent successfully to {email}")
-        return True
-
-    except Exception as e:
-        print(f"Failed to send verification email to {email}: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return False
+# Initialize services
+email_service = EmailService()
+session_manager = SessionManager()
+auth_service = AuthService(email_service, session_manager)
 
 # Firebase Auth JavaScript component for client-side authentication
 def firebase_auth_component():
     """Firebase Auth component using JavaScript SDK."""
-    firebase_config = {
-        "apiKey": st.secrets.get("FIREBASE_API_KEY", ""),
-        "authDomain": st.secrets.get("FIREBASE_AUTH_DOMAIN", ""),
-        "projectId": st.secrets.get("FIREBASE_PROJECT_ID", ""),
-        "storageBucket": st.secrets.get("FIREBASE_STORAGE_BUCKET", ""),
-        "messagingSenderId": st.secrets.get("FIREBASE_MESSAGING_SENDER_ID", ""),
-        "appId": st.secrets.get("FIREBASE_APP_ID", "")
-    }
+    # Check if secrets are available, otherwise use empty defaults
+    try:
+        # Try to access secrets to see if they exist
+        firebase_api_key = st.secrets.get("firebase", {}).get("api_key", "")
+        firebase_auth_domain = st.secrets.get("firebase", {}).get("auth_domain", "")
+        firebase_project_id = st.secrets.get("firebase", {}).get("project_id", "")
+
+        # Only use Firebase if we have the minimum required config
+        if firebase_api_key and firebase_auth_domain and firebase_project_id:
+            firebase_config = {
+                "apiKey": firebase_api_key,
+                "authDomain": firebase_auth_domain,
+                "projectId": firebase_project_id,
+                "storageBucket": st.secrets.get("firebase", {}).get("storage_bucket", ""),
+                "messagingSenderId": st.secrets.get("firebase", {}).get("messaging_sender_id", ""),
+                "appId": st.secrets.get("firebase", {}).get("app_id", "")
+            }
+            firebase_enabled = True
+        else:
+            firebase_config = {}
+            firebase_enabled = False
+    except Exception:
+        # No secrets available, disable Firebase
+        firebase_config = {}
+        firebase_enabled = False
 
     # JavaScript code for Firebase Auth with email verification
-    auth_js = f"""
-    <script type="module">
-        import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import {{ getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, reload, sendPasswordResetEmail }} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+    if firebase_enabled:
+        auth_js = f"""
+        <script type="module">
+            import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+            import {{ getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, reload, sendPasswordResetEmail }} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
-        const firebaseConfig = {firebase_config};
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+            const firebaseConfig = {firebase_config};
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
 
-        window.firebaseAuth = {{
-            login: async (email, password) => {{
-                try {{
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
+            window.firebaseAuth = {{
+                login: async (email, password) => {{
+                    try {{
+                        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                        const user = userCredential.user;
 
-                    // Check if email is verified
-                    if (!user.emailVerified) {{
+                        // Check if email is verified
+                        if (!user.emailVerified) {{
+                            return {{
+                                success: false,
+                                error: "Please verify your email address before signing in. Check your inbox for the verification link.",
+                                needsVerification: true,
+                                user: {{
+                                    uid: user.uid,
+                                    email: user.email,
+                                    displayName: user.displayName || user.email.split('@')[0],
+                                    emailVerified: false
+                                }}
+                            }};
+                        }}
+
                         return {{
-                            success: false,
-                            error: "Please verify your email address before signing in. Check your inbox for the verification link.",
-                            needsVerification: true,
+                            success: true,
                             user: {{
                                 uid: user.uid,
                                 email: user.email,
                                 displayName: user.displayName || user.email.split('@')[0],
-                                emailVerified: false
+                                emailVerified: user.emailVerified
                             }}
                         }};
+                    }} catch (error) {{
+                        return {{ success: false, error: error.message }};
                     }}
+                }},
+                register: async (email, password, displayName) => {{
+                    try {{
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        const user = userCredential.user;
 
-                    return {{
-                        success: true,
-                        user: {{
-                            uid: user.uid,
-                            email: user.email,
-                            displayName: user.displayName || user.email.split('@')[0],
-                            emailVerified: user.emailVerified
+                        // Update display name if provided
+                        if (displayName) {{
+                            await user.updateProfile({{ displayName: displayName }});
                         }}
-                    }};
-                }} catch (error) {{
-                    return {{ success: false, error: error.message }};
-                }}
-            }},
-            register: async (email, password, displayName) => {{
-                try {{
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
 
-                    // Update display name if provided
-                    if (displayName) {{
-                        await user.updateProfile({{ displayName: displayName }});
-                    }}
-
-                    // Send email verification
-                    await sendEmailVerification(user);
+                        // Send email verification
+                        await sendEmailVerification(user);
 
                     return {{
                         success: true,
@@ -252,121 +176,141 @@ def firebase_auth_component():
         }};
     </script>
     """
+    else:
+        # Firebase disabled - provide mock functions that return appropriate errors
+        auth_js = """
+        <script type="module">
+            window.firebaseAuth = {
+                login: async (email, password) => {
+                    return { success: false, error: "Firebase authentication is not configured. Please contact support." };
+                },
+                register: async (email, password, displayName) => {
+                    return { success: false, error: "Firebase authentication is not configured. Please contact support." };
+                },
+                resendVerification: async () => {
+                    return { success: false, error: "Firebase authentication is not configured." };
+                },
+                logout: async () => {
+                    return { success: false, error: "Firebase authentication is not configured." };
+                },
+                resetPassword: async (email) => {
+                    return { success: false, error: "Firebase authentication is not configured." };
+                },
+                checkEmailVerified: async () => {
+                    return { emailVerified: false };
+                },
+                onAuthStateChanged: (callback) => {
+                    // Do nothing - no auth state changes
+                }
+            };
+        </script>
+        """
 
     components.html(auth_js, height=0)
 
 # Local auth functions
 def is_signed_in():
     """Check if user is authenticated."""
-    return st.session_state.get("user") is not None
+    return session_manager.is_signed_in()
 
 def get_current_user():
     """Get current authenticated user info."""
-    return st.session_state.get("user")
+    return session_manager.get_current_user()
 
 def sign_out():
     """Sign out user."""
-    st.session_state.user = None
-    st.session_state.is_guest = True
+    session_manager.sign_out()
 
 def validate_email(email: str) -> bool:
     """Validate email format."""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(pattern, email) is not None
+    return auth_service.validate_email(email)
 
 def validate_password(password: str) -> tuple[bool, str]:
     """Validate password strength."""
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
-    if not re.search(r'[A-Z]', password):
-        return False, "Password must contain at least one uppercase letter"
-    if not re.search(r'[a-z]', password):
-        return False, "Password must contain at least one lowercase letter"
-    if not re.search(r'\d', password):
-        return False, "Password must contain at least one number"
-    return True, "Password is valid"
+    return auth_service.validate_password(password)
 
 def create_user_profile(uid: str, email: str, display_name: str = None):
     """Create user profile in Firestore."""
-    user_ref = db.collection('users').document(uid)
-    user_data = {
-        'email': email,
-        'displayName': display_name or email.split('@')[0],
-        'createdAt': firestore.SERVER_TIMESTAMP,
-        'lastLogin': firestore.SERVER_TIMESTAMP,
-        'preferences': {
-            'theme': 'light',
-            'audioSpeed': 1.0,
-            'syncPreferences': []
-        }
-    }
-    user_ref.set(user_data)
-
-    # Initialize achievements for new user
-    try:
-        from achievements_manager import initialize_achievements
-        initialize_achievements(uid)
-    except Exception as e:
-        print(f"Warning: Could not initialize achievements for user {uid}: {e}")
+    auth_service.create_user_profile(uid, email, display_name)
 
 def update_user_last_login(uid: str):
     """Update user's last login timestamp."""
-    user_ref = db.collection('users').document(uid)
-    user_ref.update({'lastLogin': firestore.SERVER_TIMESTAMP})
+    auth_service.update_user_last_login(uid)
 
 def get_user_profile(uid: str) -> Dict[str, Any]:
     """Get user profile from Firestore."""
-    user_ref = db.collection('users').document(uid)
-    doc = user_ref.get()
-    return doc.to_dict() if doc.exists else None
+    return auth_service.get_user_profile(uid)
 
 def save_user_api_keys(uid: str, api_keys: Dict[str, str]):
     """Save encrypted API keys to Firestore."""
-    api_keys_ref = db.collection('users').document(uid).collection('api_keys').document('keys')
-    api_keys_ref.set({
-        'groq': api_keys.get('groq', ''),
-        'pixabay': api_keys.get('pixabay', ''),
-        'lastUpdated': firestore.SERVER_TIMESTAMP
-    })
+    auth_service.save_user_api_keys(uid, api_keys)
 
 def get_user_api_keys(uid: str) -> Dict[str, str]:
     """Get user's API keys from Firestore."""
-    api_keys_ref = db.collection('users').document(uid).collection('api_keys').document('keys')
-    doc = api_keys_ref.get()
-    return doc.to_dict() if doc.exists else {}
+    return auth_service.get_user_api_keys(uid)
 
 def save_user_progress(uid: str, language: str, progress_data: Dict[str, Any]):
     """Save user progress to Firestore."""
-    progress_ref = db.collection('users').document(uid).collection('progress').document(language)
-    progress_data['lastUpdated'] = firestore.SERVER_TIMESTAMP
-    progress_ref.set(progress_data)
+    auth_service.save_user_progress(uid, language, progress_data)
 
 def get_user_progress(uid: str, language: str) -> Dict[str, Any]:
     """Get user progress from Firestore."""
-    progress_ref = db.collection('users').document(uid).collection('progress').document(language)
-    doc = progress_ref.get()
-    return doc.to_dict() if doc.exists else {}
+    return auth_service.get_user_progress(uid, language)
 
 def save_user_preferences(uid: str, preferences: Dict[str, Any]):
     """Save user preferences to Firestore."""
-    user_ref = db.collection('users').document(uid)
-    user_ref.update({
-        'preferences': preferences,
-        'lastUpdated': firestore.SERVER_TIMESTAMP
-    })
+    auth_service.save_user_preferences(uid, preferences)
 
 def get_user_preferences(uid: str) -> Dict[str, Any]:
     """Get user preferences from Firestore."""
-    user_doc = get_user_profile(uid)
-    return user_doc.get('preferences', {}) if user_doc else {}
+    return auth_service.get_user_preferences(uid)
+
+# Local auth functions
+def is_signed_in():
+    """Check if user is authenticated."""
+    return session_manager.is_signed_in()
+
+def get_current_user():
+    """Get current authenticated user info."""
+    return session_manager.get_current_user()
+
+def sign_out():
+    """Sign out user."""
+    session_manager.sign_out()
+
+def validate_email(email: str) -> bool:
+    """Validate email format."""
+    return auth_service.validate_email(email)
+
+def validate_password(password: str) -> tuple[bool, str]:
+    """Validate password strength."""
+    return auth_service.validate_password(password)
 
 # UI Components
 def login_form():
     """Display login form."""
     st.subheader("🔐 Sign In")
 
+    # Add enhanced button styling
+    st.markdown("""
+    <style>
+    .auth-button-primary button {
+        background: linear-gradient(135deg, #238636 0%, #2ea043 100%) !important;
+    }
+    .auth-button-secondary button {
+        border: 2px solid #0969da !important;
+        background-color: transparent !important;
+        color: #0969da !important;
+    }
+    .auth-button-secondary button:hover {
+        background-color: #0969da !important;
+        color: white !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Check if we need to show verification options (set from previous login attempt)
-    if st.session_state.get('show_verification_options'):
+    if session_manager.should_show_verification_options():
         _show_verification_options()
         return
 
@@ -379,7 +323,10 @@ def login_form():
         st.markdown("**🔒 Password**")
         password = st.text_input("Enter your password", type="password", key="login_password", help="Your account password")
 
+        # Enhanced Sign In button
+        st.markdown('<div class="auth-button-primary">', unsafe_allow_html=True)
         submitted = st.form_submit_button("🔓 Sign In", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if submitted:
             if not email or not password:
@@ -392,79 +339,22 @@ def login_form():
 
             # Show loading spinner
             with st.spinner("Signing you in..."):
-                # Use client-side Firebase Auth
-                auth_result = None
+                success, message, user_data = auth_service.authenticate_user(email, password)
 
-                # JavaScript call to login user
-                js_code = f"""
-                <script>
-                (async () => {{
-                    try {{
-                        const result = await window.firebaseAuth.login('{email}', '{password}');
-                        window.authResult = result;
-                    }} catch (error) {{
-                        window.authResult = {{ success: false, error: error.message }};
-                    }}
-                }})();
-                </script>
-                """
-
-                components.html(js_code, height=0)
-
-                # Wait a moment for JavaScript to execute
-                import time
-                time.sleep(2)
-
-                # For now, simulate successful login (in production, you'd properly handle the async result)
-                # This is a simplified approach - proper implementation would use Streamlit's session state
-                # to pass results from JavaScript to Python
-
-                # Temporary: Use Firebase Admin SDK to verify (this is a hybrid approach)
-                try:
-                    user = auth.get_user_by_email(email)
-
-                    # Check if user has verified their email
-                    if not user.email_verified:
-                        st.error("📧 **Email not verified!**")
-                        st.info("Please check your email and click the verification link before signing in.")
-                        st.markdown("💡 **Didn't receive the verification email?**")
-
-                        # Set flag to show verification options outside the form
-                        st.session_state.show_verification_options = True
-                        st.session_state.verification_email = email
-                        st.rerun()
-                        return
-
-                    # Email is verified - proceed with login
-                    st.success(f"Welcome back, {user.email}!")
-
-                    # Create user profile in Firestore if it doesn't exist
-                    user_profile = get_user_profile(user.uid)
-                    if not user_profile:
-                        create_user_profile(user.uid, user.email, str(user.display_name or user.email.split('@')[0]))
-
-                    st.session_state.user = {
-                        'uid': user.uid,
-                        'email': user.email,
-                        'displayName': str(user.display_name or user.email.split('@')[0]),
-                        'emailVerified': user.email_verified
-                    }
-                    st.session_state.is_guest = False
-                    update_user_last_login(user.uid)
+                if success:
+                    st.success(message)
                     st.rerun()
-
-                except exceptions.FirebaseError as e:
-                    error_message = str(e)
-                    if 'INVALID_PASSWORD' in error_message or 'USER_NOT_FOUND' in error_message:
-                        st.error("❌ Invalid email or password. Please check your credentials.")
+                else:
+                    if "verify your email" in message.lower():
+                        # Set flag to show verification options
+                        session_manager.set_verification_options(email)
+                        st.rerun()
                     else:
-                        st.error(f"❌ Login failed: {error_message}")
-                except Exception as e:
-                    st.error(f"❌ An unexpected error occurred: {str(e)}")
+                        st.error(message)
 
 def _show_verification_options():
     """Show email verification options outside the form."""
-    email = st.session_state.get('verification_email', '')
+    email = session_manager.get_verification_email()
 
     st.subheader("📧 Email Verification Required")
     st.info(f"Please verify your email address: **{email}**")
@@ -473,45 +363,25 @@ def _show_verification_options():
 
     with col1:
         if st.button("📧 Resend Verification Email", key="resend_verification"):
-            try:
-                # Generate verification link using Admin SDK
-                link = auth.generate_email_verification_link(email)
-
-                # Actually send the email
-                if send_verification_email(email, link):
-                    st.success("✅ Verification email sent! Please check your inbox (and spam folder).")
-                else:
-                    st.warning("⚠️ Email configuration not set up. Here's your verification link:")
-                    st.code(link)
-                    st.info("📋 Copy and paste this link into your browser to verify your email.")
-
-                print(f"Verification link generated for {email}: {link}")
-            except Exception as e:
-                st.error(f"❌ Failed to generate verification link: {e}")
-                print(f"Error generating verification link for {email}: {e}")
+            success, message = auth_service.resend_verification_email(email)
+            if success:
+                st.success(message)
+            else:
+                st.error(message)
 
     with col2:
         if st.button("🔄 Check Verification Status", key="check_verification"):
-            try:
-                # Reload user data
-                user = auth.get_user_by_email(email)
-                if user.email_verified:
-                    st.success("✅ Email verified! You can now sign in.")
-                    # Clear verification flags
-                    st.session_state.show_verification_options = False
-                    del st.session_state.verification_email
-                    st.rerun()
-                else:
-                    st.warning("Email still not verified. Please check your email.")
-            except Exception as e:
-                st.error(f"Failed to check verification: {e}")
+            is_verified, message = auth_service.check_email_verification_status(email)
+            if is_verified:
+                st.success(message)
+                session_manager.clear_verification_options()
+                st.rerun()
+            else:
+                st.warning(message)
 
     with col3:
         if st.button("⬅️ Back to Sign In", key="back_to_login"):
-            # Clear verification flags
-            st.session_state.show_verification_options = False
-            if 'verification_email' in st.session_state:
-                del st.session_state.verification_email
+            session_manager.clear_verification_options()
             st.rerun()
 
 def registration_form():
@@ -561,7 +431,10 @@ def registration_form():
         display_name = st.text_input("Choose a display name", key="display_name",
                                    help="This will be shown in your profile. If left blank, we'll use your email username")
 
+        # Enhanced Create Account button
+        st.markdown('<div class="auth-button-primary">', unsafe_allow_html=True)
         submitted = st.form_submit_button("🚀 Create Account", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if submitted:
             if not email or not password:
@@ -583,65 +456,13 @@ def registration_form():
 
             # Show loading spinner
             with st.spinner("Creating your account..."):
-                try:
-                    # Use Firebase Admin SDK for more reliable user creation
-                    user = auth.create_user(
-                        email=email,
-                        password=password,
-                        display_name=display_name or email.split('@')[0]
-                    )
+                success, message = auth_service.register_user(email, password, display_name or None)
 
-                    # Generate email verification link and send email
-                    verification_link = auth.generate_email_verification_link(email)
-
-                    # Send verification email
-                    email_sent = send_verification_email(email, verification_link)
-
-                    # Store user info in session for later use
-                    st.session_state.pending_verification_user = {
-                        'uid': user.uid,
-                        'email': user.email,
-                        'display_name': str(user.display_name or email.split('@')[0])
-                    }
-
+                if success:
                     st.success("✅ Account created successfully!")
-
-                    if email_sent:
-                        st.info("📧 **Verification email sent!** Please check your email and click the verification link.")
-                        st.markdown("💡 **Check your spam folder** if you don't see it in your inbox.")
-                    else:
-                        st.warning("⚠️ **Email not configured.** Here's your verification link - copy and paste it into your browser:")
-                        st.code(verification_link)
-
-                    st.markdown(f"💡 **Account created for:** {email}")
-
-                    # Log successful registration
-                    print(f"User registered successfully: {email} (UID: {user.uid})")
-                    if email_sent:
-                        print(f"Verification email sent to: {email}")
-                    else:
-                        print(f"Email not sent - verification link: {verification_link}")
-
-                    # Don't rerun immediately - let user see the success message
-
-                except exceptions.FirebaseError as e:
-                    error_code = e.code if hasattr(e, 'code') else 'unknown'
-                    error_message = str(e)
-
-                    print(f"Registration failed for {email}: {error_code} - {error_message}")
-
-                    if 'EMAIL_EXISTS' in error_code:
-                        st.error("❌ An account with this email already exists. Try signing in instead.")
-                    elif 'INVALID_EMAIL' in error_code:
-                        st.error("❌ Invalid email address format.")
-                    elif 'WEAK_PASSWORD' in error_code:
-                        st.error("❌ Password is too weak. Please choose a stronger password.")
-                    else:
-                        st.error(f"❌ Registration failed: {error_message}")
-
-                except Exception as e:
-                    print(f"Unexpected error during registration: {str(e)}")
-                    st.error(f"❌ An unexpected error occurred: {str(e)}")
+                    st.info(message)
+                else:
+                    st.error(message)
 
 def password_reset_form():
     """Display password reset form."""
@@ -666,32 +487,11 @@ def password_reset_form():
 
             # Show loading spinner
             with st.spinner("Sending reset email..."):
-                # Use client-side Firebase Auth for password reset
-                js_code = f"""
-                <script>
-                (async () => {{
-                    try {{
-                        const result = await window.firebaseAuth.resetPassword('{email}');
-                        window.authResult = result;
-                    }} catch (error) {{
-                        window.authResult = {{ success: false, error: error.message }};
-                    }}
-                }})();
-                </script>
-                """
-
-                components.html(js_code, height=0)
-
-                # Wait a moment for JavaScript to execute
-                import time
-                time.sleep(1)
-
-                # For now, use Firebase Admin SDK as fallback
-                try:
-                    auth.generate_password_reset_link(email)
-                    st.success("Password reset email sent! Check your inbox.")
-                except exceptions.FirebaseError as e:
-                    st.error(f"Failed to send reset email: {str(e)}")
+                success, message = auth_service.send_password_reset(email)
+                if success:
+                    st.success(message)
+                else:
+                    st.error(message)
 
 def show_auth_forms():
     """Display authentication forms with tabs."""

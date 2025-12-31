@@ -55,7 +55,7 @@ def apply_theme_css():
             --error-border: {'#f85149' if is_dark else '#cf222e'};
             --card-bg: {'#161b22' if is_dark else '#f6f8fa'};
             --card-border: {'#30363d' if is_dark else '#d0d7de'};
-            --gradient-primary: {'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'};
+            --gradient-primary: {'linear-gradient(135deg, #238636 0%, #2ea043 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'};
             --box-shadow: {'0 8px 25px rgba(0,0,0,0.2)' if is_dark else '0 8px 25px rgba(0,0,0,0.1)'};
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --base-font-size: 16px;
@@ -190,21 +190,164 @@ def apply_theme_css():
                     color: var(--text-color) !important;
                 }}
 
-                /* Aggressively remove selectbox and label borders/backgrounds */
-                .stSelectbox, .stSelectbox *, [data-baseweb="select"], [data-baseweb="select"] *, [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] * {{
-                    border: none !important;
-                    outline: none !important;
-                    box-shadow: none !important;
-                    background: transparent !important;
+                /* Tab styling for better visibility */
+                .stTabs [data-baseweb="tab-list"] {{
+                    background-color: var(--secondary-bg) !important;
+                    border-bottom: 1px solid var(--card-border) !important;
+                }}
+
+                .stTabs [data-baseweb="tab"] {{
                     background-color: transparent !important;
+                    color: var(--text-color) !important;
+                    border: none !important;
+                    padding: 8px 16px !important;
+                    margin: 0 2px !important;
+                    border-radius: 4px 4px 0 0 !important;
                 }}
-                /* Keep text color and background for content */
-                .stSelectbox, .stSelectbox * {{
+
+                .stTabs [data-baseweb="tab"]:hover {{
+                    background-color: var(--hover-bg) !important;
                     color: var(--text-color) !important;
                 }}
-                [data-testid="stWidgetLabel"] {{
+
+                .stTabs [data-baseweb="tab"][aria-selected="true"] {{
+                    background-color: var(--bg-color) !important;
+                    color: var(--primary-color) !important;
+                    border-bottom: 2px solid var(--primary-color) !important;
+                    font-weight: 600 !important;
+                }}
+
+                .stTabs [data-baseweb="tab"] button {{
+                    color: var(--text-color) !important;
+                    background: transparent !important;
+                    border: none !important;
+                    font-weight: inherit !important;
+                }}
+
+                .stTabs [data-baseweb="tab"][aria-selected="true"] button {{
+                    color: var(--primary-color) !important;
+                    font-weight: 600 !important;
+                }}
+
+                /* Number input styling for better visibility */
+                .stNumberInput input {{
+                    color: var(--text-color) !important;
+                    background-color: var(--secondary-bg) !important;
+                    border: 1px solid var(--card-border) !important;
+                    border-radius: 4px !important;
+                }}
+
+                .stNumberInput input:focus {{
+                    border-color: var(--primary-color) !important;
+                    box-shadow: 0 0 0 1px var(--primary-color) !important;
+                }}
+
+                /* Checkbox styling for better visibility */
+                .stCheckbox {{
                     color: var(--text-color) !important;
                 }}
-                /* ...existing CSS rules... */
+
+                .stCheckbox input[type="checkbox"] {{
+                    accent-color: var(--primary-color) !important;
+                    border: 1px solid var(--card-border) !important;
+                }}
+
+                /* Log/console output styling for better readability */
+                .stCodeBlock, .stCodeBlock * {{
+                    background-color: var(--secondary-bg) !important;
+                    color: var(--text-color) !important;
+                    border: 1px solid var(--card-border) !important;
+                }}
+
+                /* Button prominence improvements - Professional solid colors */
+                .stButton > button {{
+                    font-weight: 600 !important;
+                    border-radius: 6px !important;
+                    transition: all 0.2s ease !important;
+                    border: 1px solid transparent !important;
+                }}
+
+                .stButton > button:hover {{
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+                }}
+
+                button[kind="primary"] {{
+                    background-color: {'#238636' if is_dark else '#0969da'} !important;
+                    color: white !important;
+                    border-color: {'#2ea043' if is_dark else '#218bff'} !important;
+                    font-weight: 700 !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                }}
+
+                button[kind="primary"]:hover {{
+                    background-color: {'#2ea043' if is_dark else '#218bff'} !important;
+                    border-color: {'#3fb950' if is_dark else '#79c0ff'} !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+                    transform: translateY(-1px) !important;
+                }}
+
+                /* Enhanced primary action button styling */
+                .primary-action-button button[kind="primary"] {{
+                    font-size: 1.2rem !important;
+                    padding: 1rem 2rem !important;
+                    height: auto !important;
+                    min-height: 3.5rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.5px !important;
+                    text-transform: none !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    background: {'linear-gradient(135deg, #238636 0%, #2ea043 100%)' if is_dark else 'linear-gradient(135deg, #0969da 0%, #218bff 100%)'} !important;
+                }}
+
+                .primary-action-button button[kind="primary"]:hover {{
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.25) !important;
+                    background: {'linear-gradient(135deg, #2ea043 0%, #3fb950 100%)' if is_dark else 'linear-gradient(135deg, #218bff 0%, #79c0ff 100%)'} !important;
+                }}
+
+                .primary-action-button button[kind="primary"]:active {{
+                    transform: translateY(0px) !important;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+                }}
+
+                /* Authentication button enhancements */
+                .auth-button-primary button {{
+                    font-size: 1.1rem !important;
+                    padding: 0.8rem 1.5rem !important;
+                    height: auto !important;
+                    min-height: 3rem !important;
+                    font-weight: 600 !important;
+                    border-radius: 6px !important;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+                    transition: all 0.2s ease !important;
+                }}
+
+                .auth-button-primary button:hover {{
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                }}
+
+                .auth-button-secondary button {{
+                    font-size: 1rem !important;
+                    padding: 0.7rem 1.2rem !important;
+                    height: auto !important;
+                    min-height: 2.8rem !important;
+                    font-weight: 500 !important;
+                    border-radius: 6px !important;
+                    border: 2px solid var(--primary-color) !important;
+                    background-color: transparent !important;
+                    color: var(--primary-color) !important;
+                    transition: all 0.2s ease !important;
+                }}
+
+                .auth-button-secondary button:hover {{
+                    background-color: var(--primary-color) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                }}
             </style>
             """, unsafe_allow_html=True)

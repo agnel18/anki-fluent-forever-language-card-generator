@@ -1,4 +1,5 @@
 # pages/main.py - Main overview page for the language learning app
+# Updated import to fix module path issues
 
 import streamlit as st
 import os
@@ -91,6 +92,21 @@ def render_main_page():
         button_text = "🚀 Start Creating Your Deck" if not has_api_keys else "🚀 Continue Creating Your Deck"
         help_text = "Begin the 5-step deck creation process" if not has_api_keys else "Continue with your saved API keys"
         
+        # Add custom CSS class for enhanced styling
+        st.markdown("""
+        <style>
+        .primary-action-button button {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+            50% { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Wrap button in container with custom class
+        st.markdown('<div class="primary-action-button">', unsafe_allow_html=True)
         if st.button(button_text, type="primary", help=help_text, use_container_width=True):
             # Add brief loading animation
             with st.spinner("🚀 Getting started..."):
@@ -101,6 +117,7 @@ def render_main_page():
             else:
                 st.session_state.page = "api_setup"
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Scroll to top after all content is rendered
     st.markdown("""

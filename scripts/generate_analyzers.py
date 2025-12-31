@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from language_analyzers.analyzer_generator import AnalyzerGenerator
+from streamlit_app.language_analyzers.analyzer_generator import AnalyzerGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -3,18 +3,18 @@ from unittest.mock import patch, MagicMock
 import sys
 import os
 
-# Add the streamlit_app directory to the path
+# Add the streamlit_app directory to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'streamlit_app'))
 
-from core_functions import generate_complete_deck
+from streamlit_app.core_functions import generate_complete_deck
 
 def test_generate_complete_deck_success():
     """Test successful deck generation with mocked dependencies."""
     # Mock the dependencies
-    with patch('core_functions.generate_sentences') as mock_generate_sentences, \
-         patch('core_functions.generate_audio') as mock_generate_audio, \
-         patch('core_functions.generate_images_pixabay') as mock_generate_images, \
-         patch('core_functions.create_apkg_export') as mock_create_apkg:
+    with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
+         patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
+         patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images, \
+         patch('streamlit_app.core_functions.create_apkg_export') as mock_create_apkg:
 
         # Setup mocks
         mock_generate_sentences.return_value = ("test meaning", [
@@ -46,7 +46,7 @@ def test_generate_complete_deck_success():
 
 def test_generate_complete_deck_sentence_failure():
     """Test deck generation when sentence generation fails."""
-    with patch('core_functions.generate_sentences') as mock_generate_sentences:
+    with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences:
         mock_generate_sentences.return_value = ("test meaning", None)  # Sentences is None
 
         result = generate_complete_deck(
@@ -62,10 +62,10 @@ def test_generate_complete_deck_sentence_failure():
 
 def test_generate_complete_deck_apkg_failure():
     """Test deck generation when APKG creation fails."""
-    with patch('core_functions.generate_sentences') as mock_generate_sentences, \
-         patch('core_functions.generate_audio') as mock_generate_audio, \
-         patch('core_functions.generate_images_pixabay') as mock_generate_images, \
-         patch('core_functions.create_apkg_export') as mock_create_apkg:
+    with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
+         patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
+         patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images, \
+         patch('streamlit_app.core_functions.create_apkg_export') as mock_create_apkg:
 
         mock_generate_sentences.return_value = ("test meaning", [
             {'sentence': 'Test sentence 1', 'image_keywords': 'keyword1'}

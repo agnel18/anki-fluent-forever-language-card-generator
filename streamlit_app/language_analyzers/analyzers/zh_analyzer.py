@@ -59,18 +59,18 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
 
     def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
         """Generate beginner-level grammar analysis prompt with detailed character-by-character explanations"""
-        base_prompt = """Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
+        base_prompt = """Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
 
-For EACH INDIVIDUAL CHARACTER, provide:
+For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, provide:
 - Its individual meaning and pronunciation
 - Its grammatical role and function in this context
 - How it combines with adjacent characters (if applicable)
 - Common words it forms and their meanings
 - Why it's important for learners
 
-Focus on the target word: TARGET_PLACEHOLDER
+Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with detailed character analysis:
+Return a JSON object with detailed character analysis for ALL characters in the sentence:
 {
   "characters": [
     {
@@ -106,22 +106,22 @@ Return a JSON object with detailed character analysis:
   }
 }
 
-Provide specific, educational explanations for each character and their combinations!"""
+CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
         """Generate intermediate-level grammar analysis prompt with character-level analysis"""
-        base_prompt = """Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
+        base_prompt = """Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
 
-For EACH INDIVIDUAL CHARACTER, provide:
+For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, provide:
 - Character meaning, pronunciation, and grammatical role
 - How it functions in compound words and phrases
 - Aspect markers and temporal relationships it creates
 - Complex particle usage and structural functions
 
-Focus on the target word: TARGET_PLACEHOLDER
+Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with:
+Return a JSON object with character analysis for ALL characters in the sentence:
 {
   "characters": [
     {
@@ -149,22 +149,22 @@ Return a JSON object with:
   }
 }
 
-Be precise and focus on the target word: TARGET_PLACEHOLDER"""
+CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
         """Generate advanced-level grammar analysis prompt with character-level analysis"""
-        base_prompt = """Perform advanced grammatical analysis of this Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
+        base_prompt = """Perform advanced grammatical analysis of this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
 
-For EACH INDIVIDUAL CHARACTER, analyze:
+For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, analyze:
 - Modal and discourse particles it creates
 - Complex aspectual and pragmatic functions
 - Character-level contributions to sentence meaning
 - Advanced grammatical combinations and transformations
 
-Focus on the target word: TARGET_PLACEHOLDER
+Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with:
+Return a JSON object with character analysis for ALL characters in the sentence:
 {
   "characters": [
     {
@@ -197,7 +197,7 @@ Return a JSON object with:
   }
 }
 
-Be precise and focus on the target word: TARGET_PLACEHOLDER"""
+CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
@@ -332,8 +332,8 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
             # Extract individual Chinese characters from the sentence
             chinese_chars = re.findall(r'[\u4e00-\u9fff]', sentence)
 
-            # Create basic character entries
-            for char in chinese_chars[:10]:  # Limit to first 10 characters
+            # Create basic character entries for ALL characters in the sentence
+            for char in chinese_chars:  # Analyze ALL characters, not just first 10
                 characters.append({
                     "character": char,
                     "individual_meaning": f"Character '{char}' (meaning needs analysis)",
@@ -410,6 +410,12 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
                 color = colors.get(category, '#CCCCCC')
                 html_parts.append(f'<span style="color: {color}; font-weight: bold;">{char}</span>')
             elif char.strip():  # Only add non-whitespace characters without color
+                # For characters without analysis, give them a default color based on basic character properties
+                default_category = self._get_default_category_for_char(char)
+                color = colors.get(default_category, '#888888')
+                html_parts.append(f'<span style="color: {color};">{char}</span>')
+            else:
+                # Preserve whitespace
                 html_parts.append(char)
 
         return ''.join(html_parts)
@@ -436,6 +442,30 @@ Be precise and focus on the target word: TARGET_PLACEHOLDER"""
             return 'measure_words'
         else:
             return 'other'
+
+    def _get_default_category_for_char(self, char: str) -> str:
+        """Get a default grammatical category for characters that don't have detailed analysis"""
+        # This is a simple heuristic based on common Chinese character patterns
+        # In a real implementation, this could use more sophisticated analysis
+
+        # Common pronouns
+        if char in '我你他她它我们你们他们她们':
+            return 'pronouns'
+
+        # Common verbs
+        if char in '是有一在来去吃喝看听说话做':
+            return 'verbs'
+
+        # Common particles
+        if char in '的了着过吗呢吧啊呀':
+            return 'particles'
+
+        # Common nouns (basic ones)
+        if char in '人天日月水火山石':
+            return 'nouns'
+
+        # Default to 'other' for unknown characters
+        return 'other'
 
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
