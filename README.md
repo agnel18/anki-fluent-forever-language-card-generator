@@ -38,6 +38,7 @@ streamlit run streamlit_app/app_v3.py
 
 ### Core Functionality
 - **AI Sentences** — Groq generates 10 contextual sentences per word
+- **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
 - **Native Audio** — Edge TTS with 200+ voices, adjustable speed & pitch
 - **Beautiful Images** — Pixabay API with keyword extraction
 - **IPA Transcriptions** — Official phonetic transcriptions ([IPA Chart Reference](https://www.ipachart.com/))
@@ -61,15 +62,15 @@ Each word generates 3 cards for comprehensive learning:
 
 1. **Listening Card** 🎧  
    *Front*: Audio only  
-   *Back*: Sentence, image, translation, IPA, word info
+   *Back*: Sentence, image, translation, IPA, grammar analysis
 
 2. **Production Card** 💬  
    *Front*: English translation  
-   *Back*: Sentence, audio, image, IPA, word info
+   *Back*: Sentence, audio, image, IPA, grammar analysis
 
 3. **Reading Card** 📖  
-   *Front*: Sentence text  
-   *Back*: Audio, image, translation, IPA, word info
+   *Front*: Sentence text (with color-coded grammar elements)  
+   *Back*: Audio, image, translation, IPA, grammar analysis
 
 **Tip**: Use Anki's built-in "Record Own Voice" (R key) on the Pronunciation card to practice speaking.
 
@@ -183,8 +184,9 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 
 ---
 
-## 🚀 What's New (v3.1)
+## 🚀 What's New (v3.2)
 
+- ✅ **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
 - ✅ **Fixed Image Display** — Images now show properly in Anki cards
 - ✅ **Repository Cleanup** — Removed obsolete files (~10MB saved)
 - ✅ **Enhanced Error Recovery** — Better API failure handling

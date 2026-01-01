@@ -1406,6 +1406,55 @@ def _convert_analyzer_output_to_explanations(grammar_result: Dict[str, Any], lan
                 explanation = f"{meaning} - {structure}"
                 explanations.append([word, structure, color, explanation])
 
+    elif 'elements' in grammar_result:
+        # New analyzer format with elements and explanations
+        elements = grammar_result.get('elements', {})
+        element_explanations = grammar_result.get('explanations', {})
+
+        # Process each grammatical element category
+        for element_type, word_list in elements.items():
+            if element_type == 'word_combinations':
+                # Handle word combinations specially
+                for combo_data in word_list:
+                    word = combo_data.get('word', '')
+                    meaning = combo_data.get('combined_meaning', '')
+                    structure = combo_data.get('grammatical_structure', '')
+
+                    if word:
+                        color_category = _map_grammatical_role_to_color_category(element_type)
+                        color = _get_color_for_category(color_category, language)
+
+                        explanation = f"{meaning}"
+                        if structure:
+                            explanation += f" - {structure}"
+
+                        explanations.append([word, element_type, color, explanation])
+            else:
+                # Handle individual words
+                for word_data in word_list:
+                    word = word_data.get('word', '')
+                    meaning = word_data.get('individual_meaning', '')
+                    pronunciation = word_data.get('pronunciation', '')
+                    role = word_data.get('grammatical_role', element_type)
+
+                    if word:
+                        color_category = _map_grammatical_role_to_color_category(role)
+                        color = _get_color_for_category(color_category, language)
+
+                        explanation = f"{meaning}"
+                        if pronunciation and pronunciation != 'unknown':
+                            explanation += f" ({pronunciation})"
+                        if role and role != element_type:
+                            explanation += f" - {role}"
+
+                        explanations.append([word, role, color, explanation])
+
+        # If no elements but we have explanations, add a general explanation
+        if not explanations and element_explanations:
+            for exp_type, exp_text in element_explanations.items():
+                color = _get_color_for_category(exp_type, language)
+                explanations.append(['', exp_type, color, exp_text])
+
     else:
         # Traditional word-based analysis
         word_explanations = grammar_result.get('word_explanations', [])

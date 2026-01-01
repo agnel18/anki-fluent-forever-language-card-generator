@@ -7,7 +7,7 @@ PIXABAY_CALL_LIMIT = 5000
 
 # Default Settings
 DEFAULT_BATCH_SIZE = 5
-DEFAULT_SENTENCES_PER_WORD = 10
+DEFAULT_SENTENCES_PER_WORD = 4
 DEFAULT_AUDIO_SPEED = 0.8
 DEFAULT_SELECTION_MODE = "range"  # range, manual, search
 DEFAULT_DIFFICULTY = "intermediate"  # beginner, intermediate, advanced

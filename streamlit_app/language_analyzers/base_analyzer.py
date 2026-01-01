@@ -193,23 +193,44 @@ class BaseGrammarAnalyzer(abc.ABC):
         colors = self.get_color_scheme(complexity)
         elements = parsed_data.get('elements', {})
 
-        # Build HTML with color-coded spans
-        html_parts = []
-        colored_sentence = sentence
+        # Start with the original sentence
+        result = sentence
 
-        # Simple word-by-word coloring for now
-        # Language-specific analyzers can override for more sophisticated coloring
-        for element_type, words in elements.items():
+        # Process each element type and color the words
+        # Sort by word length (longest first) to avoid partial matches
+        all_words = []
+        for element_type, word_list in elements.items():
+            if element_type == 'word_combinations':
+                continue  # Skip combinations for individual word coloring
+
             color = colors.get(element_type, '#000000')
-            for word_info in words:
-                word = word_info.get('word', '')
-                if word in colored_sentence:
-                    colored_sentence = colored_sentence.replace(
-                        word,
-                        f'<span style="color: {color}; font-weight: bold;">{word}</span>'
-                    )
+            for word_data in word_list:
+                word = word_data.get('word', '').strip()
+                if word:
+                    all_words.append((word, color))
 
-        return colored_sentence
+        # Sort by length descending to handle longer matches first
+        all_words.sort(key=lambda x: len(x[0]), reverse=True)
+
+        # Replace each word with colored version
+        for word, color in all_words:
+            # Use word boundaries to avoid partial matches
+            # For languages with complex scripts, be more careful
+            import re
+
+            # Escape special regex characters in the word
+            escaped_word = re.escape(word)
+
+            # Replace whole word matches only (with word boundaries)
+            pattern = r'\b' + escaped_word + r'\b'
+
+            # Create colored span - use font tag with named colors for maximum Anki compatibility
+            colored_span = f'<font color="{color}"><b>{word}</b></font>'
+
+            # Replace all occurrences
+            result = re.sub(pattern, colored_span, result, flags=re.UNICODE)
+
+        return result
 
     def _initialize_color_schemes(self) -> Dict[str, Dict[str, str]]:
         """Initialize color schemes for all complexity levels"""

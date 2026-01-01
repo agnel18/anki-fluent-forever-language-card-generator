@@ -77,7 +77,7 @@ def initialize_session_state():
     if "difficulty" not in st.session_state:
         st.session_state.difficulty = DEFAULT_DIFFICULTY
     if "sentence_length_range" not in st.session_state:
-        st.session_state.sentence_length_range = (6, 16)
+        st.session_state.sentence_length_range = (6, 10)
     if SESSION_SENTENCES_PER_WORD not in st.session_state:
         st.session_state[SESSION_SENTENCES_PER_WORD] = DEFAULT_SENTENCES_PER_WORD
     if "track_progress" not in st.session_state:
