@@ -313,39 +313,39 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
         """Return vibrant, educational color scheme for Hindi grammatical elements"""
         schemes = {
             "beginner": {
-                "pronouns": "red",             # Red - People/references
-                "verbs": "green",              # Green - Actions/states
-                "postpositions": "blue",       # Blue - Grammar helpers
-                "nouns": "orange",             # Orange - Things/objects
-                "adjectives": "magenta",       # Magenta - Descriptions
-                "adverbs": "cyan",             # Cyan - How/when/where
-                "other": "gray"                # Gray - Other/unknown
+                "pronouns": "#FF4444",         # Red - People/references
+                "verbs": "#44FF44",            # Green - Actions/states
+                "postpositions": "#4444FF",    # Blue - Grammar helpers
+                "nouns": "#FFAA00",            # Orange - Things/objects
+                "adjectives": "#FF44FF",       # Magenta - Descriptions
+                "adverbs": "#44FFFF",          # Cyan - How/when/where
+                "other": "#888888"             # Gray - Other/unknown
             },
             "intermediate": {
-                "pronouns": "red",             # Bright Red
-                "verbs": "green",              # Bright Green
-                "postpositions": "blue",       # Bright Blue
-                "nouns": "orange",             # Orange
-                "adjectives": "magenta",       # Magenta
-                "adverbs": "cyan",             # Cyan
-                "aspect_markers": "lime",      # Lime Green - Time expressions
-                "case_markers": "coral",       # Coral - Case markings
-                "other": "gray"                # Gray
+                "pronouns": "#FF4444",         # Bright Red
+                "verbs": "#44FF44",            # Bright Green
+                "postpositions": "#4444FF",    # Bright Blue
+                "nouns": "#FFAA00",            # Orange
+                "adjectives": "#FF44FF",       # Magenta
+                "adverbs": "#44FFFF",          # Cyan
+                "aspect_markers": "#AAFF44",   # Lime Green - Time expressions
+                "case_markers": "#FF8844",     # Coral - Case markings
+                "other": "#888888"             # Gray
             },
             "advanced": {
-                "pronouns": "red",             # Bright Red
-                "verbs": "green",              # Bright Green
-                "postpositions": "blue",       # Bright Blue
-                "nouns": "orange",             # Orange
-                "adjectives": "magenta",       # Magenta
-                "adverbs": "cyan",             # Cyan
-                "aspect_markers": "lime",      # Lime Green
-                "case_markers": "coral",       # Coral
-                "honorifics": "purple",        # Purple - Respect markers
-                "causative_markers": "pink",   # Light Coral
-                "discourse_particles": "teal", # Mint
-                "compound_verbs": "yellow",    # Yellow
-                "other": "gray"                # Gray
+                "pronouns": "#FF4444",         # Bright Red
+                "verbs": "#44FF44",            # Bright Green
+                "postpositions": "#4444FF",    # Bright Blue
+                "nouns": "#FFAA00",            # Orange
+                "adjectives": "#FF44FF",       # Magenta
+                "adverbs": "#44FFFF",          # Cyan
+                "aspect_markers": "#AAFF44",   # Lime Green
+                "case_markers": "#FF8844",     # Coral
+                "honorifics": "#AA44FF",       # Purple - Respect markers
+                "causative_markers": "#FFAA88", # Light Coral
+                "discourse_particles": "#88FFAA", # Mint
+                "compound_verbs": "#FFFF44",   # Yellow
+                "other": "#888888"             # Gray
             }
         }
 

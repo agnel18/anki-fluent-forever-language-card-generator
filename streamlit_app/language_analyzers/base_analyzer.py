@@ -207,28 +207,31 @@ class BaseGrammarAnalyzer(abc.ABC):
             for word_data in word_list:
                 word = word_data.get('word', '').strip()
                 if word:
-                    all_words.append((word, color))
+                    all_words.append((word, element_type))
 
         # Sort by length descending to handle longer matches first
         all_words.sort(key=lambda x: len(x[0]), reverse=True)
 
-        # Replace each word with colored version
-        for word, color in all_words:
-            # Use word boundaries to avoid partial matches
-            # For languages with complex scripts, be more careful
+        # Replace each word with colored version using CSS classes
+        for word, element_type in all_words:
+            # Create colored span with CSS class for Anki compatibility
+            colored_span = f'<span class="grammar-{element_type}">{word}</span>'
+
+            # Use simple string replacement with word boundaries
+            # Split the sentence into words, replace exact matches, then rejoin
             import re
 
-            # Escape special regex characters in the word
-            escaped_word = re.escape(word)
-
-            # Replace whole word matches only (with word boundaries)
-            pattern = r'\b' + escaped_word + r'\b'
-
-            # Create colored span - use font tag with named colors for maximum Anki compatibility
-            colored_span = f'<font color="{color}"><b>{word}</b></font>'
-
-            # Replace all occurrences
-            result = re.sub(pattern, colored_span, result, flags=re.UNICODE)
+            # For complex scripts, use a more careful approach
+            # Replace only when the word appears as a whole word with boundaries
+            words_in_sentence = re.findall(r'\S+', result)  # Split on whitespace
+            
+            # Replace exact word matches
+            for i, w in enumerate(words_in_sentence):
+                if w == word:
+                    words_in_sentence[i] = colored_span
+            
+            # Rejoin the sentence
+            result = ' '.join(words_in_sentence)
 
         return result
 
