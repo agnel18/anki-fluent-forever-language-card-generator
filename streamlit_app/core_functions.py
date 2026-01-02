@@ -166,7 +166,7 @@ def generate_complete_deck(
 
         # 5. Create APKG
         apkg_path = output_path / f"{language.replace(' ', '_')}_deck.apkg"
-        if not create_apkg_export(words_data, str(media_dir), str(apkg_path), language, "Language Learning"):
+        if not create_apkg_export(words_data, str(media_dir), str(apkg_path), language):
             errors.append({
                 "component": "APKG creation",
                 "error": "Failed to create APKG file",
@@ -422,12 +422,15 @@ def create_apkg_from_word_data(
     media_dir: str,
     output_apkg_path: str,
     language: str,
-    deck_name: str = "Language Learning"
+    deck_name: str = None
 ) -> bool:
     """
     Convert word data to card format and create APKG file.
     """
     try:
+        # Set default deck name to language if not provided
+        if deck_name is None:
+            deck_name = language
         # Convert word data to card data format
         cards_data = []
         for word_data in words_data:

@@ -243,6 +243,20 @@ Combine all components into a professional Anki deck.
         # Display initial log content
         log_display.code(st.session_state['log_manager'].get_display_logs(), language=None)
 
+    # Display Pass 1 results if available
+    if step == 1 and 'generation_results' in st.session_state and st.session_state['generation_results'].get('pass1_results'):
+        st.markdown("---")
+        st.markdown("## 📝 **Generated Sentences (Pass 1 Results)**")
+        for word_result in st.session_state['generation_results']['pass1_results']:
+            st.markdown(f"### {word_result['word']}")
+            for i, sentence in enumerate(word_result['sentences'], 1):
+                st.markdown(f"**Sentence {i}:** {sentence['sentence']}")
+                if 'ipa' in sentence:
+                    st.markdown(f"**IPA:** /{sentence['ipa']}/")
+                if 'keywords' in sentence:
+                    st.markdown(f"**Keywords:** {', '.join(sentence['keywords'])}")
+            st.markdown("---")
+
     # Get generation parameters
     groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
     pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
@@ -322,7 +336,8 @@ Combine all components into a professional Anki deck.
                 'audio_files': [],
                 'image_files': [],
                 'errors': [],
-                'partial_success': True
+                'partial_success': True,
+                'pass1_results': []
             }
             st.session_state['log_manager'].log_message("<b>⚙️ Starting progressive deck generation...</b>")
             status_text.info("⚙️ Starting progressive deck generation...")
@@ -347,11 +362,12 @@ Combine all components into a professional Anki deck.
                 media_dir = output_path / "media"
 
                 # Create the final APKG file
-                apkg_file_path = output_path / f"{selected_lang}_Learning_Deck.apkg"
+                apkg_file_path = output_path / f"{selected_lang}.apkg"
                 success = create_apkg_from_word_data(
                     results['words_data'],
                     str(media_dir),
                     str(apkg_file_path),
+                    selected_lang,
                     selected_lang
                 )
                 
@@ -466,6 +482,12 @@ Combine all components into a professional Anki deck.
                     results['errors'].extend(result['errors'])
                     results['partial_success'] = False
 
+                # Add Pass 1 results for display
+                results['pass1_results'].append({
+                    'word': current_word,
+                    'sentences': result['word_data']['sentences']
+                })
+
             except Exception as e:
                 error_msg = f"Failed to process word '{current_word}': {e}"
                 st.session_state['log_manager'].log_message(f"<b>⚠️ {error_msg}</b>")
@@ -485,6 +507,12 @@ Combine all components into a professional Anki deck.
                     'image_files': ["" for _ in range(num_sentences)]
                 }
                 results['words_data'].append(word_data)
+
+                # Add Pass 1 results for display (empty for failed words)
+                results['pass1_results'].append({
+                    'word': current_word,
+                    'sentences': word_data['sentences']
+                })
 
             # Move to next word
             st.session_state['generation_substep'] = substep + 1
@@ -608,7 +636,7 @@ Combine all components into a professional Anki deck.
                             from firebase_manager import is_signed_in
                             if is_signed_in():
                                 deck_metadata = {
-                                    'deck_name': f"{selected_lang} Learning Deck",
+                                    'deck_name': selected_lang,
                                     'language': selected_lang,
                                     'word_count': len(selected_words),
                                     'card_count': len(selected_words) * 3,  # 3 cards per word

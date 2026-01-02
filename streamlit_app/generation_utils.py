@@ -45,7 +45,7 @@ def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
     # Comprehensive IPA character set - includes all official IPA symbols
     pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟ'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
-    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóú'
+    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
     tones_stress = 'ˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'
     other_symbols = '.,;:!?\'"() '
@@ -105,7 +105,7 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
     # Check if it contains only valid IPA symbols (unbracketed IPA is also valid)
     pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟ'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
-    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóú'
+    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
     tones_stress = 'ˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'
     other_symbols = '.,;:!?\'"() '
@@ -120,7 +120,8 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
 
     if invalid_chars:
         # If it has invalid characters, check if it looks like romanization
-        if re.search(r'\b[a-z]+\b', text, re.IGNORECASE):
+        # But be careful not to reject valid IPA that happens to contain letter sequences
+        if re.search(r'\b[a-z]{3,}\b', text, re.IGNORECASE) and not any(ipa_char in text for ipa_char in 'ɖʈɖcɟʔŋɲɳɱʙʀⱱɾɽɸβθðʃʒʂʐçʝxɣχʁħʕɦɬɮʋɹɻɰɭʎʟʼʍɥʜʢʡɕʑɺɧɨʉɯɪʏʊøɘɵɤɛœɜɞʌɔæɐɶɑɒɚɝˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'):
             return False, f"Detected romanization (non-IPA): {text}"
         else:
             return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in {text}"

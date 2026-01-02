@@ -286,16 +286,11 @@ def generate_word_meaning_sentences_and_keywords(
     try:
         client = Groq(api_key=groq_api_key)
 
-        # Build topic section if topics are provided
-        topic_section = ""
+        # Build context instruction based on topics
         if topics:
-            topic_section = f"""
-===========================
-TOPIC FOCUS
-===========================
-Focus the sentences around these topics: {', '.join(topics)}
-Ensure the sentences are relevant to these topics while maintaining natural language use.
-"""
+            context_instruction = f"- Use diverse real-life contexts on these topics: {', '.join(topics)}"
+        else:
+            context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
 
         prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
@@ -331,7 +326,7 @@ VARIETY REQUIREMENTS:
 - Use different tenses (if applicable to {language})
 - Use different sentence types: declarative, interrogative, imperative
 - Use the target word in different grammatical roles if possible
-- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions
+{context_instruction}
 
 ===========================
 STEP 3: IMAGE KEYWORDS

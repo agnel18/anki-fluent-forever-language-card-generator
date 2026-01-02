@@ -195,16 +195,31 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured German word-level grammar analysis"""
         try:
-            # Try to extract JSON from response
-            json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
+            # Try to extract JSON from markdown code blocks first
+            json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', ai_response, re.DOTALL)
             if json_match:
                 try:
-                    parsed = json.loads(json_match.group(1))
+                    json_str = json_match.group(1)
+                    parsed = json.loads(json_str)
                     # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
                     return parsed
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in German analyzer (markdown): {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
+
+            # Try to extract JSON from response - look for JSON object after text
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                try:
+                    json_str = json_match.group(0)
+                    parsed = json.loads(json_str)
+                    # Add the sentence to the parsed data
+                    parsed['sentence'] = sentence
+                    return parsed
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in German analyzer: {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
 
             # Try direct JSON parsing
             try:
@@ -446,3 +461,9 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
+        """Create minimal fallback analysis when all parsing fails"""
+        return {
+            'elements': {},
+            'explanations': {'error': 'Grammar analysis temporarily unavailable'},
+            'sentence': sentence
+        }

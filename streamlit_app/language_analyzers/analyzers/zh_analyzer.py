@@ -203,16 +203,31 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured Chinese character-level grammar analysis"""
         try:
-            # Try to extract JSON from response
-            json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
+            # Try to extract JSON from markdown code blocks first
+            json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', ai_response, re.DOTALL)
             if json_match:
                 try:
-                    parsed = json.loads(json_match.group(1))
+                    json_str = json_match.group(1)
+                    parsed = json.loads(json_str)
                     # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
                     return parsed
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in Chinese analyzer (markdown): {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
+
+            # Try to extract JSON from response - look for JSON object after text
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                try:
+                    json_str = json_match.group(0)
+                    parsed = json.loads(json_str)
+                    # Add the sentence to the parsed data
+                    parsed['sentence'] = sentence
+                    return parsed
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in Chinese analyzer: {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
 
             # Try direct JSON parsing
             try:
@@ -421,16 +436,16 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
         return ''.join(html_parts)
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map grammatical role descriptions to color category names"""
+        """Map grammatical role descriptions to color category names using Chinese grammar rules"""
         role_lower = grammatical_role.lower()
 
-        # Map various grammatical roles to color categories
-        # Order matters: more specific checks first
+        # Chinese-specific grammatical role mapping
+        # Order matters: primary categories before secondary descriptors
         if any(keyword in role_lower for keyword in ['particle', 'marker', 'aspect', 'modal', 'structural']):
             return 'particles'
         elif any(keyword in role_lower for keyword in ['pronoun', 'demonstrative', 'personal']):
             return 'pronouns'
-        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state']):
+        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state']) and 'noun' not in role_lower:
             return 'verbs'
         elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject']):
             return 'nouns'

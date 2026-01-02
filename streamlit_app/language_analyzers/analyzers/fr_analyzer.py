@@ -198,16 +198,31 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured French word-level grammar analysis"""
         try:
-            # Try to extract JSON from response
-            json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
+            # Try to extract JSON from markdown code blocks first
+            json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', ai_response, re.DOTALL)
             if json_match:
                 try:
-                    parsed = json.loads(json_match.group(1))
+                    json_str = json_match.group(1)
+                    parsed = json.loads(json_str)
                     # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
                     return parsed
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in French analyzer (markdown): {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
+
+            # Try to extract JSON from response - look for JSON object after text
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                try:
+                    json_str = json_match.group(0)
+                    parsed = json.loads(json_str)
+                    # Add the sentence to the parsed data
+                    parsed['sentence'] = sentence
+                    return parsed
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in French analyzer: {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
 
             # Try direct JSON parsing
             try:
@@ -437,5 +452,40 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
         # This is a simple heuristic based on common French word patterns
         # In a real implementation, this could use more sophisticated analysis
 
+        """Get a default grammatical category for words that don't have detailed analysis"""
+        # This is a simple heuristic based on common French word patterns
+        # In a real implementation, this could use more sophisticated analysis
+
         # Common pronouns
-        if word in 'je tu il elle nous vous ils elles':
+        if word.lower() in ['je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles']:
+            return 'pronouns'
+
+        # Common verbs (basic forms)
+        if word.lower() in ['être', 'avoir', 'faire', 'aller', 'venir', 'voir', 'savoir', 'pouvoir', 'vouloir', 'dire', 'venir', 'prendre', 'mettre', 'donner']:
+            return 'verbs'
+
+        # Common articles
+        if word.lower() in ['le', 'la', 'les', 'un', 'une', 'des']:
+            return 'articles'
+
+        # Common prepositions
+        if word.lower() in ['de', 'à', 'en', 'par', 'pour', 'avec', 'sans', 'sur', 'dans', 'chez', 'vers', 'contre']:
+            return 'other'
+
+        # Default to 'other' for unknown words
+        return 'other'
+
+    def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
+        """Create fallback parsing when main parsing fails"""
+        return {
+            'sentence': sentence,
+            'elements': {},
+            'explanations': {
+                'parsing_error': 'Unable to parse AI response, using fallback analysis'
+            }
+        }
+
+# Register analyzer
+def create_analyzer():
+    """Factory function to create French analyzer"""
+    return FrAnalyzer()

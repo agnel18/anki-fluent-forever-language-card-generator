@@ -177,7 +177,7 @@ def create_apkg_export(
     media_dir: str,
     output_path: str,
     language: str = "English",
-    deck_name: str = "Language Learning"
+    deck_name: str = None
 ) -> bool:
     """
     Create .apkg file (Anki deck package) from card data.
@@ -193,6 +193,9 @@ def create_apkg_export(
         True if successful, False otherwise
     """
     try:
+        # Set default deck name to language if not provided
+        if deck_name is None:
+            deck_name = language
         return _create_apkg_from_rows(rows, media_dir, output_path, language, deck_name)
     except Exception as e:
         logger.error(f"Error creating APKG export: {e}")
@@ -203,7 +206,7 @@ def _create_apkg_from_rows(
     media_dir: str,
     output_apkg: str,
     language: str,
-    deck_name: str = "Language Learning",
+    deck_name: str = None,
 ) -> bool:
     """
     Create .apkg file (Anki deck package) with 3-card template.
@@ -230,6 +233,10 @@ def _create_apkg_from_rows(
     if not output_path.parent.exists():
         logger.error(f"Failed to create output parent directory: {output_path.parent}")
         return False
+
+    # Set default deck name to language if not provided
+    if deck_name is None:
+        deck_name = language
 
     # Create note model with 12 fields and 3 card templates
     model_id = random.randrange(1 << 30, 1 << 31)

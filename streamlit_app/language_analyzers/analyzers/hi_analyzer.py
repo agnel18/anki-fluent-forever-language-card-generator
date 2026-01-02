@@ -9,11 +9,12 @@ import json
 import logging
 from typing import Dict, List, Any, Tuple
 
-from ..base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
+from ..family_base_analyzers.indo_european_analyzer import IndoEuropeanAnalyzer
+from ..base_analyzer import GrammarAnalysis, LanguageConfig
 
 logger = logging.getLogger(__name__)
 
-class HiAnalyzer(BaseGrammarAnalyzer):
+class HiAnalyzer(IndoEuropeanAnalyzer):
     """
     Grammar analyzer for Hindi (हिंदी).
 
@@ -63,7 +64,7 @@ class HiAnalyzer(BaseGrammarAnalyzer):
 
 For EACH AND EVERY INDIVIDUAL WORD in the sentence, provide:
 - Its individual meaning and pronunciation (in IPA)
-- Its grammatical role and function in this context
+- Its grammatical role and function in this context (USE ONLY: pronoun, noun, verb, adjective, adverb, postposition, conjunction, interjection, other)
 - How it shows gender agreement (masculine/feminine)
 - Postpositions and case markings it uses
 - Why it's important for learners
@@ -77,7 +78,7 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "word": "मैं",
       "individual_meaning": "I (first person singular pronoun)",
       "pronunciation": "mɛ̃",
-      "grammatical_role": "subject pronoun",
+      "grammatical_role": "pronoun",
       "gender_agreement": "masculine (default for pronouns)",
       "case_marking": "nominative case",
       "postpositions": [],
@@ -87,7 +88,7 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "word": "खाना",
       "individual_meaning": "food/meal",
       "pronunciation": "kʰaːnaː",
-      "grammatical_role": "direct object noun",
+      "grammatical_role": "noun",
       "gender_agreement": "masculine",
       "case_marking": "accusative case (implied)",
       "postpositions": [],
@@ -112,7 +113,10 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
   }
 }
 
-CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
+CRITICAL: Analyze EVERY word in the sentence, not just the target word!
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: Do NOT use descriptions like "personal pronoun" or "action verb" - use ONLY the exact words above!
+CRITICAL: If unsure, use "other" rather than making up a new category!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
@@ -220,26 +224,44 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured Hindi word-level grammar analysis"""
         try:
-            # Try to extract JSON from response
-            json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
+            # Try to extract JSON from markdown code blocks first
+            json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', ai_response, re.DOTALL)
             if json_match:
                 try:
-                    parsed = json.loads(json_match.group(1))
-                    # Add the sentence to the parsed data
+                    json_str = json_match.group(1)
+                    parsed = json.loads(json_str)
                     parsed['sentence'] = sentence
+                    logger.info(f"Hindi analyzer parsed JSON from markdown successfully: {len(parsed.get('words', []))} words")
                     return self._transform_to_standard_format(parsed)
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in Hindi analyzer (markdown): {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
+
+            # Try to extract JSON from response - look for JSON object after text
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                try:
+                    json_str = json_match.group(0)
+                    parsed = json.loads(json_str)
+                    parsed['sentence'] = sentence
+                    logger.info(f"Hindi analyzer parsed JSON successfully: {len(parsed.get('words', []))} words")
+                    return self._transform_to_standard_format(parsed)
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error in Hindi analyzer: {e}")
+                    logger.error(f"Extracted JSON string: {json_str[:500]}...")
 
             # Try direct JSON parsing
             try:
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
+                logger.info(f"Hindi analyzer direct JSON parse successful: {len(parsed.get('words', []))} words")
                 return self._transform_to_standard_format(parsed)
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                logger.error(f"Direct JSON parse error in Hindi analyzer: {e}")
+                logger.error(f"Raw AI response: {ai_response[:500]}...")
 
             # Fallback: extract structured information from text
+            logger.warning("Hindi analyzer falling back to text parsing")
             return self._parse_text_response(ai_response, sentence)
 
         except Exception as e:
@@ -247,22 +269,60 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             return self._create_fallback_parse(ai_response, sentence)
 
     def _parse_text_response(self, ai_response: str, sentence: str) -> Dict[str, Any]:
-        """Fallback text parsing when JSON fails"""
+        """Enhanced fallback text parsing when JSON fails - extracts grammatical roles from AI response"""
         try:
-            # Basic text parsing - extract words from sentence and create minimal analysis
+            # Try to extract word-role pairs from the AI response text
+            word_role_pairs = self._extract_word_roles_from_text(ai_response)
+
+            # Split sentence into words for matching
+            sentence_words = sentence.split()
+
+            # Create elements dictionary with proper categorization
+            elements = {}
+            word_explanations = []
+
+            for word in sentence_words:
+                # Find matching role from extracted pairs (case-insensitive partial match)
+                role = 'other'  # default
+                for extracted_word, extracted_role in word_role_pairs:
+                    if extracted_word.lower() in word.lower() or word.lower() in extracted_word.lower():
+                        role = extracted_role
+                        break
+
+                # Map role to category
+                category = self._map_grammatical_role_to_category(role)
+
+                # Add to elements
+                if category not in elements:
+                    elements[category] = []
+                elements[category].append({
+                    'word': word,
+                    'grammatical_role': role
+                })
+
+                # Create word explanation
+                color = self._get_color_for_category(category)
+                word_explanations.append([word, role, color, f'Extracted from text analysis: {role}'])
+
+            return {
+                'elements': elements,
+                'word_explanations': word_explanations,
+                'explanations': {'fallback': f'Enhanced text analysis extracted {len(word_role_pairs)} word-role pairs'},
+                'sentence': sentence
+            }
+
+        except Exception as e:
+            logger.error(f"Enhanced text parsing fallback failed: {e}")
+            # Fall back to basic parsing
             words = sentence.split()
             elements = {
                 'other': [{'word': word, 'grammatical_role': 'other'} for word in words]
             }
-
             return {
                 'elements': elements,
                 'explanations': {'fallback': 'Basic word-level analysis due to parsing failure'},
                 'sentence': sentence
             }
-        except Exception as e:
-            logger.error(f"Text parsing fallback failed: {e}")
-            return self._create_fallback_parse(ai_response, sentence)
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
         """Create minimal fallback analysis when all parsing fails"""
@@ -280,12 +340,18 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
 
+            logger.info(f"Hindi analyzer transforming {len(words)} words")
+            if words:
+                sample_roles = [w.get('grammatical_role', 'MISSING') for w in words[:3]]
+                logger.info(f"Sample grammatical roles: {sample_roles}")
+
             # Transform words into elements grouped by grammatical role
             elements = {}
 
             # Group words by their grammatical role
             for word_data in words:
                 grammatical_role = word_data.get('grammatical_role', 'other')
+                logger.debug(f"Processing word '{word_data.get('word', 'UNKNOWN')}' with role '{grammatical_role}'")
                 if grammatical_role not in elements:
                     elements[grammatical_role] = []
                 elements[grammatical_role].append(word_data)
@@ -294,10 +360,41 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             if word_combinations:
                 elements['word_combinations'] = word_combinations
 
+            # Create word_explanations for HTML coloring: [word, pos, color, explanation]
+            word_explanations = []
+            colors = self.get_color_scheme('beginner')  # Use beginner colors as base for mapping
+
+            for word_data in words:
+                word = word_data.get('word', '')
+                grammatical_role = word_data.get('grammatical_role', 'other')
+                individual_meaning = word_data.get('individual_meaning', '')
+                pronunciation = word_data.get('pronunciation', '')
+                
+                # Ensure grammatical_role is a string
+                if not isinstance(grammatical_role, str):
+                    logger.warning(f"grammatical_role is not a string: {grammatical_role} (type: {type(grammatical_role)}), defaulting to 'other'")
+                    grammatical_role = 'other'
+                category = self._map_grammatical_role_to_category(grammatical_role)
+                color = colors.get(category, '#888888')
+                
+                # Create explanation text from available data
+                explanation_parts = []
+                if individual_meaning:
+                    explanation_parts.append(individual_meaning)
+                if pronunciation:
+                    explanation_parts.append(f"({pronunciation})")
+                
+                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
+                
+                word_explanations.append([word, grammatical_role, color, explanation])
+
+            logger.info(f"Created {len(word_explanations)} word explanations, sample: {word_explanations[:2] if word_explanations else 'None'}")
+
             # Return in standard format expected by BaseGrammarAnalyzer
             return {
                 'elements': elements,
                 'explanations': explanations,
+                'word_explanations': word_explanations,
                 'sentence': parsed_data.get('sentence', '')
             }
 
@@ -306,6 +403,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             return {
                 'elements': {},
                 'explanations': {'error': 'Data transformation failed'},
+                'word_explanations': [],
                 'sentence': parsed_data.get('sentence', '')
             }
 
@@ -353,6 +451,147 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             complexity = "beginner"
 
         return schemes[complexity]
+
+    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
+        """Generate HTML output for Hindi text with word-level coloring using inline styles for Anki compatibility"""
+        colors = self.get_color_scheme(complexity)
+        explanations = parsed_data.get('word_explanations', [])
+        sentence = parsed_data.get('sentence', '')
+
+        # If word_explanations is not populated, create it from elements
+        if not explanations:
+            elements = parsed_data.get('elements', {})
+            explanations = []
+            for category, word_list in elements.items():
+                if category != 'word_combinations':  # Skip combinations
+                    for word_data in word_list:
+                        if isinstance(word_data, dict):
+                            word = word_data.get('word', '')
+                            grammatical_role = word_data.get('grammatical_role', category)
+                            color_category = self._map_grammatical_role_to_category(grammatical_role)
+                            color = colors.get(color_category, '#888888')
+                            explanations.append([word, grammatical_role, color])
+
+        # Create a mapping of words to their colors from explanations
+        word_to_color = {}
+        for exp in explanations:
+            if len(exp) >= 3:
+                word, pos, color = exp[0], exp[1], exp[2]
+                word_to_color[word] = color
+
+        # Generate HTML by coloring each word individually
+        # Split sentence into words and punctuation
+        import re
+        words_in_sentence = re.findall(r'\S+', sentence)
+
+        html_parts = []
+        for word in words_in_sentence:
+            # Remove punctuation for matching
+            clean_word = re.sub(r'[^\w\u0900-\u097F]', '', word)  # Keep Devanagari script
+
+            if clean_word in word_to_color:
+                color = word_to_color[clean_word]
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+            else:
+                # For words without analysis, use default color
+                default_category = self._get_default_category_for_word(word)
+                color = colors.get(default_category, '#888888')
+                html_parts.append(f'<span style="color: {color};">{word}</span>')
+
+        return ' '.join(html_parts)
+
+    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        """Map grammatical role descriptions to color category names"""
+        role_lower = grammatical_role.lower().strip()
+
+        # Log the input for debugging
+        logger.debug(f"Mapping grammatical role: '{grammatical_role}' -> '{role_lower}'")
+
+        # Map various grammatical roles to color category names
+        # CRITICAL: Order matters - check most specific patterns first
+        # Use exact word boundaries where possible to avoid false matches
+
+        # Pronouns (check first - most specific)
+        if 'pronoun' in role_lower or 'subject' in role_lower:
+            logger.debug(f"Mapped '{grammatical_role}' to 'pronouns'")
+            return 'pronouns'
+
+        # Adverbs (check before verbs since "adverb" contains "verb")
+        elif 'adverb' in role_lower or ('time' in role_lower and 'noun' not in role_lower):
+            logger.debug(f"Mapped '{grammatical_role}' to 'adverbs'")
+            return 'adverbs'
+
+        # Verbs (check for verb but not adverb)
+        elif 'verb' in role_lower and 'adverb' not in role_lower:
+            logger.debug(f"Mapped '{grammatical_role}' to 'verbs'")
+            return 'verbs'
+
+        # Nouns (check for noun but not verb/pronoun/adjective)
+        elif 'noun' in role_lower and not any(word in role_lower for word in ['verb', 'pronoun', 'adjective']):
+            logger.debug(f"Mapped '{grammatical_role}' to 'nouns'")
+            return 'nouns'
+
+        # Adjectives
+        elif 'adjective' in role_lower:
+            logger.debug(f"Mapped '{grammatical_role}' to 'adjectives'")
+            return 'adjectives'
+
+        # Postpositions
+        elif 'postposition' in role_lower:
+            logger.debug(f"Mapped '{grammatical_role}' to 'postpositions'")
+            return 'postpositions'
+
+        # Other specific categories
+        elif any(keyword in role_lower for keyword in ['particle', 'interrogative', 'question', 'negation', 'determiner']):
+            logger.debug(f"Mapped '{grammatical_role}' to 'other' (particle/negation)")
+            return 'other'
+        elif any(keyword in role_lower for keyword in ['article', 'indefinite', 'definite']):
+            logger.debug(f"Mapped '{grammatical_role}' to 'other' (article)")
+            return 'other'
+        elif any(keyword in role_lower for keyword in ['conjunction', 'connect', 'subordinating']):
+            logger.debug(f"Mapped '{grammatical_role}' to 'other' (conjunction)")
+            return 'other'
+        elif any(keyword in role_lower for keyword in ['interjection', 'exclamation']):
+            logger.debug(f"Mapped '{grammatical_role}' to 'other' (interjection)")
+            return 'other'
+        else:
+            logger.warning(f"No mapping found for grammatical role: '{grammatical_role}', mapping to 'other'")
+            return 'other'
+
+    def _map_grammatical_structure_to_category(self, grammatical_structure: str) -> str:
+        """Map grammatical structure descriptions to color categories"""
+        structure_lower = grammatical_structure.lower()
+
+        if 'postposition' in structure_lower:
+            return 'postpositions'
+        elif 'verb' in structure_lower:
+            return 'verbs'
+        elif 'noun' in structure_lower:
+            return 'nouns'
+        elif 'adjective' in structure_lower:
+            return 'adjectives'
+        else:
+            return 'other'
+
+    def _get_default_category_for_word(self, word: str) -> str:
+        """Get a default grammatical category for words that don't have detailed analysis"""
+        # Simple heuristics based on common Hindi word patterns
+        word_lower = word.lower()
+
+        # Common pronouns
+        if word in ['मैं', 'तुम', 'यह', 'वह', 'हम', 'तुम्हें', 'उन्हें']:
+            return 'pronouns'
+
+        # Common verbs (basic forms)
+        if word in ['है', 'हो', 'करो', 'करना', 'खाना', 'पीना', 'देखना']:
+            return 'verbs'
+
+        # Common postpositions
+        if word in ['का', 'की', 'के', 'को', 'से', 'में', 'पर', 'ने']:
+            return 'postpositions'
+
+        # Default to 'other' for unknown words
+        return 'other'
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """Validate Hindi word-level grammar analysis quality (85% threshold required)"""

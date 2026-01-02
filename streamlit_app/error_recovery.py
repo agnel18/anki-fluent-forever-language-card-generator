@@ -103,8 +103,29 @@ def handle_api_errors(func: Callable[..., T]) -> Callable[..., T]:
                 logger.error(f"API authentication error in {func.__name__}: {e}")
                 raise APIAuthError(f"API authentication failed: {e}") from e
             elif status_code == 429:
-                logger.error(f"API rate limit exceeded in {func.__name__}: {e}")
-                raise APIQuotaError(f"API rate limit exceeded: {e}") from e
+                # Extract rate limit reset information from headers
+                reset_info = ""
+                if e.response:
+                    # Try common rate limit headers
+                    reset_time = (e.response.headers.get('x-ratelimit-reset') or
+                                e.response.headers.get('retry-after') or
+                                e.response.headers.get('x-rate-limit-reset'))
+                    if reset_time:
+                        try:
+                            # Convert to readable format if it's a timestamp
+                            import datetime
+                            if reset_time.isdigit():
+                                reset_dt = datetime.datetime.fromtimestamp(int(reset_time))
+                                reset_info = f" (resets at {reset_dt.strftime('%H:%M:%S')})"
+                            else:
+                                reset_info = f" (resets in {reset_time} seconds)"
+                        except:
+                            reset_info = f" (reset info: {reset_time})"
+                
+                upgrade_suggestion = " Consider upgrading your API plan for higher limits or wait for the reset."
+                error_msg = f"API rate limit exceeded{reset_info}.{upgrade_suggestion}"
+                logger.error(f"API rate limit exceeded in {func.__name__}: {error_msg}")
+                raise APIQuotaError(error_msg) from e
             elif status_code and status_code >= 500:
                 logger.error(f"API server error in {func.__name__} (status {status_code}): {e}")
                 raise APIServerError(f"API server error: {e}") from e
