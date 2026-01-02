@@ -42,6 +42,7 @@ MASTER_PROMPT.md
 REFACTORING_MASTER_PROMPT.md
 MECE_ANALYSIS_REPORT.md
 UI_MASTER_PROMPT.md
+MASTER_PROMPT_V2.md
 
 # Streamlit secrets
 .streamlit/secrets.toml
