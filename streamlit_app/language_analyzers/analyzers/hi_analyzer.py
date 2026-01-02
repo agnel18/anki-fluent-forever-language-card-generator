@@ -69,6 +69,9 @@ For EACH AND EVERY INDIVIDUAL WORD in the sentence, provide:
 - Postpositions and case markings it uses
 - Why it's important for learners
 
+IMPORTANT: In Hindi, postpositions (like में, से, को, का, पर, तक) should be classified as "postposition", NOT as "other" or "preposition".
+Common Hindi postpositions include: में (in), से (from/with/by), को (to), का (of), पर (on), तक (until), के (of), ने (by), etc.
+
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with detailed word analysis for ALL words in the sentence:
@@ -93,6 +96,16 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "case_marking": "accusative case (implied)",
       "postpositions": [],
       "importance": "Common noun for food and eating"
+    },
+    {
+      "word": "में",
+      "individual_meaning": "in (postposition indicating location)",
+      "pronunciation": "mɛ̃",
+      "grammatical_role": "postposition",
+      "gender_agreement": "n/a",
+      "case_marking": "locative case",
+      "postpositions": [],
+      "importance": "Essential postposition for indicating location or time"
     }
   ],
   "word_combinations": [
@@ -129,6 +142,8 @@ Provide detailed analysis including:
 - Gender agreement patterns
 - Verb conjugations and forms
 - Word combinations and compounds
+
+IMPORTANT: In Hindi, postpositions (like में, से, को, का, पर, तक) should be classified as "postposition", NOT as "other" or "preposition".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
@@ -179,6 +194,8 @@ Analyze complex features including:
 - Discourse particles and connectors
 - Compound verb formations
 - Embedded clauses and complex structures
+
+IMPORTANT: In Hindi, postpositions (like में, से, को, का, पर, तक) should be classified as "postposition", NOT as "other" or "preposition".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
@@ -232,7 +249,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                     parsed = json.loads(json_str)
                     parsed['sentence'] = sentence
                     logger.info(f"Hindi analyzer parsed JSON from markdown successfully: {len(parsed.get('words', []))} words")
-                    return self._transform_to_standard_format(parsed)
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Hindi analyzer (markdown): {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -245,7 +262,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                     parsed = json.loads(json_str)
                     parsed['sentence'] = sentence
                     logger.info(f"Hindi analyzer parsed JSON successfully: {len(parsed.get('words', []))} words")
-                    return self._transform_to_standard_format(parsed)
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Hindi analyzer: {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -255,7 +272,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
                 logger.info(f"Hindi analyzer direct JSON parse successful: {len(parsed.get('words', []))} words")
-                return self._transform_to_standard_format(parsed)
+                return self._transform_to_standard_format(parsed, complexity)
             except json.JSONDecodeError as e:
                 logger.error(f"Direct JSON parse error in Hindi analyzer: {e}")
                 logger.error(f"Raw AI response: {ai_response[:500]}...")
@@ -332,7 +349,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             'sentence': sentence
         }
 
-    def _transform_to_standard_format(self, parsed_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _transform_to_standard_format(self, parsed_data: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
         """Transform Hindi analyzer output to standard BaseGrammarAnalyzer format"""
         try:
             # Extract original data
@@ -362,7 +379,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
             # Create word_explanations for HTML coloring: [word, pos, color, explanation]
             word_explanations = []
-            colors = self.get_color_scheme('beginner')  # Use beginner colors as base for mapping
+            colors = self.get_color_scheme(complexity)  # Use the actual complexity level
 
             for word_data in words:
                 word = word_data.get('word', '')
@@ -452,53 +469,7 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
         return schemes[complexity]
 
-    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Hindi text with word-level coloring using inline styles for Anki compatibility"""
-        colors = self.get_color_scheme(complexity)
-        explanations = parsed_data.get('word_explanations', [])
-        sentence = parsed_data.get('sentence', '')
 
-        # If word_explanations is not populated, create it from elements
-        if not explanations:
-            elements = parsed_data.get('elements', {})
-            explanations = []
-            for category, word_list in elements.items():
-                if category != 'word_combinations':  # Skip combinations
-                    for word_data in word_list:
-                        if isinstance(word_data, dict):
-                            word = word_data.get('word', '')
-                            grammatical_role = word_data.get('grammatical_role', category)
-                            color_category = self._map_grammatical_role_to_category(grammatical_role)
-                            color = colors.get(color_category, '#888888')
-                            explanations.append([word, grammatical_role, color])
-
-        # Create a mapping of words to their colors from explanations
-        word_to_color = {}
-        for exp in explanations:
-            if len(exp) >= 3:
-                word, pos, color = exp[0], exp[1], exp[2]
-                word_to_color[word] = color
-
-        # Generate HTML by coloring each word individually
-        # Split sentence into words and punctuation
-        import re
-        words_in_sentence = re.findall(r'\S+', sentence)
-
-        html_parts = []
-        for word in words_in_sentence:
-            # Remove punctuation for matching
-            clean_word = re.sub(r'[^\w\u0900-\u097F]', '', word)  # Keep Devanagari script
-
-            if clean_word in word_to_color:
-                color = word_to_color[clean_word]
-                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
-            else:
-                # For words without analysis, use default color
-                default_category = self._get_default_category_for_word(word)
-                color = colors.get(default_category, '#888888')
-                html_parts.append(f'<span style="color: {color};">{word}</span>')
-
-        return ' '.join(html_parts)
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map grammatical role descriptions to color category names"""
@@ -598,12 +569,12 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
         try:
             # Check if essential elements are present
-            words = parsed_data.get('words', [])
+            elements = parsed_data.get('elements', {})
             word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
 
             # Basic validation checks
-            has_words = len(words) > 0
+            has_elements = len(elements) > 0
             has_combinations = len(word_combinations) > 0
             has_explanations = len(explanations) > 0
 
@@ -611,15 +582,18 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             sentence_words = set(original_sentence.split())
             analyzed_words = set()
 
-            for word_data in words:
-                word = word_data.get('word', '')
-                if word:
-                    analyzed_words.add(word)
+            for role, word_list in elements.items():
+                if role != 'word_combinations':
+                    for word_data in word_list:
+                        if isinstance(word_data, dict):
+                            word = word_data.get('word', '')
+                            if word:
+                                analyzed_words.add(word)
 
             word_coverage = len(sentence_words.intersection(analyzed_words)) / len(sentence_words) if sentence_words else 0
 
             # Calculate confidence score
-            base_score = 0.9 if (has_words and has_explanations) else 0.6
+            base_score = 0.9 if (has_elements and has_explanations) else 0.6
             coverage_bonus = word_coverage * 0.1
             combination_bonus = 0.05 if has_combinations else 0
 

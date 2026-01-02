@@ -1,0 +1,114 @@
+{
+  "test_type": "edge_cases",
+  "summary": {
+    "total_tests": 12,
+    "accuracy": 66.66666666666666,
+    "color_accuracy": 66.66666666666666,
+    "timestamp": "2026-01-03 05:04:39"
+  },
+  "detailed_results": [
+    {
+      "word": "को",
+      "sentence": "मैं उसे किताब देता हूं।",
+      "error": "Word not found in grammatical elements",
+      "confidence": 0.98,
+      "success": false
+    },
+    {
+      "word": "को",
+      "sentence": "वह बाजार को गया।",
+      "grammatical_role": "postposition",
+      "color": "#4444FF",
+      "explanation": "postposition",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "खाना",
+      "sentence": "मैं खाना खाता हूं।",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
+      "explanation": "noun",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "खाना",
+      "sentence": "खाना तैयार है।",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
+      "explanation": "noun",
+      "confidence": 0.9666666666666667,
+      "success": true
+    },
+    {
+      "word": "काम",
+      "sentence": "मैं काम करता हूं।",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
+      "explanation": "noun",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "काम",
+      "sentence": "यह काम नहीं करता।",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
+      "explanation": "noun",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "तथा",
+      "sentence": "राम तथा श्याम आए।",
+      "grammatical_role": "conjunction",
+      "color": "#888888",
+      "explanation": "conjunction",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "या",
+      "sentence": "चाय या कॉफी?",
+      "grammatical_role": "conjunction",
+      "color": "#888888",
+      "explanation": "conjunction",
+      "confidence": 0.9666666666666667,
+      "success": true
+    },
+    {
+      "word": "लेकिन",
+      "sentence": "वह आया लेकिन देर से।",
+      "grammatical_role": "conjunction",
+      "color": "#888888",
+      "explanation": "conjunction",
+      "confidence": 0.98,
+      "success": true
+    },
+    {
+      "word": "साथ",
+      "sentence": "वह मेरे साथ आया।",
+      "grammatical_role": "postposition",
+      "color": "#4444FF",
+      "explanation": "postposition",
+      "confidence": 0.9750000000000001,
+      "success": true
+    },
+    {
+      "word": "द्वारा",
+      "sentence": "पुलिस द्वारा गिरफ्तार।",
+      "grammatical_role": "postposition",
+      "color": "#4444FF",
+      "explanation": "postposition",
+      "confidence": 0.9666666666666667,
+      "success": true
+    },
+    {
+      "word": "प्रति",
+      "sentence": "दस रुपये प्रति किलो।",
+      "error": "Analysis confidence too low: 0.0",
+      "success": false
+    }
+  ]
+}
