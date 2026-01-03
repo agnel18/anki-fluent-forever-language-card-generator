@@ -157,30 +157,42 @@ CRITICAL: Analyze EVERY word in the sentence!"""
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured Indo-European grammar analysis"""
         try:
+            logger.info(f"DEBUG Hindi Parse - Input AI response length: {len(ai_response)}")
+            logger.info(f"DEBUG Hindi Parse - Input sentence: '{sentence}'")
+            logger.info(f"DEBUG Hindi Parse - Complexity: '{complexity}'")
+
             # Try to extract JSON from response
             json_match = re.search(r'```json\s*(.*?)\s*```', ai_response, re.DOTALL)
             if json_match:
                 try:
                     parsed = json.loads(json_match.group(1))
                     parsed['sentence'] = sentence
-                    return self._transform_to_standard_format(parsed)
+                    logger.info(f"DEBUG Hindi Parse - Successfully parsed JSON from markdown. Words: {len(parsed.get('words', []))}")
+                    logger.info(f"DEBUG Hindi Parse - Parsed words sample: {parsed.get('words', [])[:2]}")
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError:
-                    pass
+                    logger.error(f"DEBUG Hindi Parse - JSON decode error in markdown: {json_match.group(1)[:200]}...")
 
             # Try direct JSON parsing
             try:
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
-                return self._transform_to_standard_format(parsed)
+                logger.info(f"DEBUG Hindi Parse - Successfully parsed direct JSON. Words: {len(parsed.get('words', []))}")
+                logger.info(f"DEBUG Hindi Parse - Parsed words sample: {parsed.get('words', [])[:2]}")
+                return self._transform_to_standard_format(parsed, complexity)
             except json.JSONDecodeError:
-                pass
+                logger.error(f"DEBUG Hindi Parse - Direct JSON parse failed")
 
             # Fallback: extract structured information from text
-            return self._parse_text_response(ai_response, sentence)
+            logger.warning(f"DEBUG Hindi Parse - Falling back to text parsing")
+            fallback_result = self._parse_text_response(ai_response, sentence)
+            logger.info(f"DEBUG Hindi Parse - Fallback result: {fallback_result.keys()}")
+            return self._transform_to_standard_format(fallback_result, complexity)
 
         except Exception as e:
-            logger.error(f"Failed to parse {self.language_name} grammar response: {e}")
-            return self._create_fallback_parse(ai_response, sentence)
+            logger.error(f"DEBUG Hindi Parse - Failed to parse grammar response: {e}")
+            fallback_result = self._create_fallback_parse(ai_response, sentence)
+            return self._transform_to_standard_format(fallback_result, complexity)
 
     def _parse_text_response(self, ai_response: str, sentence: str) -> Dict[str, Any]:
         """Enhanced fallback text parsing when JSON fails - extracts grammatical roles from AI response"""
@@ -268,12 +280,17 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             'sentence': sentence
         }
 
-    def _transform_to_standard_format(self, parsed_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _transform_to_standard_format(self, parsed_data: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
         """Transform Indo-European analyzer output to standard BaseGrammarAnalyzer format"""
         try:
             words = parsed_data.get('words', [])
             word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
+
+            logger.info(f"DEBUG Hindi Transform - Input words count: {len(words)}")
+            logger.info(f"DEBUG Hindi Transform - Input explanations keys: {list(explanations.keys())}")
+            for key, value in explanations.items():
+                logger.info(f"DEBUG Hindi Transform - Explanation '{key}': {str(value)[:100]}...")
 
             # Transform words into elements grouped by grammatical role
             elements = {}
@@ -283,40 +300,44 @@ CRITICAL: Analyze EVERY word in the sentence!"""
                     elements[grammatical_role] = []
                 elements[grammatical_role].append(word_data)
 
+            logger.info(f"DEBUG Hindi Transform - Elements keys after grouping: {list(elements.keys())}")
+            for role, word_list in elements.items():
+                logger.info(f"DEBUG Hindi Transform - Role '{role}': {len(word_list)} words")
+
             # Add word combinations as a special category
             if word_combinations:
                 elements['word_combinations'] = word_combinations
 
             # Create word_explanations for HTML coloring: [word, pos, color, explanation]
             word_explanations = []
-            colors = self.get_color_scheme('beginner')  # Use beginner colors as base
+            colors = self.get_color_scheme(complexity)  # Use the actual complexity level
+
+            logger.info(f"DEBUG Hindi Transform - Color scheme for complexity '{complexity}': {colors}")
 
             for word_data in words:
                 word = word_data.get('word', '')
                 grammatical_role = word_data.get('grammatical_role', 'other')
                 individual_meaning = word_data.get('individual_meaning', '')
                 pronunciation = word_data.get('pronunciation', '')
-                
+
                 category = self._map_grammatical_role_to_category(grammatical_role)
                 color = colors.get(category, '#888888')
-                
+
+                logger.info(f"DEBUG Hindi Transform - Word: '{word}', Role: '{grammatical_role}', Category: '{category}', Color: '{color}'")
+
                 # Create explanation text from available data
                 explanation_parts = []
                 if individual_meaning:
                     explanation_parts.append(individual_meaning)
                 if pronunciation:
                     explanation_parts.append(f"({pronunciation})")
-                
-                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
-                
-                word_explanations.append([word, grammatical_role, color, explanation])
 
-            return {
-                'elements': elements,
-                'explanations': explanations,
-                'word_explanations': word_explanations,
-                'sentence': parsed_data.get('sentence', '')
-            }
+                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
+
+                word_explanations.append([word, grammatical_role, color, explanation])
+                logger.info(f"DEBUG Hindi Transform - Added word_explanation: {word_explanations[-1]}")
+
+            logger.info(f"DEBUG Hindi Transform - Final word_explanations count: {len(word_explanations)}")
 
         except Exception as e:
             logger.error(f"Failed to transform {self.language_name} analysis data: {e}")
@@ -328,51 +349,49 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             }
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Indo-European text with word-level coloring"""
-        colors = self.get_color_scheme(complexity)
+        """Generate HTML output for Indo-European text with word-level coloring using colors from word_explanations (single source of truth)"""
         explanations = parsed_data.get('word_explanations', [])
-        sentence = parsed_data.get('sentence', '')
 
-        # If word_explanations is not populated, create it from elements
-        if not explanations:
-            elements = parsed_data.get('elements', {})
-            explanations = []
-            for category, word_list in elements.items():
-                if category != 'word_combinations':  # Skip combinations
-                    for word_data in word_list:
-                        if isinstance(word_data, dict):
-                            word = word_data.get('word', '')
-                            grammatical_role = word_data.get('grammatical_role', category)
-                            color_category = self._map_grammatical_role_to_category(grammatical_role)
-                            color = colors.get(color_category, '#888888')
-                            explanations.append([word, grammatical_role, color])
+        logger.info(f"DEBUG Hindi HTML Gen - Input explanations count: {len(explanations)}")
+        logger.info(f"DEBUG Hindi HTML Gen - Input sentence: '{sentence}'")
 
-        # Create mapping of words to colors
+        # Create mapping of words to colors directly from word_explanations (authoritative source)
         word_to_color = {}
         for exp in explanations:
             if len(exp) >= 3:
                 word, pos, color = exp[0], exp[1], exp[2]
                 word_to_color[word] = color
+                logger.info(f"DEBUG Hindi HTML Gen - Word '{word}' -> Color '{color}' (POS: '{pos}')")
 
-        # Generate HTML by coloring each word individually
+        logger.info(f"DEBUG Hindi HTML Gen - Word-to-color mapping: {word_to_color}")
+
+        # Generate HTML by coloring each word individually using colors from grammar explanations
         import re
         words_in_sentence = re.findall(r'\S+', sentence)
+
+        logger.info(f"DEBUG Hindi HTML Gen - Words found in sentence: {words_in_sentence}")
 
         html_parts = []
         for word in words_in_sentence:
             # Remove punctuation for matching but keep original word
-            clean_word = re.sub(r'[^\w\s]', '', word)
+            # Handle various scripts including Devanagari, Latin, Cyrillic, etc.
+            clean_word = re.sub(r'[^\w\s\u0900-\u097F\u0400-\u04FF\u0370-\u03FF]', '', word)
+
+            logger.info(f"DEBUG Hindi HTML Gen - Processing word '{word}' -> clean '{clean_word}'")
 
             if clean_word in word_to_color:
                 color = word_to_color[clean_word]
                 html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+                logger.info(f"DEBUG Hindi HTML Gen - ✓ Colored word '{word}' with color '{color}'")
             else:
-                # Default color for unanalyzed words
-                default_category = self._get_default_category_for_word(word)
-                color = colors.get(default_category, '#888888')
-                html_parts.append(f'<span style="color: {color};">{word}</span>')
+                # For words without analysis, use default color (should be rare with new architecture)
+                html_parts.append(f'<span style="color: #888888;">{word}</span>')
+                logger.warning(f"DEBUG Hindi HTML Gen - ✗ No color found for word '{word}' (clean: '{clean_word}'). Available words: {list(word_to_color.keys())}")
 
-        return ' '.join(html_parts)
+        result = ' '.join(html_parts)
+        logger.info(f"DEBUG Hindi HTML Gen - Final HTML output length: {len(result)}")
+        logger.info(f"DEBUG Hindi HTML Gen - Final HTML preview: {result[:300]}...")
+        return result
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map grammatical role descriptions to color category names"""
@@ -453,46 +472,33 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             logger.error(f"Validation failed: {e}")
             return 0.5
 
-    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Return color scheme for Indo-European grammatical elements"""
-        # Default color scheme - language-specific analyzers should override this
-        schemes = {
-            "beginner": {
-                "pronouns": "#FF4444",         # Red - People/references
-                "verbs": "#44FF44",            # Green - Actions/states
-                "prepositions": "#4444FF",     # Blue - Grammar helpers
-                "nouns": "#FFAA00",            # Orange - Things/objects
-                "adjectives": "#FF44FF",       # Magenta - Descriptions
-                "adverbs": "#44FFFF",          # Cyan - How/when/where
-                "other": "#888888"             # Gray - Other/unknown
-            },
-            "intermediate": {
-                "pronouns": "#FF4444",         # Red
-                "verbs": "#44FF44",            # Green
-                "prepositions": "#4444FF",     # Blue
-                "nouns": "#FFAA00",            # Orange
-                "adjectives": "#FF44FF",       # Magenta
-                "adverbs": "#44FFFF",          # Cyan
-                "conjunctions": "#AAFF44",     # Lime Green
-                "determiners": "#FF8844",      # Coral
-                "other": "#888888"
-            },
-            "advanced": {
-                "pronouns": "#FF4444",         # Red
-                "verbs": "#44FF44",            # Green
-                "prepositions": "#4444FF",     # Blue
-                "nouns": "#FFAA00",            # Orange
-                "adjectives": "#FF44FF",       # Magenta
-                "adverbs": "#44FFFF",          # Cyan
-                "conjunctions": "#AAFF44",     # Lime Green
-                "determiners": "#FF8844",      # Coral
-                "interjections": "#AA44FF",    # Purple
-                "particles": "#FFAA88",        # Light Coral
-                "other": "#888888"
-            }
-        }
+    def _extract_colors_from_grammar_explanations(self, word_explanations_html: str) -> Dict[str, str]:
+        """
+        Extract word-color mappings from grammar explanations HTML.
+        This serves as the single source of truth for colors in the new architecture.
 
-        if complexity not in schemes:
-            complexity = "beginner"
+        Args:
+            word_explanations_html: HTML string containing grammar explanations with colored words
 
-        return schemes[complexity]
+        Returns:
+            Dictionary mapping words to their colors
+        """
+        import re
+
+        word_to_color = {}
+
+        try:
+            # Pattern to match: <span class="word-highlight" style="color: #FF4444;"><strong>word</strong></span>
+            pattern = r'<span\s+class="word-highlight"\s+style="[^"]*color:\s*([^;"]+)[^"]*"[^>]*><strong>([^<]+)</strong></span>'
+
+            matches = re.findall(pattern, word_explanations_html, re.IGNORECASE)
+
+            for color, word in matches:
+                word_to_color[word.strip()] = color.strip()
+
+            logger.debug(f"Extracted {len(word_to_color)} word-color mappings from grammar explanations")
+
+        except Exception as e:
+            logger.error(f"Error extracting colors from grammar explanations: {e}")
+
+        return word_to_color

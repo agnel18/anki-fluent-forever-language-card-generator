@@ -31,7 +31,7 @@ def get_words_paginated(language: str, page: int = 1, per_page: int = 50) -> Tup
         per_page: Words per page
 
     Returns:
-        Tuple of (words_list, total_pages)
+        Tuple of (words_list, total_words)
     """
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -40,7 +40,6 @@ def get_words_paginated(language: str, page: int = 1, per_page: int = 50) -> Tup
         # Get total count
         cursor.execute("SELECT COUNT(*) FROM words WHERE language = ?", (language,))
         total_words = cursor.fetchone()[0]
-        total_pages = (total_words + per_page - 1) // per_page
 
         # Get paginated results
         offset = (page - 1) * per_page
@@ -61,7 +60,7 @@ def get_words_paginated(language: str, page: int = 1, per_page: int = 50) -> Tup
                 "last_generated": row[4]
             })
 
-        return words, total_pages
+        return words, total_words
 
     except Exception as e:
         logger.error(f"Error getting paginated words: {e}")

@@ -82,6 +82,7 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "individual_meaning": "I (first person singular pronoun)",
       "pronunciation": "mɛ̃",
       "grammatical_role": "pronoun",
+      "color": "#FF4444",
       "gender_agreement": "masculine (default for pronouns)",
       "case_marking": "nominative case",
       "postpositions": [],
@@ -92,6 +93,7 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "individual_meaning": "food/meal",
       "pronunciation": "kʰaːnaː",
       "grammatical_role": "noun",
+      "color": "#FFAA00",
       "gender_agreement": "masculine",
       "case_marking": "accusative case (implied)",
       "postpositions": [],
@@ -102,6 +104,7 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
       "individual_meaning": "in (postposition indicating location)",
       "pronunciation": "mɛ̃",
       "grammatical_role": "postposition",
+      "color": "#4444FF",
       "gender_agreement": "n/a",
       "case_marking": "locative case",
       "postpositions": [],
@@ -128,6 +131,16 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
 
 CRITICAL: Analyze EVERY word in the sentence, not just the target word!
 CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
 CRITICAL: Do NOT use descriptions like "personal pronoun" or "action verb" - use ONLY the exact words above!
 CRITICAL: If unsure, use "other" rather than making up a new category!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
@@ -154,7 +167,8 @@ Return a JSON object with comprehensive analysis:
       "word": "राम",
       "individual_meaning": "Ram (proper name)",
       "pronunciation": "raːm",
-      "grammatical_role": "subject noun",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
       "gender_agreement": "masculine",
       "case_marking": "nominative case",
       "postpositions": [],
@@ -181,6 +195,19 @@ Return a JSON object with comprehensive analysis:
   }
 }
 
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
+CRITICAL: Do NOT use descriptions like "personal pronoun" or "action verb" - use ONLY the exact words above!
+
 Focus on grammatical relationships and morphological patterns."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
@@ -206,7 +233,8 @@ Return a JSON object with advanced grammatical analysis:
       "word": "करवाया",
       "individual_meaning": "caused to do/had done",
       "pronunciation": "kərʋaːjaː",
-      "grammatical_role": "causative verb",
+      "grammatical_role": "verb",
+      "color": "#44FF44",
       "gender_agreement": "masculine (past participle)",
       "case_marking": "perfective aspect",
       "postpositions": [],
@@ -235,6 +263,17 @@ Return a JSON object with advanced grammatical analysis:
   }
 }
 
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
 CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
@@ -393,6 +432,11 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                     grammatical_role = 'other'
                 category = self._map_grammatical_role_to_category(grammatical_role)
                 color = colors.get(category, '#888888')
+                
+                # Override with AI-provided color if available and standardize it
+                ai_color = word_data.get('color')
+                if ai_color:
+                    color = self._standardize_color(ai_color, category)
                 
                 # Create explanation text from available data
                 explanation_parts = []
@@ -563,6 +607,32 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
         # Default to 'other' for unknown words
         return 'other'
+
+    def _standardize_color(self, ai_color: str, category: str) -> str:
+        """Standardize AI-provided color to ensure consistency with the defined color scheme"""
+        # Define the exact color mapping that should be used
+        standard_colors = {
+            "pronouns": "#FF4444",         # Red
+            "nouns": "#FFAA00",            # Orange
+            "verbs": "#44FF44",            # Green
+            "adjectives": "#FF44FF",       # Magenta
+            "adverbs": "#44FFFF",          # Cyan
+            "postpositions": "#4444FF",    # Blue
+            "other": "#888888"             # Gray
+        }
+
+        # If AI provided a color, check if it matches the standard for this category
+        if ai_color and ai_color.startswith('#'):
+            expected_color = standard_colors.get(category, "#888888")
+            # If AI color doesn't match expected, use the standard color
+            if ai_color.upper() != expected_color.upper():
+                logger.debug(f"AI provided color {ai_color} for category '{category}', standardizing to {expected_color}")
+                return expected_color
+            else:
+                return ai_color  # AI got it right
+
+        # If no AI color or invalid format, use standard color
+        return standard_colors.get(category, "#888888")
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """Validate Hindi word-level grammar analysis quality (85% threshold required)"""

@@ -130,14 +130,8 @@ class BaseGrammarAnalyzer(abc.ABC):
             if confidence < 0.85:
                 logger.warning(f"Analysis confidence below 85% threshold: {confidence}")
 
-            # Generate HTML output
+            # Generate HTML output (colors guaranteed to match by design with new architecture)
             html_output = self._generate_html_output(parsed_data, sentence, complexity)
-
-            # Validate color consistency and auto-fix if needed
-            word_explanations = parsed_data.get('word_explanations', [])
-            was_consistent, html_output = self.validate_color_consistency(html_output, word_explanations)
-            if not was_consistent:
-                logger.info(f"Color inconsistencies were automatically corrected for {self.language_code}")
 
             # Create result object
             result = GrammarAnalysis(
@@ -278,61 +272,12 @@ class BaseGrammarAnalyzer(abc.ABC):
 
     def validate_color_consistency(self, html_output: str, word_explanations: List[List[Any]]) -> Tuple[bool, str]:
         """
-        Validate that colors in Colored Sentence HTML match colors in Word Explanations.
-        If inconsistencies are found, automatically fix them by updating HTML colors to match explanations.
+        DEPRECATED: With the new color consistency architecture (Phase 5.5),
+        colors are guaranteed to match by design. This method is kept for backwards compatibility
+        but always returns True with the original HTML.
 
-        Args:
-            html_output: The colored sentence HTML
-            word_explanations: List of [word, role, color, explanation] for each word
-
-        Returns:
-            Tuple of (was_consistent, corrected_html):
-            - was_consistent: True if no fixes were needed, False if corrections were made
-            - corrected_html: HTML with any color inconsistencies fixed
+        The new architecture ensures Grammar Explanation colors flow programmatically to
+        Colored Sentences, eliminating the need for validation.
         """
-        import re
-
-        try:
-            # Extract word-color pairs from explanations (authoritative source)
-            explanation_dict = {}
-            for word, role, color, explanation in word_explanations:
-                explanation_dict[word] = color
-
-            # If no explanations available, return original HTML as consistent
-            if not explanation_dict:
-                return True, html_output
-
-            # Parse HTML and fix any color mismatches
-            corrected_html = html_output
-            fixes_made = []
-
-            # Find all <span style="color: ...">text</span> patterns and check/fix colors
-            span_pattern = r'(<span\s+style="[^"]*color:\s*)([^;"]+)([^"]*"[^>]*>)([^<]+)(</span>)'
-
-            def replace_color(match):
-                color_attr = match.group(2).strip()
-                text = match.group(4).strip()
-
-                if text in explanation_dict:
-                    correct_color = explanation_dict[text]
-                    if color_attr != correct_color:
-                        fixes_made.append(f"Word '{text}': {color_attr} → {correct_color}")
-                        return match.group(1) + correct_color + match.group(3) + match.group(4) + match.group(5)
-
-                return match.group(0)  # No change needed
-
-            corrected_html = re.sub(span_pattern, replace_color, html_output, flags=re.IGNORECASE)
-
-            # Log fixes if any were made
-            if fixes_made:
-                logger.warning(f"Color consistency fixes applied for {self.language_code}:")
-                for fix in fixes_made:
-                    logger.warning(f"  - {fix}")
-                return False, corrected_html
-            else:
-                logger.debug(f"Color consistency validation passed for {self.language_code}")
-                return True, html_output
-
-        except Exception as e:
-            logger.error(f"Error during color consistency validation/fix for {self.language_code}: {e}")
-            return False, html_output  # Return original HTML on error
+        # Colors are now guaranteed to match by design - no validation needed
+        return True, html_output

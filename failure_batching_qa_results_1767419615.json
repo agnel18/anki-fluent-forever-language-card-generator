@@ -1,0 +1,1813 @@
+{
+  "timestamp": "2026-01-03T11:23:35.936643",
+  "test_type": "failure_batching_qa",
+  "word_list_size": 100,
+  "batch_size": 20,
+  "failure_threshold": 10,
+  "summary": {
+    "total_words_tested": 100,
+    "final_successful": 100,
+    "final_failed": 0,
+    "final_success_rate": 1.0,
+    "api_calls": {
+      "primary_batches": 4,
+      "failure_batches": 0,
+      "individual_retries": 2,
+      "total_calls": 6,
+      "api_efficiency": 16.67
+    },
+    "processing_stats": {
+      "primary_batches_processed": 4,
+      "failure_batches_processed": 0,
+      "individual_retries_performed": 2
+    }
+  },
+  "results": {
+    "successful": [
+      {
+        "word": "मैं",
+        "sentence": "मैं खाना खाता हूँ",
+        "grammatical_role": "pronoun",
+        "confidence_score": 1.0,
+        "analysis_details": "मैं is a first-person singular pronoun, used to refer to the speaker.",
+        "success": true
+      },
+      {
+        "word": "खाना",
+        "sentence": "मैं खाना खाता हूँ",
+        "grammatical_role": "noun",
+        "confidence_score": 1.0,
+        "analysis_details": "खाना is a noun, referring to food.",
+        "success": true
+      },
+      {
+        "word": "खाता",
+        "sentence": "मैं खाना खाता हूँ",
+        "grammatical_role": "verb",
+        "confidence_score": 1.0,
+        "analysis_details": "खाता is a verb, meaning to eat.",
+        "success": true
+      },
+      {
+        "word": "अच्छा",
+        "sentence": "यह खाना अच्छा है",
+        "grammatical_role": "adjective",
+        "confidence_score": 1.0,
+        "analysis_details": "अच्छा is an adjective, meaning good or nice.",
+        "success": true
+      },
+      {
+        "word": "तेजी",
+        "sentence": "वह तेजी से दौड़ता है",
+        "grammatical_role": "adverb",
+        "confidence_score": 1.0,
+        "analysis_details": "तेजी is an adverb, meaning quickly or fast.",
+        "success": true
+      },
+      {
+        "word": "में",
+        "sentence": "पानी गिलास में है",
+        "grammatical_role": "postposition",
+        "confidence_score": 1.0,
+        "analysis_details": "में is a postposition, indicating location or presence inside something.",
+        "success": true
+      },
+      {
+        "word": "और",
+        "sentence": "मैं खाना और पानी लूँगा",
+        "grammatical_role": "conjunction",
+        "confidence_score": 1.0,
+        "analysis_details": "और is a conjunction, used to connect words or phrases.",
+        "success": true
+      },
+      {
+        "word": "अरे",
+        "sentence": "अरे! यह तो अच्छा है",
+        "grammatical_role": "interjection",
+        "confidence_score": 1.0,
+        "analysis_details": "अरे is an interjection, used to express surprise or excitement.",
+        "success": true
+      },
+      {
+        "word": "को",
+        "sentence": "मैं उसे खाना दूँगा",
+        "grammatical_role": "postposition",
+        "confidence_score": 1.0,
+        "analysis_details": "को is a postposition, indicating the recipient or direction of an action.",
+        "success": true
+      },
+      {
+        "word": "काम",
+        "sentence": "मैं काम कर रहा हूँ",
+        "grammatical_role": "noun",
+        "confidence_score": 1.0,
+        "analysis_details": "काम is a noun, referring to work or a task.",
+        "success": true
+      },
+      {
+        "word": "पानी",
+        "sentence": "मैं पानी पीता हूँ",
+        "grammatical_role": "noun",
+        "confidence_score": 1.0,
+        "analysis_details": "पानी is a noun, referring to water.",
+        "success": true
+      },
+      {
+        "word": "पीता",
+        "sentence": "मैं पानी पीता हूँ",
+        "grammatical_role": "verb",
+        "confidence_score": 1.0,
+        "analysis_details": "पीता is a verb, meaning to drink.",
+        "success": true
+      },
+      {
+        "word": "बड़ा",
+        "sentence": "यह घर बड़ा है",
+        "grammatical_role": "adjective",
+        "confidence_score": 1.0,
+        "analysis_details": "बड़ा is an adjective, meaning big or large.",
+        "success": true
+      },
+      {
+        "word": "धीरे",
+        "sentence": "वह धीरे चलता है",
+        "grammatical_role": "adverb",
+        "confidence_score": 1.0,
+        "analysis_details": "धीरे is an adverb, meaning slowly.",
+        "success": true
+      },
+      {
+        "word": "से",
+        "sentence": "मैं पानी गिलास से पीता हूँ",
+        "grammatical_role": "postposition",
+        "confidence_score": 1.0,
+        "analysis_details": "से is a postposition, indicating the instrument or means of an action.",
+        "success": true
+      },
+      {
+        "word": "पर",
+        "sentence": "पानी गिलास पर है",
+        "grammatical_role": "postposition",
+        "confidence_score": 1.0,
+        "analysis_details": "पर is a postposition, indicating location or presence on something.",
+        "success": true
+      },
+      {
+        "word": "का",
+        "sentence": "यह मेरा खाना है",
+        "grammatical_role": "postposition",
+        "confidence_score": 1.0,
+        "analysis_details": "का is a postposition, indicating possession or relationship.",
+        "success": true
+      },
+      {
+        "word": "है",
+        "sentence": "यह खाना अच्छा है",
+        "grammatical_role": "verb",
+        "confidence_score": 1.0,
+        "analysis_details": "है is a verb, meaning to be or exist.",
+        "success": true
+      },
+      {
+        "word": "नहीं",
+        "sentence": "मैं खाना नहीं खाता",
+        "grammatical_role": "particle",
+        "confidence_score": 1.0,
+        "analysis_details": "नहीं is a particle, used to indicate negation.",
+        "success": true
+      },
+      {
+        "word": "सब",
+        "sentence": "मैं सब कुछ खाता हूँ",
+        "grammatical_role": "pronoun",
+        "confidence_score": 1.0,
+        "analysis_details": "सब is a pronoun, meaning everything or all.",
+        "success": true
+      },
+      {
+        "word": "दो",
+        "sentence": "मेरे पास दो गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "दो is a numeral, meaning two.",
+        "success": true
+      },
+      {
+        "word": "तीन",
+        "sentence": "मेरे पास तीन गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "तीन is a numeral, meaning three.",
+        "success": true
+      },
+      {
+        "word": "चार",
+        "sentence": "मेरे पास चार गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "चार is a numeral, meaning four.",
+        "success": true
+      },
+      {
+        "word": "पाँच",
+        "sentence": "मेरे पास पाँच गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "पाँच is a numeral, meaning five.",
+        "success": true
+      },
+      {
+        "word": "छह",
+        "sentence": "मेरे पास छह गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "छह is a numeral, meaning six.",
+        "success": true
+      },
+      {
+        "word": "सात",
+        "sentence": "मेरे पास सात गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "सात is a numeral, meaning seven.",
+        "success": true
+      },
+      {
+        "word": "आठ",
+        "sentence": "मेरे पास आठ गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "आठ is a numeral, meaning eight.",
+        "success": true
+      },
+      {
+        "word": "नौ",
+        "sentence": "मेरे पास नौ गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "नौ is a numeral, meaning nine.",
+        "success": true
+      },
+      {
+        "word": "दस",
+        "sentence": "मेरे पास दस गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "दस is a numeral, meaning ten.",
+        "success": true
+      },
+      {
+        "word": "बीस",
+        "sentence": "मेरे पास बीस गिलास पानी है",
+        "grammatical_role": "numeral",
+        "confidence_score": 1.0,
+        "analysis_details": "बीस is a numeral, meaning twenty.",
+        "success": true
+      },
+      {
+        "word": "तीस",
+        "sentence": "मुझे तीस रुपये मिले हैं।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "तीस is a noun representing a number, specifically thirty.",
+        "success": true
+      },
+      {
+        "word": "चालीस",
+        "sentence": "चालीस पुस्तकें अलमारी में रखी हैं।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "चालीस is a noun representing a number, specifically forty.",
+        "success": true
+      },
+      {
+        "word": "पचास",
+        "sentence": "पचास लोगों ने समारोह में भाग लिया।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "पचास is a noun representing a number, specifically fifty.",
+        "success": true
+      },
+      {
+        "word": "साठ",
+        "sentence": "साठ वर्ष की आयु में वह अभी भी स्वस्थ है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "साठ is a noun representing a number, specifically sixty.",
+        "success": true
+      },
+      {
+        "word": "सत्तर",
+        "sentence": "सत्तर प्रतिशत लोगों ने मतदान किया।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "सत्तर is a noun representing a number, specifically seventy.",
+        "success": true
+      },
+      {
+        "word": "अस्सी",
+        "sentence": "अस्सी किलोमीटर प्रति घंटे की रफ्तार से गाड़ी चल रही थी।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "अस्सी is a noun representing a number, specifically eighty.",
+        "success": true
+      },
+      {
+        "word": "नब्बे",
+        "sentence": "नब्बे प्रतिशत छात्रों ने परीक्षा पास की।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "नब्बे is a noun representing a number, specifically ninety.",
+        "success": true
+      },
+      {
+        "word": "सौ",
+        "sentence": "सौ रुपये में यह किताब मिल रही है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "सौ is a noun representing a number, specifically one hundred.",
+        "success": true
+      },
+      {
+        "word": "हज़ार",
+        "sentence": "हज़ार रुपये में यह मोबाइल फोन मिल रहा है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "हज़ार is a noun representing a number, specifically one thousand.",
+        "success": true
+      },
+      {
+        "word": "लाख",
+        "sentence": "लाख रुपये की कीमत वाली यह कार बहुत महँगी है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "लाख is a noun representing a number, specifically one hundred thousand.",
+        "success": true
+      },
+      {
+        "word": "करोड़",
+        "sentence": "करोड़ रुपये की लागत से यह भवन बनाया गया है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "करोड़ is a noun representing a number, specifically ten million.",
+        "success": true
+      },
+      {
+        "word": "पैसा",
+        "sentence": "मुझे पैसा चाहिए, क्या तुम मुझे उधार दे सकते हो?",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "पैसा is a noun representing money or currency.",
+        "success": true
+      },
+      {
+        "word": "रुपया",
+        "sentence": "मैंने एक रुपया दिया और बदले में पैसे लिए।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "रुपया is a noun representing the Indian currency.",
+        "success": true
+      },
+      {
+        "word": "पैसे",
+        "sentence": "मुझे पैसे चाहिए, क्या तुम मुझे उधार दे सकते हो?",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "पैसे is a noun representing money or currency, plural form of पैसा.",
+        "success": true
+      },
+      {
+        "word": "दाम",
+        "sentence": "इस सामान का दाम बहुत ज्यादा है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "दाम is a noun representing the price or cost of something.",
+        "success": true
+      },
+      {
+        "word": "कीमत",
+        "sentence": "इस किताब की कीमत पचास रुपये है।",
+        "grammatical_role": "noun",
+        "confidence_score": 0.9,
+        "analysis_details": "कीमत is a noun representing the price or value of something.",
+        "success": true
+      },
+      {
+        "word": "महँगा",
+        "sentence": "यह सामान बहुत महँगा है।",
+        "grammatical_role": "adjective",
+        "confidence_score": 0.9,
+        "analysis_details": "महँगा is an adjective describing something as expensive.",
+        "success": true
+      },
+      {
+        "word": "सस्ता",
+        "sentence": "यह सामान सस्ता है और अच्छी गुणवत्ता का है।",
+        "grammatical_role": "adjective",
+        "confidence_score": 0.9,
+        "analysis_details": "सस्ता is an adjective describing something as cheap or affordable.",
+        "success": true
+      },
+      {
+        "word": "खरीदना",
+        "sentence": "मैं इस सामान को खरीदना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "खरीदना is a verb meaning to buy or purchase something.",
+        "success": true
+      },
+      {
+        "word": "बेचना",
+        "sentence": "मैं इस सामान को बेचना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "बेचना is a verb meaning to sell something.",
+        "success": true
+      },
+      {
+        "word": "लेना",
+        "sentence": "मैं यह सामान लेना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "लेना is a verb meaning to take or receive something.",
+        "success": true
+      },
+      {
+        "word": "देना",
+        "sentence": "मैं यह सामान देना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "देना is a verb meaning to give something to someone.",
+        "success": true
+      },
+      {
+        "word": "देना",
+        "sentence": "मैं यह सामान देने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "देना is a verb meaning to give something to someone, same as previous entry but with a different sentence for clarity.",
+        "success": true
+      },
+      {
+        "word": "लाना",
+        "sentence": "मैं यह सामान लाने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "लाना is a verb meaning to bring something.",
+        "success": true
+      },
+      {
+        "word": "ले जाना",
+        "sentence": "मैं यह सामान ले जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "ले जाना is a verb meaning to take something away.",
+        "success": true
+      },
+      {
+        "word": "भेजना",
+        "sentence": "मैं यह सामान भेजने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "भेजना is a verb meaning to send something.",
+        "success": true
+      },
+      {
+        "word": "मिलना",
+        "sentence": "मुझे यह सामान मिलने वाला है।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "मिलना is a verb meaning to receive or get something.",
+        "success": true
+      },
+      {
+        "word": "पाना",
+        "sentence": "मुझे यह सामान पाने की उम्मीद है।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "पाना is a verb meaning to get, obtain, or acquire something.",
+        "success": true
+      },
+      {
+        "word": "खोजना",
+        "sentence": "मैं अपनी चाबी खोजने की कोशिश कर रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "खोजना is a verb meaning 'to search' or 'to find', used in the sentence to describe the action of looking for something.",
+        "success": true
+      },
+      {
+        "word": "ढूँढना",
+        "sentence": "मैं अपने खोए हुए फोन को ढूँढने की कोशिश कर रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "ढूँढना is a verb meaning 'to search' or 'to look for', used in the sentence to describe the action of searching for something.",
+        "success": true
+      },
+      {
+        "word": "पाना",
+        "sentence": "मैंने अपनी नौकरी पाने के लिए बहुत मेहनत की।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "पाना is a verb meaning 'to get' or 'to obtain', used in the sentence to describe the action of acquiring something.",
+        "success": true
+      },
+      {
+        "word": "गँवाना",
+        "sentence": "मैंने अपना फोन गँवा दिया है।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "गँवाना is a verb meaning 'to lose' or 'to misplace', used in the sentence to describe the action of losing something.",
+        "success": true
+      },
+      {
+        "word": "छोड़ना",
+        "sentence": "मैं अपनी पुरानी नौकरी छोड़ने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "छोड़ना is a verb meaning 'to leave' or 'to quit', used in the sentence to describe the action of giving up something.",
+        "success": true
+      },
+      {
+        "word": "रखना",
+        "sentence": "मैं अपने कमरे को साफ रखने की कोशिश करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "रखना is a verb meaning 'to keep' or 'to maintain', used in the sentence to describe the action of preserving something.",
+        "success": true
+      },
+      {
+        "word": "उठाना",
+        "sentence": "मैं सुबह जल्दी उठाने की कोशिश करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "उठाना is a verb meaning 'to get up' or 'to lift', used in the sentence to describe the action of rising or lifting something.",
+        "success": true
+      },
+      {
+        "word": "बैठना",
+        "sentence": "मैं आराम से बैठना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "बैठना is a verb meaning 'to sit', used in the sentence to describe the action of sitting down.",
+        "success": true
+      },
+      {
+        "word": "खड़ा होना",
+        "sentence": "मैं खड़ा होने की कोशिश कर रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "खड़ा होना is a verb meaning 'to stand', used in the sentence to describe the action of standing up.",
+        "success": true
+      },
+      {
+        "word": "लेटना",
+        "sentence": "मैं आराम से लेटना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "लेटना is a verb meaning 'to lie down', used in the sentence to describe the action of reclining.",
+        "success": true
+      },
+      {
+        "word": "सोना",
+        "sentence": "मैं रात में सोने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "सोना is a verb meaning 'to sleep', used in the sentence to describe the action of sleeping.",
+        "success": true
+      },
+      {
+        "word": "जागना",
+        "sentence": "मैं सुबह जल्दी जागने की कोशिश करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "जागना is a verb meaning 'to wake up', used in the sentence to describe the action of waking up.",
+        "success": true
+      },
+      {
+        "word": "आना",
+        "sentence": "मैं कल आने वाला हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "आना is a verb meaning 'to come', used in the sentence to describe the action of arriving.",
+        "success": true
+      },
+      {
+        "word": "जाना",
+        "sentence": "मैं कल जाने वाला हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "जाना is a verb meaning 'to go', used in the sentence to describe the action of departing.",
+        "success": true
+      },
+      {
+        "word": "चलना",
+        "sentence": "मैं पार्क में चलने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "चलना is a verb meaning 'to walk', used in the sentence to describe the action of walking.",
+        "success": true
+      },
+      {
+        "word": "दौड़ना",
+        "sentence": "मैं पार्क में दौड़ने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "दौड़ना is a verb meaning 'to run', used in the sentence to describe the action of running.",
+        "success": true
+      },
+      {
+        "word": "कूदना",
+        "sentence": "बच्चे पार्क में कूदना पसंद करते हैं।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "कूदना is a verb meaning 'to jump', used in the sentence to describe the action of jumping.",
+        "success": true
+      },
+      {
+        "word": "उड़ना",
+        "sentence": "पक्षी आसमान में उड़ना पसंद करते हैं।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "उड़ना is a verb meaning 'to fly', used in the sentence to describe the action of flying.",
+        "success": true
+      },
+      {
+        "word": "तैरना",
+        "sentence": "मैं तैरना सीखना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "तैरना is a verb meaning 'to swim', used in the sentence to describe the action of swimming.",
+        "success": true
+      },
+      {
+        "word": "चढ़ना",
+        "sentence": "मैं पहाड़ पर चढ़ने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "चढ़ना is a verb meaning 'to climb', used in the sentence to describe the action of ascending.",
+        "success": true
+      },
+      {
+        "word": "उतरना",
+        "sentence": "मैं पहाड़ से उतरने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "उतरना is a verb meaning 'to descend', used in the sentence to describe the action of going down.",
+        "success": true
+      },
+      {
+        "word": "घूमना",
+        "sentence": "मैं शहर में घूमने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "घूमना is a verb meaning 'to roam' or 'to wander', used in the sentence to describe the action of exploring a place.",
+        "success": true
+      },
+      {
+        "word": "मिलना",
+        "sentence": "मैं अपने दोस्त से मिलने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "मिलना is a verb meaning 'to meet', used in the sentence to describe the action of encountering someone.",
+        "success": true
+      },
+      {
+        "word": "बताना",
+        "sentence": "मैं तुम्हें एक कहानी बताना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "बताना is a verb meaning 'to tell', used in the sentence to describe the action of narrating something.",
+        "success": true
+      },
+      {
+        "word": "पूछना",
+        "sentence": "मैं तुमसे एक सवाल पूछना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "पूछना is a verb meaning 'to ask', used in the sentence to describe the action of inquiring about something.",
+        "success": true
+      },
+      {
+        "word": "कहना",
+        "sentence": "मैं तुम्हें कुछ कहना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "कहना is a verb meaning 'to say', used in the sentence to describe the action of speaking or expressing something.",
+        "success": true
+      },
+      {
+        "word": "सुनना",
+        "sentence": "मैं तुम्हारी बात सुनना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "सुनना is a verb meaning 'to listen', used in the sentence to describe the action of hearing or paying attention to something.",
+        "success": true
+      },
+      {
+        "word": "देखना",
+        "sentence": "मैं फिल्म देखने जा रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "देखना is a verb meaning 'to see' or 'to watch', used in the sentence to describe the action of observing or viewing something.",
+        "success": true
+      },
+      {
+        "word": "सोचना",
+        "sentence": "मैं अपने भविष्य के बारे में सोचना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "सोचना is a verb meaning 'to think', used in the sentence to describe the action of reflecting or pondering about something.",
+        "success": true
+      },
+      {
+        "word": "समझना",
+        "sentence": "मैं इस समस्या को समझने की कोशिश कर रहा हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "समझना is a verb meaning 'to understand', used in the sentence to describe the action of comprehending or grasping something.",
+        "success": true
+      },
+      {
+        "word": "जानना",
+        "sentence": "मैं हिंदी जानना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "जानना is a verb meaning 'to know' or 'to learn'. It is used in the sentence to express the desire to learn Hindi.",
+        "success": true
+      },
+      {
+        "word": "भूलना",
+        "sentence": "मैं अपना फोन भूलने के लिए नहीं चाहता।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "भूलना is a verb meaning 'to forget'. It is used in the sentence to express the desire not to forget something.",
+        "success": true
+      },
+      {
+        "word": "याद करना",
+        "sentence": "मैं अपने जन्मदिन को याद करने की कोशिश करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "याद करना is a verb meaning 'to remember'. It is used in the sentence to express the effort to recall a memory.",
+        "success": true
+      },
+      {
+        "word": "सीखना",
+        "sentence": "मैं हिंदी सीखने के लिए क्लास लेता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "सीखना is a verb meaning 'to learn'. It is used in the sentence to express the action of acquiring knowledge or skills.",
+        "success": true
+      },
+      {
+        "word": "पढ़ना",
+        "sentence": "मैं रोज़ अखबार पढ़ना पसंद करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "पढ़ना is a verb meaning 'to read'. It is used in the sentence to express the habit of reading something regularly.",
+        "success": true
+      },
+      {
+        "word": "लिखना",
+        "sentence": "मैं अपने दोस्त को पत्र लिखना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "लिखना is a verb meaning 'to write'. It is used in the sentence to express the intention to write something.",
+        "success": true
+      },
+      {
+        "word": "गाना",
+        "sentence": "मैं अपने पसंदीदा गाना गाना पसंद करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "गाना is a verb meaning 'to sing'. It is used in the sentence to express the enjoyment of singing a favorite song.",
+        "success": true
+      },
+      {
+        "word": "नाचना",
+        "sentence": "मैं अपने दोस्त की शादी में नाचना चाहता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "नाचना is a verb meaning 'to dance'. It is used in the sentence to express the desire to dance at a wedding.",
+        "success": true
+      },
+      {
+        "word": "खेलना",
+        "sentence": "मैं अपने भाई के साथ क्रिकेट खेलना पसंद करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "खेलना is a verb meaning 'to play'. It is used in the sentence to express the enjoyment of playing a sport with someone.",
+        "success": true
+      },
+      {
+        "word": "काम करना",
+        "sentence": "मैं अपने ऑफिस में काम करना पसंद करता हूँ।",
+        "grammatical_role": "verb",
+        "confidence_score": 0.9,
+        "analysis_details": "काम करना is a verb meaning 'to work'. It is used in the sentence to express the preference for working at the office.",
+        "success": true
+      },
+      {
+        "word": "आना",
+        "sentence": "यह आना है।",
+        "grammatical_role": "verb",
+        "color": "#44FF44",
+        "explanation": "verb",
+        "confidence": 0.9666666666666667,
+        "success": true
+      },
+      {
+        "word": "टका",
+        "sentence": "यह टका है।",
+        "grammatical_role": "noun",
+        "color": "#FFAA00",
+        "explanation": "noun",
+        "confidence": 0.9666666666666667,
+        "success": true
+      }
+    ],
+    "failed": []
+  },
+  "batch_details": {
+    "primary_batches": [
+      {
+        "batch_num": 1,
+        "words": [
+          "मैं",
+          "खाना",
+          "खाता",
+          "अच्छा",
+          "तेजी",
+          "में",
+          "और",
+          "अरे",
+          "को",
+          "काम",
+          "पानी",
+          "पीता",
+          "बड़ा",
+          "धीरे",
+          "से",
+          "पर",
+          "का",
+          "है",
+          "नहीं",
+          "सब",
+          "दो",
+          "तीन",
+          "चार",
+          "पाँच",
+          "छह",
+          "सात",
+          "आठ",
+          "नौ",
+          "दस",
+          "बीस"
+        ],
+        "results": {
+          "successful": [
+            {
+              "word": "मैं",
+              "sentence": "मैं खाना खाता हूँ",
+              "grammatical_role": "pronoun",
+              "confidence_score": 1.0,
+              "analysis_details": "मैं is a first-person singular pronoun, used to refer to the speaker.",
+              "success": true
+            },
+            {
+              "word": "खाना",
+              "sentence": "मैं खाना खाता हूँ",
+              "grammatical_role": "noun",
+              "confidence_score": 1.0,
+              "analysis_details": "खाना is a noun, referring to food.",
+              "success": true
+            },
+            {
+              "word": "खाता",
+              "sentence": "मैं खाना खाता हूँ",
+              "grammatical_role": "verb",
+              "confidence_score": 1.0,
+              "analysis_details": "खाता is a verb, meaning to eat.",
+              "success": true
+            },
+            {
+              "word": "अच्छा",
+              "sentence": "यह खाना अच्छा है",
+              "grammatical_role": "adjective",
+              "confidence_score": 1.0,
+              "analysis_details": "अच्छा is an adjective, meaning good or nice.",
+              "success": true
+            },
+            {
+              "word": "तेजी",
+              "sentence": "वह तेजी से दौड़ता है",
+              "grammatical_role": "adverb",
+              "confidence_score": 1.0,
+              "analysis_details": "तेजी is an adverb, meaning quickly or fast.",
+              "success": true
+            },
+            {
+              "word": "में",
+              "sentence": "पानी गिलास में है",
+              "grammatical_role": "postposition",
+              "confidence_score": 1.0,
+              "analysis_details": "में is a postposition, indicating location or presence inside something.",
+              "success": true
+            },
+            {
+              "word": "और",
+              "sentence": "मैं खाना और पानी लूँगा",
+              "grammatical_role": "conjunction",
+              "confidence_score": 1.0,
+              "analysis_details": "और is a conjunction, used to connect words or phrases.",
+              "success": true
+            },
+            {
+              "word": "अरे",
+              "sentence": "अरे! यह तो अच्छा है",
+              "grammatical_role": "interjection",
+              "confidence_score": 1.0,
+              "analysis_details": "अरे is an interjection, used to express surprise or excitement.",
+              "success": true
+            },
+            {
+              "word": "को",
+              "sentence": "मैं उसे खाना दूँगा",
+              "grammatical_role": "postposition",
+              "confidence_score": 1.0,
+              "analysis_details": "को is a postposition, indicating the recipient or direction of an action.",
+              "success": true
+            },
+            {
+              "word": "काम",
+              "sentence": "मैं काम कर रहा हूँ",
+              "grammatical_role": "noun",
+              "confidence_score": 1.0,
+              "analysis_details": "काम is a noun, referring to work or a task.",
+              "success": true
+            },
+            {
+              "word": "पानी",
+              "sentence": "मैं पानी पीता हूँ",
+              "grammatical_role": "noun",
+              "confidence_score": 1.0,
+              "analysis_details": "पानी is a noun, referring to water.",
+              "success": true
+            },
+            {
+              "word": "पीता",
+              "sentence": "मैं पानी पीता हूँ",
+              "grammatical_role": "verb",
+              "confidence_score": 1.0,
+              "analysis_details": "पीता is a verb, meaning to drink.",
+              "success": true
+            },
+            {
+              "word": "बड़ा",
+              "sentence": "यह घर बड़ा है",
+              "grammatical_role": "adjective",
+              "confidence_score": 1.0,
+              "analysis_details": "बड़ा is an adjective, meaning big or large.",
+              "success": true
+            },
+            {
+              "word": "धीरे",
+              "sentence": "वह धीरे चलता है",
+              "grammatical_role": "adverb",
+              "confidence_score": 1.0,
+              "analysis_details": "धीरे is an adverb, meaning slowly.",
+              "success": true
+            },
+            {
+              "word": "से",
+              "sentence": "मैं पानी गिलास से पीता हूँ",
+              "grammatical_role": "postposition",
+              "confidence_score": 1.0,
+              "analysis_details": "से is a postposition, indicating the instrument or means of an action.",
+              "success": true
+            },
+            {
+              "word": "पर",
+              "sentence": "पानी गिलास पर है",
+              "grammatical_role": "postposition",
+              "confidence_score": 1.0,
+              "analysis_details": "पर is a postposition, indicating location or presence on something.",
+              "success": true
+            },
+            {
+              "word": "का",
+              "sentence": "यह मेरा खाना है",
+              "grammatical_role": "postposition",
+              "confidence_score": 1.0,
+              "analysis_details": "का is a postposition, indicating possession or relationship.",
+              "success": true
+            },
+            {
+              "word": "है",
+              "sentence": "यह खाना अच्छा है",
+              "grammatical_role": "verb",
+              "confidence_score": 1.0,
+              "analysis_details": "है is a verb, meaning to be or exist.",
+              "success": true
+            },
+            {
+              "word": "नहीं",
+              "sentence": "मैं खाना नहीं खाता",
+              "grammatical_role": "particle",
+              "confidence_score": 1.0,
+              "analysis_details": "नहीं is a particle, used to indicate negation.",
+              "success": true
+            },
+            {
+              "word": "सब",
+              "sentence": "मैं सब कुछ खाता हूँ",
+              "grammatical_role": "pronoun",
+              "confidence_score": 1.0,
+              "analysis_details": "सब is a pronoun, meaning everything or all.",
+              "success": true
+            },
+            {
+              "word": "दो",
+              "sentence": "मेरे पास दो गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "दो is a numeral, meaning two.",
+              "success": true
+            },
+            {
+              "word": "तीन",
+              "sentence": "मेरे पास तीन गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "तीन is a numeral, meaning three.",
+              "success": true
+            },
+            {
+              "word": "चार",
+              "sentence": "मेरे पास चार गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "चार is a numeral, meaning four.",
+              "success": true
+            },
+            {
+              "word": "पाँच",
+              "sentence": "मेरे पास पाँच गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "पाँच is a numeral, meaning five.",
+              "success": true
+            },
+            {
+              "word": "छह",
+              "sentence": "मेरे पास छह गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "छह is a numeral, meaning six.",
+              "success": true
+            },
+            {
+              "word": "सात",
+              "sentence": "मेरे पास सात गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "सात is a numeral, meaning seven.",
+              "success": true
+            },
+            {
+              "word": "आठ",
+              "sentence": "मेरे पास आठ गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "आठ is a numeral, meaning eight.",
+              "success": true
+            },
+            {
+              "word": "नौ",
+              "sentence": "मेरे पास नौ गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "नौ is a numeral, meaning nine.",
+              "success": true
+            },
+            {
+              "word": "दस",
+              "sentence": "मेरे पास दस गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "दस is a numeral, meaning ten.",
+              "success": true
+            },
+            {
+              "word": "बीस",
+              "sentence": "मेरे पास बीस गिलास पानी है",
+              "grammatical_role": "numeral",
+              "confidence_score": 1.0,
+              "analysis_details": "बीस is a numeral, meaning twenty.",
+              "success": true
+            }
+          ],
+          "failed": [],
+          "success_count": 30,
+          "fail_count": 0,
+          "total_count": 30,
+          "success_rate": 1.0,
+          "raw_response": "Here's the analysis of the given Hindi words in the requested JSON format:\n\n```json\n[\n  {\n    \"word\": \"मैं\",\n    \"sentence\": \"मैं खाना खाता हूँ\",\n    \"grammatical_role\": \"pronoun\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"मैं is a first-person singular pronoun, used to refer to the speaker.\"\n  },\n  {\n    \"word\": \"खाना\",\n    \"sentence\": \"मैं खाना खाता हूँ\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"खाना is a noun, referring to food.\"\n  },\n  {\n    \"word\": \"खाता\",\n    \"sentence\": \"मैं खाना खाता हूँ\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"खाता is a verb, meaning to eat.\"\n  },\n  {\n    \"word\": \"अच्छा\",\n    \"sentence\": \"यह खाना अच्छा है\",\n    \"grammatical_role\": \"adjective\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"अच्छा is an adjective, meaning good or nice.\"\n  },\n  {\n    \"word\": \"तेजी\",\n    \"sentence\": \"वह तेजी से दौड़ता है\",\n    \"grammatical_role\": \"adverb\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"तेजी is an adverb, meaning quickly or fast.\"\n  },\n  {\n    \"word\": \"में\",\n    \"sentence\": \"पानी गिलास में है\",\n    \"grammatical_role\": \"postposition\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"में is a postposition, indicating location or presence inside something.\"\n  },\n  {\n    \"word\": \"और\",\n    \"sentence\": \"मैं खाना और पानी लूँगा\",\n    \"grammatical_role\": \"conjunction\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"और is a conjunction, used to connect words or phrases.\"\n  },\n  {\n    \"word\": \"अरे\",\n    \"sentence\": \"अरे! यह तो अच्छा है\",\n    \"grammatical_role\": \"interjection\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"अरे is an interjection, used to express surprise or excitement.\"\n  },\n  {\n    \"word\": \"को\",\n    \"sentence\": \"मैं उसे खाना दूँगा\",\n    \"grammatical_role\": \"postposition\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"को is a postposition, indicating the recipient or direction of an action.\"\n  },\n  {\n    \"word\": \"काम\",\n    \"sentence\": \"मैं काम कर रहा हूँ\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"काम is a noun, referring to work or a task.\"\n  },\n  {\n    \"word\": \"पानी\",\n    \"sentence\": \"मैं पानी पीता हूँ\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"पानी is a noun, referring to water.\"\n  },\n  {\n    \"word\": \"पीता\",\n    \"sentence\": \"मैं पानी पीता हूँ\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"पीता is a verb, meaning to drink.\"\n  },\n  {\n    \"word\": \"बड़ा\",\n    \"sentence\": \"यह घर बड़ा है\",\n    \"grammatical_role\": \"adjective\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"बड़ा is an adjective, meaning big or large.\"\n  },\n  {\n    \"word\": \"धीरे\",\n    \"sentence\": \"वह धीरे चलता है\",\n    \"grammatical_role\": \"adverb\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"धीरे is an adverb, meaning slowly.\"\n  },\n  {\n    \"word\": \"से\",\n    \"sentence\": \"मैं पानी गिलास से पीता हूँ\",\n    \"grammatical_role\": \"postposition\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"से is a postposition, indicating the instrument or means of an action.\"\n  },\n  {\n    \"word\": \"पर\",\n    \"sentence\": \"पानी गिलास पर है\",\n    \"grammatical_role\": \"postposition\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"पर is a postposition, indicating location or presence on something.\"\n  },\n  {\n    \"word\": \"का\",\n    \"sentence\": \"यह मेरा खाना है\",\n    \"grammatical_role\": \"postposition\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"का is a postposition, indicating possession or relationship.\"\n  },\n  {\n    \"word\": \"है\",\n    \"sentence\": \"यह खाना अच्छा है\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"है is a verb, meaning to be or exist.\"\n  },\n  {\n    \"word\": \"नहीं\",\n    \"sentence\": \"मैं खाना नहीं खाता\",\n    \"grammatical_role\": \"particle\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"नहीं is a particle, used to indicate negation.\"\n  },\n  {\n    \"word\": \"सब\",\n    \"sentence\": \"मैं सब कुछ खाता हूँ\",\n    \"grammatical_role\": \"pronoun\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"सब is a pronoun, meaning everything or all.\"\n  },\n  {\n    \"word\": \"दो\",\n    \"sentence\": \"मेरे पास दो गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"दो is a numeral, meaning two.\"\n  },\n  {\n    \"word\": \"तीन\",\n    \"sentence\": \"मेरे पास तीन गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"तीन is a numeral, meaning three.\"\n  },\n  {\n    \"word\": \"चार\",\n    \"sentence\": \"मेरे पास चार गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"चार is a numeral, meaning four.\"\n  },\n  {\n    \"word\": \"पाँच\",\n    \"sentence\": \"मेरे पास पाँच गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"पाँच is a numeral, meaning five.\"\n  },\n  {\n    \"word\": \"छह\",\n    \"sentence\": \"मेरे पास छह गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"छह is a numeral, meaning six.\"\n  },\n  {\n    \"word\": \"सात\",\n    \"sentence\": \"मेरे पास सात गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"सात is a numeral, meaning seven.\"\n  },\n  {\n    \"word\": \"आठ\",\n    \"sentence\": \"मेरे पास आठ गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"आठ is a numeral, meaning eight.\"\n  },\n  {\n    \"word\": \"नौ\",\n    \"sentence\": \"मेरे पास नौ गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"नौ is a numeral, meaning nine.\"\n  },\n  {\n    \"word\": \"दस\",\n    \"sentence\": \"मेरे पास दस गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"दस is a numeral, meaning ten.\"\n  },\n  {\n    \"word\": \"बीस\",\n    \"sentence\": \"मेरे पास बीस गिलास पानी है\",\n    \"grammatical_role\": \"numeral\",\n    \"confidence_score\": 1.0,\n    \"analysis_details\": \"बीस is a numeral, meaning twenty.\"\n  }\n]\n```",
+          "is_failure_batch": false
+        }
+      },
+      {
+        "batch_num": 2,
+        "words": [
+          "तीस",
+          "चालीस",
+          "पचास",
+          "साठ",
+          "सत्तर",
+          "अस्सी",
+          "नब्बे",
+          "सौ",
+          "हज़ार",
+          "लाख",
+          "करोड़",
+          "आना",
+          "पैसा",
+          "रुपया",
+          "टका",
+          "पैसे",
+          "दाम",
+          "कीमत",
+          "महँगा",
+          "सस्ता",
+          "खरीदना",
+          "बेचना",
+          "लेना",
+          "देना",
+          "देना",
+          "लाना",
+          "ले जाना",
+          "भेजना",
+          "मिलना",
+          "पाना"
+        ],
+        "results": {
+          "successful": [
+            {
+              "word": "तीस",
+              "sentence": "मुझे तीस रुपये मिले हैं।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "तीस is a noun representing a number, specifically thirty.",
+              "success": true
+            },
+            {
+              "word": "चालीस",
+              "sentence": "चालीस पुस्तकें अलमारी में रखी हैं।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "चालीस is a noun representing a number, specifically forty.",
+              "success": true
+            },
+            {
+              "word": "पचास",
+              "sentence": "पचास लोगों ने समारोह में भाग लिया।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "पचास is a noun representing a number, specifically fifty.",
+              "success": true
+            },
+            {
+              "word": "साठ",
+              "sentence": "साठ वर्ष की आयु में वह अभी भी स्वस्थ है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "साठ is a noun representing a number, specifically sixty.",
+              "success": true
+            },
+            {
+              "word": "सत्तर",
+              "sentence": "सत्तर प्रतिशत लोगों ने मतदान किया।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "सत्तर is a noun representing a number, specifically seventy.",
+              "success": true
+            },
+            {
+              "word": "अस्सी",
+              "sentence": "अस्सी किलोमीटर प्रति घंटे की रफ्तार से गाड़ी चल रही थी।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "अस्सी is a noun representing a number, specifically eighty.",
+              "success": true
+            },
+            {
+              "word": "नब्बे",
+              "sentence": "नब्बे प्रतिशत छात्रों ने परीक्षा पास की।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "नब्बे is a noun representing a number, specifically ninety.",
+              "success": true
+            },
+            {
+              "word": "सौ",
+              "sentence": "सौ रुपये में यह किताब मिल रही है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "सौ is a noun representing a number, specifically one hundred.",
+              "success": true
+            },
+            {
+              "word": "हज़ार",
+              "sentence": "हज़ार रुपये में यह मोबाइल फोन मिल रहा है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "हज़ार is a noun representing a number, specifically one thousand.",
+              "success": true
+            },
+            {
+              "word": "लाख",
+              "sentence": "लाख रुपये की कीमत वाली यह कार बहुत महँगी है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "लाख is a noun representing a number, specifically one hundred thousand.",
+              "success": true
+            },
+            {
+              "word": "करोड़",
+              "sentence": "करोड़ रुपये की लागत से यह भवन बनाया गया है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "करोड़ is a noun representing a number, specifically ten million.",
+              "success": true
+            },
+            {
+              "word": "पैसा",
+              "sentence": "मुझे पैसा चाहिए, क्या तुम मुझे उधार दे सकते हो?",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "पैसा is a noun representing money or currency.",
+              "success": true
+            },
+            {
+              "word": "रुपया",
+              "sentence": "मैंने एक रुपया दिया और बदले में पैसे लिए।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "रुपया is a noun representing the Indian currency.",
+              "success": true
+            },
+            {
+              "word": "पैसे",
+              "sentence": "मुझे पैसे चाहिए, क्या तुम मुझे उधार दे सकते हो?",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "पैसे is a noun representing money or currency, plural form of पैसा.",
+              "success": true
+            },
+            {
+              "word": "दाम",
+              "sentence": "इस सामान का दाम बहुत ज्यादा है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "दाम is a noun representing the price or cost of something.",
+              "success": true
+            },
+            {
+              "word": "कीमत",
+              "sentence": "इस किताब की कीमत पचास रुपये है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.9,
+              "analysis_details": "कीमत is a noun representing the price or value of something.",
+              "success": true
+            },
+            {
+              "word": "महँगा",
+              "sentence": "यह सामान बहुत महँगा है।",
+              "grammatical_role": "adjective",
+              "confidence_score": 0.9,
+              "analysis_details": "महँगा is an adjective describing something as expensive.",
+              "success": true
+            },
+            {
+              "word": "सस्ता",
+              "sentence": "यह सामान सस्ता है और अच्छी गुणवत्ता का है।",
+              "grammatical_role": "adjective",
+              "confidence_score": 0.9,
+              "analysis_details": "सस्ता is an adjective describing something as cheap or affordable.",
+              "success": true
+            },
+            {
+              "word": "खरीदना",
+              "sentence": "मैं इस सामान को खरीदना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "खरीदना is a verb meaning to buy or purchase something.",
+              "success": true
+            },
+            {
+              "word": "बेचना",
+              "sentence": "मैं इस सामान को बेचना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "बेचना is a verb meaning to sell something.",
+              "success": true
+            },
+            {
+              "word": "लेना",
+              "sentence": "मैं यह सामान लेना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "लेना is a verb meaning to take or receive something.",
+              "success": true
+            },
+            {
+              "word": "देना",
+              "sentence": "मैं यह सामान देना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "देना is a verb meaning to give something to someone.",
+              "success": true
+            },
+            {
+              "word": "देना",
+              "sentence": "मैं यह सामान देने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "देना is a verb meaning to give something to someone, same as previous entry but with a different sentence for clarity.",
+              "success": true
+            },
+            {
+              "word": "लाना",
+              "sentence": "मैं यह सामान लाने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "लाना is a verb meaning to bring something.",
+              "success": true
+            },
+            {
+              "word": "ले जाना",
+              "sentence": "मैं यह सामान ले जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "ले जाना is a verb meaning to take something away.",
+              "success": true
+            },
+            {
+              "word": "भेजना",
+              "sentence": "मैं यह सामान भेजने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "भेजना is a verb meaning to send something.",
+              "success": true
+            },
+            {
+              "word": "मिलना",
+              "sentence": "मुझे यह सामान मिलने वाला है।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "मिलना is a verb meaning to receive or get something.",
+              "success": true
+            },
+            {
+              "word": "पाना",
+              "sentence": "मुझे यह सामान पाने की उम्मीद है।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "पाना is a verb meaning to get, obtain, or acquire something.",
+              "success": true
+            }
+          ],
+          "failed": [
+            {
+              "word": "आना",
+              "sentence": "एक रुपये में छह आने मिल रहे हैं।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.8,
+              "analysis_details": "आना is a noun representing a unit of currency, specifically 1/16 of a rupee.",
+              "success": false
+            },
+            {
+              "word": "टका",
+              "sentence": "बांग्लादेशी टका बांग्लादेश की मुद्रा है।",
+              "grammatical_role": "noun",
+              "confidence_score": 0.8,
+              "analysis_details": "टका is a noun representing the Bangladeshi currency.",
+              "success": false
+            }
+          ],
+          "success_count": 28,
+          "fail_count": 2,
+          "total_count": 30,
+          "success_rate": 0.9333333333333333,
+          "raw_response": "Here's the analysis of the given Hindi words in the requested JSON format:\n\n```json\n[\n  {\n    \"word\": \"तीस\",\n    \"sentence\": \"मुझे तीस रुपये मिले हैं।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"तीस is a noun representing a number, specifically thirty.\"\n  },\n  {\n    \"word\": \"चालीस\",\n    \"sentence\": \"चालीस पुस्तकें अलमारी में रखी हैं।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"चालीस is a noun representing a number, specifically forty.\"\n  },\n  {\n    \"word\": \"पचास\",\n    \"sentence\": \"पचास लोगों ने समारोह में भाग लिया।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पचास is a noun representing a number, specifically fifty.\"\n  },\n  {\n    \"word\": \"साठ\",\n    \"sentence\": \"साठ वर्ष की आयु में वह अभी भी स्वस्थ है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"साठ is a noun representing a number, specifically sixty.\"\n  },\n  {\n    \"word\": \"सत्तर\",\n    \"sentence\": \"सत्तर प्रतिशत लोगों ने मतदान किया।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सत्तर is a noun representing a number, specifically seventy.\"\n  },\n  {\n    \"word\": \"अस्सी\",\n    \"sentence\": \"अस्सी किलोमीटर प्रति घंटे की रफ्तार से गाड़ी चल रही थी।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"अस्सी is a noun representing a number, specifically eighty.\"\n  },\n  {\n    \"word\": \"नब्बे\",\n    \"sentence\": \"नब्बे प्रतिशत छात्रों ने परीक्षा पास की।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"नब्बे is a noun representing a number, specifically ninety.\"\n  },\n  {\n    \"word\": \"सौ\",\n    \"sentence\": \"सौ रुपये में यह किताब मिल रही है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सौ is a noun representing a number, specifically one hundred.\"\n  },\n  {\n    \"word\": \"हज़ार\",\n    \"sentence\": \"हज़ार रुपये में यह मोबाइल फोन मिल रहा है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"हज़ार is a noun representing a number, specifically one thousand.\"\n  },\n  {\n    \"word\": \"लाख\",\n    \"sentence\": \"लाख रुपये की कीमत वाली यह कार बहुत महँगी है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"लाख is a noun representing a number, specifically one hundred thousand.\"\n  },\n  {\n    \"word\": \"करोड़\",\n    \"sentence\": \"करोड़ रुपये की लागत से यह भवन बनाया गया है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"करोड़ is a noun representing a number, specifically ten million.\"\n  },\n  {\n    \"word\": \"आना\",\n    \"sentence\": \"एक रुपये में छह आने मिल रहे हैं।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.8,\n    \"analysis_details\": \"आना is a noun representing a unit of currency, specifically 1/16 of a rupee.\"\n  },\n  {\n    \"word\": \"पैसा\",\n    \"sentence\": \"मुझे पैसा चाहिए, क्या तुम मुझे उधार दे सकते हो?\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पैसा is a noun representing money or currency.\"\n  },\n  {\n    \"word\": \"रुपया\",\n    \"sentence\": \"मैंने एक रुपया दिया और बदले में पैसे लिए।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"रुपया is a noun representing the Indian currency.\"\n  },\n  {\n    \"word\": \"टका\",\n    \"sentence\": \"बांग्लादेशी टका बांग्लादेश की मुद्रा है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.8,\n    \"analysis_details\": \"टका is a noun representing the Bangladeshi currency.\"\n  },\n  {\n    \"word\": \"पैसे\",\n    \"sentence\": \"मुझे पैसे चाहिए, क्या तुम मुझे उधार दे सकते हो?\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पैसे is a noun representing money or currency, plural form of पैसा.\"\n  },\n  {\n    \"word\": \"दाम\",\n    \"sentence\": \"इस सामान का दाम बहुत ज्यादा है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"दाम is a noun representing the price or cost of something.\"\n  },\n  {\n    \"word\": \"कीमत\",\n    \"sentence\": \"इस किताब की कीमत पचास रुपये है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"कीमत is a noun representing the price or value of something.\"\n  },\n  {\n    \"word\": \"महँगा\",\n    \"sentence\": \"यह सामान बहुत महँगा है।\",\n    \"grammatical_role\": \"adjective\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"महँगा is an adjective describing something as expensive.\"\n  },\n  {\n    \"word\": \"सस्ता\",\n    \"sentence\": \"यह सामान सस्ता है और अच्छी गुणवत्ता का है।\",\n    \"grammatical_role\": \"adjective\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सस्ता is an adjective describing something as cheap or affordable.\"\n  },\n  {\n    \"word\": \"खरीदना\",\n    \"sentence\": \"मैं इस सामान को खरीदना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"खरीदना is a verb meaning to buy or purchase something.\"\n  },\n  {\n    \"word\": \"बेचना\",\n    \"sentence\": \"मैं इस सामान को बेचना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"बेचना is a verb meaning to sell something.\"\n  },\n  {\n    \"word\": \"लेना\",\n    \"sentence\": \"मैं यह सामान लेना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"लेना is a verb meaning to take or receive something.\"\n  },\n  {\n    \"word\": \"देना\",\n    \"sentence\": \"मैं यह सामान देना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"देना is a verb meaning to give something to someone.\"\n  },\n  {\n    \"word\": \"देना\",\n    \"sentence\": \"मैं यह सामान देने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"देना is a verb meaning to give something to someone, same as previous entry but with a different sentence for clarity.\"\n  },\n  {\n    \"word\": \"लाना\",\n    \"sentence\": \"मैं यह सामान लाने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"लाना is a verb meaning to bring something.\"\n  },\n  {\n    \"word\": \"ले जाना\",\n    \"sentence\": \"मैं यह सामान ले जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"ले जाना is a verb meaning to take something away.\"\n  },\n  {\n    \"word\": \"भेजना\",\n    \"sentence\": \"मैं यह सामान भेजने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"भेजना is a verb meaning to send something.\"\n  },\n  {\n    \"word\": \"मिलना\",\n    \"sentence\": \"मुझे यह सामान मिलने वाला है।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"मिलना is a verb meaning to receive or get something.\"\n  },\n  {\n    \"word\": \"पाना\",\n    \"sentence\": \"मुझे यह सामान पाने की उम्मीद है।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पाना is a verb meaning to get, obtain, or acquire something.\"\n  }\n]\n```",
+          "is_failure_batch": false
+        }
+      },
+      {
+        "batch_num": 3,
+        "words": [
+          "खोजना",
+          "ढूँढना",
+          "पाना",
+          "गँवाना",
+          "छोड़ना",
+          "रखना",
+          "उठाना",
+          "बैठना",
+          "खड़ा होना",
+          "लेटना",
+          "सोना",
+          "जागना",
+          "आना",
+          "जाना",
+          "चलना",
+          "दौड़ना",
+          "कूदना",
+          "उड़ना",
+          "तैरना",
+          "चढ़ना",
+          "उतरना",
+          "घूमना",
+          "मिलना",
+          "बताना",
+          "पूछना",
+          "कहना",
+          "सुनना",
+          "देखना",
+          "सोचना",
+          "समझना"
+        ],
+        "results": {
+          "successful": [
+            {
+              "word": "खोजना",
+              "sentence": "मैं अपनी चाबी खोजने की कोशिश कर रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "खोजना is a verb meaning 'to search' or 'to find', used in the sentence to describe the action of looking for something.",
+              "success": true
+            },
+            {
+              "word": "ढूँढना",
+              "sentence": "मैं अपने खोए हुए फोन को ढूँढने की कोशिश कर रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "ढूँढना is a verb meaning 'to search' or 'to look for', used in the sentence to describe the action of searching for something.",
+              "success": true
+            },
+            {
+              "word": "पाना",
+              "sentence": "मैंने अपनी नौकरी पाने के लिए बहुत मेहनत की।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "पाना is a verb meaning 'to get' or 'to obtain', used in the sentence to describe the action of acquiring something.",
+              "success": true
+            },
+            {
+              "word": "गँवाना",
+              "sentence": "मैंने अपना फोन गँवा दिया है।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "गँवाना is a verb meaning 'to lose' or 'to misplace', used in the sentence to describe the action of losing something.",
+              "success": true
+            },
+            {
+              "word": "छोड़ना",
+              "sentence": "मैं अपनी पुरानी नौकरी छोड़ने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "छोड़ना is a verb meaning 'to leave' or 'to quit', used in the sentence to describe the action of giving up something.",
+              "success": true
+            },
+            {
+              "word": "रखना",
+              "sentence": "मैं अपने कमरे को साफ रखने की कोशिश करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "रखना is a verb meaning 'to keep' or 'to maintain', used in the sentence to describe the action of preserving something.",
+              "success": true
+            },
+            {
+              "word": "उठाना",
+              "sentence": "मैं सुबह जल्दी उठाने की कोशिश करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "उठाना is a verb meaning 'to get up' or 'to lift', used in the sentence to describe the action of rising or lifting something.",
+              "success": true
+            },
+            {
+              "word": "बैठना",
+              "sentence": "मैं आराम से बैठना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "बैठना is a verb meaning 'to sit', used in the sentence to describe the action of sitting down.",
+              "success": true
+            },
+            {
+              "word": "खड़ा होना",
+              "sentence": "मैं खड़ा होने की कोशिश कर रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "खड़ा होना is a verb meaning 'to stand', used in the sentence to describe the action of standing up.",
+              "success": true
+            },
+            {
+              "word": "लेटना",
+              "sentence": "मैं आराम से लेटना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "लेटना is a verb meaning 'to lie down', used in the sentence to describe the action of reclining.",
+              "success": true
+            },
+            {
+              "word": "सोना",
+              "sentence": "मैं रात में सोने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "सोना is a verb meaning 'to sleep', used in the sentence to describe the action of sleeping.",
+              "success": true
+            },
+            {
+              "word": "जागना",
+              "sentence": "मैं सुबह जल्दी जागने की कोशिश करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "जागना is a verb meaning 'to wake up', used in the sentence to describe the action of waking up.",
+              "success": true
+            },
+            {
+              "word": "आना",
+              "sentence": "मैं कल आने वाला हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "आना is a verb meaning 'to come', used in the sentence to describe the action of arriving.",
+              "success": true
+            },
+            {
+              "word": "जाना",
+              "sentence": "मैं कल जाने वाला हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "जाना is a verb meaning 'to go', used in the sentence to describe the action of departing.",
+              "success": true
+            },
+            {
+              "word": "चलना",
+              "sentence": "मैं पार्क में चलने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "चलना is a verb meaning 'to walk', used in the sentence to describe the action of walking.",
+              "success": true
+            },
+            {
+              "word": "दौड़ना",
+              "sentence": "मैं पार्क में दौड़ने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "दौड़ना is a verb meaning 'to run', used in the sentence to describe the action of running.",
+              "success": true
+            },
+            {
+              "word": "कूदना",
+              "sentence": "बच्चे पार्क में कूदना पसंद करते हैं।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "कूदना is a verb meaning 'to jump', used in the sentence to describe the action of jumping.",
+              "success": true
+            },
+            {
+              "word": "उड़ना",
+              "sentence": "पक्षी आसमान में उड़ना पसंद करते हैं।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "उड़ना is a verb meaning 'to fly', used in the sentence to describe the action of flying.",
+              "success": true
+            },
+            {
+              "word": "तैरना",
+              "sentence": "मैं तैरना सीखना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "तैरना is a verb meaning 'to swim', used in the sentence to describe the action of swimming.",
+              "success": true
+            },
+            {
+              "word": "चढ़ना",
+              "sentence": "मैं पहाड़ पर चढ़ने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "चढ़ना is a verb meaning 'to climb', used in the sentence to describe the action of ascending.",
+              "success": true
+            },
+            {
+              "word": "उतरना",
+              "sentence": "मैं पहाड़ से उतरने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "उतरना is a verb meaning 'to descend', used in the sentence to describe the action of going down.",
+              "success": true
+            },
+            {
+              "word": "घूमना",
+              "sentence": "मैं शहर में घूमने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "घूमना is a verb meaning 'to roam' or 'to wander', used in the sentence to describe the action of exploring a place.",
+              "success": true
+            },
+            {
+              "word": "मिलना",
+              "sentence": "मैं अपने दोस्त से मिलने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "मिलना is a verb meaning 'to meet', used in the sentence to describe the action of encountering someone.",
+              "success": true
+            },
+            {
+              "word": "बताना",
+              "sentence": "मैं तुम्हें एक कहानी बताना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "बताना is a verb meaning 'to tell', used in the sentence to describe the action of narrating something.",
+              "success": true
+            },
+            {
+              "word": "पूछना",
+              "sentence": "मैं तुमसे एक सवाल पूछना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "पूछना is a verb meaning 'to ask', used in the sentence to describe the action of inquiring about something.",
+              "success": true
+            },
+            {
+              "word": "कहना",
+              "sentence": "मैं तुम्हें कुछ कहना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "कहना is a verb meaning 'to say', used in the sentence to describe the action of speaking or expressing something.",
+              "success": true
+            },
+            {
+              "word": "सुनना",
+              "sentence": "मैं तुम्हारी बात सुनना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "सुनना is a verb meaning 'to listen', used in the sentence to describe the action of hearing or paying attention to something.",
+              "success": true
+            },
+            {
+              "word": "देखना",
+              "sentence": "मैं फिल्म देखने जा रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "देखना is a verb meaning 'to see' or 'to watch', used in the sentence to describe the action of observing or viewing something.",
+              "success": true
+            },
+            {
+              "word": "सोचना",
+              "sentence": "मैं अपने भविष्य के बारे में सोचना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "सोचना is a verb meaning 'to think', used in the sentence to describe the action of reflecting or pondering about something.",
+              "success": true
+            },
+            {
+              "word": "समझना",
+              "sentence": "मैं इस समस्या को समझने की कोशिश कर रहा हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "समझना is a verb meaning 'to understand', used in the sentence to describe the action of comprehending or grasping something.",
+              "success": true
+            }
+          ],
+          "failed": [],
+          "success_count": 30,
+          "fail_count": 0,
+          "total_count": 30,
+          "success_rate": 1.0,
+          "raw_response": "```json\n[\n  {\n    \"word\": \"खोजना\",\n    \"sentence\": \"मैं अपनी चाबी खोजने की कोशिश कर रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"खोजना is a verb meaning 'to search' or 'to find', used in the sentence to describe the action of looking for something.\"\n  },\n  {\n    \"word\": \"ढूँढना\",\n    \"sentence\": \"मैं अपने खोए हुए फोन को ढूँढने की कोशिश कर रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"ढूँढना is a verb meaning 'to search' or 'to look for', used in the sentence to describe the action of searching for something.\"\n  },\n  {\n    \"word\": \"पाना\",\n    \"sentence\": \"मैंने अपनी नौकरी पाने के लिए बहुत मेहनत की।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पाना is a verb meaning 'to get' or 'to obtain', used in the sentence to describe the action of acquiring something.\"\n  },\n  {\n    \"word\": \"गँवाना\",\n    \"sentence\": \"मैंने अपना फोन गँवा दिया है।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"गँवाना is a verb meaning 'to lose' or 'to misplace', used in the sentence to describe the action of losing something.\"\n  },\n  {\n    \"word\": \"छोड़ना\",\n    \"sentence\": \"मैं अपनी पुरानी नौकरी छोड़ने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"छोड़ना is a verb meaning 'to leave' or 'to quit', used in the sentence to describe the action of giving up something.\"\n  },\n  {\n    \"word\": \"रखना\",\n    \"sentence\": \"मैं अपने कमरे को साफ रखने की कोशिश करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"रखना is a verb meaning 'to keep' or 'to maintain', used in the sentence to describe the action of preserving something.\"\n  },\n  {\n    \"word\": \"उठाना\",\n    \"sentence\": \"मैं सुबह जल्दी उठाने की कोशिश करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"उठाना is a verb meaning 'to get up' or 'to lift', used in the sentence to describe the action of rising or lifting something.\"\n  },\n  {\n    \"word\": \"बैठना\",\n    \"sentence\": \"मैं आराम से बैठना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"बैठना is a verb meaning 'to sit', used in the sentence to describe the action of sitting down.\"\n  },\n  {\n    \"word\": \"खड़ा होना\",\n    \"sentence\": \"मैं खड़ा होने की कोशिश कर रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"खड़ा होना is a verb meaning 'to stand', used in the sentence to describe the action of standing up.\"\n  },\n  {\n    \"word\": \"लेटना\",\n    \"sentence\": \"मैं आराम से लेटना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"लेटना is a verb meaning 'to lie down', used in the sentence to describe the action of reclining.\"\n  },\n  {\n    \"word\": \"सोना\",\n    \"sentence\": \"मैं रात में सोने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सोना is a verb meaning 'to sleep', used in the sentence to describe the action of sleeping.\"\n  },\n  {\n    \"word\": \"जागना\",\n    \"sentence\": \"मैं सुबह जल्दी जागने की कोशिश करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"जागना is a verb meaning 'to wake up', used in the sentence to describe the action of waking up.\"\n  },\n  {\n    \"word\": \"आना\",\n    \"sentence\": \"मैं कल आने वाला हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"आना is a verb meaning 'to come', used in the sentence to describe the action of arriving.\"\n  },\n  {\n    \"word\": \"जाना\",\n    \"sentence\": \"मैं कल जाने वाला हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"जाना is a verb meaning 'to go', used in the sentence to describe the action of departing.\"\n  },\n  {\n    \"word\": \"चलना\",\n    \"sentence\": \"मैं पार्क में चलने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"चलना is a verb meaning 'to walk', used in the sentence to describe the action of walking.\"\n  },\n  {\n    \"word\": \"दौड़ना\",\n    \"sentence\": \"मैं पार्क में दौड़ने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"दौड़ना is a verb meaning 'to run', used in the sentence to describe the action of running.\"\n  },\n  {\n    \"word\": \"कूदना\",\n    \"sentence\": \"बच्चे पार्क में कूदना पसंद करते हैं।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"कूदना is a verb meaning 'to jump', used in the sentence to describe the action of jumping.\"\n  },\n  {\n    \"word\": \"उड़ना\",\n    \"sentence\": \"पक्षी आसमान में उड़ना पसंद करते हैं।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"उड़ना is a verb meaning 'to fly', used in the sentence to describe the action of flying.\"\n  },\n  {\n    \"word\": \"तैरना\",\n    \"sentence\": \"मैं तैरना सीखना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"तैरना is a verb meaning 'to swim', used in the sentence to describe the action of swimming.\"\n  },\n  {\n    \"word\": \"चढ़ना\",\n    \"sentence\": \"मैं पहाड़ पर चढ़ने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"चढ़ना is a verb meaning 'to climb', used in the sentence to describe the action of ascending.\"\n  },\n  {\n    \"word\": \"उतरना\",\n    \"sentence\": \"मैं पहाड़ से उतरने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"उतरना is a verb meaning 'to descend', used in the sentence to describe the action of going down.\"\n  },\n  {\n    \"word\": \"घूमना\",\n    \"sentence\": \"मैं शहर में घूमने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"घूमना is a verb meaning 'to roam' or 'to wander', used in the sentence to describe the action of exploring a place.\"\n  },\n  {\n    \"word\": \"मिलना\",\n    \"sentence\": \"मैं अपने दोस्त से मिलने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"मिलना is a verb meaning 'to meet', used in the sentence to describe the action of encountering someone.\"\n  },\n  {\n    \"word\": \"बताना\",\n    \"sentence\": \"मैं तुम्हें एक कहानी बताना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"बताना is a verb meaning 'to tell', used in the sentence to describe the action of narrating something.\"\n  },\n  {\n    \"word\": \"पूछना\",\n    \"sentence\": \"मैं तुमसे एक सवाल पूछना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पूछना is a verb meaning 'to ask', used in the sentence to describe the action of inquiring about something.\"\n  },\n  {\n    \"word\": \"कहना\",\n    \"sentence\": \"मैं तुम्हें कुछ कहना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"कहना is a verb meaning 'to say', used in the sentence to describe the action of speaking or expressing something.\"\n  },\n  {\n    \"word\": \"सुनना\",\n    \"sentence\": \"मैं तुम्हारी बात सुनना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सुनना is a verb meaning 'to listen', used in the sentence to describe the action of hearing or paying attention to something.\"\n  },\n  {\n    \"word\": \"देखना\",\n    \"sentence\": \"मैं फिल्म देखने जा रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"देखना is a verb meaning 'to see' or 'to watch', used in the sentence to describe the action of observing or viewing something.\"\n  },\n  {\n    \"word\": \"सोचना\",\n    \"sentence\": \"मैं अपने भविष्य के बारे में सोचना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सोचना is a verb meaning 'to think', used in the sentence to describe the action of reflecting or pondering about something.\"\n  },\n  {\n    \"word\": \"समझना\",\n    \"sentence\": \"मैं इस समस्या को समझने की कोशिश कर रहा हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"समझना is a verb meaning 'to understand', used in the sentence to describe the action of comprehending or grasping something.\"\n  }\n]\n```",
+          "is_failure_batch": false
+        }
+      },
+      {
+        "batch_num": 4,
+        "words": [
+          "जानना",
+          "भूलना",
+          "याद करना",
+          "सीखना",
+          "पढ़ना",
+          "लिखना",
+          "गाना",
+          "नाचना",
+          "खेलना",
+          "काम करना"
+        ],
+        "results": {
+          "successful": [
+            {
+              "word": "जानना",
+              "sentence": "मैं हिंदी जानना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "जानना is a verb meaning 'to know' or 'to learn'. It is used in the sentence to express the desire to learn Hindi.",
+              "success": true
+            },
+            {
+              "word": "भूलना",
+              "sentence": "मैं अपना फोन भूलने के लिए नहीं चाहता।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "भूलना is a verb meaning 'to forget'. It is used in the sentence to express the desire not to forget something.",
+              "success": true
+            },
+            {
+              "word": "याद करना",
+              "sentence": "मैं अपने जन्मदिन को याद करने की कोशिश करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "याद करना is a verb meaning 'to remember'. It is used in the sentence to express the effort to recall a memory.",
+              "success": true
+            },
+            {
+              "word": "सीखना",
+              "sentence": "मैं हिंदी सीखने के लिए क्लास लेता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "सीखना is a verb meaning 'to learn'. It is used in the sentence to express the action of acquiring knowledge or skills.",
+              "success": true
+            },
+            {
+              "word": "पढ़ना",
+              "sentence": "मैं रोज़ अखबार पढ़ना पसंद करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "पढ़ना is a verb meaning 'to read'. It is used in the sentence to express the habit of reading something regularly.",
+              "success": true
+            },
+            {
+              "word": "लिखना",
+              "sentence": "मैं अपने दोस्त को पत्र लिखना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "लिखना is a verb meaning 'to write'. It is used in the sentence to express the intention to write something.",
+              "success": true
+            },
+            {
+              "word": "गाना",
+              "sentence": "मैं अपने पसंदीदा गाना गाना पसंद करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "गाना is a verb meaning 'to sing'. It is used in the sentence to express the enjoyment of singing a favorite song.",
+              "success": true
+            },
+            {
+              "word": "नाचना",
+              "sentence": "मैं अपने दोस्त की शादी में नाचना चाहता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "नाचना is a verb meaning 'to dance'. It is used in the sentence to express the desire to dance at a wedding.",
+              "success": true
+            },
+            {
+              "word": "खेलना",
+              "sentence": "मैं अपने भाई के साथ क्रिकेट खेलना पसंद करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "खेलना is a verb meaning 'to play'. It is used in the sentence to express the enjoyment of playing a sport with someone.",
+              "success": true
+            },
+            {
+              "word": "काम करना",
+              "sentence": "मैं अपने ऑफिस में काम करना पसंद करता हूँ।",
+              "grammatical_role": "verb",
+              "confidence_score": 0.9,
+              "analysis_details": "काम करना is a verb meaning 'to work'. It is used in the sentence to express the preference for working at the office.",
+              "success": true
+            }
+          ],
+          "failed": [],
+          "success_count": 10,
+          "fail_count": 0,
+          "total_count": 10,
+          "success_rate": 1.0,
+          "raw_response": "Here's the analysis of the given Hindi words in JSON format:\n\n```json\n[\n  {\n    \"word\": \"जानना\",\n    \"sentence\": \"मैं हिंदी जानना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"जानना is a verb meaning 'to know' or 'to learn'. It is used in the sentence to express the desire to learn Hindi.\"\n  },\n  {\n    \"word\": \"भूलना\",\n    \"sentence\": \"मैं अपना फोन भूलने के लिए नहीं चाहता।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"भूलना is a verb meaning 'to forget'. It is used in the sentence to express the desire not to forget something.\"\n  },\n  {\n    \"word\": \"याद करना\",\n    \"sentence\": \"मैं अपने जन्मदिन को याद करने की कोशिश करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"याद करना is a verb meaning 'to remember'. It is used in the sentence to express the effort to recall a memory.\"\n  },\n  {\n    \"word\": \"सीखना\",\n    \"sentence\": \"मैं हिंदी सीखने के लिए क्लास लेता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"सीखना is a verb meaning 'to learn'. It is used in the sentence to express the action of acquiring knowledge or skills.\"\n  },\n  {\n    \"word\": \"पढ़ना\",\n    \"sentence\": \"मैं रोज़ अखबार पढ़ना पसंद करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"पढ़ना is a verb meaning 'to read'. It is used in the sentence to express the habit of reading something regularly.\"\n  },\n  {\n    \"word\": \"लिखना\",\n    \"sentence\": \"मैं अपने दोस्त को पत्र लिखना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"लिखना is a verb meaning 'to write'. It is used in the sentence to express the intention to write something.\"\n  },\n  {\n    \"word\": \"गाना\",\n    \"sentence\": \"मैं अपने पसंदीदा गाना गाना पसंद करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"गाना is a verb meaning 'to sing'. It is used in the sentence to express the enjoyment of singing a favorite song.\"\n  },\n  {\n    \"word\": \"नाचना\",\n    \"sentence\": \"मैं अपने दोस्त की शादी में नाचना चाहता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"नाचना is a verb meaning 'to dance'. It is used in the sentence to express the desire to dance at a wedding.\"\n  },\n  {\n    \"word\": \"खेलना\",\n    \"sentence\": \"मैं अपने भाई के साथ क्रिकेट खेलना पसंद करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"खेलना is a verb meaning 'to play'. It is used in the sentence to express the enjoyment of playing a sport with someone.\"\n  },\n  {\n    \"word\": \"काम करना\",\n    \"sentence\": \"मैं अपने ऑफिस में काम करना पसंद करता हूँ।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence_score\": 0.9,\n    \"analysis_details\": \"काम करना is a verb meaning 'to work'. It is used in the sentence to express the preference for working at the office.\"\n  }\n]\n```\n\nAll the given words are verbs, and they are used in their respective sentences to convey different actions or activities. The confidence score for each word is 0.9, indicating a high level of certainty in their grammatical roles. The analysis details provide a brief explanation of each word's meaning and usage in the given sentence.",
+          "is_failure_batch": false
+        }
+      }
+    ],
+    "failure_batches": []
+  },
+  "efficiency_analysis": {
+    "traditional_approach": {
+      "api_calls": 100,
+      "efficiency": 1.0
+    },
+    "current_system": {
+      "api_calls": 6,
+      "efficiency": 16.67,
+      "improvement": 15.67
+    }
+  }
+}

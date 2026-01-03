@@ -58,15 +58,19 @@ class EsAnalyzer(BaseGrammarAnalyzer):
             return self._get_beginner_prompt(sentence, target_word)
 
     def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate beginner-level grammar analysis prompt with detailed word-by-word explanations"""
+        """Generate beginner-level grammar analysis prompt with word-by-word explanations"""
         base_prompt = """Analyze this ENTIRE Spanish sentence WORD BY WORD: SENTENCE_PLACEHOLDER
 
 For EACH AND EVERY INDIVIDUAL WORD in the sentence, provide:
-- Its individual meaning and pronunciation
-- Its grammatical role and function in this context
-- How it combines with adjacent words (if applicable)
-- Common phrases it forms and their meanings
+- Its individual meaning and pronunciation (in IPA)
+- Its grammatical role and function in this context (USE ONLY: pronoun, noun, verb, adjective, adverb, postposition, conjunction, interjection, other)
+- How it shows gender agreement (masculine/feminine/neuter)
+- How it shows number agreement (singular/plural)
 - Why it's important for learners
+
+IMPORTANT: In Spanish, articles (el, la, los, las, un, una, unos, unas) should be classified as "other", NOT as "adjective" or "determiner".
+Prepositions (a, de, en, con, por, para, etc.) should be classified as "other", NOT as "postposition".
+Common Spanish grammatical roles: pronouns (yo, tú, él/ella, nosotros), nouns (casa, perro), verbs (ser, estar, hablar), adjectives (grande, bonito), adverbs (muy, aquí), conjunctions (y, o, pero), interjections (¡ay!, ¡hola!).
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
@@ -75,123 +79,217 @@ Return a JSON object with detailed word analysis for ALL words in the sentence:
   "words": [
     {
       "word": "la",
-      "individual_meaning": "the (feminine definite article)",
-      "pronunciation": "lah",
-      "grammatical_role": "article",
-      "combinations": ["la casa (lah kah-sah) - the house"],
-      "importance": "Essential for indicating specificity"
+      "individual_meaning": "the (feminine singular definite article)",
+      "pronunciation": "la",
+      "grammatical_role": "other",
+      "color": "#888888",
+      "gender_agreement": "feminine",
+      "number_agreement": "singular",
+      "importance": "Definite article indicating specificity"
     },
     {
       "word": "casa",
-      "individual_meaning": "house",
-      "pronunciation": "kah-sah",
+      "individual_meaning": "house/home",
+      "pronunciation": "ˈkasa",
       "grammatical_role": "noun",
-      "combinations": ["la casa (lah kah-sah) - the house", "casa blanca (kah-sah blahn-kah) - white house"],
-      "importance": "Common noun for buildings"
+      "color": "#FFAA00",
+      "gender_agreement": "feminine",
+      "number_agreement": "singular",
+      "importance": "Common noun for buildings and homes"
+    },
+    {
+      "word": "es",
+      "individual_meaning": "is (third person singular of ser)",
+      "pronunciation": "es",
+      "grammatical_role": "verb",
+      "color": "#44FF44",
+      "gender_agreement": "n/a",
+      "number_agreement": "singular",
+      "importance": "Essential copula verb for identity and characteristics"
     }
   ],
-  "phrase_combinations": [
+  "word_combinations": [
     {
-      "phrase": "la casa",
+      "word": "la casa",
       "words": ["la", "casa"],
       "combined_meaning": "the house",
       "grammatical_structure": "article + noun",
-      "usage_notes": "Common phrase for referring to a specific house"
+      "usage_notes": "Basic noun phrase construction"
     }
   ],
   "explanations": {
-    "noun_adjective_agreement": "Adjectives agree with nouns in gender and number",
-    "verb_conjugation": "Verbs change form to indicate tense, mood, and subject",
-    "sentence_structure": "Subject-Verb-Object word order with some flexibility"
+    "gender_agreement": "Spanish nouns have grammatical gender (masculine/feminine) that affects articles and adjectives",
+    "number_agreement": "Words agree in number (singular/plural) throughout noun phrases",
+    "verb_conjugation": "Verbs change endings to match subject person, number, tense, and mood",
+    "word_order": "Subject-Verb-Object word order, but flexible due to case markings",
+    "pronunciation": "Spanish uses consistent phonetic spelling with stress on penultimate syllable"
   }
 }
 
-CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
+CRITICAL: Analyze EVERY word in the sentence, not just the target word!
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
+CRITICAL: Do NOT use descriptions like "definite article" or "action verb" - use ONLY the exact words above!
+CRITICAL: If unsure, use "other" rather than making up a new category!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate intermediate-level grammar analysis prompt with word-level analysis"""
-        base_prompt = """Analyze this ENTIRE Spanish sentence WORD BY WORD for intermediate concepts: SENTENCE_PLACEHOLDER
+        """Generate intermediate-level grammar analysis prompt with aspect and agreement patterns"""
+        base_prompt = """Analyze this Spanish sentence with INTERMEDIATE grammar focus: SENTENCE_PLACEHOLDER
 
-For EACH AND EVERY INDIVIDUAL WORD in the sentence, provide:
-- Word meaning, pronunciation, and grammatical role
-- How it functions in phrases and clauses
-- Verb conjugation and tense relationships it creates
-- Pronoun usage and reference
+Provide detailed analysis including:
+- Verb conjugation patterns and tense/aspect/mood
+- Gender and number agreement throughout noun phrases
+- Pronoun usage and reference relationships
+- Prepositional phrases and their functions
+- Word combinations and compound structures
+
+IMPORTANT: Articles (el, la, los, las, un, una, unos, unas) should be classified as "other".
+Prepositions (a, de, en, con, por, para, desde, hasta) should be classified as "other".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with word analysis for ALL words in the sentence:
+Return a JSON object with comprehensive analysis:
 {
   "words": [
     {
-      "word": "hablar",
-      "individual_meaning": "to speak",
-      "pronunciation": "ah-blahr",
+      "word": "habla",
+      "individual_meaning": "speaks/is speaking (third person singular present)",
+      "pronunciation": "ˈaβla",
       "grammatical_role": "verb",
-      "combinations": ["hablar español (ah-blahr ehs-pah-nyohl) - to speak Spanish"],
-      "verb_conjugation": "Regular -ar verb conjugation"
+      "color": "#44FF44",
+      "gender_agreement": "n/a",
+      "number_agreement": "singular",
+      "verb_conjugation": "hablar (regular -ar verb, present indicative)",
+      "importance": "Shows ongoing action or habitual activity"
+    },
+    {
+      "word": "español",
+      "individual_meaning": "Spanish (language)",
+      "pronunciation": "espaˈɲol",
+      "grammatical_role": "noun",
+      "color": "#FFAA00",
+      "gender_agreement": "masculine",
+      "number_agreement": "singular",
+      "case_marking": "direct object (implied)",
+      "importance": "Language names function as nouns"
     }
   ],
-  "phrase_combinations": [
+  "word_combinations": [
     {
-      "phrase": "hablar español",
-      "words": ["hablar", "español"],
-      "combined_meaning": "to speak Spanish",
-      "grammatical_structure": "verb + adjective",
-      "usage_notes": "Common phrase for language proficiency"
+      "word": "habla español",
+      "words": ["habla", "español"],
+      "combined_meaning": "speaks Spanish",
+      "grammatical_structure": "verb + direct object",
+      "usage_notes": "Common construction for language proficiency"
     }
   ],
   "explanations": {
-    "verb_conjugation": "Verbs change form to indicate tense, mood, and subject",
-    "pronoun_usage": "Pronouns replace nouns to avoid repetition",
-    "sentence_structure": "Intermediate sentence structure with clauses and phrases"
+    "verb_conjugation": "Regular verbs follow patterns (-ar, -er, -ir) with stem changes in some cases",
+    "gender_agreement": "All adjectives, articles, and some pronouns agree with noun gender",
+    "number_agreement": "Plural forms affect entire noun phrases (nouns, adjectives, articles)",
+    "pronoun_system": "Complex system with subject, object, and reflexive pronouns",
+    "prepositional_usage": "Prepositions determine case relationships and idiomatic expressions"
   }
 }
 
-CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
+CRITICAL: Do NOT use descriptions like "definite article" or "action verb" - use ONLY the exact words above!
+
+Focus on grammatical relationships and morphological patterns."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate advanced-level grammar analysis prompt with word-level analysis"""
-        base_prompt = """Perform advanced grammatical analysis of this ENTIRE Spanish sentence WORD BY WORD: SENTENCE_PLACEHOLDER
+        """Generate advanced-level grammar analysis prompt with complex morphological features"""
+        base_prompt = """Perform ADVANCED morphological and syntactic analysis of this Spanish sentence: SENTENCE_PLACEHOLDER
 
-For EACH AND EVERY INDIVIDUAL WORD in the sentence, analyze:
+Analyze complex features including:
+- Subjunctive mood and conditional structures
+- Passive voice and impersonal constructions
+- Complex relative clauses and embedded structures
 - Idiomatic expressions and figurative language
-- Complex verb conjugation and tense relationships
-- Word-level contributions to sentence meaning
-- Advanced grammatical combinations and transformations
+- Advanced verb forms (perfect, progressive, compound tenses)
+
+IMPORTANT: Articles and prepositions should be classified as "other".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with word analysis for ALL words in the sentence:
+Return a JSON object with advanced grammatical analysis:
 {
   "words": [
     {
-      "word": "tomar",
-      "individual_meaning": "to take",
-      "pronunciation": "toh-mahr",
+      "word": "hubiera",
+      "individual_meaning": "had (pluperfect subjunctive)",
+      "pronunciation": "uˈβjera",
       "grammatical_role": "verb",
-      "combinations": ["tomar un café (toh-mahr oon kah-feh) - to have a coffee"],
-      "idiomatic_expression": "Tomar el pelo - to tease or joke"
+      "color": "#44FF44",
+      "gender_agreement": "n/a",
+      "number_agreement": "singular",
+      "verb_conjugation": "haber (auxiliary) + past participle, pluperfect subjunctive",
+      "importance": "Shows hypothetical past actions in conditional sentences"
+    },
+    {
+      "word": "tomado",
+      "individual_meaning": "taken (past participle)",
+      "pronunciation": "toˈmaðo",
+      "grammatical_role": "verb",
+      "color": "#44FF44",
+      "gender_agreement": "masculine",
+      "number_agreement": "singular",
+      "verb_conjugation": "tomar (regular -ar verb, past participle)",
+      "importance": "Forms perfect tenses and passive voice"
     }
   ],
-  "phrase_combinations": [
+  "word_combinations": [
     {
-      "phrase": "tomar un café",
-      "words": ["tomar", "un", "café"],
-      "combined_meaning": "to have a coffee",
-      "grammatical_structure": "verb + indefinite article + noun",
-      "usage_notes": "Common phrase for social interactions"
+      "word": "hubiera tomado",
+      "words": ["hubiera", "tomado"],
+      "combined_meaning": "had taken (hypothetical)",
+      "grammatical_structure": "auxiliary verb + past participle",
+      "usage_notes": "Pluperfect subjunctive in conditional sentences"
     }
   ],
   "explanations": {
-    "idiomatic_expressions": "Idiomatic expressions convey nuanced meanings",
-    "verb_conjugation": "Complex verb conjugation for nuanced expression",
-    "sentence_structure": "Advanced sentence structure with complex clauses"
+    "subjunctive_mood": "Subjunctive expresses doubt, emotion, necessity, and hypothetical situations",
+    "compound_tenses": "Perfect tenses use haber + past participle",
+    "passive_voice": "Ser + past participle forms passive constructions",
+    "relative_clauses": "Complex sentences with relative pronouns (que, quien, donde)",
+    "impersonal_constructions": "Se + verb for impersonal actions or passive voice",
+    "morphological_complexity": "Words can have multiple layers of agreement and conjugation",
+    "sentence_structure": "Advanced sentence structure with multiple clauses and complex verb forms"
   }
 }
 
+CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
+CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- other: #888888 (gray)
 CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
@@ -204,9 +302,9 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                 try:
                     json_str = json_match.group(1)
                     parsed = json.loads(json_str)
-                    # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
-                    return parsed
+                    logger.info(f"Spanish analyzer parsed JSON from markdown successfully: {len(parsed.get('words', []))} words")
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Spanish analyzer (markdown): {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -217,9 +315,9 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
                 try:
                     json_str = json_match.group(0)
                     parsed = json.loads(json_str)
-                    # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
-                    return parsed
+                    logger.info(f"Spanish analyzer parsed JSON successfully: {len(parsed.get('words', []))} words")
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Spanish analyzer: {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -228,16 +326,104 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
             try:
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
-                return parsed
-            except json.JSONDecodeError:
-                pass
+                logger.info(f"Spanish analyzer direct JSON parse successful: {len(parsed.get('words', []))} words")
+                return self._transform_to_standard_format(parsed, complexity)
+            except json.JSONDecodeError as e:
+                logger.error(f"Direct JSON parse error in Spanish analyzer: {e}")
+                logger.error(f"Raw AI response: {ai_response[:500]}...")
 
             # Fallback: extract structured information from text
+            logger.warning("Spanish analyzer falling back to text parsing")
             return self._parse_text_response(ai_response, sentence)
 
         except Exception as e:
             logger.error(f"Failed to parse {self.language_name} grammar response: {e}")
             return self._create_fallback_parse(ai_response, sentence)
+
+    def _transform_to_standard_format(self, parsed_data: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
+        """Transform Spanish analyzer output to standard BaseGrammarAnalyzer format"""
+        try:
+            # Extract original data
+            words = parsed_data.get('words', [])
+            word_combinations = parsed_data.get('word_combinations', [])
+            explanations = parsed_data.get('explanations', {})
+
+            logger.info(f"Spanish analyzer transforming {len(words)} words")
+            if words:
+                sample_roles = [w.get('grammatical_role', 'MISSING') for w in words[:3]]
+                logger.info(f"Sample grammatical roles: {sample_roles}")
+
+            # Transform words into elements grouped by grammatical role
+            elements = {}
+
+            # Group words by their grammatical role
+            for word_data in words:
+                grammatical_role = word_data.get('grammatical_role', 'other')
+                logger.debug(f"Processing word '{word_data.get('word', 'UNKNOWN')}' with role '{grammatical_role}'")
+                if grammatical_role not in elements:
+                    elements[grammatical_role] = []
+                elements[grammatical_role].append(word_data)
+
+            # Add word combinations as a special category
+            if word_combinations:
+                elements['word_combinations'] = word_combinations
+
+            # Create word_explanations for HTML coloring: [word, pos, color, explanation]
+            word_explanations = []
+            colors = self.get_color_scheme(complexity)  # Use the actual complexity level
+
+            logger.info(f"DEBUG Spanish Transform - Color scheme for complexity '{complexity}': {colors}")
+
+            for word_data in words:
+                word = word_data.get('word', '')
+                grammatical_role = word_data.get('grammatical_role', 'other')
+                individual_meaning = word_data.get('individual_meaning', '')
+                pronunciation = word_data.get('pronunciation', '')
+                
+                # Ensure grammatical_role is a string
+                if not isinstance(grammatical_role, str):
+                    logger.warning(f"grammatical_role is not a string: {grammatical_role} (type: {type(grammatical_role)}), defaulting to 'other'")
+                    grammatical_role = 'other'
+                category = self._map_grammatical_role_to_category(grammatical_role)
+                color = colors.get(category, '#888888')
+                
+                # Override with AI-provided color if available and standardize it
+                ai_color = word_data.get('color')
+                if ai_color:
+                    color = self._standardize_color(ai_color, category)
+                
+                logger.info(f"DEBUG Spanish Transform - Word: '{word}', Role: '{grammatical_role}', Category: '{category}', Color: '{color}'")
+                
+                # Create explanation text from available data
+                explanation_parts = []
+                if individual_meaning:
+                    explanation_parts.append(individual_meaning)
+                if pronunciation:
+                    explanation_parts.append(f"({pronunciation})")
+                
+                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
+                
+                word_explanations.append([word, grammatical_role, color, explanation])
+                logger.info(f"DEBUG Spanish Transform - Added word_explanation: {word_explanations[-1]}")
+
+            logger.info(f"DEBUG Spanish Transform - Final word_explanations count: {len(word_explanations)}")
+
+            # Return in standard format expected by BaseGrammarAnalyzer
+            return {
+                'elements': elements,
+                'explanations': explanations,
+                'word_explanations': word_explanations,
+                'sentence': parsed_data.get('sentence', '')
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to transform Spanish analysis data: {e}")
+            return {
+                'elements': {},
+                'explanations': {'error': 'Data transformation failed'},
+                'word_explanations': [],
+                'sentence': parsed_data.get('sentence', '')
+            }
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return vibrant, educational color scheme for Spanish grammatical elements"""
@@ -377,48 +563,50 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Spanish text with word-level coloring"""
-        colors = self.get_color_scheme(complexity)
-        words = parsed_data.get('words', [])
-        phrase_combinations = parsed_data.get('phrase_combinations', [])
-        sentence = parsed_data.get('sentence', '')
+        """Generate HTML output for Spanish text with word-level coloring using colors from word_explanations (single source of truth)"""
+        explanations = parsed_data.get('word_explanations', [])
 
-        # Create a mapping of each word to its grammatical category
-        word_to_category = {}
+        logger.info(f"DEBUG Spanish HTML Gen - Input explanations count: {len(explanations)}")
+        logger.info(f"DEBUG Spanish HTML Gen - Input sentence: '{sentence}'")
 
-        # Build word-to-category mapping from individual words
-        # NOTE: We prioritize individual word colors over phrase combination colors
-        # to ensure word-level analysis is preserved in the Colored Sentence
-        for word_data in words:
-            word = word_data.get('word', '')
-            grammatical_role = word_data.get('grammatical_role', '')
+        # Generate HTML by coloring each word individually using colors from grammar explanations
+        import re
 
-            # Map grammatical roles to color categories
-            if word and grammatical_role:
-                category = self._map_grammatical_role_to_category(grammatical_role)
-                word_to_category[word] = category
+        # Create mapping of cleaned words to colors directly from word_explanations (authoritative source)
+        word_to_color = {}
+        for exp in explanations:
+            if len(exp) >= 3:
+                word, pos, color = exp[0], exp[1], exp[2]
+                clean_key = re.sub(r'[^\w\s]', '', word)  # Clean the key for consistent matching
+                word_to_color[clean_key] = color
+                logger.info(f"DEBUG Spanish HTML Gen - Word '{word}' (clean: '{clean_key}') -> Color '{color}' (POS: '{pos}')")
 
-        # NOTE: Phrase combinations are handled in explanations, not in Colored Sentence HTML
-        # This ensures the Colored Sentence shows individual word colors that match
-        # the Grammar Explanations, providing authentic word-level learning
+        logger.info(f"DEBUG Spanish HTML Gen - Word-to-color mapping: {word_to_color}")
 
-        # Generate HTML by coloring each word individually
+        words_in_sentence = re.findall(r'\S+', sentence)
+
+        logger.info(f"DEBUG Spanish HTML Gen - Words found in sentence: {words_in_sentence}")
+
         html_parts = []
-        for word in sentence.split():
-            if word in word_to_category:
-                category = word_to_category[word]
-                color = colors.get(category, '#CCCCCC')
-                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
-            elif word.strip():  # Only add non-whitespace words without color
-                # For words without analysis, give them a default color based on basic word properties
-                default_category = self._get_default_category_for_word(word)
-                color = colors.get(default_category, '#888888')
-                html_parts.append(f'<span style="color: {color};">{word}</span>')
-            else:
-                # Preserve whitespace
-                html_parts.append(word)
+        for word in words_in_sentence:
+            # Remove punctuation for matching but keep original word
+            clean_word = re.sub(r'[^\w\s]', '', word)
 
-        return ' '.join(html_parts)
+            logger.info(f"DEBUG Spanish HTML Gen - Processing word '{word}' -> clean '{clean_word}'")
+
+            if clean_word in word_to_color:
+                color = word_to_color[clean_word]
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+                logger.info(f"DEBUG Spanish HTML Gen - ✓ Colored word '{word}' with color '{color}'")
+            else:
+                # For words without analysis, use default color (should be rare with new architecture)
+                html_parts.append(f'<span style="color: #888888;">{word}</span>')
+                logger.warning(f"DEBUG Spanish HTML Gen - ✗ No color found for word '{word}' (clean: '{clean_word}'). Available words: {list(word_to_color.keys())}")
+
+        result = ' '.join(html_parts)
+        logger.info(f"DEBUG Spanish HTML Gen - Final HTML output length: {len(result)}")
+        logger.info(f"DEBUG Spanish HTML Gen - Final HTML preview: {result[:300]}...")
+        return result
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map grammatical role descriptions to color category names"""
@@ -464,6 +652,32 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
 
         # Default to 'other' for unknown words
         return 'other'
+
+    def _standardize_color(self, ai_color: str, category: str) -> str:
+        """Standardize AI-provided color to ensure consistency with the defined color scheme"""
+        # Define the exact color mapping that should be used
+        standard_colors = {
+            "pronouns": "#FF4444",         # Red
+            "nouns": "#FFAA00",            # Orange
+            "verbs": "#44FF44",            # Green
+            "adjectives": "#FF44FF",       # Magenta
+            "adverbs": "#44FFFF",          # Cyan
+            "postpositions": "#4444FF",    # Blue
+            "other": "#888888"             # Gray
+        }
+
+        # If AI provided a color, check if it matches the standard for this category
+        if ai_color and ai_color.startswith('#'):
+            expected_color = standard_colors.get(category, "#888888")
+            # If AI color doesn't match expected, use the standard color
+            if ai_color.upper() != expected_color.upper():
+                logger.debug(f"AI provided color {ai_color} for category '{category}', standardizing to {expected_color}")
+                return expected_color
+            else:
+                return ai_color  # AI got it right
+
+        # If no AI color or invalid format, use standard color
+        return standard_colors.get(category, "#888888")
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
         """Create fallback parsing when main parsing fails"""

@@ -288,7 +288,7 @@ def generate_word_meaning_sentences_and_keywords(
 
         # Build context instruction based on topics
         if topics:
-            context_instruction = f"- Use diverse real-life contexts on these topics: {', '.join(topics)}"
+            context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
         else:
             context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
 
@@ -580,7 +580,14 @@ def generate_sentences(
                         grammar_summary = grammar_result.get("grammar_summary", "")
 
                         # Convert character-based analysis to word_explanations format
-                        word_explanations = _convert_analyzer_output_to_explanations(grammar_result, language)
+                        # Check if analyzer already provided word_explanations (preferred)
+                        if "word_explanations" in grammar_result and grammar_result["word_explanations"]:
+                            word_explanations = grammar_result["word_explanations"]
+                            logger.info(f"DEBUG Color Flow - Using analyzer's word_explanations directly: {len(word_explanations)} items")
+                        else:
+                            # Fallback to conversion function
+                            word_explanations = _convert_analyzer_output_to_explanations(grammar_result, language)
+                            logger.info(f"DEBUG Color Flow - Using converted word_explanations: {len(word_explanations)} items")
 
                         final_sentences[i].update({
                             "colored_sentence": colored_sentence,
@@ -910,24 +917,49 @@ def analyze_grammar_and_color(
                 groq_api_key=groq_api_key
             )
 
+            # DEBUG: Log the complete analysis result structure
+            logger.info(f"DEBUG Hindi Color Flow - Analysis Result Type: {type(analysis_result)}")
+            logger.info(f"DEBUG Hindi Color Flow - Analysis Result Keys: {analysis_result.__dict__.keys() if hasattr(analysis_result, '__dict__') else 'No __dict__'}")
+            logger.info(f"DEBUG Hindi Color Flow - HTML Output: {analysis_result.html_output[:200]}...")
+            logger.info(f"DEBUG Hindi Color Flow - Grammatical Elements: {analysis_result.grammatical_elements}")
+            logger.info(f"DEBUG Hindi Color Flow - Explanations: {analysis_result.explanations}")
+            logger.info(f"DEBUG Hindi Color Flow - Color Scheme: {analysis_result.color_scheme}")
+            logger.info(f"DEBUG Hindi Color Flow - Confidence: {analysis_result.confidence_score}")
+
             # Convert analyzer result to expected format
             colored_sentence = analysis_result.html_output
             word_explanations = []
-            
+
+            # DEBUG: Log what we're extracting
+            logger.info(f"DEBUG Hindi Color Flow - Raw HTML Output Length: {len(colored_sentence)}")
+            logger.info(f"DEBUG Hindi Color Flow - Grammatical Elements Keys: {list(analysis_result.grammatical_elements.keys())}")
+
             # Combine grammatical elements and explanations
             elements = analysis_result.grammatical_elements
             explanations = analysis_result.explanations
-            
-            # Build word explanations list
+
+            # DEBUG: Check if explanations contain HTML with colors
+            for exp_key, exp_value in explanations.items():
+                logger.info(f"DEBUG Hindi Color Flow - Explanation '{exp_key}': {str(exp_value)[:100]}...")
+
+            # Build word explanations list - THIS IS THE PROBLEM AREA
+            logger.info(f"DEBUG Hindi Color Flow - Building word_explanations from grammatical_elements...")
             for element_type, element_list in elements.items():
+                logger.info(f"DEBUG Hindi Color Flow - Processing element_type '{element_type}' with {len(element_list)} elements")
                 for element in element_list:
                     word = element.get('word', '')
                     if word:
                         # Find corresponding explanation
                         explanation = explanations.get(element_type, f"{element_type} in {analysis_result.language_code} grammar")
                         color = analysis_result.color_scheme.get(element_type, '#CCCCCC')
+
+                        logger.info(f"DEBUG Hindi Color Flow - Word: '{word}', Type: '{element_type}', Color: '{color}', Explanation: '{explanation[:50]}...'")
                         word_explanations.append([word, element_type, color, explanation])
-            
+
+            logger.info(f"DEBUG Hindi Color Flow - Final word_explanations count: {len(word_explanations)}")
+            for i, exp in enumerate(word_explanations[:3]):  # Log first 3
+                logger.info(f"DEBUG Hindi Color Flow - word_explanations[{i}]: {exp}")
+
             # Create grammar summary
             grammar_summary = f"Grammar analysis for {analysis_result.language_code.upper()} ({analysis_result.complexity_level} level)"
             if explanations:
@@ -935,7 +967,10 @@ def analyze_grammar_and_color(
                 main_explanation = list(explanations.values())[0] if explanations else ""
                 if main_explanation:
                     grammar_summary = main_explanation
-            
+
+            logger.info(f"DEBUG Hindi Color Flow - Final colored_sentence: {colored_sentence[:100]}...")
+            logger.info(f"DEBUG Hindi Color Flow - Final grammar_summary: {grammar_summary[:100]}...")
+
             result = {
                 "colored_sentence": colored_sentence,
                 "word_explanations": word_explanations,
@@ -1213,7 +1248,14 @@ def _batch_analyze_grammar_and_color(
                 colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
 
                 # Convert to word_explanations format
-                word_explanations = _convert_analyzer_output_to_explanations(parsed_data, language)
+                # Check if analyzer already provided word_explanations (preferred)
+                if "word_explanations" in parsed_data and parsed_data["word_explanations"]:
+                    word_explanations = parsed_data["word_explanations"]
+                    logger.info(f"DEBUG Color Flow - Using analyzer's word_explanations directly: {len(word_explanations)} items")
+                else:
+                    # Fallback to conversion function
+                    word_explanations = _convert_analyzer_output_to_explanations(parsed_data, language)
+                    logger.info(f"DEBUG Color Flow - Using converted word_explanations: {len(word_explanations)} items")
 
                 # Create grammar summary
                 grammar_summary = parsed_data.get('explanations', {}).get('sentence_structure',

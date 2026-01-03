@@ -1,0 +1,4 @@
+{
+  "error": "Failed to parse batch response",
+  "raw_response": "[\n  {\n    \"word\": \"मैं\",\n    \"sentence\": \"यह मैं है।\",\n    \"grammatical_role\": \"pronoun\",\n    \"confidence_score\": 0.99,\n    \"analysis_details\": \"First person singular pronoun used as the subject\"\n  },\n  {\n    \"word\": \"खाना\",\n    \"sentence\": \"यह खाना है।\",\n    \"grammatical_role\": \"noun\",\n    \"confidence_score\": 0.96,\n    \"analysis_details\": \"Masculine noun meaning food, used as the subject\"\n  },\n  {\n    \"word\": \"खाता\",\n    \"sentence\": \"यह खाता है।\",\n    \"grammatical_role\": \"verb\",\n    \"confidence..."
+}

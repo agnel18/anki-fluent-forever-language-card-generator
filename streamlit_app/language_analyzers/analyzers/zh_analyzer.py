@@ -59,14 +59,20 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
 
     def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
         """Generate beginner-level grammar analysis prompt with detailed character-by-character explanations"""
-        base_prompt = """Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
+        base_prompt = """MANDATORY REQUIREMENT: Analyze EVERY SINGLE CHARACTER in this Chinese sentence - NO EXCEPTIONS!
+
+Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
 
 For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, provide:
 - Its individual meaning and pronunciation
-- Its grammatical role and function in this context
+- Its grammatical role and function in this context (USE ONLY: pronoun, noun, verb, adjective, adverb, postposition, conjunction, interjection, particles, measure_words, other)
 - How it combines with adjacent characters (if applicable)
 - Common words it forms and their meanings
 - Why it's important for learners
+
+IMPORTANT: In Chinese, particles (的, 了, 着, 过, 们, etc.) should be classified as "particles".
+Measure words (个, 本, 杯, etc.) should be classified as "measure_words".
+Prepositions are not used in Chinese - use "other" for any spatial/temporal markers.
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
@@ -77,7 +83,8 @@ Return a JSON object with detailed character analysis for ALL characters in the 
       "character": "这",
       "individual_meaning": "this (demonstrative pronoun)",
       "pronunciation": "zhè",
-      "grammatical_role": "demonstrative pronoun",
+      "grammatical_role": "pronoun",
+      "color": "#FF4444",
       "combinations": ["这个 (zhège) - this (with measure word)", "这里 (zhèlǐ) - here"],
       "importance": "Essential for indicating proximity and specificity"
     },
@@ -85,9 +92,19 @@ Return a JSON object with detailed character analysis for ALL characters in the 
       "character": "是",
       "individual_meaning": "to be/am/are/is (linking verb)",
       "pronunciation": "shì",
-      "grammatical_role": "linking verb",
+      "grammatical_role": "verb",
+      "color": "#44FF44",
       "combinations": ["不是 (búshì) - is not", "还是 (háishì) - or/still"],
       "importance": "Fundamental linking verb for equations and identities"
+    },
+    {
+      "character": "个",
+      "individual_meaning": "measure word for general objects",
+      "pronunciation": "gè",
+      "grammatical_role": "measure_words",
+      "color": "#AA44FF",
+      "combinations": ["一个 (yīgè) - one (general)", "这个 (zhège) - this (general)"],
+      "importance": "Essential measure word used with numbers and demonstratives"
     }
   ],
   "word_combinations": [
@@ -102,35 +119,67 @@ Return a JSON object with detailed character analysis for ALL characters in the 
   "explanations": {
     "character_analysis": "Each Chinese character has its own meaning and can combine to form compound words",
     "measure_words": "Measure words (量词) are required between numbers/demonstratives and nouns",
+    "particles": "Particles (助词) add grammatical functions like possession, aspect, and plurality",
     "sentence_structure": "Subject-Verb-Object word order with characters combining into meaningful units"
   }
 }
 
-CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
+CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!
+CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
+CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- particles: #AA44FF (purple)
+- measure_words: #AA44FF (purple)
+- other: #888888 (gray)
+CRITICAL: Do NOT use descriptions like "demonstrative pronoun" or "linking verb" - use ONLY the exact words above!
+CRITICAL: If unsure, use "other" rather than making up a new category!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
         """Generate intermediate-level grammar analysis prompt with character-level analysis"""
-        base_prompt = """Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
+        base_prompt = """MANDATORY REQUIREMENT: Analyze EVERY SINGLE CHARACTER in this Chinese sentence - NO EXCEPTIONS!
 
-For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, provide:
-- Character meaning, pronunciation, and grammatical role
-- How it functions in compound words and phrases
-- Aspect markers and temporal relationships it creates
-- Complex particle usage and structural functions
+Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
+
+Provide detailed analysis including:
+- Aspect markers and tense expressions
+- Particle functions and discourse relationships
+- Measure word usage and quantification
+- Complex character combinations and compound words
+- Topic-comment structure patterns
+
+IMPORTANT: Particles (的, 了, 着, 过, 们, etc.) should be classified as "particles".
+Measure words (个, 本, 杯, etc.) should be classified as "measure_words".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with character analysis for ALL characters in the sentence:
+Return a JSON object with comprehensive analysis:
 {
   "characters": [
     {
       "character": "正",
       "individual_meaning": "just/right/correct",
       "pronunciation": "zhèng",
-      "grammatical_role": "aspect marker component",
+      "grammatical_role": "particles",
+      "color": "#AA44FF",
       "combinations": ["正在 (zhèngzài) - progressive aspect 'is doing'", "正 (zhèng) - just/now"],
       "aspect_function": "Part of progressive aspect marker indicating ongoing action"
+    },
+    {
+      "character": "在",
+      "individual_meaning": "at/in/on (location particle)",
+      "pronunciation": "zài",
+      "grammatical_role": "particles",
+      "color": "#AA44FF",
+      "combinations": ["正在 (zhèngzài) - progressive aspect", "在北京 (zài běijīng) - in Beijing"],
+      "importance": "Essential particle for location and progressive aspect"
     }
   ],
   "word_combinations": [
@@ -144,37 +193,71 @@ Return a JSON object with character analysis for ALL characters in the sentence:
   ],
   "explanations": {
     "aspect_system": "Aspect markers show how actions unfold over time, not just tense",
+    "particles": "Particles add grammatical functions like aspect, possession, and plurality",
+    "measure_words": "Measure words quantify nouns and are required in many constructions",
     "character_combinations": "Characters combine to create complex grammatical meanings",
-    "sentence_structure": "Intermediate sentence structure with aspect markers and complex particles"
+    "topic_comment": "Topic-comment structure where old information comes first"
   }
 }
 
-CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
+CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
+CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- particles: #AA44FF (purple)
+- measure_words: #AA44FF (purple)
+- other: #888888 (gray)
+CRITICAL: Do NOT use descriptions like "aspect marker component" or "location particle" - use ONLY the exact words above!
+
+Focus on grammatical relationships and morphological patterns."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate advanced-level grammar analysis prompt with character-level analysis"""
-        base_prompt = """Perform advanced grammatical analysis of this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
+        """Generate advanced-level grammar analysis prompt with complex morphological features"""
+        base_prompt = """MANDATORY REQUIREMENT: Analyze EVERY SINGLE CHARACTER in this Chinese sentence - NO EXCEPTIONS!
 
-For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, analyze:
-- Modal and discourse particles it creates
+Perform ADVANCED morphological and syntactic analysis of this Chinese (Simplified) sentence: SENTENCE_PLACEHOLDER
+
+Analyze complex features including:
+- Modal and discourse particles
 - Complex aspectual and pragmatic functions
-- Character-level contributions to sentence meaning
-- Advanced grammatical combinations and transformations
+- Structural particles and disposal constructions
+- Topic-comment structure and information flow
+- Advanced measure word usage and quantification
+
+IMPORTANT: Particles (的, 了, 着, 过, 们, 把, 被, etc.) should be classified as "particles".
+Measure words should be classified as "measure_words".
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
-Return a JSON object with character analysis for ALL characters in the sentence:
+Return a JSON object with advanced grammatical analysis:
 {
   "characters": [
     {
       "character": "把",
       "individual_meaning": "to hold/grasp",
       "pronunciation": "bǎ",
-      "grammatical_role": "structural particle",
+      "grammatical_role": "particles",
+      "color": "#AA44FF",
       "combinations": ["把字句 (bǎzìjù) - 'ba' construction for disposal/formal objects"],
       "pragmatic_function": "Introduces formal object in disposal constructions",
-      "advanced_usage": "Creates topic-comment structure with object fronting"
+      "importance": "Creates topic-comment structure with object fronting"
+    },
+    {
+      "character": "了",
+      "individual_meaning": "particle indicating completion/aspect",
+      "pronunciation": "le",
+      "grammatical_role": "particles",
+      "color": "#AA44FF",
+      "combinations": ["吃了 (chīle) - ate (completed action)", "去了 (qùle) - went (completed)"],
+      "aspect_function": "Perfective aspect particle indicating completed action",
+      "importance": "Essential for aspect marking and sentence completion"
     }
   ],
   "word_combinations": [
@@ -188,16 +271,30 @@ Return a JSON object with character analysis for ALL characters in the sentence:
   ],
   "explanations": {
     "modal_particles": "Modal particles express speaker attitude and discourse functions",
-    "structural_particles": "Structural particles organize complex sentence grammar",
+    "structural_particles": "Structural particles organize complex sentence grammar (把, 被, etc.)",
+    "aspect_particles": "Aspect particles mark completion, duration, and experience (了, 着, 过)",
     "discourse_markers": "Discourse markers connect ideas and show relationships",
-    "sentence_final_particles": "Sentence-final particles add emphasis or tone",
-    "aspect_system": "Complex aspectual distinctions and temporal relationships",
-    "discourse_structure": "Advanced discourse organization and pragmatic functions",
+    "topic_comment_structure": "Topic-comment structure where topic precedes comment",
+    "disposal_constructions": "把 (bǎ) and 被 (bèi) constructions for object manipulation",
+    "measure_words": "Complex measure word system for precise quantification",
     "character_level_analysis": "Each character contributes to complex grammatical meanings"
   }
 }
 
-CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
+CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
+CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
+- pronoun: #FF4444 (red)
+- noun: #FFAA00 (orange)
+- verb: #44FF44 (green)
+- adjective: #FF44FF (magenta)
+- adverb: #44FFFF (cyan)
+- postposition: #4444FF (blue)
+- conjunction: #888888 (gray)
+- interjection: #888888 (gray)
+- particles: #AA44FF (purple)
+- measure_words: #AA44FF (purple)
+- other: #888888 (gray)
+CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
@@ -211,7 +308,8 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
                     parsed = json.loads(json_str)
                     # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
-                    return parsed
+                    logger.info(f"Chinese analyzer parsed JSON from markdown successfully: {len(parsed.get('characters', []))} characters")
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Chinese analyzer (markdown): {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -224,7 +322,8 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
                     parsed = json.loads(json_str)
                     # Add the sentence to the parsed data
                     parsed['sentence'] = sentence
-                    return parsed
+                    logger.info(f"Chinese analyzer parsed JSON successfully: {len(parsed.get('characters', []))} characters")
+                    return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON decode error in Chinese analyzer: {e}")
                     logger.error(f"Extracted JSON string: {json_str[:500]}...")
@@ -233,16 +332,20 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
             try:
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
-                return parsed
+                logger.info(f"Chinese analyzer direct JSON parse successful: {len(parsed.get('characters', []))} characters")
+                return self._transform_to_standard_format(parsed, complexity)
             except json.JSONDecodeError:
                 pass
 
             # Fallback: extract structured information from text
-            return self._parse_text_response(ai_response, sentence)
+            logger.warning("Chinese analyzer falling back to text parsing")
+            fallback_parsed = self._parse_text_response(ai_response, sentence)
+            return self._transform_to_standard_format(fallback_parsed, complexity)
 
         except Exception as e:
             logger.error(f"Failed to parse {self.language_name} grammar response: {e}")
-            return self._create_fallback_parse(ai_response, sentence)
+            fallback_parsed = self._create_fallback_parse(ai_response, sentence)
+            return self._transform_to_standard_format(fallback_parsed, complexity)
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return vibrant, educational color scheme for Chinese grammatical elements"""
@@ -303,20 +406,26 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
             has_combinations = len(word_combinations) > 0
             has_explanations = len(explanations) > 0
 
-            # Check character coverage in sentence
-            sentence_chars = set(original_sentence)
+            # CRITICAL: Check that EVERY Chinese character in the sentence is analyzed
+            chinese_chars_in_sentence = set(re.findall(r'[\u4e00-\u9fff]', original_sentence))
             analyzed_chars = set()
 
             for char_data in characters:
                 char = char_data.get('character', '')
-                if char:
+                if char and char in chinese_chars_in_sentence:
                     analyzed_chars.add(char)
 
-            char_coverage = len(sentence_chars.intersection(analyzed_chars)) / len(sentence_chars) if sentence_chars else 0
+            # For Chinese, we REQUIRE 100% character coverage - every character must be analyzed
+            char_coverage = len(chinese_chars_in_sentence.intersection(analyzed_chars)) / len(chinese_chars_in_sentence) if chinese_chars_in_sentence else 1.0
+
+            # If not all characters are analyzed, this is a critical failure
+            if char_coverage < 1.0:
+                logger.warning(f"CRITICAL: Only {char_coverage:.1%} of Chinese characters analyzed. Missing: {chinese_chars_in_sentence - analyzed_chars}")
+                return 0.3  # Very low score for incomplete character analysis
 
             # Calculate confidence score
             base_score = 0.9 if (has_characters and has_explanations) else 0.6
-            coverage_bonus = char_coverage * 0.1
+            coverage_bonus = char_coverage * 0.1  # Bonus for complete coverage
             combination_bonus = 0.05 if has_combinations else 0
 
             confidence = min(base_score + coverage_bonus + combination_bonus, 1.0)
@@ -392,48 +501,41 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
 
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Chinese text with character-level coloring"""
-        colors = self.get_color_scheme(complexity)
-        characters = parsed_data.get('characters', [])
-        word_combinations = parsed_data.get('word_combinations', [])
-        sentence = parsed_data.get('sentence', '')
+        """Generate HTML output for Chinese text with character-level coloring using colors from word_explanations (single source of truth)"""
+        explanations = parsed_data.get('word_explanations', [])
 
-        # Create a mapping of each character to its grammatical category
-        char_to_category = {}
+        logger.info(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
+        logger.info(f"DEBUG Chinese HTML Gen - Input sentence: '{sentence}'")
 
-        # Build character-to-category mapping from individual characters
-        # NOTE: We prioritize individual character colors over word combination colors
-        # to ensure character-level analysis is preserved in the Colored Sentence
-        for char_data in characters:
-            char = char_data.get('character', '')
-            grammatical_role = char_data.get('grammatical_role', '')
+        # Create mapping of characters to colors directly from word_explanations (authoritative source)
+        char_to_color = {}
+        for exp in explanations:
+            if len(exp) >= 3:
+                char, pos, color = exp[0], exp[1], exp[2]
+                char_to_color[char] = color
+                logger.info(f"DEBUG Chinese HTML Gen - Character '{char}' -> Color '{color}' (POS: '{pos}')")
 
-            # Map grammatical roles to color categories
-            if char and grammatical_role:
-                category = self._map_grammatical_role_to_category(grammatical_role)
-                char_to_category[char] = category
+        logger.info(f"DEBUG Chinese HTML Gen - Character-to-color mapping: {char_to_color}")
 
-        # NOTE: Word combinations are handled in explanations, not in Colored Sentence HTML
-        # This ensures the Colored Sentence shows individual character colors that match
-        # the Grammar Explanations, providing authentic character-level learning
-
-        # Generate HTML by coloring each character individually
+        # Generate HTML by coloring each character individually using colors from grammar explanations
         html_parts = []
         for char in sentence:
-            if char in char_to_category:
-                category = char_to_category[char]
-                color = colors.get(category, '#CCCCCC')
+            if char in char_to_color:
+                color = char_to_color[char]
                 html_parts.append(f'<span style="color: {color}; font-weight: bold;">{char}</span>')
+                logger.info(f"DEBUG Chinese HTML Gen - ✓ Colored character '{char}' with color '{color}'")
             elif char.strip():  # Only add non-whitespace characters without color
-                # For characters without analysis, give them a default color based on basic character properties
-                default_category = self._get_default_category_for_char(char)
-                color = colors.get(default_category, '#888888')
-                html_parts.append(f'<span style="color: {color};">{char}</span>')
+                # For characters without analysis, use default color (should be rare with new architecture)
+                html_parts.append(f'<span style="color: #888888;">{char}</span>')
+                logger.warning(f"DEBUG Chinese HTML Gen - ✗ No color found for character '{char}' (clean: '{char}'). Available characters: {list(char_to_color.keys())}")
             else:
                 # Preserve whitespace
                 html_parts.append(char)
 
-        return ''.join(html_parts)
+        result = ''.join(html_parts)
+        logger.info(f"DEBUG Chinese HTML Gen - Final HTML output length: {len(result)}")
+        logger.info(f"DEBUG Chinese HTML Gen - Final HTML preview: {result[:300]}...")
+        return result
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map grammatical role descriptions to color category names using Chinese grammar rules"""
@@ -482,6 +584,144 @@ CRITICAL: Analyze EVERY character in the sentence, not just the target word!"""
         # Default to 'other' for unknown characters
         return 'other'
 
+    def _standardize_color(self, ai_color: str, category: str) -> str:
+        """Standardize AI-provided color to ensure consistency with the defined color scheme"""
+        # Define the exact color mapping that should be used (including Chinese-specific extensions)
+        standard_colors = {
+            "pronouns": "#FF4444",         # Red
+            "nouns": "#FFAA00",            # Orange
+            "verbs": "#44FF44",            # Green
+            "adjectives": "#FF44FF",       # Magenta
+            "adverbs": "#44FFFF",          # Cyan
+            "postpositions": "#4444FF",    # Blue
+            "conjunctions": "#888888",     # Gray
+            "interjections": "#888888",    # Gray
+            "particles": "#AA44FF",        # Purple (Chinese-specific)
+            "measure_words": "#AA44FF",    # Purple (Chinese-specific)
+            "other": "#888888"             # Gray
+        }
+
+        # If AI provided a color, check if it matches the standard for this category
+        if ai_color and ai_color.startswith('#'):
+            expected_color = standard_colors.get(category, "#888888")
+            # If AI color doesn't match expected, use the standard color
+            if ai_color.upper() != expected_color.upper():
+                logger.debug(f"AI provided color {ai_color} for category '{category}', standardizing to {expected_color}")
+                return expected_color
+            else:
+                return ai_color  # AI got it right
+
+        # If no AI color or invalid format, use standard color
+        return standard_colors.get(category, "#888888")
+
+    def _transform_to_standard_format(self, parsed_data: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
+        """Transform Chinese analyzer output to standard BaseGrammarAnalyzer format
+        
+        CRITICAL: For Chinese, EVERY character in the sentence MUST be analyzed and included.
+        This is essential for character-based languages where each character carries meaning.
+        """
+        try:
+            # Extract original data
+            characters = parsed_data.get('characters', [])
+            word_combinations = parsed_data.get('word_combinations', [])
+            explanations = parsed_data.get('explanations', {})
+
+            logger.info(f"Chinese analyzer transforming {len(characters)} characters")
+            if characters:
+                sample_roles = [c.get('grammatical_role', 'MISSING') for c in characters[:3]]
+                logger.info(f"Sample grammatical roles: {sample_roles}")
+
+            # CRITICAL VALIDATION: Ensure all characters from the sentence are present
+            sentence = parsed_data.get('sentence', '')
+            chinese_chars_in_sentence = set(re.findall(r'[\u4e00-\u9fff]', sentence))
+            analyzed_chars = set(c.get('character', '') for c in characters)
+            
+            missing_chars = chinese_chars_in_sentence - analyzed_chars
+            if missing_chars:
+                logger.error(f"CRITICAL: Missing character analysis for: {missing_chars}")
+                # Add missing characters with 'other' role
+                for missing_char in missing_chars:
+                    characters.append({
+                        'character': missing_char,
+                        'individual_meaning': f'Character {missing_char} (analysis incomplete)',
+                        'pronunciation': 'unknown',
+                        'grammatical_role': 'other',
+                        'combinations': [],
+                        'importance': 'Automatically added - analysis was incomplete'
+                    })
+                    logger.warning(f"Added missing character '{missing_char}' with 'other' role")
+
+            # Transform characters into elements grouped by grammatical role
+            elements = {}
+
+            # Group characters by their grammatical role
+            for char_data in characters:
+                grammatical_role = char_data.get('grammatical_role', 'other')
+                logger.debug(f"Processing character '{char_data.get('character', 'UNKNOWN')}' with role '{grammatical_role}'")
+                if grammatical_role not in elements:
+                    elements[grammatical_role] = []
+                elements[grammatical_role].append(char_data)
+
+            # Add word combinations as a special category
+            if word_combinations:
+                elements['word_combinations'] = word_combinations
+
+            # Create word_explanations for HTML coloring: [character, pos, color, explanation]
+            word_explanations = []
+            colors = self.get_color_scheme(complexity)  # Use the actual complexity level
+
+            logger.info(f"DEBUG Chinese Transform - Color scheme for complexity '{complexity}': {colors}")
+
+            for char_data in characters:
+                character = char_data.get('character', '')
+                grammatical_role = char_data.get('grammatical_role', 'other')
+                individual_meaning = char_data.get('individual_meaning', '')
+                pronunciation = char_data.get('pronunciation', '')
+                
+                # Ensure grammatical_role is a string
+                if not isinstance(grammatical_role, str):
+                    logger.warning(f"grammatical_role is not a string: {grammatical_role} (type: {type(grammatical_role)}), defaulting to 'other'")
+                    grammatical_role = 'other'
+                category = self._map_grammatical_role_to_category(grammatical_role)
+                color = colors.get(category, '#888888')
+                
+                # Override with AI-provided color if available and standardize it
+                ai_color = char_data.get('color')
+                if ai_color:
+                    color = self._standardize_color(ai_color, category)
+                
+                logger.info(f"DEBUG Chinese Transform - Character: '{character}', Role: '{grammatical_role}', Category: '{category}', Color: '{color}'")
+                
+                # Create explanation text from available data
+                explanation_parts = []
+                if individual_meaning:
+                    explanation_parts.append(individual_meaning)
+                if pronunciation:
+                    explanation_parts.append(f"({pronunciation})")
+                
+                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
+                
+                word_explanations.append([character, grammatical_role, color, explanation])
+                logger.info(f"DEBUG Chinese Transform - Added character_explanation: {word_explanations[-1]}")
+
+            logger.info(f"DEBUG Chinese Transform - Final word_explanations count: {len(word_explanations)}")
+
+            # Return in standard format expected by BaseGrammarAnalyzer
+            return {
+                'elements': elements,
+                'explanations': explanations,
+                'word_explanations': word_explanations,
+                'sentence': parsed_data.get('sentence', '')
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to transform Chinese analysis data: {e}")
+            return {
+                'elements': {},
+                'explanations': {'error': 'Data transformation failed'},
+                'word_explanations': [],
+                'sentence': parsed_data.get('sentence', '')
+            }
 
     def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
         """Create fallback parsing when main parsing fails"""
