@@ -1,5 +1,12 @@
 # Release Notes: v3.1 (Dec 2025)
 
+## ✅ Latest Updates (Jan 2026)
+- **Spanish Analyzer Fix**: Words with punctuation now color correctly in grammar analysis
+- **Batch QA Framework**: Implemented 20-word batch processing with 20x API efficiency gains
+- **Repository Cleanup**: Completed systematic cleanup with git backup strategy
+- **Git Version Control**: Added cleanup-pre-v1.0 tag for safe rollback
+- **File Organization**: Moved all backups to repo_backup_pre_cleanup/ directory
+
 ## ✅ Critical Fixes
 - **Image Display**: Fixed images showing as filenames instead of pictures in Anki
 - **Media Embedding**: Improved audio/image inclusion in .apkg packages

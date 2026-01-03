@@ -192,6 +192,9 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 - ✅ **Enhanced Error Recovery** — Better API failure handling
 - ✅ **10-Word Limit** — Prevents API rate limit issues
 - ✅ **Improved Media Embedding** — All audio/images in .apkg files
+- ✅ **Batch QA Framework** — 20x API efficiency gains for testing
+- ✅ **Spanish Analyzer Fix** — Words with punctuation now color correctly
+- ✅ **Git Backup Strategy** — Safe cleanup with version control preservation
 
 ---
 
