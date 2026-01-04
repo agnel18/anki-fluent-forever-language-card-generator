@@ -354,16 +354,21 @@ CRITICAL: Analyze EVERY word in the sentence!"""
 
         logger.info(f"DEBUG Hindi HTML Gen - Input explanations count: {len(explanations)}")
         logger.info(f"DEBUG Hindi HTML Gen - Input sentence: '{sentence}'")
+        logger.error(f"DEBUG HTML GEN CALLED: sentence='{sentence}', explanations_count={len(explanations)}")
 
-        # Create mapping of words to colors directly from word_explanations (authoritative source)
-        word_to_color = {}
+        # Create mapping of words to categories directly from word_explanations (authoritative source)
+        word_to_category = {}
         for exp in explanations:
             if len(exp) >= 3:
                 word, pos, color = exp[0], exp[1], exp[2]
-                word_to_color[word] = color
-                logger.info(f"DEBUG Hindi HTML Gen - Word '{word}' -> Color '{color}' (POS: '{pos}')")
+                # Clean word for consistent matching (remove punctuation)
+                clean_word = re.sub(r'[।!?.,;:\"\'()\[\]{}]', '', word)
+                category = self._map_grammatical_role_to_category(pos)
+                word_to_category[clean_word] = category
+                logger.info(f"DEBUG Hindi HTML Gen - Word '{word}' (clean: '{clean_word}') -> Category '{category}' (POS: '{pos}')")
 
-        logger.info(f"DEBUG Hindi HTML Gen - Word-to-color mapping: {word_to_color}")
+        logger.info(f"DEBUG Hindi HTML Gen - Word-to-category mapping: {word_to_category}")
+        logger.info(f"DEBUG Hindi HTML Gen - Total words in mapping: {len(word_to_category)}")
 
         # Generate HTML by coloring each word individually using colors from grammar explanations
         import re
@@ -375,22 +380,26 @@ CRITICAL: Analyze EVERY word in the sentence!"""
         for word in words_in_sentence:
             # Remove punctuation for matching but keep original word
             # Handle various scripts including Devanagari, Latin, Cyrillic, etc.
-            clean_word = re.sub(r'[^\w\s\u0900-\u097F\u0400-\u04FF\u0370-\u03FF]', '', word)
+            # Remove common punctuation marks that might be attached to words
+            clean_word = re.sub(r'[।!?.,;:\"\'()\[\]{}]', '', word)
 
             logger.info(f"DEBUG Hindi HTML Gen - Processing word '{word}' -> clean '{clean_word}'")
 
-            if clean_word in word_to_color:
-                color = word_to_color[clean_word]
+            if clean_word in word_to_category:
+                category = word_to_category[clean_word]
+                color_scheme = self.get_color_scheme('intermediate')
+                color = color_scheme.get(category, '#888888')
                 html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
-                logger.info(f"DEBUG Hindi HTML Gen - ✓ Colored word '{word}' with color '{color}'")
+                print(f"DEBUG Hindi HTML Gen - ✓ Colored word '{word}' with category '{category}' and color '{color}'")
             else:
                 # For words without analysis, use default color (should be rare with new architecture)
                 html_parts.append(f'<span style="color: #888888;">{word}</span>')
-                logger.warning(f"DEBUG Hindi HTML Gen - ✗ No color found for word '{word}' (clean: '{clean_word}'). Available words: {list(word_to_color.keys())}")
+                print(f"DEBUG Hindi HTML Gen - ✗ No category found for word '{word}' (clean: '{clean_word}'). Available words: {list(word_to_category.keys())}")
 
         result = ' '.join(html_parts)
         logger.info(f"DEBUG Hindi HTML Gen - Final HTML output length: {len(result)}")
         logger.info(f"DEBUG Hindi HTML Gen - Final HTML preview: {result[:300]}...")
+        logger.info(f"DEBUG Hindi HTML Gen - Category distribution: {set(word_to_category.values())}")
         return result
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
@@ -399,17 +408,17 @@ CRITICAL: Analyze EVERY word in the sentence!"""
 
         # Map various grammatical roles to color categories
         if any(keyword in role_lower for keyword in ['pronoun', 'personal', 'demonstrative', 'possessive']):
-            return 'pronouns'
+            return 'pronoun'
         elif any(keyword in role_lower for keyword in ['verb', 'action', 'state', 'linking', 'auxiliary', 'modal']):
-            return 'verbs'
+            return 'verb'
         elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject']):
-            return 'nouns'
+            return 'noun'
         elif any(keyword in role_lower for keyword in ['adjective', 'description', 'quality']):
-            return 'adjectives'
+            return 'adjective'
         elif any(keyword in role_lower for keyword in ['adverb', 'manner', 'time', 'place', 'degree']):
-            return 'adverbs'
+            return 'adverb'
         elif any(keyword in role_lower for keyword in ['preposition', 'postposition', 'case', 'marker']):
-            return 'prepositions'
+            return 'postposition'
         else:
             return 'other'
 
@@ -422,17 +431,17 @@ CRITICAL: Analyze EVERY word in the sentence!"""
         if word_lower in ['i', 'me', 'my', 'mine', 'you', 'your', 'yours', 'he', 'him', 'his',
                          'she', 'her', 'hers', 'it', 'its', 'we', 'us', 'our', 'ours',
                          'they', 'them', 'their', 'theirs', 'this', 'that', 'these', 'those']:
-            return 'pronouns'
+            return 'pronoun'
 
         # Common verbs (basic forms)
         if word_lower in ['be', 'is', 'am', 'are', 'was', 'were', 'been', 'being',
                          'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
                          'go', 'went', 'gone', 'going', 'come', 'came', 'coming']:
-            return 'verbs'
+            return 'verb'
 
         # Common prepositions
         if word_lower in ['in', 'on', 'at', 'to', 'from', 'by', 'with', 'for', 'of', 'about']:
-            return 'prepositions'
+            return 'postposition'
 
         # Default to 'other' for unknown words
         return 'other'
