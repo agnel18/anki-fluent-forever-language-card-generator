@@ -178,14 +178,25 @@ class APIKeyManager:
             elif service.lower() == 'pixabay':
                 # Test Pixabay API key with a simple search
                 import requests
-                url = f"https://pixabay.com/api/?key={api_key}&q=test&per_page=1"
+                # Use a simple, common search term that should always return results
+                url = f"https://pixabay.com/api/?key={api_key}&q=apple&per_page=1&safesearch=true"
                 response = requests.get(url, timeout=10)
                 if response.status_code == 200:
-                    data = response.json()
-                    if 'hits' in data:
-                        return True, "✅ Pixabay API key is valid"
-                    else:
-                        return False, "❌ Pixabay API returned unexpected format"
+                    try:
+                        data = response.json()
+                        # Check if we got a valid response structure
+                        if isinstance(data, dict) and 'totalHits' in data:
+                            return True, "✅ Pixabay API key is valid"
+                        else:
+                            return False, "❌ Pixabay API returned unexpected format"
+                    except ValueError:
+                        return False, "❌ Pixabay API returned invalid JSON"
+                elif response.status_code == 400:
+                    return False, "❌ Invalid Pixabay API key or request format"
+                elif response.status_code == 401:
+                    return False, "❌ Pixabay API key unauthorized"
+                elif response.status_code == 429:
+                    return False, "⚠️ Pixabay API rate limited"
                 else:
                     return False, f"❌ Pixabay API error: {response.status_code}"
 
