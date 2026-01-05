@@ -228,8 +228,20 @@ def generate_complete_deck(
 def _generate_unique_id() -> str:
     """Generate a unique identifier for filenames to prevent overwrites."""
     import datetime
-    # Use timestamp format: YYYYMMDD_HHMMSS
-    return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    import threading
+
+    # Use thread-safe counter to ensure uniqueness even within same millisecond
+    if not hasattr(_generate_unique_id, '_counter'):
+        _generate_unique_id._counter = 0
+        _generate_unique_id._lock = threading.Lock()
+
+    with _generate_unique_id._lock:
+        _generate_unique_id._counter += 1
+        counter = _generate_unique_id._counter
+
+    # Use timestamp format: YYYYMMDD_HHMMSS_MMM_CCC (includes milliseconds and counter)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Keep only first 3 digits of microseconds
+    return f"{timestamp}_{counter:03d}"
 
 def _create_unique_filename(base_name: str, extension: str = "", unique_id: str = None) -> str:
     """Create a unique filename with optional extension."""
@@ -270,8 +282,8 @@ def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, la
         explanation_items = []
         for exp in explanations:
             if len(exp) >= 4:
-                word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]
-                explanation_items.append(f'<div class="explanation-item"><span class="word-highlight" style="color: {color};"><strong>{word}</strong></span> ({pos}): {explanation}</div>')
+                exp_word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]  # Use exp_word to avoid shadowing
+                explanation_items.append(f'<div class="explanation-item"><span class="word-highlight" style="color: {color};"><strong>{exp_word}</strong></span> ({pos}): {explanation}</div>')
         if explanation_items:
             word_explanations_html = '<div class="word-explanations"><strong>Grammar Explanations:</strong><br>' + ''.join(explanation_items) + '</div>'
 
@@ -407,7 +419,8 @@ def generate_deck_progressive(
             'meaning': meaning,
             'sentences': sentences,
             'audio_files': audio_filenames,
-            'image_files': image_filenames
+            'image_files': image_filenames,
+            'unique_id': word_unique_id  # Store unique ID for consistent filenames
         }
 
         if log_callback:
@@ -431,7 +444,8 @@ def generate_deck_progressive(
                 'meaning': '',
                 'sentences': [],
                 'audio_files': ["" for _ in range(num_sentences)],
-                'image_files': ["" for _ in range(num_sentences)]
+                'image_files': ["" for _ in range(num_sentences)],
+                'unique_id': word_unique_id  # Include unique ID even in error case
             },
             'audio_files': [],
             'image_files': [],
@@ -461,9 +475,12 @@ def create_apkg_from_word_data(
             sentences = word_data['sentences']
             audio_files = word_data['audio_files']
             image_files = word_data['image_files']
+            unique_id = word_data.get('unique_id', '')  # Get unique ID if available
 
             for idx_sent, sent in enumerate(sentences):
                 file_base = f"{word}_{idx_sent+1:02d}"
+                if unique_id:
+                    file_base = f"{file_base}_{unique_id}"  # Add unique ID if available
                 audio_name = audio_files[idx_sent] if idx_sent < len(audio_files) else ""
                 image_name = image_files[idx_sent] if idx_sent < len(image_files) else ""
 
@@ -477,8 +494,8 @@ def create_apkg_from_word_data(
                     explanation_items = []
                     for exp in explanations:
                         if len(exp) >= 4:
-                            word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]
-                            explanation_items.append(f'<div class="explanation-item"><span class="word-highlight" style="color: {color};"><strong>{word}</strong></span> ({pos}): {explanation}</div>')
+                            exp_word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]  # Use exp_word to avoid shadowing
+                            explanation_items.append(f'<div class="explanation-item"><span class="word-highlight" style="color: {color};"><strong>{exp_word}</strong></span> ({pos}): {explanation}</div>')
                     if explanation_items:
                         word_explanations_html = '<div class="word-explanations"><strong>Grammar Explanations:</strong><br>' + ''.join(explanation_items) + '</div>'
 
