@@ -371,7 +371,6 @@ CRITICAL: Analyze EVERY word in the sentence!"""
         logger.info(f"DEBUG Hindi HTML Gen - Total words in mapping: {len(word_to_category)}")
 
         # Generate HTML by coloring each word individually using colors from grammar explanations
-        import re
         words_in_sentence = re.findall(r'\S+', sentence)
 
         logger.info(f"DEBUG Hindi HTML Gen - Words found in sentence: {words_in_sentence}")
@@ -492,8 +491,6 @@ CRITICAL: Analyze EVERY word in the sentence!"""
         Returns:
             Dictionary mapping words to their colors
         """
-        import re
-
         word_to_color = {}
 
         try:
