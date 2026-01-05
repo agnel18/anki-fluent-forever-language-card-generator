@@ -332,6 +332,9 @@ def generate_deck_progressive(
     try:
         errors = []
 
+        # Generate unique ID for this word generation to prevent filename conflicts
+        word_unique_id = _generate_unique_id()
+
         # Create output directories
         output_path = Path(output_dir)
         media_dir = output_path / "media"
@@ -373,7 +376,7 @@ def generate_deck_progressive(
             log_callback(f"Creating natural-sounding pronunciations with {audio_speed}x speed for '{word}'...")
 
         v = voice or _voice_for_language(language)
-        audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed)
+        audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed, unique_id=word_unique_id)
 
         if log_callback:
             log_callback(f"✅ Generated {len(audio_filenames)} audio files for '{word}'")
@@ -388,7 +391,7 @@ def generate_deck_progressive(
         image_filenames, used_image_urls = generate_images_pixabay(
             queries, str(media_dir), batch_name=word,
             num_images=1, pixabay_api_key=pixabay_api_key,
-            used_image_urls=used_image_urls, unique_id=deck_unique_id
+            used_image_urls=used_image_urls, unique_id=word_unique_id
         )
 
         if log_callback:
