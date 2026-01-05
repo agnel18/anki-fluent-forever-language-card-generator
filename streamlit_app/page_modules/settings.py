@@ -243,6 +243,36 @@ def render_settings_page():
             if st.button("📥 Load from Cloud", help="Load API keys from Firebase"):
                 if api_key_manager.load_api_keys_from_cloud():
                     st.rerun()
+
+        # API key validation section
+        st.markdown("**Test API Keys:**")
+        test_col1, test_col2 = st.columns(2)
+
+        with test_col1:
+            if st.button("🧪 Test Groq Key", help="Test your Groq API key with a simple request"):
+                groq_key, _ = api_key_manager.get_api_keys()
+                if groq_key:
+                    with st.spinner("Testing Groq API key..."):
+                        is_valid, message = api_key_manager.validate_api_key(groq_key, 'groq')
+                    if is_valid:
+                        st.success(message)
+                    else:
+                        st.error(message)
+                else:
+                    st.error("❌ No Groq API key set")
+
+        with test_col2:
+            if st.button("🧪 Test Pixabay Key", help="Test your Pixabay API key with a simple request"):
+                _, pixabay_key = api_key_manager.get_api_keys()
+                if pixabay_key:
+                    with st.spinner("Testing Pixabay API key..."):
+                        is_valid, message = api_key_manager.validate_api_key(pixabay_key, 'pixabay')
+                    if is_valid:
+                        st.success(message)
+                    else:
+                        st.error(message)
+                else:
+                    st.error("❌ No Pixabay API key set")
     else:
         st.warning("API key management unavailable - API key service not loaded")
 

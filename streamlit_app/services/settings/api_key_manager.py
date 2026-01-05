@@ -145,3 +145,58 @@ class APIKeyManager:
         groq_key = st.session_state.get("groq_api_key", "")
         pixabay_key = st.session_state.get("pixabay_api_key", "")
         return groq_key, pixabay_key
+
+    def validate_api_key(self, api_key: str, service: str) -> Tuple[bool, str]:
+        """
+        Validate an API key by making a test request.
+
+        Args:
+            api_key: The API key to validate
+            service: The service name ('groq' or 'pixabay')
+
+        Returns:
+            Tuple of (is_valid, message)
+        """
+        if not api_key:
+            return False, "❌ API key is empty"
+
+        try:
+            if service.lower() == 'groq':
+                # Test Groq API key with a simple completion
+                from groq import Groq
+                client = Groq(api_key=api_key)
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "user", "content": "Hello"}],
+                    max_tokens=10
+                )
+                if response.choices and response.choices[0].message.content:
+                    return True, "✅ Groq API key is valid"
+                else:
+                    return False, "❌ Groq API returned empty response"
+
+            elif service.lower() == 'pixabay':
+                # Test Pixabay API key with a simple search
+                import requests
+                url = f"https://pixabay.com/api/?key={api_key}&q=test&per_page=1"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'hits' in data:
+                        return True, "✅ Pixabay API key is valid"
+                    else:
+                        return False, "❌ Pixabay API returned unexpected format"
+                else:
+                    return False, f"❌ Pixabay API error: {response.status_code}"
+
+            else:
+                return False, f"❌ Unknown service: {service}"
+
+        except Exception as e:
+            error_msg = str(e).lower()
+            if 'unauthorized' in error_msg or 'invalid' in error_msg or 'authentication' in error_msg:
+                return False, f"❌ Invalid {service} API key"
+            elif 'rate limit' in error_msg or 'quota' in error_msg:
+                return False, f"⚠️ {service} API key valid but rate limited"
+            else:
+                return False, f"❌ {service} API error: {str(e)}"
