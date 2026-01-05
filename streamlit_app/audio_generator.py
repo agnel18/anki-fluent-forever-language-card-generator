@@ -65,6 +65,7 @@ def generate_audio(
     rate: float = 0.8,
     exact_filenames: Optional[List[str]] = None,
     language: str = "English",
+    unique_id: str = None,
 ) -> List[str]:
     """
     Batch generate audio files synchronously using Edge TTS.
@@ -87,7 +88,12 @@ def generate_audio(
         tasks = []
         for i, sentence in enumerate(sentences):
             from pathlib import Path
-            filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
+            if exact_filenames and i < len(exact_filenames):
+                filename = exact_filenames[i]
+            else:
+                # Use unique ID to prevent filename conflicts
+                unique_suffix = f"_{unique_id}" if unique_id else ""
+                filename = f"{batch_name}_{i+1:02d}{unique_suffix}.mp3"
             output_path = Path(output_dir) / filename
 
             # Use Edge TTS
@@ -109,7 +115,12 @@ def generate_audio(
     generated_files = []
     for i, success in enumerate(results):
         if success:
-            filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.mp3"
+            if exact_filenames and i < len(exact_filenames):
+                filename = exact_filenames[i]
+            else:
+                # Use unique ID to prevent filename conflicts
+                unique_suffix = f"_{unique_id}" if unique_id else ""
+                filename = f"{batch_name}_{i+1:02d}{unique_suffix}.mp3"
             generated_files.append(filename)
         else:
             generated_files.append("")  # Empty string for failed generations

@@ -77,6 +77,9 @@ def generate_complete_deck(
     Implements comprehensive error recovery and graceful degradation.
     """
     try:
+        # Generate unique ID for this deck generation to prevent filename conflicts
+        deck_unique_id = _generate_unique_id()
+
         # Initialize error tracking
         errors = []
         partial_success = True
@@ -111,7 +114,7 @@ def generate_complete_deck(
                 # 2. Generate audio (with graceful degradation)
                 try:
                     v = voice or _voice_for_language(language)
-                    audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed)
+                    audio_filenames = generate_audio([s['sentence'] for s in sentences], v, str(media_dir), batch_name=word, rate=audio_speed, unique_id=deck_unique_id)
                     audio_files.extend(audio_filenames)
                 except Exception as e:
                     errors.append({
@@ -136,7 +139,8 @@ def generate_complete_deck(
                         batch_name=word,
                         num_images=1,
                         pixabay_api_key=pixabay_api_key,
-                        used_image_urls=used_image_urls  # Pass the word-specific set
+                        used_image_urls=used_image_urls,  # Pass the word-specific set
+                        unique_id=deck_unique_id,
                     )
                     image_files.extend(image_filenames)
                 except Exception as e:
@@ -151,7 +155,7 @@ def generate_complete_deck(
 
                 # 4. Build TSV rows
                 for idx_sent, sent in enumerate(sentences):
-                    file_base = f"{word}_{idx_sent+1:02d}"
+                    file_base = f"{word}_{idx_sent+1:02d}_{deck_unique_id}"
                     _build_tsv_row(idx_sent, audio_filenames, image_filenames, sent, word, file_base, language, words_data)
 
             except Exception as e:
@@ -220,6 +224,21 @@ def generate_complete_deck(
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
+
+def _generate_unique_id() -> str:
+    """Generate a unique identifier for filenames to prevent overwrites."""
+    import datetime
+    # Use timestamp format: YYYYMMDD_HHMMSS
+    return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _create_unique_filename(base_name: str, extension: str = "", unique_id: str = None) -> str:
+    """Create a unique filename with optional extension."""
+    if unique_id is None:
+        unique_id = _generate_unique_id()
+    if extension:
+        return f"{base_name}_{unique_id}.{extension}"
+    else:
+        return f"{base_name}_{unique_id}"
 
 def _build_tsv_row(idx_sent, audio_files, image_files, sent, word, file_base, language, words_data):
     """Build a single TSV row for the Anki deck."""
@@ -369,7 +388,7 @@ def generate_deck_progressive(
         image_filenames, used_image_urls = generate_images_pixabay(
             queries, str(media_dir), batch_name=word,
             num_images=1, pixabay_api_key=pixabay_api_key,
-            used_image_urls=used_image_urls
+            used_image_urls=used_image_urls, unique_id=deck_unique_id
         )
 
         if log_callback:

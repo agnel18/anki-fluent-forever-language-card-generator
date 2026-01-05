@@ -25,6 +25,7 @@ def generate_images_pixabay(
     randomize: bool = True,
     exact_filenames: Optional[List[str]] = None,
     used_image_urls: Optional[set[str]] = None,
+    unique_id: str = None,
 ) -> Tuple[List[str], set[str]]:
     """
     Download images from Pixabay.
@@ -140,6 +141,10 @@ def generate_images_pixabay(
             img_response.raise_for_status()
 
             filename = exact_filenames[i] if exact_filenames and i < len(exact_filenames) else f"{batch_name}_{i+1:02d}.jpg"
+            # Add unique ID to prevent filename conflicts
+            if unique_id and not exact_filenames:
+                name_part, ext_part = filename.rsplit('.', 1) if '.' in filename else (filename, 'jpg')
+                filename = f"{name_part}_{unique_id}.{ext_part}"
             output_path = Path(output_dir) / filename
             with open(output_path, "wb") as f:
                 f.write(img_response.content)
