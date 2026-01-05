@@ -61,85 +61,70 @@ class EsAnalyzer(BaseGrammarAnalyzer):
         """Generate beginner-level grammar analysis prompt with word-by-word explanations"""
         base_prompt = """Analyze this ENTIRE Spanish sentence WORD BY WORD: SENTENCE_PLACEHOLDER
 
-For EACH AND EVERY INDIVIDUAL WORD in the sentence, provide:
-- Its individual meaning and pronunciation (in IPA)
-- Its grammatical role and function in this context (USE ONLY: pronoun, noun, verb, adjective, adverb, postposition, conjunction, interjection, other)
-- How it shows gender agreement (masculine/feminine/neuter)
-- How it shows number agreement (singular/plural)
-- Why it's important for learners
+For EACH word, provide:
+- Individual meaning and IPA pronunciation
+- Grammatical role (use appropriate Spanish categories)
+- Gender/number agreement
+- Color code for visualization
+- Importance for learners
 
-IMPORTANT: In Spanish, articles (el, la, los, las, un, una, unos, unas) should be classified as "other", NOT as "adjective" or "determiner".
-Prepositions (a, de, en, con, por, para, etc.) should be classified as "other", NOT as "postposition".
-Common Spanish grammatical roles: pronouns (yo, tú, él/ella, nosotros), nouns (casa, perro), verbs (ser, estar, hablar), adjectives (grande, bonito), adverbs (muy, aquí), conjunctions (y, o, pero), interjections (¡ay!, ¡hola!).
+SPANISH GRAMMATICAL ROLES (use these categories):
+- pronoun (yo, tú, él/ella, nosotros)
+- noun (casa, perro, libro)
+- verb (ser, estar, hablar, comer)
+- adjective (grande, bonito, rojo)
+- adverb (muy, aquí, rápido)
+- article_definite (el, la, los, las)
+- article_indefinite (un, una, unos, unas)
+- preposition (a, de, en, con, por, para)
+- conjunction (y, o, pero, que)
+- interjection (¡ay!, ¡hola!)
+- other (if truly doesn't fit above)
 
-Pay special attention to the target word: TARGET_PLACEHOLDER
+COLOR CODING:
+- pronoun: #FF4444
+- noun: #FFAA00
+- verb: #44FF44
+- adjective: #FF44FF
+- adverb: #44FFFF
+- article_definite: #4A90E2
+- article_indefinite: #7ED321
+- preposition: #F5A623
+- conjunction: #888888
+- interjection: #888888
+- other: #AAAAAA
 
-Return a JSON object with detailed word analysis for ALL words in the sentence:
+Pay special attention to: TARGET_PLACEHOLDER
+
+Return JSON with word-by-word analysis:
 {
   "words": [
     {
       "word": "la",
-      "individual_meaning": "the (feminine singular definite article)",
+      "individual_meaning": "the (feminine singular)",
       "pronunciation": "la",
-      "grammatical_role": "other",
-      "color": "#888888",
+      "grammatical_role": "article_definite",
+      "color": "#4A90E2",
       "gender_agreement": "feminine",
       "number_agreement": "singular",
       "importance": "Definite article indicating specificity"
-    },
-    {
-      "word": "casa",
-      "individual_meaning": "house/home",
-      "pronunciation": "ˈkasa",
-      "grammatical_role": "noun",
-      "color": "#FFAA00",
-      "gender_agreement": "feminine",
-      "number_agreement": "singular",
-      "importance": "Common noun for buildings and homes"
-    },
-    {
-      "word": "es",
-      "individual_meaning": "is (third person singular of ser)",
-      "pronunciation": "es",
-      "grammatical_role": "verb",
-      "color": "#44FF44",
-      "gender_agreement": "n/a",
-      "number_agreement": "singular",
-      "importance": "Essential copula verb for identity and characteristics"
     }
   ],
   "word_combinations": [
     {
-      "word": "la casa",
       "words": ["la", "casa"],
       "combined_meaning": "the house",
-      "grammatical_structure": "article + noun",
-      "usage_notes": "Basic noun phrase construction"
+      "structure": "article + noun"
     }
   ],
   "explanations": {
-    "gender_agreement": "Spanish nouns have grammatical gender (masculine/feminine) that affects articles and adjectives",
-    "number_agreement": "Words agree in number (singular/plural) throughout noun phrases",
-    "verb_conjugation": "Verbs change endings to match subject person, number, tense, and mood",
-    "word_order": "Subject-Verb-Object word order, but flexible due to case markings",
-    "pronunciation": "Spanish uses consistent phonetic spelling with stress on penultimate syllable"
+    "gender_agreement": "Spanish nouns have grammatical gender",
+    "number_agreement": "Words agree in singular/plural",
+    "articles": "Definite (el/la) vs indefinite (un/una) articles"
   }
 }
 
-CRITICAL: Analyze EVERY word in the sentence, not just the target word!
-CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
-CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- other: #888888 (gray)
-CRITICAL: Do NOT use descriptions like "definite article" or "action verb" - use ONLY the exact words above!
-CRITICAL: If unsure, use "other" rather than making up a new category!"""
+ANALYZE EVERY WORD in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
@@ -153,17 +138,19 @@ Provide detailed analysis including:
 - Prepositional phrases and their functions
 - Word combinations and compound structures
 
-IMPORTANT: Articles (el, la, los, las, un, una, unos, unas) should be classified as "other".
-Prepositions (a, de, en, con, por, para, desde, hasta) should be classified as "other".
+Use these grammatical categories:
+- pronoun, noun, verb, adjective, adverb, article_definite, article_indefinite, preposition, conjunction, interjection, other
 
-Pay special attention to the target word: TARGET_PLACEHOLDER
+COLOR CODING: Same as beginner level with distinct colors for articles and prepositions.
 
-Return a JSON object with comprehensive analysis:
+Pay special attention to: TARGET_PLACEHOLDER
+
+Return JSON with comprehensive analysis:
 {
   "words": [
     {
       "word": "habla",
-      "individual_meaning": "speaks/is speaking (third person singular present)",
+      "individual_meaning": "speaks/is speaking",
       "pronunciation": "ˈaβla",
       "grammatical_role": "verb",
       "color": "#44FF44",
@@ -171,49 +158,22 @@ Return a JSON object with comprehensive analysis:
       "number_agreement": "singular",
       "verb_conjugation": "hablar (regular -ar verb, present indicative)",
       "importance": "Shows ongoing action or habitual activity"
-    },
-    {
-      "word": "español",
-      "individual_meaning": "Spanish (language)",
-      "pronunciation": "espaˈɲol",
-      "grammatical_role": "noun",
-      "color": "#FFAA00",
-      "gender_agreement": "masculine",
-      "number_agreement": "singular",
-      "case_marking": "direct object (implied)",
-      "importance": "Language names function as nouns"
     }
   ],
   "word_combinations": [
     {
-      "word": "habla español",
       "words": ["habla", "español"],
       "combined_meaning": "speaks Spanish",
-      "grammatical_structure": "verb + direct object",
-      "usage_notes": "Common construction for language proficiency"
+      "structure": "verb + direct object"
     }
   ],
   "explanations": {
-    "verb_conjugation": "Regular verbs follow patterns (-ar, -er, -ir) with stem changes in some cases",
-    "gender_agreement": "All adjectives, articles, and some pronouns agree with noun gender",
-    "number_agreement": "Plural forms affect entire noun phrases (nouns, adjectives, articles)",
-    "pronoun_system": "Complex system with subject, object, and reflexive pronouns",
-    "prepositional_usage": "Prepositions determine case relationships and idiomatic expressions"
+    "verb_conjugation": "Regular verbs follow patterns (-ar, -er, -ir)",
+    "gender_agreement": "Articles, adjectives agree with noun gender",
+    "articles": "Definite vs indefinite articles affect meaning",
+    "prepositions": "Determine case relationships and idioms"
   }
 }
-
-CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
-CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- other: #888888 (gray)
-CRITICAL: Do NOT use descriptions like "definite article" or "action verb" - use ONLY the exact words above!
 
 Focus on grammatical relationships and morphological patterns."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
@@ -229,11 +189,11 @@ Analyze complex features including:
 - Idiomatic expressions and figurative language
 - Advanced verb forms (perfect, progressive, compound tenses)
 
-IMPORTANT: Articles and prepositions should be classified as "other".
+Use expanded grammatical categories including articles and prepositions with distinct roles.
 
-Pay special attention to the target word: TARGET_PLACEHOLDER
+Pay special attention to: TARGET_PLACEHOLDER
 
-Return a JSON object with advanced grammatical analysis:
+Return JSON with advanced grammatical analysis:
 {
   "words": [
     {
@@ -246,51 +206,26 @@ Return a JSON object with advanced grammatical analysis:
       "number_agreement": "singular",
       "verb_conjugation": "haber (auxiliary) + past participle, pluperfect subjunctive",
       "importance": "Shows hypothetical past actions in conditional sentences"
-    },
-    {
-      "word": "tomado",
-      "individual_meaning": "taken (past participle)",
-      "pronunciation": "toˈmaðo",
-      "grammatical_role": "verb",
-      "color": "#44FF44",
-      "gender_agreement": "masculine",
-      "number_agreement": "singular",
-      "verb_conjugation": "tomar (regular -ar verb, past participle)",
-      "importance": "Forms perfect tenses and passive voice"
     }
   ],
   "word_combinations": [
     {
-      "word": "hubiera tomado",
       "words": ["hubiera", "tomado"],
       "combined_meaning": "had taken (hypothetical)",
-      "grammatical_structure": "auxiliary verb + past participle",
+      "structure": "auxiliary verb + past participle",
       "usage_notes": "Pluperfect subjunctive in conditional sentences"
     }
   ],
   "explanations": {
-    "subjunctive_mood": "Subjunctive expresses doubt, emotion, necessity, and hypothetical situations",
+    "subjunctive_mood": "Expresses doubt, emotion, necessity, hypothetical situations",
     "compound_tenses": "Perfect tenses use haber + past participle",
     "passive_voice": "Ser + past participle forms passive constructions",
-    "relative_clauses": "Complex sentences with relative pronouns (que, quien, donde)",
-    "impersonal_constructions": "Se + verb for impersonal actions or passive voice",
-    "morphological_complexity": "Words can have multiple layers of agreement and conjugation",
-    "sentence_structure": "Advanced sentence structure with multiple clauses and complex verb forms"
+    "relative_clauses": "Complex sentences with relative pronouns",
+    "impersonal_constructions": "Se + verb for impersonal actions"
   }
 }
 
-CRITICAL: grammatical_role MUST be EXACTLY one of these 9 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "other"
-CRITICAL: For EACH word, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- other: #888888 (gray)
-CRITICAL: Analyze EVERY word in the sentence, not just the target word!"""
+ANALYZE EVERY WORD in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:

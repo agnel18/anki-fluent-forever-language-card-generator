@@ -2,6 +2,7 @@
 # Abstract base class for all language-specific grammar analyzers
 
 import abc
+import json
 import logging
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
@@ -69,7 +70,6 @@ class BaseGrammarAnalyzer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    @abc.abstractmethod
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """
         Parse AI response into standardized grammar analysis format.
@@ -83,6 +83,115 @@ class BaseGrammarAnalyzer(abc.ABC):
             Dictionary with grammatical elements, explanations, etc.
         """
         pass
+
+    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
+        """
+        Generate language-specific AI prompt for batch grammar analysis.
+        Default implementation creates individual prompts and combines them.
+        Subclasses can override for more efficient batch processing.
+
+        Args:
+            complexity: 'beginner', 'intermediate', or 'advanced'
+            sentences: List of sentences to analyze
+            target_word: The target word being learned
+            native_language: User's native language for explanations
+
+        Returns:
+            Formatted batch prompt string for the AI model
+        """
+        # Default implementation - create batch format
+        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+
+        return f"""Analyze the grammar of these {self.language_name} sentences and provide detailed analysis for each one.
+
+Target word: "{target_word}"
+Language: {self.language_name}
+Complexity level: {complexity}
+Analysis should be in {native_language}
+
+Sentences to analyze:
+{sentences_text}
+
+Return your analysis in this exact JSON format:
+{{
+  "batch_results": [
+    {{
+      "sentence_index": 1,
+      "sentence": "{sentences[0] if sentences else ''}",
+      "words": [
+        {{
+          "word": "example",
+          "grammatical_role": "noun",
+          "category": "nouns",
+          "explanation": "Explanation in {native_language}"
+        }}
+      ],
+      "word_combinations": [],
+      "explanations": {{
+        "sentence_structure": "Brief grammatical summary in {native_language}",
+        "complexity_notes": "Notes about {complexity} level structures used"
+      }}
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Analyze ALL {len(sentences)} sentences in this single response
+- Each sentence must have complete word-by-word grammatical analysis
+- Use {self.language_name}-specific grammatical categories
+- Provide explanations in {native_language}
+- Return ONLY the JSON object, no additional text or markdown formatting
+"""
+
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response into list of standardized grammar analysis formats.
+        Default implementation parses batch JSON and calls individual parse method for each.
+        Subclasses can override for more efficient batch parsing.
+
+        Args:
+            ai_response: Raw batch response from AI model
+            sentences: List of original sentences
+            complexity: Complexity level used for analysis
+            native_language: User's native language
+
+        Returns:
+            List of dictionaries with grammatical elements, explanations, etc.
+        """
+        try:
+            # Extract JSON from response
+            if "```json" in ai_response:
+                ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+            elif "```" in ai_response:
+                ai_response = ai_response.split("```")[1].split("```")[0].strip()
+
+            batch_data = json.loads(ai_response)
+            if "batch_results" not in batch_data:
+                raise ValueError("Missing batch_results in response")
+
+            results = []
+            for item in batch_data["batch_results"]:
+                sentence_index = item.get("sentence_index", 0) - 1  # Convert to 0-based
+                if 0 <= sentence_index < len(sentences):
+                    sentence = sentences[sentence_index]
+                    # Convert batch item to individual format and parse
+                    individual_response = json.dumps(item)
+                    parsed = self.parse_grammar_response(individual_response, complexity, sentence)
+                    results.append(parsed)
+                else:
+                    results.append({
+                        "sentence": sentences[len(results)] if len(results) < len(sentences) else "",
+                        "elements": {},
+                        "explanations": {"sentence_structure": "Batch parsing failed", "complexity_notes": ""},
+                        "word_explanations": []
+                    })
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Batch parsing failed: {e}")
+            # Fallback to individual parsing (less efficient but works)
+            return [self.parse_grammar_response(ai_response, complexity, sentence) for sentence in sentences]
 
     @abc.abstractmethod
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:

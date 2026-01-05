@@ -8,6 +8,9 @@ import io
 import atexit
 import os
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
 # ============================================================================
 # MAIN APPLICATION - MULTI-PAGE WITH SIDEBAR NAVIGATION
 # ============================================================================

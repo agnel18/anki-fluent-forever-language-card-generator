@@ -59,52 +59,74 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
 
     def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
         """Generate beginner-level grammar analysis prompt with detailed character-by-character explanations"""
-        base_prompt = """MANDATORY REQUIREMENT: Analyze EVERY SINGLE CHARACTER in this Chinese sentence - NO EXCEPTIONS!
+        base_prompt = """Analyze EVERY CHARACTER in this Chinese sentence: SENTENCE_PLACEHOLDER
 
-Analyze this ENTIRE Chinese (Simplified) sentence CHARACTER BY CHARACTER: SENTENCE_PLACEHOLDER
+For EACH character, provide:
+- Individual meaning and pronunciation
+- Grammatical role (use appropriate Chinese categories)
+- Character combinations and word formation
+- Color code for visualization
+- Importance for learners
 
-For EACH AND EVERY INDIVIDUAL CHARACTER in the sentence, provide:
-- Its individual meaning and pronunciation
-- Its grammatical role and function in this context (USE ONLY: pronoun, noun, verb, adjective, adverb, postposition, conjunction, interjection, particles, measure_words, other)
-- How it combines with adjacent characters (if applicable)
-- Common words it forms and their meanings
-- Why it's important for learners
+CHINESE GRAMMATICAL ROLES (词类) - Based on comprehensive Chinese linguistics:
 
-IMPORTANT: In Chinese, particles (的, 了, 着, 过, 们, etc.) should be classified as "particles".
-Measure words (个, 本, 杯, etc.) should be classified as "measure_words".
-Prepositions are not used in Chinese - use "other" for any spatial/temporal markers.
+CONTENT WORDS (实词):
+- noun (名词): 书、桌子、北京、水、人、爱情 - Names people, things, places, concepts
+- pronoun (代词): 我、你、他、这、那、谁、什么、大家 - Replaces nouns
+- verb (动词): 是、吃、跑、爱、想、知道、可以 - Actions, states, changes, existence
+- adjective (形容词): 大、红、好、漂亮、快乐、雪白 - Describes quality, property, state
+- distinguishing_adjective (区别词): 男、女、公、私、单、双、大型 - Only used attributively
+- numeral (数词): 一、二、三、第一、半、几、许多 - Expresses quantity or order
+- measure_word (量词): 个、本、只、张、杯、次、群、辆 - Used with numbers to count nouns
+- adverb (副词): 很、都、也、不、已经、正在、非常、马上 - Modifies verbs, adjectives, adverbs
+- time_word (时间词): 今天、现在、昨天、早上、星期三 - Special nouns indicating time
+- locality_word (方位词): 上面、里面、东、左、前、附近 - Special nouns indicating location/direction
+- interjection (叹词): 啊、哦、哎呀、哇、嗯、嘿 - Expresses strong emotion
+- onomatopoeia (拟声词): 砰、哗哗、汪汪、咚咚、叮咚 - Imitates natural sounds
 
-Pay special attention to the target word: TARGET_PLACEHOLDER
+FUNCTION WORDS (虚词):
+- preposition (介词): 在、从、把、被、对于、关于、向、跟 - Introduces prepositional phrases
+- conjunction (连词): 和、但是、因为、所以、如果、虽然、或者 - Connects words, phrases, clauses
+- structural_particle (结构助词): 的、地、得、所 - Structural particles
+- aspect_particle (动态助词): 了、着、过 - Aspect markers (completion, ongoing, experience)
+- plural_particle (们): 们 - Plural marker
+- modal_particle (语气助词): 吗、呢、吧、啊、呀、咯、喽 - Expresses mood, question, tone
+- other (其他): if truly doesn't fit above
 
-Return a JSON object with detailed character analysis for ALL characters in the sentence:
+COLOR CODING (区分实词和虚词):
+- noun: #FFAA00
+- pronoun: #FF4444
+- verb: #44FF44
+- adjective: #FF44FF
+- distinguishing_adjective: #FF66FF
+- numeral: #FFFF44
+- measure_word: #AA44FF
+- adverb: #44FFFF
+- time_word: #FFA500
+- locality_word: #FF8C00
+- preposition: #F5A623
+- conjunction: #888888
+- structural_particle: #9013FE
+- aspect_particle: #8A2BE2
+- plural_particle: #9932CC
+- modal_particle: #DA70D6
+- interjection: #888888
+- onomatopoeia: #FFD700
+- other: #AAAAAA
+
+Pay special attention to: TARGET_PLACEHOLDER
+
+Return JSON with character-by-character analysis:
 {
-  "characters": [
+  "elements": [
     {
-      "character": "这",
-      "individual_meaning": "this (demonstrative pronoun)",
+      "word": "这",
+      "individual_meaning": "this",
       "pronunciation": "zhè",
       "grammatical_role": "pronoun",
       "color": "#FF4444",
-      "combinations": ["这个 (zhège) - this (with measure word)", "这里 (zhèlǐ) - here"],
-      "importance": "Essential for indicating proximity and specificity"
-    },
-    {
-      "character": "是",
-      "individual_meaning": "to be/am/are/is (linking verb)",
-      "pronunciation": "shì",
-      "grammatical_role": "verb",
-      "color": "#44FF44",
-      "combinations": ["不是 (búshì) - is not", "还是 (háishì) - or/still"],
-      "importance": "Fundamental linking verb for equations and identities"
-    },
-    {
-      "character": "个",
-      "individual_meaning": "measure word for general objects",
-      "pronunciation": "gè",
-      "grammatical_role": "measure_words",
-      "color": "#AA44FF",
-      "combinations": ["一个 (yīgè) - one (general)", "这个 (zhège) - this (general)"],
-      "importance": "Essential measure word used with numbers and demonstratives"
+      "combinations": ["这个 - this", "这里 - here"],
+      "importance": "Demonstrative pronoun for proximity"
     }
   ],
   "word_combinations": [
@@ -112,34 +134,17 @@ Return a JSON object with detailed character analysis for ALL characters in the 
       "word": "这本书",
       "characters": ["这", "本", "书"],
       "combined_meaning": "this book",
-      "grammatical_structure": "demonstrative pronoun + measure word + noun",
-      "usage_notes": "Measure word '本' is used for books and similar bound objects"
+      "structure": "demonstrative + measure word + noun"
     }
   ],
   "explanations": {
-    "character_analysis": "Each Chinese character has its own meaning and can combine to form compound words",
-    "measure_words": "Measure words (量词) are required between numbers/demonstratives and nouns",
-    "particles": "Particles (助词) add grammatical functions like possession, aspect, and plurality",
-    "sentence_structure": "Subject-Verb-Object word order with characters combining into meaningful units"
+    "character_analysis": "Each character has meaning and combines to form words",
+    "particles": "Grammatical particles modify meaning and structure",
+    "measure_words": "Required between numbers and nouns"
   }
 }
 
-CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!
-CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
-CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- particles: #AA44FF (purple)
-- measure_words: #AA44FF (purple)
-- other: #888888 (gray)
-CRITICAL: Do NOT use descriptions like "demonstrative pronoun" or "linking verb" - use ONLY the exact words above!
-CRITICAL: If unsure, use "other" rather than making up a new category!"""
+ANALYZE EVERY CHARACTER in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
@@ -149,35 +154,38 @@ CRITICAL: If unsure, use "other" rather than making up a new category!"""
 Analyze this Chinese (Simplified) sentence CHARACTER BY CHARACTER for intermediate concepts: SENTENCE_PLACEHOLDER
 
 Provide detailed analysis including:
-- Aspect markers and tense expressions
-- Particle functions and discourse relationships
-- Measure word usage and quantification
+- Aspect markers and tense expressions (aspect_particle)
+- Particle functions and discourse relationships (modal_particle, structural_particle)
+- Measure word usage and quantification (measure_word)
 - Complex character combinations and compound words
 - Topic-comment structure patterns
 
-IMPORTANT: Particles (的, 了, 着, 过, 们, etc.) should be classified as "particles".
-Measure words (个, 本, 杯, etc.) should be classified as "measure_words".
+IMPORTANT: Use specific grammatical categories from the Chinese linguistics system:
+- aspect_particle: 了, 着, 过 (aspect markers)
+- modal_particle: 吗, 呢, 吧, 啊, 呀 (tone/mood particles)
+- structural_particle: 的, 地, 得, 所 (structural particles)
+- measure_word: 个, 本, 杯, 次, 张, 只 (measure/classifier words)
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with comprehensive analysis:
 {
-  "characters": [
+  "elements": [
     {
-      "character": "正",
+      "word": "正",
       "individual_meaning": "just/right/correct",
       "pronunciation": "zhèng",
-      "grammatical_role": "particles",
-      "color": "#AA44FF",
+      "grammatical_role": "aspect_particle",
+      "color": "#8A2BE2",
       "combinations": ["正在 (zhèngzài) - progressive aspect 'is doing'", "正 (zhèng) - just/now"],
       "aspect_function": "Part of progressive aspect marker indicating ongoing action"
     },
     {
-      "character": "在",
+      "word": "在",
       "individual_meaning": "at/in/on (location particle)",
       "pronunciation": "zài",
-      "grammatical_role": "particles",
-      "color": "#AA44FF",
+      "grammatical_role": "preposition",
+      "color": "#F5A623",
       "combinations": ["正在 (zhèngzài) - progressive aspect", "在北京 (zài běijīng) - in Beijing"],
       "importance": "Essential particle for location and progressive aspect"
     }
@@ -192,30 +200,14 @@ Return a JSON object with comprehensive analysis:
     }
   ],
   "explanations": {
-    "aspect_system": "Aspect markers show how actions unfold over time, not just tense",
-    "particles": "Particles add grammatical functions like aspect, possession, and plurality",
-    "measure_words": "Measure words quantify nouns and are required in many constructions",
-    "character_combinations": "Characters combine to create complex grammatical meanings",
-    "topic_comment": "Topic-comment structure where old information comes first"
+    "aspect_system": "Aspect markers show how actions unfold over time",
+    "particle_types": "Structural (的), aspect (了/着/过), modal (吗/呢), plural (们)",
+    "measure_words": "Required between numbers and nouns",
+    "content_vs_function": "实词 (content) vs 虚词 (function) words"
   }
 }
 
-CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
-CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- particles: #AA44FF (purple)
-- measure_words: #AA44FF (purple)
-- other: #888888 (gray)
-CRITICAL: Do NOT use descriptions like "aspect marker component" or "location particle" - use ONLY the exact words above!
-
-Focus on grammatical relationships and morphological patterns."""
+Focus on grammatical relationships and character combinations."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
@@ -225,36 +217,39 @@ Focus on grammatical relationships and morphological patterns."""
 Perform ADVANCED morphological and syntactic analysis of this Chinese (Simplified) sentence: SENTENCE_PLACEHOLDER
 
 Analyze complex features including:
-- Modal and discourse particles
-- Complex aspectual and pragmatic functions
-- Structural particles and disposal constructions
+- Modal and discourse particles (modal_particle)
+- Complex aspectual and pragmatic functions (aspect_particle)
+- Structural particles and disposal constructions (structural_particle)
 - Topic-comment structure and information flow
-- Advanced measure word usage and quantification
+- Advanced measure word usage and quantification (measure_word)
 
-IMPORTANT: Particles (的, 了, 着, 过, 们, 把, 被, etc.) should be classified as "particles".
-Measure words should be classified as "measure_words".
+IMPORTANT: Use specific grammatical categories from the Chinese linguistics system:
+- structural_particle: 的, 地, 得, 所, 把, 被 (structural particles, disposal constructions)
+- aspect_particle: 了, 着, 过 (aspect markers for completion, duration, experience)
+- modal_particle: 吗, 呢, 吧, 啊, 呀, 咯, 喽 (tone, mood, discourse particles)
+- measure_word: 个, 本, 杯, 次, 张, 只, 群, 辆 (measure/classifier words)
 
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with advanced grammatical analysis:
 {
-  "characters": [
+  "elements": [
     {
-      "character": "把",
+      "word": "把",
       "individual_meaning": "to hold/grasp",
       "pronunciation": "bǎ",
-      "grammatical_role": "particles",
-      "color": "#AA44FF",
+      "grammatical_role": "structural_particle",
+      "color": "#9013FE",
       "combinations": ["把字句 (bǎzìjù) - 'ba' construction for disposal/formal objects"],
       "pragmatic_function": "Introduces formal object in disposal constructions",
       "importance": "Creates topic-comment structure with object fronting"
     },
     {
-      "character": "了",
+      "word": "了",
       "individual_meaning": "particle indicating completion/aspect",
       "pronunciation": "le",
-      "grammatical_role": "particles",
-      "color": "#AA44FF",
+      "grammatical_role": "aspect_particle",
+      "color": "#8A2BE2",
       "combinations": ["吃了 (chīle) - ate (completed action)", "去了 (qùle) - went (completed)"],
       "aspect_function": "Perfective aspect particle indicating completed action",
       "importance": "Essential for aspect marking and sentence completion"
@@ -270,31 +265,16 @@ Return a JSON object with advanced grammatical analysis:
     }
   ],
   "explanations": {
-    "modal_particles": "Modal particles express speaker attitude and discourse functions",
-    "structural_particles": "Structural particles organize complex sentence grammar (把, 被, etc.)",
-    "aspect_particles": "Aspect particles mark completion, duration, and experience (了, 着, 过)",
-    "discourse_markers": "Discourse markers connect ideas and show relationships",
-    "topic_comment_structure": "Topic-comment structure where topic precedes comment",
-    "disposal_constructions": "把 (bǎ) and 被 (bèi) constructions for object manipulation",
-    "measure_words": "Complex measure word system for precise quantification",
-    "character_level_analysis": "Each character contributes to complex grammatical meanings"
+    "modal_particles": "Express speaker attitude and discourse functions (吗, 呢, 吧, 啊, 呀)",
+    "structural_particles": "Organize complex sentence grammar (的, 地, 得, 把, 被, 所)",
+    "aspect_particles": "Mark completion, duration, experience (了, 着, 过)",
+    "particle_subtypes": "Structural, aspect, modal, plural particles with distinct functions",
+    "disposal_constructions": "把 (bǎ) and 被 (bèi) constructions for object fronting",
+    "content_vs_function": "实词 (content words) vs 虚词 (function words) distinction"
   }
 }
 
-CRITICAL: grammatical_role MUST be EXACTLY one of these 11 values with NO variations: "pronoun", "noun", "verb", "adjective", "adverb", "postposition", "conjunction", "interjection", "particles", "measure_words", "other"
-CRITICAL: For EACH character, include the EXACT color hex code from this mapping:
-- pronoun: #FF4444 (red)
-- noun: #FFAA00 (orange)
-- verb: #44FF44 (green)
-- adjective: #FF44FF (magenta)
-- adverb: #44FFFF (cyan)
-- postposition: #4444FF (blue)
-- conjunction: #888888 (gray)
-- interjection: #888888 (gray)
-- particles: #AA44FF (purple)
-- measure_words: #AA44FF (purple)
-- other: #888888 (gray)
-CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
+ANALYZE EVERY CHARACTER in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
@@ -348,42 +328,79 @@ CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
             return self._transform_to_standard_format(fallback_parsed, complexity)
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Return vibrant, educational color scheme for Chinese grammatical elements"""
+        """Return comprehensive color scheme for Chinese grammatical elements based on linguistic categories"""
         schemes = {
             "beginner": {
-                "pronouns": "#FF4444",         # Bright Red - People/references
-                "verbs": "#44FF44",            # Bright Green - Actions/states
-                "particles": "#4444FF",        # Bright Blue - Grammar helpers
-                "nouns": "#FFAA00",            # Orange - Things/objects
-                "adjectives": "#FF44FF",       # Magenta - Descriptions
-                "adverbs": "#44FFFF",          # Cyan - How/when/where
-                "other": "#888888"             # Gray - Other/unknown
+                # Content words (实词)
+                "noun": "#FFAA00",                    # Orange - Things/objects
+                "pronoun": "#FF4444",                 # Red - People/references
+                "verb": "#44FF44",                    # Green - Actions/states
+                "adjective": "#FF44FF",               # Magenta - Descriptions
+                "distinguishing_adjective": "#FF66FF", # Light Magenta - Special adjectives
+                "numeral": "#FFFF44",                 # Yellow - Numbers
+                "measure_word": "#AA44FF",            # Purple - Quantity words
+                "adverb": "#44FFFF",                  # Cyan - How/when/where
+                "time_word": "#FFA500",               # Orange-red - Time
+                "locality_word": "#FF8C00",           # Dark orange - Location/direction
+                "interjection": "#FFD700",            # Gold - Emotion
+                "onomatopoeia": "#FFD700",            # Gold - Sound imitation
+
+                # Function words (虚词)
+                "preposition": "#F5A623",             # Orange - Prepositions
+                "conjunction": "#888888",             # Gray - Connectors
+                "structural_particle": "#9013FE",     # Purple - Structure
+                "aspect_particle": "#8A2BE2",         # Blue-violet - Aspect
+                "plural_particle": "#9932CC",         # Dark orchid - Plural
+                "modal_particle": "#DA70D6",          # Plum - Modal
+                "other": "#AAAAAA"                    # Light gray - Other
             },
             "intermediate": {
-                "pronouns": "#FF4444",         # Bright Red
-                "verbs": "#44FF44",            # Bright Green
-                "particles": "#4444FF",        # Bright Blue
-                "nouns": "#FFAA00",            # Orange
-                "adjectives": "#FF44FF",       # Magenta
-                "adverbs": "#44FFFF",          # Cyan
-                "aspect_markers": "#AAFF44",   # Lime Green - Time expressions
-                "measure_words": "#FF8844",    # Coral - Quantity words
-                "other": "#888888"             # Gray
+                # Content words (实词)
+                "noun": "#FFAA00",
+                "pronoun": "#FF4444",
+                "verb": "#44FF44",
+                "adjective": "#FF44FF",
+                "distinguishing_adjective": "#FF66FF",
+                "numeral": "#FFFF44",
+                "measure_word": "#AA44FF",
+                "adverb": "#44FFFF",
+                "time_word": "#FFA500",
+                "locality_word": "#FF8C00",
+                "interjection": "#FFD700",
+                "onomatopoeia": "#FFD700",
+
+                # Function words (虚词)
+                "preposition": "#F5A623",
+                "conjunction": "#888888",
+                "structural_particle": "#9013FE",
+                "aspect_particle": "#8A2BE2",
+                "plural_particle": "#9932CC",
+                "modal_particle": "#DA70D6",
+                "other": "#AAAAAA"
             },
             "advanced": {
-                "pronouns": "#FF4444",         # Bright Red
-                "verbs": "#44FF44",            # Bright Green
-                "particles": "#4444FF",        # Bright Blue
-                "nouns": "#FFAA00",            # Orange
-                "adjectives": "#FF44FF",       # Magenta
-                "adverbs": "#44FFFF",          # Cyan
-                "aspect_markers": "#AAFF44",   # Lime Green
-                "measure_words": "#FF8844",    # Coral
-                "modal_particles": "#AA44FF",  # Purple - Tone/emotion
-                "structural_particles": "#FFAA88", # Light Coral
-                "discourse_markers": "#88FFAA",    # Mint
-                "sentence_final_particles": "#FFFF44", # Yellow
-                "other": "#888888"             # Gray
+                # Content words (实词)
+                "noun": "#FFAA00",
+                "pronoun": "#FF4444",
+                "verb": "#44FF44",
+                "adjective": "#FF44FF",
+                "distinguishing_adjective": "#FF66FF",
+                "numeral": "#FFFF44",
+                "measure_word": "#AA44FF",
+                "adverb": "#44FFFF",
+                "time_word": "#FFA500",
+                "locality_word": "#FF8C00",
+                "interjection": "#FFD700",
+                "onomatopoeia": "#FFD700",
+
+                # Function words (虚词) - more distinctions
+                "preposition": "#F5A623",
+                "conjunction": "#888888",
+                "structural_particle": "#9013FE",
+                "aspect_particle": "#8A2BE2",
+                "plural_particle": "#9932CC",
+                "modal_particle": "#DA70D6",
+                "other": "#AAAAAA"
             }
         }
 
@@ -397,26 +414,43 @@ CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
 
         try:
             # Check if essential elements are present
-            characters = parsed_data.get('characters', [])
+            elements = parsed_data.get('elements', [])
             word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
 
             # Basic validation checks
-            has_characters = len(characters) > 0
+            has_elements = len(elements) > 0
             has_combinations = len(word_combinations) > 0
             has_explanations = len(explanations) > 0
+
+            # Handle both dict format (from test) and list format (from actual parsing)
+            element_items = []
+            if isinstance(elements, dict):
+                # Dict format: {'nouns': [...], 'verbs': [...]}
+                for category_items in elements.values():
+                    if isinstance(category_items, list):
+                        element_items.extend(category_items)
+            elif isinstance(elements, list):
+                # List format: [{'word': '...', ...}, ...]
+                element_items = elements
 
             # CRITICAL: Check that EVERY Chinese character in the sentence is analyzed
             chinese_chars_in_sentence = set(re.findall(r'[\u4e00-\u9fff]', original_sentence))
             analyzed_chars = set()
 
-            for char_data in characters:
-                char = char_data.get('character', '')
-                if char and char in chinese_chars_in_sentence:
-                    analyzed_chars.add(char)
+            for element_data in element_items:
+                word = element_data.get('word', '')
+                # Add all characters from the word
+                for char in word:
+                    if char in chinese_chars_in_sentence:
+                        analyzed_chars.add(char)
 
             # For Chinese, we REQUIRE 100% character coverage - every character must be analyzed
             char_coverage = len(chinese_chars_in_sentence.intersection(analyzed_chars)) / len(chinese_chars_in_sentence) if chinese_chars_in_sentence else 1.0
+
+            # If sentence has no Chinese characters, return low confidence
+            if not chinese_chars_in_sentence:
+                return 0.1
 
             # If not all characters are analyzed, this is a critical failure
             if char_coverage < 1.0:
@@ -424,7 +458,7 @@ CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
                 return 0.3  # Very low score for incomplete character analysis
 
             # Calculate confidence score
-            base_score = 0.9 if (has_characters and has_explanations) else 0.6
+            base_score = 0.9 if (has_elements and has_explanations) else 0.6
             coverage_bonus = char_coverage * 0.1  # Bonus for complete coverage
             combination_bonus = 0.05 if has_combinations else 0
 
@@ -541,24 +575,55 @@ CRITICAL: Analyze EVERY SINGLE CHARACTER in the sentence - NO EXCEPTIONS!"""
         """Map grammatical role descriptions to color category names using Chinese grammar rules"""
         role_lower = grammatical_role.lower()
 
-        # Chinese-specific grammatical role mapping
-        # Order matters: primary categories before secondary descriptors
-        if any(keyword in role_lower for keyword in ['particle', 'marker', 'aspect', 'modal', 'structural']):
-            return 'particles'
-        elif any(keyword in role_lower for keyword in ['pronoun', 'demonstrative', 'personal']):
-            return 'pronouns'
-        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state']) and 'noun' not in role_lower:
-            return 'verbs'
-        elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject']):
-            return 'nouns'
-        elif any(keyword in role_lower for keyword in ['adjective', 'description', 'quality']):
-            return 'adjectives'
-        elif any(keyword in role_lower for keyword in ['adverb', 'manner', 'time', 'place']):
-            return 'adverbs'
-        elif any(keyword in role_lower for keyword in ['measure', 'quantity', 'classifier']):
-            return 'measure_words'
-        else:
+        # Chinese-specific grammatical role mapping - updated for 16-category system
+        # Content words (实词) - primary categories - ORDER MATTERS: more specific first
+        if any(keyword in role_lower for keyword in ['pronoun', 'demonstrative', 'personal', 'reflexive']):
+            return 'pronoun'
+        elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject', 'thing', 'place', 'name']):
+            return 'noun'
+        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state', 'predicate']) and 'noun' not in role_lower:
+            return 'verb'
+        elif any(keyword in role_lower for keyword in ['adjective', 'description', 'quality', 'attribute']):
+            return 'adjective'
+        elif any(keyword in role_lower for keyword in ['distinguishing_adjective', 'differentiating', 'distinguishing']):
+            return 'distinguishing_adjective'
+        elif any(keyword in role_lower for keyword in ['numeral', 'number', 'cardinal', 'ordinal']):
+            return 'numeral'
+        elif any(keyword in role_lower for keyword in ['measure_word', 'measure', 'classifier', 'counter']):
+            return 'measure_word'
+        elif any(keyword in role_lower for keyword in ['adverb', 'manner', 'degree', 'frequency']):
+            return 'adverb'
+        elif any(keyword in role_lower for keyword in ['time_word', 'time', 'temporal', 'duration']):
+            return 'time_word'
+        elif any(keyword in role_lower for keyword in ['locality_word', 'locality', 'location', 'direction', 'spatial']):
+            return 'locality_word'
+        elif any(keyword in role_lower for keyword in ['interjection', 'exclamation', 'emotion', 'feeling']):
+            return 'interjection'
+        elif any(keyword in role_lower for keyword in ['onomatopoeia', 'sound', 'imitative', 'mimicry']):
+            return 'onomatopoeia'
+
+        # Function words (虚词) - secondary categories
+        elif any(keyword in role_lower for keyword in ['preposition', 'prepositional']):
+            return 'preposition'
+        elif any(keyword in role_lower for keyword in ['conjunction', 'connective', 'coordinating', 'subordinating']):
+            return 'conjunction'
+        elif any(keyword in role_lower for keyword in ['structural_particle', 'structural', 'possessive', 'attributive']):
+            return 'structural_particle'
+        elif any(keyword in role_lower for keyword in ['aspect_particle', 'aspect', 'progressive', 'perfective', 'experiential']):
+            return 'aspect_particle'
+        elif any(keyword in role_lower for keyword in ['plural_particle', 'plural', 'collective']):
+            return 'plural_particle'
+        elif any(keyword in role_lower for keyword in ['modal_particle', 'modal', 'tone', 'emphasis', 'question']):
+            return 'modal_particle'
+
+        # Fallback for legacy categories or unrecognized roles
+        elif any(keyword in role_lower for keyword in ['particle', 'marker']) and not any(specific in role_lower for specific in ['aspect', 'modal', 'structural', 'plural']):
+            return 'structural_particle'  # Default particle type
+        elif 'other' in role_lower or 'unknown' in role_lower:
             return 'other'
+
+        # Default fallback
+        return 'other'
 
     def _get_default_category_for_char(self, char: str) -> str:
         """Get a default grammatical category for characters that don't have detailed analysis"""

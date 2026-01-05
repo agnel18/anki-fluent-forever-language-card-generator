@@ -86,7 +86,7 @@ class ChineseAnalyzerTester:
                 assert len(colors) > 0, f"No colors returned for {level}"
 
                 # Check for expected grammatical elements (Chinese-specific categories)
-                expected_elements = ['topics', 'predicates', 'other']  # Core elements that should always be present
+                expected_elements = ['noun', 'verb', 'pronoun', 'other']  # Core elements that should always be present
                 for element in expected_elements:
                     assert element in colors, f"Missing color for {element} in {level}"
 
@@ -115,7 +115,8 @@ class ChineseAnalyzerTester:
                     'elements': {
                         'particles': [{'word': '的', 'function': 'possessive'}],
                         'nouns': [{'word': '猫', 'function': 'subject'}],
-                        'verbs': [{'word': '睡觉', 'function': 'main verb'}]
+                        'verbs': [{'word': '睡觉', 'function': 'main verb'}],
+                        'prepositions': [{'word': '在', 'function': 'location'}]
                     },
                     'explanations': {
                         'particles': 'Possessive particle',
