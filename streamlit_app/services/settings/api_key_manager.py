@@ -179,7 +179,7 @@ class APIKeyManager:
                 # Test Pixabay API key with a simple search
                 import requests
                 # Use a simple, common search term that should always return results
-                url = f"https://pixabay.com/api/?key={api_key}&q=apple&per_page=1&safesearch=true"
+                url = f"https://pixabay.com/api/?key={api_key.strip()}&q=apple&image_type=photo&per_page=1&safesearch=1"
                 response = requests.get(url, timeout=10)
                 if response.status_code == 200:
                     try:

@@ -100,6 +100,43 @@ def render_api_setup_page():
         4. Copy & paste below
         """)
         pixabay_key = st.text_input("Pixabay API Key", type="password", placeholder="53606933-...", key="pixabay_api_key_input")
+    
+    # Test buttons for API keys
+    col_test1, col_test2 = st.columns(2)
+    with col_test1:
+        if st.button("🧪 Test Groq Key", help="Test your Groq API key to ensure it's valid"):
+            if groq_key:
+                with st.spinner("Testing Groq API key..."):
+                    try:
+                        from services.settings.api_key_manager import APIKeyManager
+                        api_manager = APIKeyManager()
+                        is_valid, message = api_manager.validate_api_key(groq_key, 'groq')
+                        if is_valid:
+                            st.success(message)
+                        else:
+                            st.error(message)
+                    except Exception as e:
+                        st.error(f"❌ Test failed: {e}")
+            else:
+                st.error("❌ Please enter a Groq API key first")
+    
+    with col_test2:
+        if st.button("🧪 Test Pixabay Key", help="Test your Pixabay API key to ensure it's valid"):
+            if pixabay_key:
+                with st.spinner("Testing Pixabay API key..."):
+                    try:
+                        from services.settings.api_key_manager import APIKeyManager
+                        api_manager = APIKeyManager()
+                        is_valid, message = api_manager.validate_api_key(pixabay_key, 'pixabay')
+                        if is_valid:
+                            st.success(message)
+                        else:
+                            st.error(message)
+                    except Exception as e:
+                        st.error(f"❌ Test failed: {e}")
+            else:
+                st.error("❌ Please enter a Pixabay API key first")
+    
     st.divider()
     groq_env = get_secret("GROQ_API_KEY", "")
     pixabay_env = get_secret("PIXABAY_API_KEY", "")
