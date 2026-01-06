@@ -285,10 +285,10 @@ ANALYZE EVERY CHARACTER in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
     def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
-        """Generate Chinese-specific AI prompt for batch grammar analysis"""
+        """Generate Chinese-specific AI prompt for batch grammar analysis with word-level focus"""
         sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
 
-        return f"""Analyze the grammar of these Chinese sentences and provide detailed character-by-character analysis for each one.
+        return f"""Analyze Chinese sentences at the WORD level with compounds-first ordering.
 
 Target word: "{target_word}"
 Language: Chinese (Simplified)
@@ -298,31 +298,40 @@ Analysis should be in {native_language}
 Sentences to analyze:
 {sentences_text}
 
-For EACH character in EVERY sentence, provide:
-- word: the exact character as it appears in the sentence
-- individual_meaning: the English translation/meaning of this specific character (MANDATORY - do not leave empty)
-- grammatical_role: EXACTLY ONE category from this list: noun, locative_noun, time_noun, verb, adjective, adverb, numeral, classifier, pronoun, personal_pronoun, demonstrative_pronoun, interrogative_pronoun, indefinite_pronoun, modal_verb, directional_verb, coverb, conjunction, particle, interjection, onomatopoeia, other
+CRITICAL REQUIREMENTS FOR CHINESE WORD-LEVEL ANALYSIS:
+- Segment sentences into WORDS, not individual characters
+- Identify compound words FIRST (higher priority in explanations)
+- Use Chinese-appropriate grammatical categories (实词/虚词 distinction)
+- Compounds should appear higher in explanations than individual character breakdowns
 
-CRITICAL REQUIREMENTS:
-- individual_meaning MUST be provided for EVERY character
-- grammatical_role MUST be EXACTLY one word from the allowed list (no spaces, no prefixes, no suffixes)
-- Examples of correct grammatical_role:
-  - "noun" (not "common noun" or "n noun")
-  - "verb" (not "v verb" or "main verb")
-  - "pronoun" (not "personal pronoun")
-  - "classifier" (not "measure word" or "measure_word")
-  - "particle" (not "aspect particle" or "aspect_particle")
-  - "coverb" (not "prepositional verb")
-  - "modal_verb" (not "modal verb")
-  - "directional_verb" (not "directional verb")
-  - "other" for anything not in the list
+For EACH word in EVERY sentence, provide:
+- word: the exact word as it appears (can be compound or single character)
+- combined_meaning: English translation/meaning of the word
+- grammatical_role: EXACTLY ONE category from Chinese linguistics: noun, locative_noun, time_noun, verb, adjective, adverb, numeral, classifier, pronoun, personal_pronoun, demonstrative_pronoun, interrogative_pronoun, indefinite_pronoun, modal_verb, directional_verb, coverb, conjunction, particle, interjection, onomatopoeia, other
 
-Examples:
-- "我" → individual_meaning: "I/me", grammatical_role: "personal_pronoun"
-- "的" → individual_meaning: "possessive particle", grammatical_role: "particle"
-- "了" → individual_meaning: "perfective aspect particle", grammatical_role: "particle"
-- "个" → individual_meaning: "general classifier", grammatical_role: "classifier"
-- "吗" → individual_meaning: "question particle", grammatical_role: "particle"
+COMPOUNDS-FIRST ORDERING:
+- Multi-character compounds (e.g., "图书馆", "学习") get HIGHER priority in explanations
+- Single characters appear after compounds
+- This helps beginners understand word-level meanings first
+
+CHINESE GRAMMATICAL CATEGORIES (词类):
+CONTENT WORDS (实词):
+- noun: people, places, things, concepts (书、本、人、北京、水、爱情)
+- verb: actions, states, changes (是、吃、跑、爱、想、知道、可以)
+- adjective: qualities, descriptions (大、红、好、漂亮、快乐、雪白)
+- adverb: modifies verbs/adjectives (很、都、也、不、已经、正在、非常、马上)
+- numeral: numbers, quantities (一、二、三、第一、半、几、许多)
+- classifier: measure words (个、本、只、张、杯、次、群、辆)
+- pronoun: replaces nouns (我、你、他、这、那、谁、什么、大家)
+- time_noun: time expressions (今天、现在、昨天、早上、星期三)
+- locative_noun: location/direction (上面、里面、东、左、前、附近)
+
+FUNCTION WORDS (虚词):
+- coverb: verb-derived prepositions (在、从、把、被、对于、关于、向、跟)
+- conjunction: connects clauses (和、但是、因为、所以、如果、虽然、或者)
+- particle: grammatical markers (的、地、得、所、了、着、过、们、吗、呢、吧、啊、呀)
+- interjection: expresses emotion (啊、哦、哎呀、哇、嗯、嘿)
+- onomatopoeia: imitates sounds (砰、哗哗、汪汪、咚咚、叮咚)
 
 Return JSON in this exact format:
 {{
@@ -332,15 +341,35 @@ Return JSON in this exact format:
       "sentence": "{sentences[0] if sentences else ''}",
       "words": [
         {{
-          "word": "我",
-          "individual_meaning": "I/me",
-          "grammatical_role": "personal_pronoun"
+          "word": "图书馆",
+          "combined_meaning": "library",
+          "grammatical_role": "noun"
+        }},
+        {{
+          "word": "学习",
+          "combined_meaning": "to study",
+          "grammatical_role": "verb"
+        }},
+        {{
+          "word": "图",
+          "combined_meaning": "diagram/picture",
+          "grammatical_role": "noun"
+        }},
+        {{
+          "word": "书",
+          "combined_meaning": "book",
+          "grammatical_role": "noun"
+        }},
+        {{
+          "word": "馆",
+          "combined_meaning": "hall/building",
+          "grammatical_role": "noun"
         }}
       ],
-      "word_combinations": [],
       "explanations": {{
-        "sentence_structure": "Brief grammatical summary of the sentence",
-        "complexity_notes": "Notes about grammatical structures used at {complexity} level"
+        "sentence_structure": "Brief grammatical summary",
+        "compounds_first": "Multi-character words analyzed before individual characters",
+        "complexity_notes": "Notes about {complexity} level structures"
       }}
     }}
   ]
@@ -348,8 +377,9 @@ Return JSON in this exact format:
 
 IMPORTANT:
 - Analyze ALL {len(sentences)} sentences
-- EVERY character MUST have individual_meaning (English translation)
-- grammatical_role MUST be EXACTLY from the allowed list (one word only)
+- WORD-LEVEL analysis, not character-by-character
+- COMPOUNDS appear FIRST in word lists and explanations
+- Use authentic Chinese grammatical categories
 - Return ONLY the JSON object, no additional text
 """
 
@@ -404,7 +434,7 @@ IMPORTANT:
             return self._transform_to_standard_format(fallback_parsed, complexity)
 
     def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
-        """Parse batch AI response for Chinese character-level analysis"""
+        """Parse batch AI response for Chinese word-level analysis with compounds-first ordering"""
         try:
             # Extract JSON from response
             if "```json" in ai_response:
@@ -427,6 +457,8 @@ IMPORTANT:
                     elements = {}
                     word_explanations = []
 
+                    # COMPOUNDS-FIRST ORDERING: Process words in the order they appear in the response
+                    # The AI should already put compounds first, so we maintain that order
                     for word_data in item.get("words", []):
                         word = word_data.get("word", "").strip()
                         if word:
@@ -439,25 +471,33 @@ IMPORTANT:
 
                             elements[category].append({
                                 "word": word,
-                                "individual_meaning": word_data.get("individual_meaning", ""),
+                                "combined_meaning": word_data.get("combined_meaning", ""),
                                 "grammatical_role": grammatical_role
                             })
 
-                            # Create word explanation with color
+                            # Create word explanation with color and educational enhancement
                             color = self._get_color_for_category(category, complexity)
+
+                            # Create pedagogically rich explanation for word-level analysis
+                            combined_meaning = word_data.get('combined_meaning', '').strip()
+                            explanation_text = self._create_educational_explanation(
+                                combined_meaning, category, grammatical_role
+                            )
+
                             word_explanations.append([
                                 word,
                                 grammatical_role,
                                 color,
-                                f"{word_data.get('individual_meaning', '')} ({grammatical_role})"
+                                explanation_text
                             ])
 
                     # Create explanations
                     explanations = item.get("explanations", {})
                     if not explanations:
                         explanations = {
-                            "sentence_structure": f"Chinese sentence with {len(item.get('words', []))} characters",
-                            "complexity_notes": f"Analysis at {complexity} level"
+                            "sentence_structure": f"Chinese sentence with word-level analysis",
+                            "compounds_first": "Multi-character compounds analyzed before individual characters",
+                            "complexity_notes": f"Analysis at {complexity} level using Chinese grammatical categories"
                         }
 
                     results.append({
@@ -483,82 +523,68 @@ IMPORTANT:
             return super().parse_batch_grammar_response(ai_response, sentences, complexity, native_language)
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Return comprehensive color scheme for Chinese grammatical elements based on linguistic categories"""
+        """Return comprehensive color scheme for Chinese grammatical elements using Chinese-appropriate categories"""
         schemes = {
             "beginner": {
-                # Content Words (实词 / Shící)
-                "noun": "#FFAA00",                    # Orange - Entities, people, places, concepts
-                "locative_noun": "#FFAA00",           # Orange - Spatial/directional nouns
-                "time_noun": "#FFAA00",               # Orange - Temporal nouns
-                "verb": "#44FF44",                    # Green - Actions, states, processes
-                "adjective": "#FF44FF",               # Magenta - Qualities/stative verbs
-                "adverb": "#44FFFF",                  # Cyan - Modifiers of verbs/adjectives
+                # CONTENT WORDS (实词 / Shící) - Independent meaning
+                "noun": "#FFAA00",                    # Orange - People/places/things/concepts
+                "verb": "#44FF44",                    # Green - Actions/states/changes
+                "adjective": "#FF44FF",               # Magenta - Qualities/descriptions
                 "numeral": "#FFFF44",                 # Yellow - Numbers/quantities
-                "classifier": "#FFFF44",              # Yellow - Measure words
-                "interjection": "#FFD700",            # Gold - Emotions, exclamations
+                "classifier": "#FFD700",              # Gold - Measure words (个、只、本)
+                "pronoun": "#FF4444",                 # Red - Replaces nouns
+                "time_noun": "#FFA500",               # Orange-red - Time expressions
+                "locative_noun": "#FF8C00",           # Dark orange - Location/direction
+
+                # FUNCTION WORDS (虚词 / Xūcí) - Structural/grammatical
+                "aspect_particle": "#8A2BE2",         # Purple - Aspect markers (了、着、过)
+                "modal_particle": "#DA70D6",          # Plum - Tone/mood particles (吗、呢、吧)
+                "structural_particle": "#9013FE",     # Violet - Structural particles (的、地、得)
+                "coverb": "#4444FF",                  # Blue - Prepositions/coverbs
+                "conjunction": "#888888",             # Gray - Connectors
+                "adverb": "#44FFFF",                  # Cyan - Modifies verbs/adjectives
+                "interjection": "#FFD700",            # Gold - Emotions/exclamations
                 "onomatopoeia": "#FFD700",            # Gold - Sound imitation
-
-                # Pronouns (代词 / Dàicí)
-                "pronoun": "#FF4444",                 # Red - General pronoun
-                "personal_pronoun": "#FF4444",        # Red - I/you/he
-                "demonstrative_pronoun": "#FF4444",   # Red - This/that
-                "interrogative_pronoun": "#FF4444",   # Red - Who/what
-                "indefinite_pronoun": "#FF4444",      # Red - Someone/anything
-
-                # Function Words (虚词 / Xūcí)
-                "modal_verb": "#44FF44",              # Green - Ability/necessity
-                "directional_verb": "#44FF44",        # Green - Direction complements
-                "coverb": "#4444FF",                  # Blue - Verb-derived prepositions
-                "conjunction": "#888888",             # Gray - Logical connectors
-                "particle": "#AA44FF",                # Purple - Grammatical markers
-                "other": "#AAAAAA"                    # Light gray - Unclassified
+                "other": "#AAAAAA"                    # Light gray - Other
             },
             "intermediate": {
-                # Same as beginner for now
+                # Same as beginner for now - Chinese categories are consistent across levels
                 "noun": "#FFAA00",
-                "locative_noun": "#FFAA00",
-                "time_noun": "#FFAA00",
                 "verb": "#44FF44",
                 "adjective": "#FF44FF",
-                "adverb": "#44FFFF",
                 "numeral": "#FFFF44",
-                "classifier": "#FFFF44",
-                "interjection": "#FFD700",
-                "onomatopoeia": "#FFD700",
+                "classifier": "#FFD700",
                 "pronoun": "#FF4444",
-                "personal_pronoun": "#FF4444",
-                "demonstrative_pronoun": "#FF4444",
-                "interrogative_pronoun": "#FF4444",
-                "indefinite_pronoun": "#FF4444",
-                "modal_verb": "#44FF44",
-                "directional_verb": "#44FF44",
+                "time_noun": "#FFA500",
+                "locative_noun": "#FF8C00",
+                "aspect_particle": "#8A2BE2",
+                "modal_particle": "#DA70D6",
+                "structural_particle": "#9013FE",
                 "coverb": "#4444FF",
                 "conjunction": "#888888",
-                "particle": "#AA44FF",
+                "adverb": "#44FFFF",
+                "interjection": "#FFD700",
+                "onomatopoeia": "#FFD700",
                 "other": "#AAAAAA"
             },
             "advanced": {
-                # Same as intermediate for now
+                # Same as intermediate - Chinese categories are consistent across levels
                 "noun": "#FFAA00",
-                "locative_noun": "#FFAA00",
-                "time_noun": "#FFAA00",
                 "verb": "#44FF44",
                 "adjective": "#FF44FF",
-                "adverb": "#44FFFF",
                 "numeral": "#FFFF44",
-                "classifier": "#FFFF44",
-                "interjection": "#FFD700",
-                "onomatopoeia": "#FFD700",
+                "classifier": "#FFD700",
                 "pronoun": "#FF4444",
-                "personal_pronoun": "#FF4444",
-                "demonstrative_pronoun": "#FF4444",
-                "interrogative_pronoun": "#FF4444",
-                "indefinite_pronoun": "#FF4444",
-                "modal_verb": "#44FF44",
-                "directional_verb": "#44FF44",
+                "time_noun": "#FFA500",
+                "locative_noun": "#FF8C00",
+                "aspect_particle": "#8A2BE2",
+                "modal_particle": "#DA70D6",
+                "structural_particle": "#9013FE",
                 "coverb": "#4444FF",
                 "conjunction": "#888888",
-                "particle": "#AA44FF",
+                "adverb": "#44FFFF",
+                "interjection": "#FFD700",
+                "onomatopoeia": "#FFD700",
                 "other": "#AAAAAA"
             }
         }
@@ -694,36 +720,56 @@ IMPORTANT:
 
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Chinese text with character-level coloring using colors from word_explanations (single source of truth)"""
+        """Generate HTML output for Chinese text with word-level coloring using colors from word_explanations"""
         explanations = parsed_data.get('word_explanations', [])
 
         logger.info(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
         logger.info(f"DEBUG Chinese HTML Gen - Input sentence: '{sentence}'")
 
-        # Create mapping of characters to colors directly from word_explanations (authoritative source)
-        char_to_color = {}
+        # Create mapping of words to colors directly from word_explanations (authoritative source)
+        word_to_color = {}
         for exp in explanations:
             if len(exp) >= 3:
-                char, pos, color = exp[0], exp[1], exp[2]
-                char_to_color[char] = color
-                logger.info(f"DEBUG Chinese HTML Gen - Character '{char}' -> Color '{color}' (POS: '{pos}')")
+                word, pos, color = exp[0], exp[1], exp[2]
+                word_to_color[word] = color
+                logger.info(f"DEBUG Chinese HTML Gen - Word '{word}' -> Color '{color}' (POS: '{pos}')")
 
-        logger.info(f"DEBUG Chinese HTML Gen - Character-to-color mapping: {char_to_color}")
+        logger.info(f"DEBUG Chinese HTML Gen - Word-to-color mapping: {word_to_color}")
 
-        # Generate HTML by coloring each character individually using colors from grammar explanations
+        # For word-level analysis, we need to segment the sentence into words
+        # Since we don't have proper word segmentation yet, we'll use a simple approach:
+        # Try to match compound words first, then individual characters
         html_parts = []
-        for char in sentence:
-            if char in char_to_color:
-                color = char_to_color[char]
-                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{char}</span>')
-                logger.info(f"DEBUG Chinese HTML Gen - ✓ Colored character '{char}' with color '{color}'")
-            elif char.strip():  # Only add non-whitespace characters without color
-                # For characters without analysis, use default color (should be rare with new architecture)
-                html_parts.append(f'<span style="color: #888888;">{char}</span>')
-                logger.warning(f"DEBUG Chinese HTML Gen - ✗ No color found for character '{char}' (clean: '{char}'). Available characters: {list(char_to_color.keys())}")
-            else:
-                # Preserve whitespace
-                html_parts.append(char)
+        remaining_sentence = sentence
+
+        # COMPOUNDS-FIRST APPROACH: Try longer matches first
+        sorted_words = sorted(word_to_color.keys(), key=len, reverse=True)  # Longest first
+
+        while remaining_sentence:
+            matched = False
+            for word in sorted_words:
+                if remaining_sentence.startswith(word):
+                    color = word_to_color[word]
+                    html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+                    remaining_sentence = remaining_sentence[len(word):]
+                    logger.info(f"DEBUG Chinese HTML Gen - ✓ Colored word '{word}' with color '{color}'")
+                    matched = True
+                    break
+
+            if not matched:
+                # No word match, take first character
+                char = remaining_sentence[0]
+                if char in word_to_color:
+                    color = word_to_color[char]
+                    html_parts.append(f'<span style="color: {color}; font-weight: bold;">{char}</span>')
+                    logger.info(f"DEBUG Chinese HTML Gen - ✓ Colored character '{char}' with color '{color}'")
+                elif char.strip():  # Only add non-whitespace characters without color
+                    html_parts.append(f'<span style="color: #888888;">{char}</span>')
+                    logger.warning(f"DEBUG Chinese HTML Gen - ✗ No color found for character '{char}'")
+                else:
+                    # Preserve whitespace
+                    html_parts.append(char)
+                remaining_sentence = remaining_sentence[1:]
 
         result = ''.join(html_parts)
         logger.info(f"DEBUG Chinese HTML Gen - Final HTML output length: {len(result)}")
@@ -736,96 +782,107 @@ IMPORTANT:
         return color_scheme.get(category, "#888888")  # Default to grey if category not found
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        """Map grammatical role descriptions to Chinese-appropriate categories (实词/虚词 distinction)"""
         role_lower = grammatical_role.lower().strip()
 
-        # STEP 1: PREPROCESSING - Fix AI hallucinations
-        if role_lower == "co verb":
+        # STEP 1: PREPROCESSING - Fix AI hallucinations and standardize terms
+        if role_lower in ["co verb", "prepositional_verb"]:
             role_lower = "coverb"
-        elif role_lower == "m measure_word":
+        elif role_lower in ["m measure_word", "counter"]:
             role_lower = "classifier"
-        elif role_lower == "aux modal":
-            role_lower = "modal_verb"
-        elif role_lower == "direction complement":
-            role_lower = "directional_verb"
-        elif role_lower == "aspect particle":
-            role_lower = "particle"
+        elif role_lower in ["aux modal", "modal_verb", "auxiliary_verb"]:
+            role_lower = "modal_particle"  # Chinese modal particles
+        elif role_lower in ["direction complement", "directional_verb"]:
+            role_lower = "verb"  # Directional complements are verbs in Chinese
+        elif role_lower in ["aspect particle", "aspect marker"]:
+            role_lower = "aspect_particle"
+        elif role_lower in ["structural particle", "structural"]:
+            role_lower = "structural_particle"
+        elif role_lower in ["modal particle", "tone particle", "mood particle"]:
+            role_lower = "modal_particle"
 
-        # STEP 2: LANGUAGE-SPECIFIC CHILDREN (Highest Priority)
-        # 1. Modal verbs BEFORE main verbs
+        # STEP 2: CHINESE-SPECIFIC PARTICLE TYPES (Highest Priority)
+        # Aspect particles (动态助词)
         if any(keyword in role_lower for keyword in [
-            'modal', 'auxiliary', 'modal_verb', 'auxiliary_verb', '能', '可以', '必须', '会', '应该'
+            'aspect_particle', 'aspect', '了', '着', '过', 'aspect marker', 'perfective', 'progressive', 'experiential'
         ]):
-            return 'modal_verb'
+            return 'aspect_particle'
 
-        # 2. Directional verbs BEFORE main verbs
+        # Modal particles (语气助词)
         if any(keyword in role_lower for keyword in [
-            'directional', 'directional_verb', 'direction complement', '来', '去', '起来', '下去', '进来'
+            'modal_particle', 'modal', '语气', '吗', '呢', '吧', '啊', '呀', '咯', '喽', 'tone', 'mood'
         ]):
-            return 'directional_verb'
+            return 'modal_particle'
 
-        # STEP 3: PRONOUN SUBTYPES (Before general pronoun)
+        # Structural particles (结构助词)
         if any(keyword in role_lower for keyword in [
-            'personal', 'personal_pronoun', 'first_person', 'second_person', 'third_person', '我', '你', '他', '她', '它', '我们', '你们', '他们'
+            'structural_particle', 'structural', '结构', '的', '地', '得', '所', '把', '被'
         ]):
-            return 'personal_pronoun'
+            return 'structural_particle'
 
-        elif any(keyword in role_lower for keyword in [
-            'demonstrative', 'demonstrative_pronoun', '这', '那', '这些', '那些'
-        ]):
-            return 'demonstrative_pronoun'
-
-        elif any(keyword in role_lower for keyword in [
-            'interrogative', 'interrogative_pronoun', 'question', '谁', '什么', '哪', '怎么', '为什么'
-        ]):
-            return 'interrogative_pronoun'
-
-        elif any(keyword in role_lower for keyword in [
-            'indefinite', 'indefinite_pronoun', '有人', '什么', '任何', '每个'
-        ]):
-            return 'indefinite_pronoun'
-
-        # STEP 4: FUNCTION WORD SUBTYPES
-        # 3. Coverbs BEFORE prepositions
+        # STEP 3: CONTENT WORDS (实词) - Independent meaning
+        # Time nouns (时间词)
         if any(keyword in role_lower for keyword in [
-            'coverb', 'prepositional_verb', '在', '从', '到', '用', '给', '对', '向', '往'
-        ]):
-            return 'coverb'
-
-        # 4. Particles BEFORE conjunctions
-        if any(keyword in role_lower for keyword in [
-            'particle', 'aspect_particle', 'structural_particle', '了', '着', '过', '的', '得', '地'
-        ]):
-            return 'particle'
-
-        # STEP 5: SPECIAL CATEGORIES
-        # 5. Classifiers BEFORE numerals
-        if any(keyword in role_lower for keyword in [
-            'classifier', 'measure_word', 'counter', '个', '本', '张', '只', '条', '把'
-        ]):
-            return 'classifier'
-
-        # 6. Locative nouns BEFORE general nouns
-        if any(keyword in role_lower for keyword in [
-            'locative', 'locative_noun', 'spatial', '上', '下', '里', '外', '前', '后'
-        ]):
-            return 'locative_noun'
-
-        # 7. Time nouns BEFORE general nouns
-        if any(keyword in role_lower for keyword in [
-            'time', 'time_noun', 'temporal', '今天', '昨天', '明天', '早上', '晚上', '年', '月', '日'
+            'time_noun', 'time', 'temporal', '今天', '昨天', '明天', '早上', '晚上', '年', '月', '日', '时', '分'
         ]):
             return 'time_noun'
 
-        # 8. Onomatopoeia BEFORE interjections
+        # Locative nouns (方位词)
         if any(keyword in role_lower for keyword in [
-            'onomatopoeia', 'sound_imitation', '汪汪', '叮咚', '哗啦'
+            'locative_noun', 'locative', 'spatial', 'direction', '上', '下', '里', '外', '前', '后', '左', '右', '东', '西', '南', '北', '中', '间'
+        ]):
+            return 'locative_noun'
+
+        # Pronouns (代词)
+        if any(keyword in role_lower for keyword in [
+            'pronoun', '代词', '代', '我', '你', '他', '她', '它', '我们', '你们', '他们', '这', '那', '谁', '什么'
+        ]):
+            return 'pronoun'
+
+        # Classifiers/Measure words (量词)
+        if any(keyword in role_lower for keyword in [
+            'classifier', 'measure_word', '量词', '个', '本', '张', '只', '条', '把', '杯', '次', '群', '辆'
+        ]):
+            return 'classifier'
+
+        # Numerals (数词)
+        if any(keyword in role_lower for keyword in [
+            'numeral', '数词', '数', '数字', '一', '二', '三', '四', '五', '十', '百', '千', '万'
+        ]):
+            return 'numeral'
+
+        # STEP 4: FUNCTION WORDS (虚词) - Structural/grammatical
+        # Coverbs (verb-derived prepositions)
+        if any(keyword in role_lower for keyword in [
+            'coverb', '在', '从', '到', '用', '给', '对', '向', '往', '跟', '和', '于', '自', '由'
+        ]):
+            return 'coverb'
+
+        # Conjunctions (连词)
+        if any(keyword in role_lower for keyword in [
+            'conjunction', '连词', '和', '但是', '因为', '所以', '如果', '虽然', '或者', '与', '及'
+        ]):
+            return 'conjunction'
+
+        # Adverbs (副词)
+        if any(keyword in role_lower for keyword in [
+            'adverb', '副词', '副', '很', '都', '也', '不', '已经', '正在', '非常', '马上', '太', '更'
+        ]):
+            return 'adverb'
+
+        # Interjections (叹词)
+        if any(keyword in role_lower for keyword in [
+            'interjection', '叹词', '啊', '哦', '哎呀', '哇', '嗯', '嘿', '唉'
+        ]):
+            return 'interjection'
+
+        # Onomatopoeia (拟声词)
+        if any(keyword in role_lower for keyword in [
+            'onomatopoeia', 'sound_imitation', '拟声词', '汪汪', '叮咚', '哗啦', '砰', '咚咚'
         ]):
             return 'onomatopoeia'
 
-        # STEP 6: PARENT CATEGORIES (Lowest Priority - Checked Last)
-        if any(keyword in role_lower for keyword in ['pronoun', '代词', '代']):
-            return 'pronoun'
-
+        # STEP 5: BASIC CONTENT WORD CATEGORIES
         if any(keyword in role_lower for keyword in ['verb', '动词', '动']):
             return 'verb'
 
@@ -835,12 +892,7 @@ IMPORTANT:
         if any(keyword in role_lower for keyword in ['noun', '名词', '名']):
             return 'noun'
 
-        if any(keyword in role_lower for keyword in ['adverb', '副词', '副']):
-            return 'adverb'
-
-        if any(keyword in role_lower for keyword in ['numeral', '数词', '数', '数字']):
-            return 'numeral'
-
+        # STEP 6: DEFAULT FALLBACKS
         # AI-generated roles that need mapping
         if 'subject' in role_lower:
             return 'pronoun'  # Subjects are typically pronouns in Chinese
@@ -848,6 +900,56 @@ IMPORTANT:
             return 'other'  # Negation particles and determiners
 
         return 'other'  # Default fallback
+
+    def _create_educational_explanation(self, combined_meaning: str, category: str, grammatical_role: str) -> str:
+        """Create pedagogically rich explanations for word-level Chinese analysis"""
+        if not combined_meaning or not combined_meaning.strip():
+            # Fallback when no meaning provided
+            fallback_explanations = {
+                'noun': f'{grammatical_role} (person/place/thing/object)',
+                'verb': f'{grammatical_role} (action/state/change)',
+                'adjective': f'{grammatical_role} (describes quality/size/color)',
+                'adverb': f'{grammatical_role} (modifies verb/adjective - how/when/where)',
+                'numeral': f'{grammatical_role} (number or position in sequence)',
+                'classifier': f'{grammatical_role} (measure word for counting nouns)',
+                'pronoun': f'{grammatical_role} (replaces a noun)',
+                'time_noun': f'{grammatical_role} (indicates time period/moment)',
+                'locative_noun': f'{grammatical_role} (indicates place/position/direction)',
+                'aspect_particle': f'{grammatical_role} (marks action completion/progress/experience)',
+                'modal_particle': f'{grammatical_role} (expresses tone/mood/question)',
+                'structural_particle': f'{grammatical_role} (connects sentence elements)',
+                'coverb': f'{grammatical_role} (verb used like preposition)',
+                'conjunction': f'{grammatical_role} (connects words/clauses)',
+                'interjection': f'{grammatical_role} (expresses emotion/surprise)',
+                'onomatopoeia': f'{grammatical_role} (imitates natural sound)',
+                'other': f'{grammatical_role} (grammatical function)'
+            }
+            return fallback_explanations.get(category, f"{combined_meaning} ({grammatical_role})")
+
+        base_meaning = combined_meaning.strip()
+
+        # Educational enhancements for Chinese learners (word-level focus)
+        educational_enhancements = {
+            'noun': f"{base_meaning} (person/place/thing/object - 实词)",
+            'verb': f"{base_meaning} (action/state/change - 实词)",
+            'adjective': f"{base_meaning} (describes quality/size/color - 实词)",
+            'adverb': f"{base_meaning} (modifies verb/adjective - how/when/where - 实词)",
+            'numeral': f"{base_meaning} (number or position in sequence - 实词)",
+            'classifier': f"{base_meaning} (measure word for counting nouns - 量词)",
+            'pronoun': f"{base_meaning} (replaces a noun - 代词)",
+            'time_noun': f"{base_meaning} (indicates time period/moment - 时间词)",
+            'locative_noun': f"{base_meaning} (indicates place/position/direction - 方位词)",
+            'aspect_particle': f"{base_meaning} (marks completion/progress/experience - 动态助词)",
+            'modal_particle': f"{base_meaning} (expresses tone/mood/question - 语气助词)",
+            'structural_particle': f"{base_meaning} (connects sentence elements - 结构助词)",
+            'coverb': f"{base_meaning} (verb-derived preposition - 虚词)",
+            'conjunction': f"{base_meaning} (connects words/clauses - 连词)",
+            'interjection': f"{base_meaning} (expresses emotion/surprise - 叹词)",
+            'onomatopoeia': f"{base_meaning} (imitates natural sound - 拟声词)",
+            'other': f"{base_meaning} (grammatical function - 虚词)"
+        }
+
+        return educational_enhancements.get(category, f"{base_meaning} ({grammatical_role})")
 
     def _get_default_category_for_char(self, char: str) -> str:
         """Get a default grammatical category for characters that don't have detailed analysis"""
