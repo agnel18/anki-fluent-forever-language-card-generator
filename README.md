@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 ### 3. Run
 ```bash
-streamlit run streamlit_app/app_v3.py
+streamlit run app.py
 ```
 
 ### 4. Generate Your First Deck

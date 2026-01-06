@@ -32,9 +32,16 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             native_name="中文 (简体)",
             family="Sino-Tibetan",
             script_type="logographic",
-            complexity_rating="high",
-            key_features=['particles', 'aspect_system', 'measure_words', 'topic_comment_structure', 'negation_patterns', 'modal_particles', 'structural_particles'],
-            supported_complexity_levels=['beginner', 'intermediate', 'advanced']
+            complexity_rating="low",
+            key_features=[
+                'classifiers',                   # Measure words for noun quantification
+                'aspect_particles',              # Markers for verbal aspect (no tense)
+                'topic_comment',                 # Topic-prominent sentence structure
+                'serial_verbs',                  # Verb chains without conjunctions
+                'coverbs',                       # Verb-derived prepositions
+                'tonal_system'                   # Lexical tones distinguish meaning
+            ],
+            supported_complexity_levels=["beginner", "intermediate", "advanced"]
         )
         super().__init__(config)
 
@@ -277,6 +284,75 @@ Return a JSON object with advanced grammatical analysis:
 ANALYZE EVERY CHARACTER in the sentence."""
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
+    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
+        """Generate Chinese-specific AI prompt for batch grammar analysis"""
+        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+
+        return f"""Analyze the grammar of these Chinese sentences and provide detailed character-by-character analysis for each one.
+
+Target word: "{target_word}"
+Language: Chinese (Simplified)
+Complexity level: {complexity}
+Analysis should be in {native_language}
+
+Sentences to analyze:
+{sentences_text}
+
+For EACH character in EVERY sentence, provide:
+- word: the exact character as it appears in the sentence
+- individual_meaning: the English translation/meaning of this specific character (MANDATORY - do not leave empty)
+- grammatical_role: EXACTLY ONE category from this list: noun, locative_noun, time_noun, verb, adjective, adverb, numeral, classifier, pronoun, personal_pronoun, demonstrative_pronoun, interrogative_pronoun, indefinite_pronoun, modal_verb, directional_verb, coverb, conjunction, particle, interjection, onomatopoeia, other
+
+CRITICAL REQUIREMENTS:
+- individual_meaning MUST be provided for EVERY character
+- grammatical_role MUST be EXACTLY one word from the allowed list (no spaces, no prefixes, no suffixes)
+- Examples of correct grammatical_role:
+  - "noun" (not "common noun" or "n noun")
+  - "verb" (not "v verb" or "main verb")
+  - "pronoun" (not "personal pronoun")
+  - "classifier" (not "measure word" or "measure_word")
+  - "particle" (not "aspect particle" or "aspect_particle")
+  - "coverb" (not "prepositional verb")
+  - "modal_verb" (not "modal verb")
+  - "directional_verb" (not "directional verb")
+  - "other" for anything not in the list
+
+Examples:
+- "我" → individual_meaning: "I/me", grammatical_role: "personal_pronoun"
+- "的" → individual_meaning: "possessive particle", grammatical_role: "particle"
+- "了" → individual_meaning: "perfective aspect particle", grammatical_role: "particle"
+- "个" → individual_meaning: "general classifier", grammatical_role: "classifier"
+- "吗" → individual_meaning: "question particle", grammatical_role: "particle"
+
+Return JSON in this exact format:
+{{
+  "batch_results": [
+    {{
+      "sentence_index": 1,
+      "sentence": "{sentences[0] if sentences else ''}",
+      "words": [
+        {{
+          "word": "我",
+          "individual_meaning": "I/me",
+          "grammatical_role": "personal_pronoun"
+        }}
+      ],
+      "word_combinations": [],
+      "explanations": {{
+        "sentence_structure": "Brief grammatical summary of the sentence",
+        "complexity_notes": "Notes about grammatical structures used at {complexity} level"
+      }}
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Analyze ALL {len(sentences)} sentences
+- EVERY character MUST have individual_meaning (English translation)
+- grammatical_role MUST be EXACTLY from the allowed list (one word only)
+- Return ONLY the JSON object, no additional text
+"""
+
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into structured Chinese character-level grammar analysis"""
         try:
@@ -327,79 +403,162 @@ ANALYZE EVERY CHARACTER in the sentence."""
             fallback_parsed = self._create_fallback_parse(ai_response, sentence)
             return self._transform_to_standard_format(fallback_parsed, complexity)
 
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
+        """Parse batch AI response for Chinese character-level analysis"""
+        try:
+            # Extract JSON from response
+            if "```json" in ai_response:
+                ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+            elif "```" in ai_response:
+                ai_response = ai_response.split("```")[1].split("```")[0].strip()
+
+            batch_data = json.loads(ai_response)
+
+            if "batch_results" not in batch_data:
+                raise ValueError("Missing batch_results in response")
+
+            results = []
+            for item in batch_data["batch_results"]:
+                sentence_index = item.get("sentence_index", 0) - 1  # Convert to 0-based
+                if 0 <= sentence_index < len(sentences):
+                    sentence = sentences[sentence_index]
+
+                    # Convert batch format to standard format expected by _transform_to_standard_format
+                    elements = {}
+                    word_explanations = []
+
+                    for word_data in item.get("words", []):
+                        word = word_data.get("word", "").strip()
+                        if word:
+                            grammatical_role = word_data.get("grammatical_role", "other")
+                            category = self._map_grammatical_role_to_category(grammatical_role)
+
+                            # Group words by category
+                            if category not in elements:
+                                elements[category] = []
+
+                            elements[category].append({
+                                "word": word,
+                                "individual_meaning": word_data.get("individual_meaning", ""),
+                                "grammatical_role": grammatical_role
+                            })
+
+                            # Create word explanation with color
+                            color = self._get_color_for_category(category, complexity)
+                            word_explanations.append([
+                                word,
+                                grammatical_role,
+                                color,
+                                f"{word_data.get('individual_meaning', '')} ({grammatical_role})"
+                            ])
+
+                    # Create explanations
+                    explanations = item.get("explanations", {})
+                    if not explanations:
+                        explanations = {
+                            "sentence_structure": f"Chinese sentence with {len(item.get('words', []))} characters",
+                            "complexity_notes": f"Analysis at {complexity} level"
+                        }
+
+                    results.append({
+                        "sentence": sentence,
+                        "elements": elements,
+                        "explanations": explanations,
+                        "word_explanations": word_explanations
+                    })
+                else:
+                    # Fallback for invalid sentence index
+                    results.append({
+                        "sentence": sentences[len(results)] if len(results) < len(sentences) else "",
+                        "elements": {},
+                        "explanations": {"sentence_structure": "Batch parsing failed", "complexity_notes": ""},
+                        "word_explanations": []
+                    })
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Chinese batch parsing failed: {e}")
+            # Fallback to base class method
+            return super().parse_batch_grammar_response(ai_response, sentences, complexity, native_language)
+
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return comprehensive color scheme for Chinese grammatical elements based on linguistic categories"""
         schemes = {
             "beginner": {
-                # Content words (实词)
-                "noun": "#FFAA00",                    # Orange - Things/objects
-                "pronoun": "#FF4444",                 # Red - People/references
-                "verb": "#44FF44",                    # Green - Actions/states
-                "adjective": "#FF44FF",               # Magenta - Descriptions
-                "distinguishing_adjective": "#FF66FF", # Light Magenta - Special adjectives
-                "numeral": "#FFFF44",                 # Yellow - Numbers
-                "measure_word": "#AA44FF",            # Purple - Quantity words
-                "adverb": "#44FFFF",                  # Cyan - How/when/where
-                "time_word": "#FFA500",               # Orange-red - Time
-                "locality_word": "#FF8C00",           # Dark orange - Location/direction
-                "interjection": "#FFD700",            # Gold - Emotion
+                # Content Words (实词 / Shící)
+                "noun": "#FFAA00",                    # Orange - Entities, people, places, concepts
+                "locative_noun": "#FFAA00",           # Orange - Spatial/directional nouns
+                "time_noun": "#FFAA00",               # Orange - Temporal nouns
+                "verb": "#44FF44",                    # Green - Actions, states, processes
+                "adjective": "#FF44FF",               # Magenta - Qualities/stative verbs
+                "adverb": "#44FFFF",                  # Cyan - Modifiers of verbs/adjectives
+                "numeral": "#FFFF44",                 # Yellow - Numbers/quantities
+                "classifier": "#FFFF44",              # Yellow - Measure words
+                "interjection": "#FFD700",            # Gold - Emotions, exclamations
                 "onomatopoeia": "#FFD700",            # Gold - Sound imitation
 
-                # Function words (虚词)
-                "preposition": "#F5A623",             # Orange - Prepositions
-                "conjunction": "#888888",             # Gray - Connectors
-                "structural_particle": "#9013FE",     # Purple - Structure
-                "aspect_particle": "#8A2BE2",         # Blue-violet - Aspect
-                "plural_particle": "#9932CC",         # Dark orchid - Plural
-                "modal_particle": "#DA70D6",          # Plum - Modal
-                "other": "#AAAAAA"                    # Light gray - Other
+                # Pronouns (代词 / Dàicí)
+                "pronoun": "#FF4444",                 # Red - General pronoun
+                "personal_pronoun": "#FF4444",        # Red - I/you/he
+                "demonstrative_pronoun": "#FF4444",   # Red - This/that
+                "interrogative_pronoun": "#FF4444",   # Red - Who/what
+                "indefinite_pronoun": "#FF4444",      # Red - Someone/anything
+
+                # Function Words (虚词 / Xūcí)
+                "modal_verb": "#44FF44",              # Green - Ability/necessity
+                "directional_verb": "#44FF44",        # Green - Direction complements
+                "coverb": "#4444FF",                  # Blue - Verb-derived prepositions
+                "conjunction": "#888888",             # Gray - Logical connectors
+                "particle": "#AA44FF",                # Purple - Grammatical markers
+                "other": "#AAAAAA"                    # Light gray - Unclassified
             },
             "intermediate": {
-                # Content words (实词)
+                # Same as beginner for now
                 "noun": "#FFAA00",
-                "pronoun": "#FF4444",
+                "locative_noun": "#FFAA00",
+                "time_noun": "#FFAA00",
                 "verb": "#44FF44",
                 "adjective": "#FF44FF",
-                "distinguishing_adjective": "#FF66FF",
-                "numeral": "#FFFF44",
-                "measure_word": "#AA44FF",
                 "adverb": "#44FFFF",
-                "time_word": "#FFA500",
-                "locality_word": "#FF8C00",
+                "numeral": "#FFFF44",
+                "classifier": "#FFFF44",
                 "interjection": "#FFD700",
                 "onomatopoeia": "#FFD700",
-
-                # Function words (虚词)
-                "preposition": "#F5A623",
+                "pronoun": "#FF4444",
+                "personal_pronoun": "#FF4444",
+                "demonstrative_pronoun": "#FF4444",
+                "interrogative_pronoun": "#FF4444",
+                "indefinite_pronoun": "#FF4444",
+                "modal_verb": "#44FF44",
+                "directional_verb": "#44FF44",
+                "coverb": "#4444FF",
                 "conjunction": "#888888",
-                "structural_particle": "#9013FE",
-                "aspect_particle": "#8A2BE2",
-                "plural_particle": "#9932CC",
-                "modal_particle": "#DA70D6",
+                "particle": "#AA44FF",
                 "other": "#AAAAAA"
             },
             "advanced": {
-                # Content words (实词)
+                # Same as intermediate for now
                 "noun": "#FFAA00",
-                "pronoun": "#FF4444",
+                "locative_noun": "#FFAA00",
+                "time_noun": "#FFAA00",
                 "verb": "#44FF44",
                 "adjective": "#FF44FF",
-                "distinguishing_adjective": "#FF66FF",
-                "numeral": "#FFFF44",
-                "measure_word": "#AA44FF",
                 "adverb": "#44FFFF",
-                "time_word": "#FFA500",
-                "locality_word": "#FF8C00",
+                "numeral": "#FFFF44",
+                "classifier": "#FFFF44",
                 "interjection": "#FFD700",
                 "onomatopoeia": "#FFD700",
-
-                # Function words (虚词) - more distinctions
-                "preposition": "#F5A623",
+                "pronoun": "#FF4444",
+                "personal_pronoun": "#FF4444",
+                "demonstrative_pronoun": "#FF4444",
+                "interrogative_pronoun": "#FF4444",
+                "indefinite_pronoun": "#FF4444",
+                "modal_verb": "#44FF44",
+                "directional_verb": "#44FF44",
+                "coverb": "#4444FF",
                 "conjunction": "#888888",
-                "structural_particle": "#9013FE",
-                "aspect_particle": "#8A2BE2",
-                "plural_particle": "#9932CC",
-                "modal_particle": "#DA70D6",
+                "particle": "#AA44FF",
                 "other": "#AAAAAA"
             }
         }
@@ -571,59 +730,124 @@ ANALYZE EVERY CHARACTER in the sentence."""
         logger.info(f"DEBUG Chinese HTML Gen - Final HTML preview: {result[:300]}...")
         return result
 
-    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map grammatical role descriptions to color category names using Chinese grammar rules"""
-        role_lower = grammatical_role.lower()
+    def _get_color_for_category(self, category: str, complexity: str = "beginner") -> str:
+        """Get color for a grammatical category"""
+        color_scheme = self.get_color_scheme(complexity)
+        return color_scheme.get(category, "#888888")  # Default to grey if category not found
 
-        # Chinese-specific grammatical role mapping - updated for 16-category system
-        # Content words (实词) - primary categories - ORDER MATTERS: more specific first
-        if any(keyword in role_lower for keyword in ['pronoun', 'demonstrative', 'personal', 'reflexive']):
-            return 'pronoun'
-        elif any(keyword in role_lower for keyword in ['noun', 'object', 'subject', 'thing', 'place', 'name']):
-            return 'noun'
-        elif any(keyword in role_lower for keyword in ['verb', 'linking', 'action', 'state', 'predicate']) and 'noun' not in role_lower:
-            return 'verb'
-        elif any(keyword in role_lower for keyword in ['adjective', 'description', 'quality', 'attribute']):
-            return 'adjective'
-        elif any(keyword in role_lower for keyword in ['distinguishing_adjective', 'differentiating', 'distinguishing']):
-            return 'distinguishing_adjective'
-        elif any(keyword in role_lower for keyword in ['numeral', 'number', 'cardinal', 'ordinal']):
-            return 'numeral'
-        elif any(keyword in role_lower for keyword in ['measure_word', 'measure', 'classifier', 'counter']):
-            return 'measure_word'
-        elif any(keyword in role_lower for keyword in ['adverb', 'manner', 'degree', 'frequency']):
-            return 'adverb'
-        elif any(keyword in role_lower for keyword in ['time_word', 'time', 'temporal', 'duration']):
-            return 'time_word'
-        elif any(keyword in role_lower for keyword in ['locality_word', 'locality', 'location', 'direction', 'spatial']):
-            return 'locality_word'
-        elif any(keyword in role_lower for keyword in ['interjection', 'exclamation', 'emotion', 'feeling']):
-            return 'interjection'
-        elif any(keyword in role_lower for keyword in ['onomatopoeia', 'sound', 'imitative', 'mimicry']):
+    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        role_lower = grammatical_role.lower().strip()
+
+        # STEP 1: PREPROCESSING - Fix AI hallucinations
+        if role_lower == "co verb":
+            role_lower = "coverb"
+        elif role_lower == "m measure_word":
+            role_lower = "classifier"
+        elif role_lower == "aux modal":
+            role_lower = "modal_verb"
+        elif role_lower == "direction complement":
+            role_lower = "directional_verb"
+        elif role_lower == "aspect particle":
+            role_lower = "particle"
+
+        # STEP 2: LANGUAGE-SPECIFIC CHILDREN (Highest Priority)
+        # 1. Modal verbs BEFORE main verbs
+        if any(keyword in role_lower for keyword in [
+            'modal', 'auxiliary', 'modal_verb', 'auxiliary_verb', '能', '可以', '必须', '会', '应该'
+        ]):
+            return 'modal_verb'
+
+        # 2. Directional verbs BEFORE main verbs
+        if any(keyword in role_lower for keyword in [
+            'directional', 'directional_verb', 'direction complement', '来', '去', '起来', '下去', '进来'
+        ]):
+            return 'directional_verb'
+
+        # STEP 3: PRONOUN SUBTYPES (Before general pronoun)
+        if any(keyword in role_lower for keyword in [
+            'personal', 'personal_pronoun', 'first_person', 'second_person', 'third_person', '我', '你', '他', '她', '它', '我们', '你们', '他们'
+        ]):
+            return 'personal_pronoun'
+
+        elif any(keyword in role_lower for keyword in [
+            'demonstrative', 'demonstrative_pronoun', '这', '那', '这些', '那些'
+        ]):
+            return 'demonstrative_pronoun'
+
+        elif any(keyword in role_lower for keyword in [
+            'interrogative', 'interrogative_pronoun', 'question', '谁', '什么', '哪', '怎么', '为什么'
+        ]):
+            return 'interrogative_pronoun'
+
+        elif any(keyword in role_lower for keyword in [
+            'indefinite', 'indefinite_pronoun', '有人', '什么', '任何', '每个'
+        ]):
+            return 'indefinite_pronoun'
+
+        # STEP 4: FUNCTION WORD SUBTYPES
+        # 3. Coverbs BEFORE prepositions
+        if any(keyword in role_lower for keyword in [
+            'coverb', 'prepositional_verb', '在', '从', '到', '用', '给', '对', '向', '往'
+        ]):
+            return 'coverb'
+
+        # 4. Particles BEFORE conjunctions
+        if any(keyword in role_lower for keyword in [
+            'particle', 'aspect_particle', 'structural_particle', '了', '着', '过', '的', '得', '地'
+        ]):
+            return 'particle'
+
+        # STEP 5: SPECIAL CATEGORIES
+        # 5. Classifiers BEFORE numerals
+        if any(keyword in role_lower for keyword in [
+            'classifier', 'measure_word', 'counter', '个', '本', '张', '只', '条', '把'
+        ]):
+            return 'classifier'
+
+        # 6. Locative nouns BEFORE general nouns
+        if any(keyword in role_lower for keyword in [
+            'locative', 'locative_noun', 'spatial', '上', '下', '里', '外', '前', '后'
+        ]):
+            return 'locative_noun'
+
+        # 7. Time nouns BEFORE general nouns
+        if any(keyword in role_lower for keyword in [
+            'time', 'time_noun', 'temporal', '今天', '昨天', '明天', '早上', '晚上', '年', '月', '日'
+        ]):
+            return 'time_noun'
+
+        # 8. Onomatopoeia BEFORE interjections
+        if any(keyword in role_lower for keyword in [
+            'onomatopoeia', 'sound_imitation', '汪汪', '叮咚', '哗啦'
+        ]):
             return 'onomatopoeia'
 
-        # Function words (虚词) - secondary categories
-        elif any(keyword in role_lower for keyword in ['preposition', 'prepositional']):
-            return 'preposition'
-        elif any(keyword in role_lower for keyword in ['conjunction', 'connective', 'coordinating', 'subordinating']):
-            return 'conjunction'
-        elif any(keyword in role_lower for keyword in ['structural_particle', 'structural', 'possessive', 'attributive']):
-            return 'structural_particle'
-        elif any(keyword in role_lower for keyword in ['aspect_particle', 'aspect', 'progressive', 'perfective', 'experiential']):
-            return 'aspect_particle'
-        elif any(keyword in role_lower for keyword in ['plural_particle', 'plural', 'collective']):
-            return 'plural_particle'
-        elif any(keyword in role_lower for keyword in ['modal_particle', 'modal', 'tone', 'emphasis', 'question']):
-            return 'modal_particle'
+        # STEP 6: PARENT CATEGORIES (Lowest Priority - Checked Last)
+        if any(keyword in role_lower for keyword in ['pronoun', '代词', '代']):
+            return 'pronoun'
 
-        # Fallback for legacy categories or unrecognized roles
-        elif any(keyword in role_lower for keyword in ['particle', 'marker']) and not any(specific in role_lower for specific in ['aspect', 'modal', 'structural', 'plural']):
-            return 'structural_particle'  # Default particle type
-        elif 'other' in role_lower or 'unknown' in role_lower:
-            return 'other'
+        if any(keyword in role_lower for keyword in ['verb', '动词', '动']):
+            return 'verb'
 
-        # Default fallback
-        return 'other'
+        if any(keyword in role_lower for keyword in ['adjective', '形容词', '形']):
+            return 'adjective'
+
+        if any(keyword in role_lower for keyword in ['noun', '名词', '名']):
+            return 'noun'
+
+        if any(keyword in role_lower for keyword in ['adverb', '副词', '副']):
+            return 'adverb'
+
+        if any(keyword in role_lower for keyword in ['numeral', '数词', '数', '数字']):
+            return 'numeral'
+
+        # AI-generated roles that need mapping
+        if 'subject' in role_lower:
+            return 'pronoun'  # Subjects are typically pronouns in Chinese
+        elif 'negation' in role_lower or 'determiner' in role_lower:
+            return 'other'  # Negation particles and determiners
+
+        return 'other'  # Default fallback
 
     def _get_default_category_for_char(self, char: str) -> str:
         """Get a default grammatical category for characters that don't have detailed analysis"""
@@ -653,17 +877,27 @@ ANALYZE EVERY CHARACTER in the sentence."""
         """Standardize AI-provided color to ensure consistency with the defined color scheme"""
         # Define the exact color mapping that should be used (including Chinese-specific extensions)
         standard_colors = {
-            "pronouns": "#FF4444",         # Red
-            "nouns": "#FFAA00",            # Orange
-            "verbs": "#44FF44",            # Green
-            "adjectives": "#FF44FF",       # Magenta
-            "adverbs": "#44FFFF",          # Cyan
-            "postpositions": "#4444FF",    # Blue
-            "conjunctions": "#888888",     # Gray
-            "interjections": "#888888",    # Gray
-            "particles": "#AA44FF",        # Purple (Chinese-specific)
-            "measure_words": "#AA44FF",    # Purple (Chinese-specific)
-            "other": "#888888"             # Gray
+            "noun": "#FFAA00",              # Orange
+            "locative_noun": "#FFAA00",     # Orange
+            "time_noun": "#FFAA00",         # Orange
+            "verb": "#44FF44",              # Green
+            "adjective": "#FF44FF",         # Magenta
+            "adverb": "#44FFFF",            # Cyan
+            "numeral": "#FFFF44",           # Yellow
+            "classifier": "#FFFF44",        # Yellow
+            "pronoun": "#FF4444",           # Red
+            "personal_pronoun": "#FF4444",  # Red
+            "demonstrative_pronoun": "#FF4444", # Red
+            "interrogative_pronoun": "#FF4444", # Red
+            "indefinite_pronoun": "#FF4444", # Red
+            "modal_verb": "#44FF44",        # Green
+            "directional_verb": "#44FF44",  # Green
+            "coverb": "#4444FF",            # Blue
+            "conjunction": "#888888",       # Gray
+            "particle": "#AA44FF",          # Purple
+            "interjection": "#FFD700",      # Gold
+            "onomatopoeia": "#FFD700",      # Gold
+            "other": "#AAAAAA"              # Light gray
         }
 
         # If AI provided a color, check if it matches the standard for this category
