@@ -121,46 +121,56 @@ class ArAnalyzer(BaseGrammarAnalyzer):
             return self._get_beginner_prompt(sentence, target_word, native_language)
 
     def _get_beginner_prompt(self, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """Generate beginner-level Arabic grammar analysis prompt"""
+        """Generate beginner-level Arabic grammar analysis prompt with contextual meanings"""
         allowed_roles = self.GRAMMATICAL_ROLES['beginner']
 
         return f"""Analyze this Arabic sentence word by word: {sentence}
 
 Target word: "{target_word}"
 
-For EACH word in the sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left, as Arabic is read), provide:
+For EACH word in the sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left - RTL), provide:
 - word: the exact Arabic word as it appears
-- individual_meaning: the {native_language} translation/meaning of this word
+- individual_meaning: the {native_language} translation WITH grammatical context (e.g., "the book (noun)", "in (preposition)")
 - grammatical_role: EXACTLY ONE category from: {', '.join(allowed_roles)}
 
 CRITICAL REQUIREMENTS:
 - WORDS MUST BE LISTED FROM RIGHT TO LEFT as they appear in the Arabic sentence (RTL order)
-- EVERY word MUST have individual_meaning (translation)
+- EVERY word MUST have individual_meaning with BOTH translation AND grammatical context
 - grammatical_role MUST be EXACTLY from the allowed list
 
 Arabic grammatical categories:
-- noun: اِسْم (things, people, places)
-- verb: فِعْل (actions, states)
+- noun: اِسْم (things, people, places - can have definite article ال)
+- verb: فِعْل (actions, states - can be perfect or imperfect)
 - particle: حَرْف (prepositions, conjunctions, etc.)
 - other: anything not fitting above
+
+Examples:
+- "الكتاب" → individual_meaning: "the book (definite noun)", grammatical_role: "noun"
+- "في" → individual_meaning: "in/inside (preposition)", grammatical_role: "particle"
+- "يقرأ" → individual_meaning: "reads (verb)", grammatical_role: "verb"
+- "جميل" → individual_meaning: "beautiful (adjective used as noun)", grammatical_role: "noun"
 
 Return JSON format:
 {{
   "words": [
     {{
       "word": "الكتاب",
-      "individual_meaning": "the book",
+      "individual_meaning": "the book (definite noun)",
       "grammatical_role": "noun"
     }},
     {{
-      "word": "في",
-      "individual_meaning": "in",
-      "grammatical_role": "particle"
+      "word": "يقرأ",
+      "individual_meaning": "reads (verb)",
+      "grammatical_role": "verb"
     }}
   ]
 }}
 
-IMPORTANT: List words in RTL order (right to left) as they appear in Arabic text."""
+VALIDATION REQUIREMENTS:
+- EVERY word in the sentence MUST have an "individual_meaning" field with context
+- individual_meaning MUST include both translation and grammatical function
+- Provide explanations in {native_language}
+"""
 
     def _get_intermediate_prompt(self, sentence: str, target_word: str, native_language: str = "English") -> str:
         """Generate intermediate-level Arabic grammar analysis prompt"""
@@ -297,71 +307,170 @@ Return JSON with comprehensive analysis."""
 
     def _reorder_explanations_for_rtl(self, sentence: str, word_explanations: List) -> List:
         """
-        Reorder word explanations for RTL Arabic display.
+        Reorder word explanations to match Arabic RTL reading order.
         Arabic is read right-to-left, so explanations should match this order.
         """
-        if not word_explanations:
+        if not word_explanations or not sentence:
             return word_explanations
 
-        # For Arabic (RTL), we need to reverse the order to match reading direction
-        # This ensures explanations appear in the order words are encountered when reading Arabic
-        return list(reversed(word_explanations))
+        # For Arabic (RTL), we need to reorder explanations to match the reading direction
+        # Find position of each word in the sentence and sort from right to left
+        positioned_explanations = []
+
+        for explanation in word_explanations:
+            if len(explanation) >= 4:
+                word = explanation[0]  # word is at index 0
+                if word:
+                    # Find all occurrences of this word in the sentence
+                    positions = []
+                    start = 0
+                    while True:
+                        pos = sentence.find(word, start)
+                        if pos == -1:
+                            break
+                        positions.append(pos)
+                        start = pos + 1
+
+                    # Use the first occurrence position
+                    # For RTL, we'll sort by position descending (right to left)
+                    position = positions[0] if positions else float('inf')
+                    positioned_explanations.append((position, explanation))
+
+        # Sort by position in ascending order (RTL reading: left to right in string = right to left in reading)
+        positioned_explanations.sort(key=lambda x: x[0])
+
+        # Extract just the explanations
+        sorted_explanations = [exp for _, exp in positioned_explanations]
+
+        return sorted_explanations
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map Arabic grammatical roles to color categories"""
-        mapping = {
-            'noun': 'nouns',
-            'verb': 'verbs',
-            'adjective': 'adjectives',
-            'preposition': 'particles',
-            'conjunction': 'particles',
-            'interrogative': 'particles',
-            'negation': 'particles',
-            'definite_article': 'articles',
-            'pronoun': 'pronouns',
-            'nominative': 'cases',
-            'accusative': 'cases',
-            'genitive': 'cases',
-            'perfect_verb': 'verbs',
-            'imperfect_verb': 'verbs',
-            'imperative_verb': 'verbs',
-            'active_participle': 'participles',
-            'passive_participle': 'participles'
-        }
-        return mapping.get(grammatical_role, 'other')
+        # For Arabic, the color scheme keys match the grammatical roles directly
+        return grammatical_role
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return color scheme for Arabic grammatical elements"""
         schemes = {
             "beginner": {
-                "nouns": "#FFAA00",        # Orange - Things/objects
-                "verbs": "#44FF44",        # Green - Actions
-                "particles": "#FF4444",    # Red - Function words
+                "noun": "#FFAA00",        # Orange - Things/objects
+                "verb": "#44FF44",        # Green - Actions
+                "particle": "#FF4444",    # Red - Function words
                 "other": "#888888"         # Gray
             },
             "intermediate": {
-                "nouns": "#FFAA00",        # Orange
-                "verbs": "#44FF44",        # Green
-                "adjectives": "#FF44FF",   # Magenta
-                "particles": "#FF4444",    # Red
-                "articles": "#FFD700",     # Gold
-                "pronouns": "#FF69B4",     # Pink
+                "noun": "#FFAA00",        # Orange
+                "verb": "#44FF44",        # Green
+                "adjective": "#FF44FF",   # Magenta
+                "preposition": "#FF4444", # Red
+                "conjunction": "#FF4444", # Red
+                "interrogative": "#FF4444", # Red
+                "negation": "#FF4444",    # Red
+                "definite_article": "#FFD700", # Gold
+                "pronoun": "#FF69B4",     # Pink
                 "other": "#888888"
             },
             "advanced": {
-                "nouns": "#FFAA00",        # Orange
-                "verbs": "#44FF44",        # Green
-                "adjectives": "#FF44FF",   # Magenta
-                "particles": "#FF4444",    # Red
-                "articles": "#FFD700",     # Gold
-                "pronouns": "#FF69B4",     # Pink
-                "cases": "#228B22",        # Forest Green
-                "participles": "#32CD32",  # Lime Green
+                "noun": "#FFAA00",        # Orange
+                "verb": "#44FF44",        # Green
+                "adjective": "#FF44FF",   # Magenta
+                "preposition": "#FF4444", # Red
+                "conjunction": "#FF4444", # Red
+                "interrogative": "#FF4444", # Red
+                "negation": "#FF4444",    # Red
+                "definite_article": "#FFD700", # Gold
+                "pronoun": "#FF69B4",     # Pink
+                "nominative": "#228B22",  # Forest Green
+                "accusative": "#228B22",  # Forest Green
+                "genitive": "#228B22",    # Forest Green
+                "perfect_verb": "#32CD32", # Lime Green
+                "imperfect_verb": "#32CD32", # Lime Green
+                "imperative_verb": "#32CD32", # Lime Green
+                "active_participle": "#32CD32", # Lime Green
+                "passive_participle": "#32CD32", # Lime Green
                 "other": "#888888"
             }
         }
 
         return schemes.get(complexity, schemes["beginner"])
+
+    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
+        """Generate Arabic-specific AI prompt for batch grammar analysis with RTL ordering and contextual meanings"""
+        allowed_roles = self.GRAMMATICAL_ROLES.get(complexity, self.GRAMMATICAL_ROLES['intermediate'])
+        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+
+        return f"""Analyze the grammar of these Arabic sentences and provide detailed word-by-word analysis for each one.
+
+Target word: "{target_word}"
+Language: Arabic (العربية)
+Complexity level: {complexity}
+Analysis should be in {native_language}
+
+Sentences to analyze:
+{sentences_text}
+
+For EACH word in EVERY sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left, as Arabic is read from right to left), provide:
+- word: the exact Arabic word as it appears in the sentence
+- individual_meaning: the {native_language} translation/meaning WITH CONTEXT (MANDATORY - provide detailed, contextual meanings like grammatical function + basic meaning)
+- grammatical_role: EXACTLY ONE category from this list: {', '.join(allowed_roles)}
+
+CRITICAL REQUIREMENTS:
+- WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE (right to left for Arabic)
+- individual_meaning MUST include BOTH the basic translation AND grammatical context
+- grammatical_role MUST be EXACTLY from the allowed list (one word only)
+- Do NOT group words by category - list them in sentence reading order
+
+Examples of DETAILED contextual meanings:
+- الكتاب: individual_meaning: "the book (definite noun with definite article)", grammatical_role: "noun"
+- في: individual_meaning: "in/inside (preposition requiring genitive case)", grammatical_role: "preposition"
+- يقرأ: individual_meaning: "reads/is reading (imperfect verb, form I, third person masculine singular)", grammatical_role: "verb"
+- الطالب: individual_meaning: "the student (definite noun, nominative case)", grammatical_role: "noun"
+- ذلك: individual_meaning: "that (demonstrative pronoun, masculine singular)", grammatical_role: "pronoun"
+- جميل: individual_meaning: "beautiful (adjective agreeing with noun in gender/case)", grammatical_role: "adjective"
+- ما: individual_meaning: "what (interrogative particle introducing question)", grammatical_role: "interrogative"
+- أحب: individual_meaning: "I love (perfect verb, first person singular, form I)", grammatical_role: "verb"
+
+For ADVANCED level, include morphological details:
+- Root information (triliteral roots)
+- Verb form (ʾabwāb I-X)
+- Case markings (ʾiʿrāb: nominative/accusative/genitive)
+- Definite article assimilation
+
+Return JSON in this exact format:
+{{
+  "batch_results": [
+    {{
+      "sentence_index": 1,
+      "sentence": "{sentences[0] if sentences else ''}",
+      "words": [
+        {{
+          "word": "الكتاب",
+          "individual_meaning": "the book (definite noun with definite article)",
+          "grammatical_role": "noun"
+        }},
+        {{
+          "word": "يقرأ",
+          "individual_meaning": "reads (imperfect verb, third person masculine singular)",
+          "grammatical_role": "verb"
+        }}
+      ],
+      "word_combinations": [],
+      "explanations": {{
+        "sentence_structure": "Brief grammatical summary of the sentence",
+        "complexity_notes": "Notes about grammatical structures used at {complexity} level"
+      }}
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Analyze ALL {len(sentences)} sentences
+- EVERY word MUST have DETAILED individual_meaning (translation + grammatical context)
+- grammatical_role MUST be EXACTLY from the allowed list
+- Words must be in RIGHT-TO-LEFT reading order for Arabic
+- Include morphological details for advanced analysis
+- Return ONLY the JSON object, no additional text
+"""
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """Validate Arabic grammar analysis quality (85% threshold required)"""

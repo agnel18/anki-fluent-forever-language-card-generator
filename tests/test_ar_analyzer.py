@@ -84,43 +84,43 @@ class TestArAnalyzer:
         """Test color scheme for beginner level"""
         colors = analyzer.get_color_scheme("beginner")
 
-        assert colors['nouns'] == "#FFAA00"  # Orange
-        assert colors['verbs'] == "#44FF44"  # Green
-        assert colors['particles'] == "#FF4444"  # Red
+        assert colors['noun'] == "#FFAA00"  # Orange
+        assert colors['verb'] == "#44FF44"  # Green
+        assert colors['particle'] == "#FF4444"  # Red
 
     def test_color_scheme_intermediate(self, analyzer):
         """Test color scheme for intermediate level"""
         colors = analyzer.get_color_scheme("intermediate")
 
-        assert 'adjectives' in colors
-        assert 'articles' in colors
-        assert 'pronouns' in colors
-        assert colors['articles'] == "#FFD700"  # Gold
+        assert 'adjective' in colors
+        assert 'definite_article' in colors
+        assert 'pronoun' in colors
+        assert colors['definite_article'] == "#FFD700"  # Gold
 
     def test_color_scheme_advanced(self, analyzer):
         """Test color scheme for advanced level"""
         colors = analyzer.get_color_scheme("advanced")
 
-        assert 'cases' in colors
-        assert 'participles' in colors
-        assert colors['cases'] == "#228B22"  # Forest Green
+        assert 'accusative' in colors
+        assert 'active_participle' in colors
+        assert colors['accusative'] == "#228B22"  # Forest Green
 
     def test_map_grammatical_role_to_category(self, analyzer):
         """Test role mapping function"""
-        # Test basic mappings
-        assert analyzer._map_grammatical_role_to_category("noun") == "nouns"
-        assert analyzer._map_grammatical_role_to_category("verb") == "verbs"
-        assert analyzer._map_grammatical_role_to_category("preposition") == "particles"
-        assert analyzer._map_grammatical_role_to_category("definite_article") == "articles"
+        # Test basic mappings - now returns the role itself
+        assert analyzer._map_grammatical_role_to_category("noun") == "noun"
+        assert analyzer._map_grammatical_role_to_category("verb") == "verb"
+        assert analyzer._map_grammatical_role_to_category("preposition") == "preposition"
+        assert analyzer._map_grammatical_role_to_category("definite_article") == "definite_article"
 
         # Test case markings
-        assert analyzer._map_grammatical_role_to_category("nominative") == "cases"
-        assert analyzer._map_grammatical_role_to_category("accusative") == "cases"
-        assert analyzer._map_grammatical_role_to_category("genitive") == "cases"
+        assert analyzer._map_grammatical_role_to_category("nominative") == "nominative"
+        assert analyzer._map_grammatical_role_to_category("accusative") == "accusative"
+        assert analyzer._map_grammatical_role_to_category("genitive") == "genitive"
 
         # Test verb types
-        assert analyzer._map_grammatical_role_to_category("perfect_verb") == "verbs"
-        assert analyzer._map_grammatical_role_to_category("imperfect_verb") == "verbs"
+        assert analyzer._map_grammatical_role_to_category("perfect_verb") == "perfect_verb"
+        assert analyzer._map_grammatical_role_to_category("imperfect_verb") == "imperfect_verb"
 
     def test_validate_analysis_high_confidence(self, analyzer):
         """Test validation with high confidence analysis"""

@@ -4,7 +4,7 @@
 import logging
 import json
 import time
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 from .api_client import APIClient
 from .data_transformer import DataTransformer
@@ -55,7 +55,7 @@ class BatchProcessor:
 
             try:
                 # Process this chunk as a batch
-                chunk_results = self._process_chunk(
+                chunk_results, failed_indices = self._process_chunk(
                     sentences=chunk,
                     word=word,
                     language=language,
@@ -64,12 +64,31 @@ class BatchProcessor:
                     complexity_level=complexity_level,
                     native_language=native_language
                 )
+
+                # If some sentences failed, retry only those individually
+                if failed_indices:
+                    logger.warning(f"Chunk {i//chunk_size + 1} had {len(failed_indices)} failed sentences, retrying individually")
+                    failed_sentences = [chunk[idx] for idx in failed_indices]
+                    retry_results = self._process_sentences_individually(
+                        sentences=failed_sentences,
+                        word=word,
+                        language=language,
+                        language_code=language_code,
+                        analyzer=analyzer,
+                        complexity_level=complexity_level,
+                        native_language=native_language
+                    )
+
+                    # Merge retry results back into chunk results
+                    for failed_idx, retry_result in zip(failed_indices, retry_results):
+                        chunk_results[failed_idx] = retry_result
+
                 all_results.extend(chunk_results)
 
             except Exception as e:
                 logger.error(f"Chunk processing failed for chunk {i//chunk_size + 1}: {e}")
-                # Fallback: Process sentences individually within this chunk
-                logger.info(f"Falling back to individual processing for chunk {i//chunk_size + 1}")
+                # Fallback: Process entire chunk individually
+                logger.info(f"Falling back to individual processing for entire chunk {i//chunk_size + 1}")
                 chunk_fallback_results = self._process_sentences_individually(
                     sentences=chunk,
                     word=word,
@@ -86,9 +105,10 @@ class BatchProcessor:
 
     def _process_chunk(self, sentences: List[str], word: str, language: str,
                       language_code: str, analyzer=None, complexity_level: str = "beginner",
-                      native_language: str = "English") -> List[Dict[str, Any]]:
+                      native_language: str = "English") -> Tuple[List[Dict[str, Any]], List[int]]:
         """
         Process a chunk of up to 8 sentences as a single batch API call.
+        Returns processed results and indices of failed sentences for partial fallback.
         """
         # Create batch prompt for this chunk
         prompt = self._create_batch_prompt(
@@ -101,25 +121,38 @@ class BatchProcessor:
             native_language=native_language
         )
 
-        # Make single batch API call for this chunk
-        response_text = self.api_client.call_completion(
-            prompt=prompt,
-            temperature=0.3,
-            max_tokens=4000
-        )
+        try:
+            # Make single batch API call for this chunk
+            response_text = self.api_client.call_completion(
+                prompt=prompt,
+                temperature=0.3,
+                max_tokens=4000
+            )
 
-        # Parse batch response
-        processed_results = self._parse_batch_response(
-            response_text=response_text,
-            sentences=sentences,
-            analyzer=analyzer,
-            language=language,
-            complexity_level=complexity_level,
-            language_code=language_code,
-            native_language=native_language
-        )
+            # Parse batch response
+            processed_results = self._parse_batch_response(
+                response_text=response_text,
+                sentences=sentences,
+                analyzer=analyzer,
+                language=language,
+                complexity_level=complexity_level,
+                language_code=language_code,
+                native_language=native_language
+            )
 
-        return processed_results
+            # Check for failed results (empty word_explanations or error indicators)
+            failed_indices = []
+            for i, result in enumerate(processed_results):
+                if not result.get("word_explanations") or len(result.get("word_explanations", [])) == 0:
+                    failed_indices.append(i)
+
+            return processed_results, failed_indices
+
+        except Exception as e:
+            logger.error(f"Chunk processing failed: {e}")
+            # If batch fails completely, mark all as failed
+            failed_indices = list(range(len(sentences)))
+            return [], failed_indices
 
     def _create_batch_prompt(self, sentences: List[str], word: str, language: str,
                            language_code: str, analyzer, complexity_level: str,
@@ -353,30 +386,38 @@ Provide explanations in {native_language}. Return ONLY the JSON array, no additi
     def _process_sentences_individually(self, sentences: List[str], word: str, language: str,
                                       language_code: str, analyzer, complexity_level: str,
                                       native_language: str) -> List[Dict[str, Any]]:
-        """Fallback function to process sentences individually when batch processing fails."""
+        """Fallback function to process sentences individually when batch processing fails.
+        Implements exponential backoff for rate limiting and partial fallbacks."""
         processed_results = []
+        base_delay = 1  # Start with 1 second
+        max_delay = 30  # Maximum 30 seconds
+        max_retries = 3  # Maximum retries per sentence
 
         for i, sentence in enumerate(sentences):
-            try:
-                if analyzer:
-                    # Use analyzer's individual processing
-                    prompt = analyzer.get_grammar_prompt(complexity_level, sentence, word)
-                    response_text = self.api_client.call_with_rate_limit(prompt, delay_seconds=5)
+            retry_count = 0
+            current_delay = base_delay
 
-                    parsed_data = analyzer.parse_grammar_response(response_text, complexity_level, sentence)
-                    colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
+            while retry_count <= max_retries:
+                try:
+                    if analyzer:
+                        # Use analyzer's individual processing
+                        prompt = analyzer.get_grammar_prompt(complexity_level, sentence, word, native_language)
+                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=2000)
 
-                    # Convert to word_explanations format
-                    if "word_explanations" in parsed_data and parsed_data["word_explanations"]:
-                        word_explanations = parsed_data["word_explanations"]
+                        parsed_data = analyzer.parse_grammar_response(response_text, complexity_level, sentence)
+                        colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
+
+                        # Convert to word_explanations format
+                        if "word_explanations" in parsed_data and parsed_data["word_explanations"]:
+                            word_explanations = parsed_data["word_explanations"]
+                        else:
+                            word_explanations = self._convert_analyzer_output_to_explanations(parsed_data, language)
+
+                        grammar_summary = parsed_data.get('explanations', {}).get('sentence_structure',
+                            f"This sentence uses {language_code} grammatical structures appropriate for {complexity_level} learners.")
                     else:
-                        word_explanations = self._convert_analyzer_output_to_explanations(parsed_data, language)
-
-                    grammar_summary = parsed_data.get('explanations', {}).get('sentence_structure',
-                        f"This sentence uses {language_code} grammatical structures appropriate for {complexity_level} learners.")
-                else:
-                    # Generic individual processing
-                    prompt = f"""Analyze the grammar of this {language} sentence and provide color-coded HTML output.
+                        # Generic individual processing
+                        prompt = f"""Analyze the grammar of this {language} sentence and provide color-coded HTML output.
 
 Sentence: {sentence}
 
@@ -393,32 +434,42 @@ Return analysis in this exact JSON format:
 Color codes: nouns=#FF6B6B, verbs=#4ECDC4, adjectives/adverbs=#45B7D1, prepositions/conjunctions=#96CEB4, pronouns/articles=#FFEAA7, other=#CCCCCC
 Return ONLY the JSON object."""
 
-                    response_text = self.api_client.call_with_rate_limit(prompt, delay_seconds=5)
+                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=2000)
 
-                    # Extract and parse JSON
-                    if "```json" in response_text:
-                        response_text = response_text.split("```json")[1].split("```")[0].strip()
-                    elif "```" in response_text:
-                        response_text = response_text.split("```")[1].split("```")[0].strip()
+                        # Extract and parse JSON
+                        if "```json" in response_text:
+                            response_text = response_text.split("```json")[1].split("```")[0].strip()
+                        elif "```" in response_text:
+                            response_text = response_text.split("```")[1].split("```")[0].strip()
 
-                    result = json.loads(response_text)
-                    colored_sentence = result.get("colored_sentence", sentence)
-                    word_explanations = result.get("word_explanations", [])
-                    grammar_summary = result.get("grammar_summary", "")
+                        result = json.loads(response_text)
+                        colored_sentence = result.get("colored_sentence", sentence)
+                        word_explanations = result.get("word_explanations", [])
+                        grammar_summary = result.get("grammar_summary", "")
 
-                processed_results.append({
-                    "colored_sentence": colored_sentence,
-                    "word_explanations": word_explanations,
-                    "grammar_summary": grammar_summary,
-                })
+                    processed_results.append({
+                        "colored_sentence": colored_sentence,
+                        "word_explanations": word_explanations,
+                        "grammar_summary": grammar_summary,
+                    })
 
-            except Exception as e:
-                logger.error(f"Individual processing failed for sentence {i+1}: {e}")
-                processed_results.append({
-                    "colored_sentence": sentence,
-                    "word_explanations": [],
-                    "grammar_summary": f"Analysis failed for {language_code} sentence",
-                })
+                    # Success - break out of retry loop
+                    break
+
+                except Exception as e:
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        logger.warning(f"Individual processing failed for sentence {i+1} (attempt {retry_count}/{max_retries + 1}): {e}")
+                        logger.info(f"Retrying in {current_delay} seconds...")
+                        time.sleep(current_delay)
+                        current_delay = min(current_delay * 2, max_delay)  # Exponential backoff
+                    else:
+                        logger.error(f"Individual processing failed permanently for sentence {i+1}: {e}")
+                        processed_results.append({
+                            "colored_sentence": sentence,
+                            "word_explanations": [],
+                            "grammar_summary": f"Analysis failed for {language_code} sentence after {max_retries + 1} attempts",
+                        })
 
         return processed_results
 

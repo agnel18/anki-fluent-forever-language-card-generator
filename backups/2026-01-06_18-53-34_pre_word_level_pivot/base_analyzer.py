@@ -321,11 +321,10 @@ IMPORTANT:
         # Sort by length descending to handle longer matches first
         all_words.sort(key=lambda x: len(x[0]), reverse=True)
 
-        # Replace each word with colored version using inline styles
+        # Replace each word with colored version using CSS classes
         for word, element_type in all_words:
-            # Create colored span with inline style for better compatibility
-            color = colors.get(element_type, '#000000')
-            colored_span = f'<span style="color: {color};">{word}</span>'
+            # Create colored span with CSS class for Anki compatibility
+            colored_span = f'<span class="grammar-{element_type}">{word}</span>'
 
             # Use simple string replacement with word boundaries
             # Split the sentence into words, replace exact matches, then rejoin

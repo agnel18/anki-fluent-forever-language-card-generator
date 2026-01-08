@@ -153,6 +153,7 @@ def generate_images_pixabay(
 
         except Exception as e:
             pixabay_logger.error(f"Pixabay error for query '{query}': {e}")
+            generated.append("")  # Add empty string to maintain index alignment
             continue
 
     return generated, used_image_urls

@@ -1,44 +1,29 @@
 # 🌍 Language Grammar Analyzer Generator - Master Prompt
-# Version: 2026-01-06 (WORD-LEVEL ANALYSIS PIVOT)
+# Version: 2026-01-06 (CRITICAL ISSUES UPDATE)
 # Reference: Hindi Gold Standard (hi_analyzer.py)
 
 ## 🚨 CRITICAL ISSUES - IMMEDIATE PRIORITY
 
-### **Issue 4: Character-Level Analysis is Linguistically Incorrect for Chinese** ❌
-**Problem:** Current Chinese analyzer treats characters as independent units, but Chinese characters are bound morphemes that only have meaning in word contexts. Western grammatical categories don't fit Chinese linguistics.
+### **Issue 4: Missing Compound Word Recognition** ❌
+**Problem:** Chinese and Hindi analyzers only provide individual character/word breakdowns without recognizing compound words/phrases (e.g., "我们" as "we" instead of separate "我"+"们"; "हमारे घर" as "our house").
 
-**Impact:** Produces pedagogically unsound analysis that misleads learners about Chinese grammar.
+**Impact:** Reduces linguistic accuracy and learning value, as learners miss important multi-unit meanings.
 
-**Solution Required:** Pivot to word-level analysis with compounds-first ordering, using Chinese-appropriate grammatical categories.
-
-### **Issue 5: Arabic RTL Word Ordering and Color Scheme Issues** ❌
-**Problem:** Arabic analyzer has multiple issues:
-1. **Word Order Wrong:** Explanations appear in LTR order instead of RTL reading order
-2. **Descriptions Missing:** Grammar explanations just repeat the grammatical role instead of providing meanings
-3. **Color Scheme Mismatch:** Color scheme keys don't match grammatical roles, causing white text
-4. **No RTL-Specific Batch Prompt:** Base class prompt doesn't specify RTL ordering requirements
-
-**Impact:** Arabic decks display incorrectly with wrong word order and missing explanations.
-
-**Solution Required:**
-- Implement `get_batch_grammar_prompt()` with explicit RTL ordering instructions
-- Fix color scheme to use grammatical roles as keys
-- Update `_reorder_explanations_for_rtl()` to use position-based sorting for RTL
-- Ensure AI provides actual meanings, not just role repetitions
+**Solution Required:** Add combination words as a footer enhancement in PASS 3 output, ensuring colors do NOT interfere with individual character/word coloring.
 
 ## 🎯 IMMEDIATE ACTION PLAN
 
-### **Phase 5: Word-Level Analysis Pivot (PASS 3)**
-**Goal:** Transform Chinese analyzer from character-level to word-level analysis
+### **Phase 5: Combination Words Enhancement (PASS 3)**
+**Goal:** Add compound word recognition to Grammar Explanations without interfering with individual coloring
 
 **Steps:**
-1. **Rewrite AI Prompts:** Change `get_batch_grammar_prompt()` to focus on words, not characters
-2. **Update Parsing:** Modify `parse_batch_grammar_response()` for word-level processing
-3. **Compounds-First Ordering:** Place compound words higher in explanations for beginner comprehension
-4. **Chinese Categories:** Use linguistically appropriate categories (实词/虚词 distinction)
-5. **Testing:** Validate word segmentation works reliably before full implementation
+1. **Update AI Prompts:** Extend `get_batch_grammar_prompt()` in analyzers to request `word_combinations` array with `text`, `combined_meaning`, `grammatical_role`
+2. **Enhance Parsing:** Modify `parse_batch_grammar_response()` to process combinations and add them to `word_explanations` (not to elements to avoid color interference)
+3. **Explanation Integration:** Combinations appear in Grammar Explanations as individual entries with appropriate grammatical role colors
+4. **Testing:** Validate combinations appear in explanations, individual colors unchanged
+5. **Scalability:** Template for 77 languages, starting with Chinese/Hindi
 
-**Critical Constraint:** Abandon character-level analysis entirely. Focus on authentic Chinese word-level grammar.
+**Critical Constraint:** Combination colors MUST NOT interfere with individual character/word coloring. Combinations use neutral color (#000000) and are added to explanations only.
 
 ## 📋 DETAILED RECOMMENDATIONS
 
@@ -582,53 +567,78 @@ config = LanguageConfig(
     name="Chinese",
     native_name="中文",
     family="Sino-Tibetan",           # Eldest sister for Sino-Tibetan family
-    script_type="logographic",       # Chinese characters (but word-level analysis)
-    complexity_rating="high",        # Due to word segmentation and tones
-    key_features=['word_segmentation', 'compounds_first', 'chinese_categories', 'aspect_system', 'topic_comment'],
+    script_type="logographic",       # Chinese characters
+    complexity_rating="high",        # Due to character recognition and tones
+    key_features=['tones', 'measure_words', 'aspect_particles', 'topic_comment_structure', 'character_etymology'],
     supported_complexity_levels=['beginner', 'intermediate', 'advanced']
 )
 ```
 
-### Chinese-Appropriate Grammatical Categories (实词/虚词)
+### 20-Category Chinese Grammatical Classification
 ```python
-# CONTENT WORDS (实词 / Shící) - Independent meaning
-"noun": "#FFAA00"                    # Orange - People/places/things/concepts
-"verb": "#44FF44"                    # Green - Actions/states/changes
-"adjective": "#FF44FF"               # Magenta - Qualities/descriptions
-"numeral": "#FFFF44"                 # Yellow - Numbers/quantities
-"measure_word": "#FFD700"            # Gold - Classifiers (个、只、本)
-"pronoun": "#FF4444"                 # Red - Replaces nouns
-"time_word": "#FFA500"               # Orange-red - Time expressions
-"locative_word": "#FF8C00"           # Dark orange - Location/direction
-
-# FUNCTION WORDS (虚词 / Xūcí) - Structural/grammatical
-"aspect_particle": "#8A2BE2"         # Purple - Aspect markers (了、着、过)
-"modal_particle": "#DA70D6"          # Plum - Tone/mood particles (吗、呢、吧)
-"structural_particle": "#9013FE"     # Violet - Structural particles (的、地、得)
-"preposition": "#4444FF"             # Blue - Prepositions/coverbs
-"conjunction": "#888888"             # Gray - Connectors
+# CONTENT WORDS (实词)
+"noun": "#FFAA00"                    # Orange - People/places/things
+"verb": "#44FF44"                    # Green - Actions/states
+"adjective": "#FF44FF"               # Magenta - Descriptive words
 "adverb": "#44FFFF"                  # Cyan - Modifies verbs/adjectives
-"interjection": "#FFD700"            # Gold - Emotions/exclamations
+"numeral": "#FFFF44"                 # Yellow - Numbers
+"measure_word": "#FFD700"            # Gold - Classifiers (个、只、本)
 "onomatopoeia": "#FFD700"            # Gold - Sound imitation
+
+# PRONOUNS (代词)
+"pronoun": "#FF4444"                 # Red - Replaces nouns
+"personal_pronoun": "#FF4444"        # Red - 我、你、他
+"demonstrative_pronoun": "#FF4444"   # Red - 这、那
+"interrogative_pronoun": "#FF4444"   # Red - 谁、什么
+
+# FUNCTION WORDS (虚词)
+"particle": "#AA44FF"                # Purple - Sentence particles (吗、呢、吧)
+"aspect_particle": "#AA44FF"         # Purple - Aspect markers (了、着、过)
+"preposition": "#4444FF"             # Blue - Spatial/temporal relations
+"conjunction": "#888888"             # Gray - Connectors (和、但是)
+"interjection": "#FFD700"            # Gold - Emotions (哎呀、哇)
+"other": "#AAAAAA"                   # Light gray - Other
 ```
 
-### Word-Level Analysis Architecture
+### Chinese-Specific Hierarchical Categorization
 ```python
-# PRIMARY: Word segmentation first
-# SECONDARY: Character breakdowns as supplementary
-# ORDERING: Compounds appear higher than individual characters
+def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+    """Map grammatical role descriptions to color category names using Chinese grammar rules"""
 
-def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
-    return f"""
-    Analyze Chinese sentences at the WORD level, not character level.
-    
-    For each sentence:
-    1. Segment into words (compounds first)
-    2. Analyze grammatical role using Chinese categories
-    3. Provide compounds with higher priority in explanations
-    
-    Return word-level analysis, not character-by-character breakdown.
-    """
+    role_lower = grammatical_role.lower().strip()
+
+    # CHILDREN-FIRST HIERARCHICAL CATEGORIZATION
+
+    # 1. Measure words BEFORE general nouns
+    if any(keyword in role_lower for keyword in ['measure_word', 'classifier', '量词', 'measure word']):
+        return 'measure_word'
+
+    # 2. Aspect particles BEFORE general particles
+    if any(keyword in role_lower for keyword in ['aspect_particle', 'aspect marker', '了', '着', '过']):
+        return 'aspect_particle'
+
+    # 3. Specific pronoun subtypes BEFORE general pronoun
+    if any(keyword in role_lower for keyword in ['personal_pronoun', 'personal']):
+        return 'personal_pronoun'
+    elif any(keyword in role_lower for keyword in ['demonstrative_pronoun', 'demonstrative']):
+        return 'demonstrative_pronoun'
+    elif any(keyword in role_lower for keyword in ['interrogative_pronoun', 'interrogative']):
+        return 'interrogative_pronoun'
+
+    # 4. Prepositions BEFORE other function words
+    if any(keyword in role_lower for keyword in ['preposition', 'prepositional']):
+        return 'preposition'
+
+    # PARENT CATEGORIES (checked after children)
+    if any(keyword in role_lower for keyword in ['pronoun']):
+        return 'pronoun'
+    elif any(keyword in role_lower for keyword in ['particle']):
+        return 'particle'
+    elif any(keyword in role_lower for keyword in ['verb']):
+        return 'verb'
+    elif any(keyword in role_lower for keyword in ['noun']):
+        return 'noun'
+    # ... [other parent categories]
 ```
 
 ## 📝 AI PROMPT STRUCTURE FOR ANALYZER GENERATION

@@ -43,7 +43,7 @@ def validate_ipa_output(ipa_text: str, language: str = "zh") -> tuple[bool, str]
 def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
     """Validate IPA content within brackets [ ]."""
     # Comprehensive IPA character set - includes all official IPA symbols
-    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟ'
+    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧ'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
     vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
@@ -103,7 +103,7 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
             return False, f"Detected romanization (plain ASCII text): {text}"
 
     # Check if it contains only valid IPA symbols (unbracketed IPA is also valid)
-    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟ'
+    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧ'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
     vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'

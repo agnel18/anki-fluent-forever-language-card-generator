@@ -14,10 +14,102 @@ from error_recovery import resilient_groq_call, with_fallback
 # Import the new grammar analyzer system
 from language_analyzers.analyzer_registry import get_analyzer
 
-# Import the new sentence generation services
-from services.sentence_generation import APIClient, BatchProcessor, ResponseParser, DataTransformer, IPAService, MeaningService, LANGUAGE_NAME_TO_CODE
-
 logger = logging.getLogger(__name__)
+
+# Language name to ISO code mapping for analyzer registry
+LANGUAGE_NAME_TO_CODE = {
+    "English": "en",
+    "Spanish": "es",
+    "French": "fr",
+    "German": "de",
+    "Italian": "it",
+    "Portuguese": "pt",
+    "Russian": "ru",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Chinese (Simplified)": "zh",
+    "Chinese (Traditional)": "zh",
+    "Arabic": "ar",
+    "Hindi": "hi",
+    "Bengali": "bn",
+    "Telugu": "te",
+    "Tamil": "ta",
+    "Dutch": "nl",
+    "Swedish": "sv",
+    "Norwegian": "no",
+    "Danish": "da",
+    "Finnish": "fi",
+    "Polish": "pl",
+    "Czech": "cs",
+    "Slovak": "sk",
+    "Hungarian": "hu",
+    "Romanian": "ro",
+    "Bulgarian": "bg",
+    "Greek": "el",
+    "Turkish": "tr",
+    "Hebrew": "he",
+    "Thai": "th",
+    "Vietnamese": "vi",
+    "Indonesian": "id",
+    "Malay": "ms",
+    "Filipino": "fil",
+    "Swahili": "sw",
+    "Amharic": "am",
+    "Hausa": "ha",
+    "Yoruba": "yo",
+    "Igbo": "ig",
+    "Zulu": "zu",
+    "Xhosa": "xh",
+    "Afrikaans": "af",
+    "Albanian": "sq",
+    "Armenian": "hy",
+    "Azerbaijani": "az",
+    "Basque": "eu",
+    "Belarusian": "be",
+    "Bosnian": "bs",
+    "Catalan": "ca",
+    "Croatian": "hr",
+    "Estonian": "et",
+    "Galician": "gl",
+    "Georgian": "ka",
+    "Icelandic": "is",
+    "Irish": "ga",
+    "Kazakh": "kk",
+    "Latvian": "lv",
+    "Lithuanian": "lt",
+    "Macedonian": "mk",
+    "Maltese": "mt",
+    "Mongolian": "mn",
+    "Serbian": "sr",
+    "Slovenian": "sl",
+    "Ukrainian": "uk",
+    "Welsh": "cy",
+    "Marathi": "mr",
+    "Gujarati": "gu",
+    "Kannada": "kn",
+    "Malayalam": "ml",
+    "Punjabi": "pa",
+    "Urdu": "ur",
+    "Persian": "fa",
+    "Pashto": "ps",
+    "Sindhi": "sd",
+    "Nepali": "ne",
+    "Sinhala": "si",
+    "Burmese": "my",
+    "Khmer": "km",
+    "Lao": "lo",
+    "Tibetan": "bo",
+    "Dzongkha": "dz",
+    "Uzbek": "uz",
+    "Kyrgyz": "ky",
+    "Tajik": "tg",
+    "Turkmen": "tk",
+    "Kazakh": "kk",
+    "Mongolian": "mn",
+    "Cantonese": "zh",  # Map to same as Simplified Chinese
+    "Mandarin Chinese": "zh",  # Map to same as Simplified Chinese
+    "Moroccan Arabic": "ar",  # Map to Arabic
+}
 
 # ============================================================================
 # IPA GENERATION (Using Epitran)
@@ -25,13 +117,70 @@ logger = logging.getLogger(__name__)
 def generate_ipa_hybrid(text: str, language: str, ai_ipa: str = "") -> str:
     """
     Generate IPA using Epitran library for accurate phonetic transcription.
-    Delegates to IPAService for consistent processing.
+    Falls back to AI-generated IPA if Epitran fails or language not supported.
+    Ensures output is official IPA only (no Pinyin, romanization).
     """
-    return IPAService().generate_ipa_hybrid(text, language, ai_ipa)
+    if not text:
+        return ""
+    
+    try:
+        import epitran
+        
+        # Map language names to Epitran codes (IPA-focused)
+        language_map = {
+            "Chinese (Simplified)": "cmn-Hans",  # Mandarin IPA (not Pinyin)
+            "Chinese (Traditional)": "cmn-Hant", 
+            "Mandarin Chinese": "cmn-Hans",
+            "English": "eng-Latn",
+            "Spanish": "spa-Latn",
+            "French": "fra-Latn",
+            "German": "deu-Latn",
+            "Italian": "ita-Latn",
+            "Portuguese": "por-Latn",
+            "Russian": "rus-Cyrl",
+            "Japanese": "jpn-Hrgn",  # Hepburn romanization to IPA
+            "Korean": "kor-Hang",   # Hangul to IPA
+            "Hindi": "hin-Deva",
+            "Arabic": "ara-Arab",
+        }
+        
+        epi_code = language_map.get(language)
+        if epi_code:
+            epi = epitran.Epitran(epi_code)
+            ipa = epi.transliterate(text)
+            if ipa and ipa != text:
+                # Use the comprehensive validation from generation_utils
+                from generation_utils import validate_ipa_output
+                is_valid, _ = validate_ipa_output(ipa, language)
+                if is_valid:
+                    return ipa
+
+        # Fallback to AI IPA if Epitran fails or validation fails
+        if ai_ipa:
+            from generation_utils import validate_ipa_output
+            is_valid, _ = validate_ipa_output(ai_ipa, language)
+            if is_valid:
+                return ai_ipa
+
+        # If no valid IPA, return empty (will be handled upstream)
+        return ""
+
+    except Exception as e:
+        logger.warning(f"Epitran IPA generation failed for '{text}' in {language}: {e}")
+        # Try AI fallback if available and valid
+        if ai_ipa:
+            from generation_utils import validate_ipa_output
+            is_valid, _ = validate_ipa_output(ai_ipa, language)
+            if is_valid:
+                return ai_ipa
+        return ""
 
 # ============================================================================
 # WORD MEANING GENERATION (Groq)
 # ============================================================================
+@cached_api_call("groq_meaning", ttl_seconds=86400)  # Cache for 24 hours
+@resilient_groq_call(max_retries=3)
+@with_fallback(fallback_value=lambda word, **kwargs: word)  # Fallback to word itself
 def generate_word_meaning(
     word: str,
     language: str,
@@ -39,9 +188,61 @@ def generate_word_meaning(
 ) -> str:
     """
     Generate English meaning and brief explanation for a word.
-    Delegates to MeaningService for consistent processing.
+
+    Args:
+        word: Target language word
+        language: Language name (e.g., "Spanish", "Hindi")
+        groq_api_key: Groq API key
+
+    Returns:
+        String with meaning and brief explanation (e.g., "he (male pronoun, used as subject)")
     """
-    return MeaningService().generate_word_meaning(word, language, groq_api_key)
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
+
+    client = Groq(api_key=groq_api_key)
+
+    prompt = f"""Provide a brief English meaning for the {language} word \"{word}\".
+
+Format: Return ONLY a single line with the meaning and a brief explanation in parentheses.
+Example: \"house (a building where people live)\" or \"he (male pronoun, used as subject)\"
+
+IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanation, no JSON."""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,  # Lower temperature for consistency
+            max_tokens=100,
+        )
+        # --- API USAGE TRACKING ---
+        try:
+            import streamlit as st
+            if "groq_api_calls" not in st.session_state:
+                st.session_state.groq_api_calls = 0
+            if "groq_tokens_used" not in st.session_state:
+                st.session_state.groq_tokens_used = 0
+            st.session_state.groq_api_calls += 1
+            # Estimate tokens used (prompt+completion)
+            st.session_state.groq_tokens_used += 100  # rough estimate, adjust if needed
+        except Exception:
+            pass
+        # -------------------------
+        meaning = response.choices[0].message.content.strip()
+
+        # Clean up any quotes
+        meaning = meaning.strip('"\'')
+        logger.info(f"Generated meaning for '{word}': {meaning}")
+        
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
+        
+        return meaning if meaning else word
+
+    except Exception as e:
+        logger.error(f"Error generating meaning for '{word}': {e}")
+        return word  # Fallback to word itself
 
 # ============================================================================
 # COMBINED PASS 1: Word Meaning + Sentences + Keywords (Single API Call)
@@ -74,7 +275,6 @@ def generate_word_meaning_sentences_and_keywords(
     Returns:
         Dict with keys:
         - meaning: English meaning string
-        - restrictions: Grammatical restrictions string
         - sentences: List of generated sentences
         - keywords: List of keyword strings (one per sentence)
     """
@@ -258,6 +458,7 @@ IMPORTANT:
         validated_ipa = []
         validated_keywords = []
         
+        # Prepare varied fallbacks that incorporate word meaning when possible
         if "imperative" in restrictions.lower() or "command" in restrictions.lower():
             # For imperatives, create command-based fallbacks
             fallback_templates = [
@@ -730,34 +931,27 @@ IMPORTANT:
 
     except json.JSONDecodeError as e:
         logger.error(f"PASS 2 batch JSON parse error: {e}")
-        # Return fallback data with populated fields to avoid breaking learning experience
-        fallback_results = []
-        for s in sentences:
-            fallback_results.append({
-                "sentence": s,  # Keep original sentence
-                "valid": True,  # Assume valid to not break flow
-                "english_translation": f"Translation unavailable (parsing error: {str(e)[:50]})",
-                "ipa": f"IPA unavailable (parsing error)",
-                "context": "general",
-                "image_keywords": word,  # Use target word as basic image keyword
-                "role_of_word": "unknown",  # Mark as unknown rather than empty
-            })
-        return fallback_results
+        # Return fallback data
+        return [{
+            "sentence": s,
+            "valid": False,
+            "english_translation": "",
+            "ipa": "",
+            "context": "general",
+            "image_keywords": "",
+            "role_of_word": "",
+        } for s in sentences]
     except Exception as e:
         logger.error(f"PASS 2 batch error: {e}")
-        # Return fallback data with populated fields to avoid breaking learning experience
-        fallback_results = []
-        for s in sentences:
-            fallback_results.append({
-                "sentence": s,  # Keep original sentence
-                "valid": True,  # Assume valid to not break flow
-                "english_translation": f"Translation unavailable (error: {str(e)[:50]})",
-                "ipa": f"IPA unavailable (error)",
-                "context": "general",
-                "image_keywords": word,  # Use target word as basic image keyword
-                "role_of_word": "unknown",  # Mark as unknown rather than empty
-            })
-        return fallback_results
+        return [{
+            "sentence": s,
+            "valid": False,
+            "english_translation": "",
+            "ipa": "",
+            "context": "general",
+            "image_keywords": "",
+            "role_of_word": "",
+        } for s in sentences]
 
 # ============================================================================
 # PASS 3: GRAMMATICAL ANALYSIS (AI-powered POS tagging and coloring)
@@ -1107,6 +1301,8 @@ def _batch_analyze_grammar_and_color(
     if not sentences:
         return []
 
+    client = Groq(api_key=groq_api_key)
+
     # Get language code for analyzer registry
     language_code = LANGUAGE_NAME_TO_CODE.get(language)
     if not language_code:
@@ -1118,40 +1314,530 @@ def _batch_analyze_grammar_and_color(
     if language_code:
         analyzer = get_analyzer(language_code)
 
-    # Create services and delegate processing
-    api_client = APIClient(groq_api_key)
-    batch_processor = BatchProcessor(api_client)
+    # Build numbered sentence list for prompt
+    sentences_text = "\n".join([f"{i+1}. {s}" for i, s in enumerate(sentences)])
 
-    return batch_processor.process_batch(
-        sentences=sentences,
-        word=word,
-        language=language,
-        language_code=language_code,
-        analyzer=analyzer,
-        complexity_level=complexity_level,
-        native_language=native_language
-    )
+    if analyzer:
+        # ✅ LANGUAGE-SPECIFIC ANALYZER INTEGRATION WITH 8-SENTENCE BATCHING (Phase 5.6)
+        logger.info(f"Using {language_code} analyzer for 8-sentence batch grammar analysis of {len(sentences)} sentences")
+
+        # PHASE 5.6: 8-Sentence Batch Processing for Pass 3
+        # Group sentences into batches of 8 to reduce API calls by 87%
+        # Each batch of 8 sentences = 1 API call instead of 8 individual calls
+        BATCH_SIZE = 8
+        processed_results = []
+
+        # Process sentences in batches of 8
+        for batch_start in range(0, len(sentences), BATCH_SIZE):
+            batch_end = min(batch_start + BATCH_SIZE, len(sentences))
+            batch_sentences = sentences[batch_start:batch_end]
+            batch_indices = list(range(batch_start, batch_end))
+
+            logger.info(f"Processing batch {batch_start//BATCH_SIZE + 1}: sentences {batch_start+1}-{batch_end} of {len(sentences)}")
+
+            try:
+                # Create batch prompt for 8 sentences
+                batch_prompt = _create_8sentence_batch_prompt(
+                    analyzer=analyzer,
+                    sentences=batch_sentences,
+                    word=word,
+                    complexity_level=complexity_level,
+                    language_code=language_code,
+                    native_language=native_language
+                )
+
+                # Single API call for the entire batch of 8 sentences
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "user", "content": batch_prompt}],
+                    temperature=0.3,
+                    max_tokens=2000,  # Increased for batch processing
+                )
+
+                response_text = response.choices[0].message.content.strip()
+                logger.info(f"Batch API response received for sentences {batch_start+1}-{batch_end}")
+
+                # Parse batch response and process each sentence in the batch
+                batch_results = _parse_8sentence_batch_response(
+                    response_text=response_text,
+                    batch_sentences=batch_sentences,
+                    analyzer=analyzer,
+                    complexity_level=complexity_level,
+                    language_code=language_code
+                )
+
+                # Add batch results to processed results
+                processed_results.extend(batch_results)
+
+                # Rate limiting between batches (not individual sentences)
+                if batch_end < len(sentences):  # Don't delay after last batch
+                    time.sleep(5)  # 5 second delay between batches
+
+            except Exception as e:
+                logger.error(f"Batch processing failed for sentences {batch_start+1}-{batch_end}: {e}")
+                # Fallback: Process sentences individually in this batch
+                logger.info(f"Falling back to individual processing for failed batch")
+
+                for i, sentence in enumerate(batch_sentences):
+                    try:
+                        # Individual processing as fallback
+                        prompt = analyzer.get_grammar_prompt(complexity_level, sentence, word)
+
+                        response = client.chat.completions.create(
+                            model="llama-3.3-70b-versatile",
+                            messages=[{"role": "user", "content": prompt}],
+                            temperature=0.3,
+                            max_tokens=2000,
+                        )
+
+                        response_text = response.choices[0].message.content.strip()
+                        parsed_data = analyzer.parse_grammar_response(response_text, complexity_level, sentence)
+                        colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
+
+                        # Convert to word_explanations format
+                        if "word_explanations" in parsed_data and parsed_data["word_explanations"]:
+                            word_explanations = parsed_data["word_explanations"]
+                        else:
+                            word_explanations = _convert_analyzer_output_to_explanations(parsed_data, language)
+
+                        grammar_summary = parsed_data.get('explanations', {}).get('sentence_structure',
+                            f"This sentence uses {language_code} grammatical structures appropriate for {complexity_level} learners.")
+
+                        processed_results.append({
+                            "colored_sentence": colored_sentence,
+                            "word_explanations": word_explanations,
+                            "grammar_summary": grammar_summary,
+                        })
+
+                        # Rate limiting between individual fallback calls
+                        if i < len(batch_sentences) - 1:
+                            time.sleep(5)
+
+                    except Exception as inner_e:
+                        logger.error(f"Individual fallback failed for sentence {batch_start + i + 1}: {inner_e}")
+                        processed_results.append({
+                            "colored_sentence": sentence,
+                            "word_explanations": [],
+                            "grammar_summary": f"Analysis failed for {language_code} sentence",
+                        })
+
+        return processed_results
+
+    else:
+        # Fallback to generic batch analysis
+        logger.info(f"Using generic batch grammar analysis for {language} ({len(sentences)} sentences)")
+
+        prompt = f"""Analyze the grammar of these {language} sentences and provide color-coded HTML output.
+
+Sentences:
+{sentences_text}
+
+For EACH sentence, return analysis in this exact JSON format:
+
+[
+  {{
+    "sentence_index": 1,
+    "colored_sentence": "<span style='color: #FF6B6B'>Subject</span> <span style='color: #4ECDC4'>verb</span> <span style='color: #45B7D1'>object</span>",
+    "word_explanations": [
+      ["word1", "noun", "#FF6B6B", "explanation in {native_language}"],
+      ["word2", "verb", "#4ECDC4", "explanation in {native_language}"]
+    ],
+    "grammar_summary": "Brief explanation of sentence grammar structure in {native_language}"
+  }},
+  ...
+]
+
+Color codes to use:
+- #FF6B6B: nouns (red)
+- #4ECDC4: verbs (teal)
+- #45B7D1: adjectives/adverbs (blue)
+- #96CEB4: prepositions/conjunctions (green)
+- #FFEAA7: pronouns/articles (yellow)
+- #CCCCCC: other (gray)
+
+Provide explanations in {native_language}. Return ONLY the JSON array, no additional text."""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,  # Consistent analysis
+            max_tokens=3000,  # Enough for detailed analysis of multiple sentences
+        )
+
+        response_text = response.choices[0].message.content.strip()
+        logger.info(f"PASS 3 raw response: {response_text[:500]}...")  # Log first 500 chars
+
+        # Extract JSON
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+
+        results = json.loads(response_text)
+
+        # Validate structure
+        if not isinstance(results, list):
+            logger.error("PASS 3 batch: Expected JSON array")
+            raise ValueError("Invalid response format")
+
+        # Process results and ensure we have the right number
+        processed_results = []
+        for i, result in enumerate(results[:len(sentences)]):
+            if isinstance(result, dict):
+                processed_results.append({
+                    "colored_sentence": result.get("colored_sentence", sentences[i]),
+                    "word_explanations": result.get("word_explanations", []),
+                    "grammar_summary": result.get("grammar_summary", ""),
+                })
+            else:
+                # Fallback for malformed result
+                processed_results.append({
+                    "colored_sentence": sentences[i],
+                    "word_explanations": [],
+                    "grammar_summary": "Analysis failed",
+                })
+
+        # Ensure we have results for all sentences
+        while len(processed_results) < len(sentences):
+            processed_results.append({
+                "colored_sentence": sentences[len(processed_results)],
+                "word_explanations": [],
+                "grammar_summary": "Analysis failed",
+            })
+
+        # --- API USAGE TRACKING ---
+        try:
+            import streamlit as st
+            if "groq_api_calls" not in st.session_state:
+                st.session_state.groq_api_calls = 0
+            if "groq_tokens_used" not in st.session_state:
+                st.session_state.groq_tokens_used = 0
+            st.session_state.groq_api_calls += 1
+            # Estimate tokens used for batch analysis (more efficient than individual calls)
+            estimated_tokens = len(sentences) * 200  # Rough estimate per sentence
+            st.session_state.groq_tokens_used += estimated_tokens
+        except Exception:
+            pass
+        # -------------------------
+
+        logger.info(f"✓ Batch grammar analysis completed for {len(sentences)} sentences")
+        
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
+        time.sleep(5)
+        
+        return processed_results
+
+    except Exception as e:
+        logger.error(f"Batch grammar analysis failed: {e}")
+        # Return fallback results for all sentences
+        return [{
+            "colored_sentence": sentence,
+            "word_explanations": [],
+            "grammar_summary": "Grammar analysis unavailable"
+        } for sentence in sentences]
 
 
 def _convert_analyzer_output_to_explanations(grammar_result: Dict[str, Any], language: str) -> List[List[Any]]:
     """
     Convert analyzer output to word_explanations format [word, pos, color, explanation].
-    Delegates to ResponseParser service for consistent processing.
+    Handles both traditional word-based and new character-based analysis formats.
     """
-    return ResponseParser.convert_analyzer_output_to_explanations(grammar_result, language)
+    explanations = []
+
+    # Check if this is character-based analysis (Chinese analyzer)
+    if 'characters' in grammar_result:
+        # Character-based analysis (Chinese)
+        characters = grammar_result.get('characters', [])
+        word_combinations = grammar_result.get('word_combinations', [])
+
+        # Add individual character explanations
+        for char_data in characters:
+            char = char_data.get('character', '')
+            meaning = char_data.get('individual_meaning', '')
+            role = char_data.get('grammatical_role', '')
+            pronunciation = char_data.get('pronunciation', '')
+
+            if char:
+                # Map grammatical role to color category
+                color_category = _map_grammatical_role_to_color_category(role)
+                color = _get_color_for_category(color_category, language)
+
+                explanation = f"{meaning}"
+                if pronunciation and pronunciation != 'unknown':
+                    explanation += f" ({pronunciation})"
+                if role:
+                    explanation += f" - {role}"
+
+                explanations.append([char, role, color, explanation])
+
+        # Add word combination explanations
+        for combo_data in word_combinations:
+            word = combo_data.get('word', '')
+            meaning = combo_data.get('combined_meaning', '')
+            structure = combo_data.get('grammatical_structure', '')
+
+            if word and len(word) > 1:  # Only for actual combinations
+                color_category = _map_grammatical_role_to_color_category(structure)
+                color = _get_color_for_category(color_category, language)
+
+                explanation = f"{meaning} - {structure}"
+                explanations.append([word, structure, color, explanation])
+
+    elif 'elements' in grammar_result:
+        # New analyzer format with elements and explanations
+        elements = grammar_result.get('elements', {})
+        element_explanations = grammar_result.get('explanations', {})
+
+        # Process each grammatical element category
+        for element_type, word_list in elements.items():
+            if element_type == 'word_combinations':
+                # Handle word combinations specially
+                for combo_data in word_list:
+                    word = combo_data.get('word', '')
+                    meaning = combo_data.get('combined_meaning', '')
+                    structure = combo_data.get('grammatical_structure', '')
+
+                    if word:
+                        color_category = _map_grammatical_role_to_color_category(element_type)
+                        color = _get_color_for_category(color_category, language)
+
+                        explanation = f"{meaning}"
+                        if structure:
+                            explanation += f" - {structure}"
+
+                        explanations.append([word, element_type, color, explanation])
+            else:
+                # Handle individual words
+                for word_data in word_list:
+                    word = word_data.get('word', '')
+                    meaning = word_data.get('individual_meaning', '')
+                    pronunciation = word_data.get('pronunciation', '')
+                    role = word_data.get('grammatical_role', element_type)
+
+                    if word:
+                        color_category = _map_grammatical_role_to_color_category(role)
+                        color = _get_color_for_category(color_category, language)
+
+                        explanation = f"{meaning}"
+                        if pronunciation and pronunciation != 'unknown':
+                            explanation += f" ({pronunciation})"
+                        if role and role != element_type:
+                            explanation += f" - {role}"
+
+                        explanations.append([word, role, color, explanation])
+
+        # If no elements but we have explanations, add a general explanation
+        if not explanations and element_explanations:
+            for exp_type, exp_text in element_explanations.items():
+                color = _get_color_for_category(exp_type, language)
+                explanations.append(['', exp_type, color, exp_text])
+
+    else:
+        # Traditional word-based analysis
+        word_explanations = grammar_result.get('word_explanations', [])
+        explanations.extend(word_explanations)
 
 
 # PHASE 5.6: 8-Sentence Batch Processing Helper Functions
 
+def _create_8sentence_batch_prompt(
+    analyzer,
+    sentences: List[str],
+    word: str,
+    complexity_level: str,
+    language_code: str,
+    native_language: str = "English"
+) -> str:
+    """
+    Create a batch prompt for analyzing 8 sentences together in one API call.
+    This reduces API calls by 87% compared to individual sentence processing.
+    """
+    # Get the base prompt structure from the analyzer
+    base_prompt = analyzer.get_grammar_prompt(complexity_level, sentences[0], word)
+
+    # Extract the core analysis instructions from the base prompt
+    # Remove sentence-specific parts and adapt for batch processing
+    batch_instructions = f"""
+Analyze ALL {len(sentences)} sentences below as a batch. For each sentence, provide complete grammatical analysis including word-by-word breakdown, grammatical roles, and color coding.
+
+Target word: "{word}"
+Language: {language_code}
+Complexity level: {complexity_level}
+Analysis should be in {native_language}
+
+Sentences to analyze:
+"""
+
+    # Add numbered sentences
+    for i, sentence in enumerate(sentences, 1):
+        batch_instructions += f"{i}. {sentence}\n"
+
+    # Add batch output format requirements
+    batch_instructions += f"""
+
+Return your analysis in this exact JSON format:
+{{
+  "batch_analysis": [
+    {{
+      "sentence_index": 1,
+      "sentence": "{sentences[0] if sentences else ''}",
+      "grammatical_analysis": {{
+        "words": [
+          {{
+            "word": "example",
+            "grammatical_role": "noun",
+            "category": "noun",
+            "explanation": "Explanation in {native_language}"
+          }}
+        ],
+        "sentence_structure": "Brief grammatical summary in {native_language}",
+        "complexity_notes": "Notes about {complexity_level} level structures used"
+      }}
+    }},
+    {{
+      "sentence_index": 2,
+      "sentence": "{sentences[1] if len(sentences) > 1 else ''}",
+      "grammatical_analysis": {{
+        "words": [
+          {{
+            "word": "example",
+            "grammatical_role": "verb",
+            "category": "verb",
+            "explanation": "Explanation in {native_language}"
+          }}
+        ],
+        "sentence_structure": "Brief grammatical summary in {native_language}",
+        "complexity_notes": "Notes about {complexity_level} level structures used"
+      }}
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Analyze ALL {len(sentences)} sentences in this single response
+- Each sentence must have complete word-by-word grammatical analysis
+- Use language-specific grammatical categories appropriate for {language_code}
+- Provide explanations in {native_language}
+- Return ONLY the JSON object, no additional text or markdown formatting
+"""
+
+    return batch_instructions
+
+
+def _parse_8sentence_batch_response(
+    response_text: str,
+    batch_sentences: List[str],
+    analyzer,
+    complexity_level: str,
+    language_code: str
+) -> List[Dict[str, Any]]:
+    """
+    Parse the batch response from the 8-sentence analysis and convert to individual sentence results.
+    Includes automatic fallback to individual processing if batch parsing fails.
+    """
+    try:
+        # Extract JSON from response
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+
+        batch_data = json.loads(response_text)
+
+        if not isinstance(batch_data, dict) or "batch_analysis" not in batch_data:
+            raise ValueError("Invalid batch response format")
+
+        batch_results = batch_data["batch_analysis"]
+
+        if not isinstance(batch_results, list) or len(batch_results) != len(batch_sentences):
+            raise ValueError(f"Expected {len(batch_sentences)} results, got {len(batch_results) if isinstance(batch_results, list) else 'non-list'}")
+
+        processed_results = []
+
+        for i, sentence_result in enumerate(batch_results):
+            if not isinstance(sentence_result, dict):
+                raise ValueError(f"Invalid sentence result format at index {i}")
+
+            sentence_index = sentence_result.get("sentence_index", i + 1)
+            grammatical_analysis = sentence_result.get("grammatical_analysis", {})
+
+            # Convert batch format to analyzer-compatible format
+            parsed_data = {
+                "words": grammatical_analysis.get("words", []),
+                "explanations": {
+                    "sentence_structure": grammatical_analysis.get("sentence_structure", ""),
+                    "complexity_notes": grammatical_analysis.get("complexity_notes", "")
+                }
+            }
+
+            # Generate HTML output using analyzer
+            sentence = batch_sentences[i]
+            colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
+
+            # Convert to word_explanations format
+            if "word_explanations" in parsed_data and parsed_data["word_explanations"]:
+                word_explanations = parsed_data["word_explanations"]
+            else:
+                word_explanations = _convert_analyzer_output_to_explanations(parsed_data, f"{language_code} ({sentence_index})")
+
+            # Create grammar summary
+            grammar_summary = grammatical_analysis.get("sentence_structure",
+                f"This sentence uses {language_code} grammatical structures appropriate for {complexity_level} learners.")
+
+            processed_results.append({
+                "colored_sentence": colored_sentence,
+                "word_explanations": word_explanations,
+                "grammar_summary": grammar_summary,
+            })
+
+        logger.info(f"Successfully parsed batch response for {len(processed_results)} sentences")
+        return processed_results
+
+    except Exception as e:
+        logger.error(f"Failed to parse batch response: {e}")
+        logger.info("Batch parsing failed, individual processing will be used as fallback")
+        raise  # Re-raise to trigger fallback in calling function
+
+    return explanations
+
+
 def _map_grammatical_role_to_color_category(role: str) -> str:
-    """Map grammatical role to color category - delegates to DataTransformer service"""
-    return DataTransformer.map_grammatical_role_to_color_category(role)
+    """Map grammatical role to color category"""
+    role_lower = role.lower()
+
+    if any(kw in role_lower for kw in ['pronoun', 'demonstrative']):
+        return 'pronouns'
+    elif any(kw in role_lower for kw in ['verb', 'linking', 'action']):
+        return 'verbs'
+    elif any(kw in role_lower for kw in ['particle', 'marker']):
+        return 'particles'
+    elif any(kw in role_lower for kw in ['noun', 'object', 'subject']):
+        return 'nouns'
+    elif any(kw in role_lower for kw in ['adjective', 'description']):
+        return 'adjectives'
+    elif any(kw in role_lower for kw in ['adverb', 'manner']):
+        return 'adverbs'
+    else:
+        return 'other'
 
 
 def _get_color_for_category(category: str, language: str) -> str:
-    """Get color for grammatical category based on language - delegates to DataTransformer service"""
-    return DataTransformer.get_color_for_category(category, language)
+    """Get color for grammatical category based on language"""
+    # Use the analyzer's color scheme if available
+    analyzer = get_analyzer(LANGUAGE_NAME_TO_CODE.get(language))
+    if analyzer:
+        color_scheme = analyzer.get_color_scheme('beginner')  # Default to beginner
+        return color_scheme.get(category, '#CCCCCC')
 
-
-
-
+    # Fallback colors
+    fallback_colors = {
+        'pronouns': '#FF4444',
+        'verbs': '#44FF44',
+        'particles': '#4444FF',
+        'nouns': '#FFAA00',
+        'adjectives': '#FF44FF',
+        'adverbs': '#44FFFF',
+        'other': '#888888'
+    }
+    return fallback_colors.get(category, '#CCCCCC')
