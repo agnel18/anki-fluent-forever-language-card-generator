@@ -1,6 +1,6 @@
 # 🌍 Language Grammar Analyzer Generator - Master Prompt
 # Version: 2026-01-06 (WORD-LEVEL ANALYSIS PIVOT)
-# Reference: Hindi Gold Standard (hi_analyzer.py)
+# Reference: Hindi (LTR) & Arabic (RTL) Gold Standards (hi_analyzer.py, ar_analyzer.py)
 
 ## 🚨 CRITICAL ISSUES - IMMEDIATE PRIORITY
 
@@ -54,11 +54,18 @@ Generate comprehensive grammar analyzers for world languages using **one languag
 
 ### Core Reference Files (Study These First)
 
-**HINDI GOLD STANDARD (hi_analyzer.py):**
+**HINDI GOLD STANDARD (hi_analyzer.py) - LTR Reference:**
 ```python
 # Complete working analyzer with 20+ categories
 # Includes hierarchical categorization, batch processing, HTML generation
-# Reference for all linguistic patterns and architectural decisions
+# Reference for LTR languages and all linguistic patterns
+```
+
+**ARABIC GOLD STANDARD (ar_analyzer.py) - RTL Reference:**
+```python
+# Complete RTL implementation with position-based word reordering
+# Includes contextual meanings, inline color styles, RTL batch prompts
+# Reference for RTL languages and script-direction-aware processing
 ```
 
 **BASE CLASSES:**
@@ -695,7 +702,7 @@ You are generating a language analyzer focused ONLY on Pass 3 grammar analysis.
 
 ---
 
-**REMINDER**: Use Hindi analyzer as gold standard template, adapt categories and logic for Chinese linguistic features, maintain Pass 3 focus only.
+**REMINDER**: Use Hindi (LTR) and Arabic (RTL) analyzers as gold standard templates. For LTR languages, reference hi_analyzer.py; for RTL languages, reference ar_analyzer.py. Adapt categories and logic for target language features, maintain Pass 3 focus only.
 
 **COMBINATION WORDS REQUIREMENT**: All analyzers must support compound word recognition as footer enhancement. Combination styling/colors MUST NOT interfere with individual character/word coloring. Process combinations separately and append as neutral-styled footer.</content>
 <parameter name="filePath">d:\Language Learning\LanguagLearning\grammar_prompt.md

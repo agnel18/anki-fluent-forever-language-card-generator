@@ -6,25 +6,39 @@ You are tasked with adapting the gold standard Hindi analyzer (hi_analyzer.py) t
 ## Critical Process Requirement
 **BEFORE BEGINNING ANY CODING**, you **MUST** first create a comprehensive **{language}_grammar_concepts.md** file that documents all linguistic research, grammatical structures, and implementation requirements. This ensures focused, high-quality work by separating research from implementation.
 
-## Gold Standard Reference
+## Gold Standard References
+
 Use the following files and implementations as your gold standard:
 
 ### Core Files to Reference:
-- **hi_analyzer.py**: Complete implementation with all enhancements (patterns, validation, retries, batch processing, Devanagari support)
+- **hi_analyzer.py**: Complete LTR implementation with all enhancements (patterns, validation, retries, batch processing, Devanagari support)
+- **ar_analyzer.py**: Complete RTL implementation with proper word ordering, contextual meanings, and script-aware processing
 - **indo_european_analyzer.py**: Base class structure and common functionality
 - **batch_processor.py**: Batch processing with partial fallbacks and exponential backoff
 - **DataTransformer**: Color mapping and HTML generation utilities
-- **hindi_analyzer_enhancement_master.md**: Complete documentation of all improvements and learnings
+- **hindi_analyzer_enhancement_master.md**: Complete documentation of LTR improvements
+- **arabic_grammar_concepts.md**: Complete documentation of RTL linguistic research and implementation
 
-### Key Gold Standard Features to Preserve/Adapt:
+### Key Gold Standard Features by Script Direction:
+
+#### **LTR Languages (Reference: Hindi)**
 1. **Comprehensive Pattern Recognition**: Regex-based linguistic patterns for language-specific features
-2. **Enhanced Validation**: 85% confidence threshold with Hindi-specific checks and automatic retries (up to 2x)
+2. **Enhanced Validation**: 85% confidence threshold with language-specific checks and automatic retries (up to 2x)
 3. **Batch Processing**: Partial fallbacks, exponential backoff (1s base, 30s max), per-result validation
-4. **Script-Aware Processing**: Proper handling of language-specific scripts, characters, and writing direction (LTR/RTL)
+4. **Script-Aware Processing**: Proper handling of language-specific scripts and LTR writing direction
 5. **Color-Coded HTML Output**: Language-appropriate color schemes with fallback handling
 6. **Multilingual Support**: Native language explanations and parameterized prompts
 7. **Robust Error Handling**: Logging, fallbacks, and graceful degradation
-8. **Word Ordering**: Grammar explanations must appear in sentence word order (respecting script direction LTR/RTL) for optimal user experience
+8. **Word Ordering**: Grammar explanations appear in sentence word order (LTR) for optimal user experience
+
+#### **RTL Languages (Reference: Arabic)**
+1. **RTL Word Ordering**: Explanations must be reordered to match RTL reading direction using position-based sorting
+2. **Contextual Meanings**: Individual word meanings must include grammatical context (e.g., "the book (definite noun)")
+3. **Script Validation**: Unicode range validation for proper script detection
+4. **RTL-Specific Prompts**: AI prompts must explicitly specify RTL ordering requirements
+5. **Position-Based Reordering**: Use sentence position indexing to reorder explanations for RTL display
+6. **Definite Article Handling**: Special processing for assimilated definite articles (ال → ات/اض/اظ/ان)
+7. **Root-Based Morphology**: Pattern recognition for triliteral roots and verb forms (ʾabwāb I-X)
 
 ## Target Language: {language}
 
@@ -139,7 +153,7 @@ def _reorder_explanations_by_sentence_position(self, sentence: str, word_explana
     return sorted_explanations
 ```
 
-**RTL Reference (Arabic Implementation):**
+**RTL Reference (Arabic Implementation - Gold Standard):**
 ```python
 def _reorder_explanations_for_rtl(self, sentence: str, word_explanations: List) -> List:
     """
@@ -148,6 +162,54 @@ def _reorder_explanations_for_rtl(self, sentence: str, word_explanations: List) 
     """
     if not word_explanations or not sentence:
         return word_explanations
+
+    # For Arabic (RTL), we need to reorder explanations to match the reading direction
+    # Find position of each word in the sentence and sort from right to left
+    positioned_explanations = []
+
+    for explanation in word_explanations:
+        if len(explanation) >= 4:
+            word = explanation[0]  # word is at index 0
+            if word:
+                # Find all occurrences of this word in the sentence
+                positions = []
+                start = 0
+                while True:
+                    pos = sentence.find(word, start)
+                    if pos == -1:
+                        break
+                    positions.append(pos)
+                    start = pos + 1
+
+                # Use the first occurrence position
+                # For RTL, we'll sort by position ascending (left to right in string = right to left in reading)
+                position = positions[0] if positions else float('inf')
+                positioned_explanations.append((position, explanation))
+
+    # Sort by position in ascending order (RTL reading: left to right in string = right to left in reading)
+    positioned_explanations.sort(key=lambda x: x[0])
+
+    # Extract just the explanations
+    sorted_explanations = [exp for _, exp in positioned_explanations]
+
+    return sorted_explanations
+```
+
+**RTL Prompt Requirements (Arabic Standard):**
+```python
+def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
+    # MUST include explicit RTL ordering instructions
+    return f"""For EACH word in EVERY sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left, as Arabic is read from right to left), provide:
+- word: the exact word as it appears in the sentence
+- individual_meaning: the {native_language} translation/meaning WITH CONTEXT (MANDATORY - provide detailed, contextual meanings like grammatical function + basic meaning)
+- grammatical_role: EXACTLY ONE category from this list: {', '.join(allowed_roles)}
+
+CRITICAL REQUIREMENTS:
+- WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE (right to left for Arabic)
+- individual_meaning MUST include BOTH the basic translation AND grammatical context
+- grammatical_role MUST be EXACTLY from the allowed list (one word only)
+- Do NOT group words by category - list them in sentence reading order
+"""
 
     # For Arabic (RTL), we need to reorder explanations to match the reading direction
     positioned_explanations = []
@@ -182,7 +244,7 @@ def _reorder_explanations_for_rtl(self, sentence: str, word_explanations: List) 
 **Implementation Notes:**
 - **Script Direction Awareness**: Consider the writing direction of the language
   - **LTR Languages** (English, Hindi, Chinese, Spanish): Sort by ascending position (left-to-right)
-  - **RTL Languages** (Arabic, Hebrew, Persian): Sort by descending position (right-to-left)
+  - **RTL Languages** (Arabic, Hebrew, Persian): Sort by ascending position (left-to-right in string = right-to-left in reading)
 - Call this method after building word_explanations in batch processing
 - Use `sentence.find(word)` to locate word positions
 - Acts as safeguard even if AI follows prompt instructions correctly
