@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Dict, List, Any, Tuple
 
-from ..base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
+from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
 
 logger = logging.getLogger(__name__)
 

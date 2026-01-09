@@ -11,7 +11,7 @@ import pytest
 import json
 from unittest.mock import Mock, patch
 
-from languages.arabic.ar_analyzer import ArAnalyzer
+from streamlit_app.language_analyzers.analyzers.ar_analyzer import ArAnalyzer
 
 
 class TestArAnalyzer:

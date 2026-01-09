@@ -13,7 +13,7 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'streamlit_app'))
 
-from language_analyzers.analyzers.zh_tw_analyzer import ZhTwAnalyzer
+from languages.chinese_traditional.zh_tw_analyzer import ZhTwAnalyzer
 
 
 class TestTrickyWords:

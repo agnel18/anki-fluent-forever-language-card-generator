@@ -19,6 +19,27 @@ Use the following files and implementations as your gold standard:
 - **hindi_analyzer_enhancement_master.md**: Complete documentation of LTR improvements
 - **arabic_grammar_concepts.md**: Complete documentation of RTL linguistic research and implementation
 
+### Organized File Structure:
+All language files are now organized in the `languages/` directory:
+
+```
+languages/
+├── arabic/
+│   ├── ar_analyzer.py                    # Analyzer implementation
+│   ├── ar_grammar_concepts.md           # Linguistic research
+│   ├── ar_analyzer_documentation.md     # Technical documentation
+│   └── tests/test_ar_analyzer.py         # Unit tests
+├── hindi/
+│   ├── hi_analyzer.py
+│   ├── hi_analyzer_enhancement.md
+│   └── tests/test_hi_analyzer.py
+└── [language_code]/
+    ├── [lang_code]_analyzer.py
+    ├── [lang_code]_grammar_concepts.md
+    ├── [lang_code]_analyzer_documentation.md
+    └── tests/test_[lang_code]_analyzer.py
+```
+
 ### Key Gold Standard Features by Script Direction:
 
 #### **LTR Languages (Reference: Hindi)**

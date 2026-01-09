@@ -11,7 +11,7 @@ import pytest
 import json
 from unittest.mock import Mock, patch
 
-from languages.spanish.es_analyzer import EsAnalyzer
+from streamlit_app.language_analyzers.analyzers.es_analyzer import EsAnalyzer
 
 
 class TestEsAnalyzer:

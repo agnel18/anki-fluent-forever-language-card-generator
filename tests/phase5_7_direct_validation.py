@@ -14,7 +14,7 @@ import os
 # Add the project root to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from streamlit_app.language_analyzers.analyzers.hi_analyzer import HiAnalyzer
+from languages.hindi.hi_analyzer import HiAnalyzer
 
 def test_hierarchical_categorization():
     """Test the children-first hierarchical categorization by directly testing the mapping method"""

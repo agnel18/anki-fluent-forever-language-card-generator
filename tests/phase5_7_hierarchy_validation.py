@@ -32,7 +32,7 @@ from typing import Dict, List, Tuple
 # Add the project root to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from streamlit_app.language_analyzers.analyzers.hi_analyzer import HiAnalyzer
+from languages.hindi.hi_analyzer import HiAnalyzer
 from tests.phase5_7_hierarchy_test_sentences import TEST_SENTENCES, EXPECTED_CLASSIFICATIONS
 
 def test_hierarchical_categorization():

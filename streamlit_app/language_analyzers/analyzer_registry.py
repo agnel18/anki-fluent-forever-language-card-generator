@@ -29,33 +29,50 @@ class AnalyzerRegistry:
 
     def _discover_analyzers(self):
         """Auto-discover available analyzer modules"""
-        analyzers_dir = Path(__file__).parent / "analyzers"
+        languages_dir = Path(__file__).parent.parent.parent / "languages"
 
-        if not analyzers_dir.exists():
-            logger.warning(f"Analyzers directory not found: {analyzers_dir}")
+        if not languages_dir.exists():
+            logger.warning(f"Languages directory not found: {languages_dir}")
             return
 
-        # Look for analyzer Python files
-        for analyzer_file in analyzers_dir.glob("*_analyzer.py"):
-            language_code = analyzer_file.stem.replace("_analyzer", "")
+        # Mapping from folder names to language codes
+        folder_to_code = {
+            'arabic': 'ar',
+            'hindi': 'hi',
+            'spanish': 'es',
+            'chinese_simplified': 'zh',
+            'chinese_traditional': 'zh-tw'
+        }
 
-            try:
-                # Import the analyzer module
-                module_name = f".analyzers.{analyzer_file.stem}"
-                module = importlib.import_module(module_name, package=__package__)
+        # Look for language subdirectories
+        for lang_dir in languages_dir.iterdir():
+            if lang_dir.is_dir():
+                folder_name = lang_dir.name
+                language_code = folder_to_code.get(folder_name, folder_name)
+                # Normalize filename (replace hyphens with underscores)
+                normalized_code = language_code.replace('-', '_')
+                analyzer_file = lang_dir / f"{normalized_code}_analyzer.py"
+                
+                if analyzer_file.exists():
+                    try:
+                        # Import the analyzer module
+                        module_name = f"languages.{folder_name}.{normalized_code}_analyzer"
+                        module = importlib.import_module(module_name)
 
-                # Find the analyzer class
-                class_name = f"{language_code.title()}Analyzer"
-                analyzer_class = getattr(module, class_name, None)
+                        # Find the analyzer class
+                        # Handle language codes with hyphens (e.g., zh-tw -> ZhTw)
+                        normalized_code = language_code.replace('-', '_')
+                        class_name = ''.join(word.capitalize() for word in normalized_code.split('_')) + 'Analyzer'
+                        analyzer_class = getattr(module, class_name, None)
 
-                if analyzer_class and issubclass(analyzer_class, BaseGrammarAnalyzer):
-                    self._analyzers[language_code] = analyzer_class
-                    logger.info(f"Discovered analyzer for {language_code}")
-                else:
-                    logger.warning(f"No valid analyzer class found in {analyzer_file}")
+                        if analyzer_class and issubclass(analyzer_class, BaseGrammarAnalyzer):
+                            self._analyzers[language_code] = analyzer_class
+                            logger.info(f"Discovered analyzer for {language_code}")
+                        else:
+                            logger.warning(f"No valid analyzer class found in {analyzer_file}")
 
-            except Exception as e:
-                logger.error(f"Failed to load analyzer {language_code}: {e}")
+                    except Exception as e:
+                        logger.error(f"Failed to load analyzer {language_code}: {e}")
 
     def get_analyzer(self, language_code: str) -> Optional[BaseGrammarAnalyzer]:
         """
