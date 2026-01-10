@@ -35,6 +35,16 @@ class AnalyzerRegistry:
             logger.warning(f"Languages directory not found: {languages_dir}")
             return
 
+        # Add the root directory to sys.path so we can import languages modules
+        root_dir = languages_dir.parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        
+        # Also add streamlit_app to sys.path for analyzer imports
+        streamlit_app_dir = languages_dir.parent / "streamlit_app"
+        if str(streamlit_app_dir) not in sys.path:
+            sys.path.insert(0, str(streamlit_app_dir))
+
         # Mapping from folder names to language codes
         folder_to_code = {
             'arabic': 'ar',

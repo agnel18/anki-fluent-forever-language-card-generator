@@ -7,6 +7,9 @@ import unicodedata
 from typing import Dict, Optional
 from collections import defaultdict
 
+# Import language registry for consistent language handling
+from language_registry import get_language_registry
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,6 +24,9 @@ class IPAService:
     """
 
     def __init__(self):
+        # Get language registry
+        self.registry = get_language_registry()
+        
         # Performance monitoring
         self.metrics = {
             'total_requests': 0,
@@ -29,25 +35,8 @@ class IPAService:
             'response_times': [],
             'errors': defaultdict(int)
         }
-        # Existing basic mappings (kept for backward compatibility)
-        self.language_map = {
-            "Chinese (Simplified)": "cmn-Latn",  # Try IPA instead of Pinyin
-            "Chinese (Traditional)": "cmn-Latn",  # Try IPA instead of Pinyin
-            "Mandarin Chinese": "cmn-Latn",       # Try IPA instead of Pinyin
-            "English": "eng-Latn",
-            "Spanish": "spa-Latn",
-            "French": "fra-Latn",
-            "German": "deu-Latn",
-            "Italian": "ita-Latn",
-            "Portuguese": "por-Latn",
-            "Russian": "rus-Cyrl",
-            "Japanese": "jpn-Hira",  # Hepburn romanization to IPA
-            "Korean": "kor-Hang",   # Hangul to IPA
-            "Hindi": "hin-Deva",
-            "Arabic": "ara-Arab",
-        }
         
-        # Comprehensive mappings for all 77 languages
+        # Load mappings from registry
         self.epitran_map = self._load_epitran_mappings()
         self.phonemizer_map = self._load_phonemizer_mappings()
     
@@ -325,7 +314,7 @@ class IPAService:
 
         Args:
             text: Text to transliterate
-            language: Language name
+            language: Language identifier (ISO code or full name)
             ai_ipa: AI-generated IPA fallback
 
         Returns:
@@ -333,45 +322,50 @@ class IPAService:
         """
         start_time = time.time()
         self.metrics['total_requests'] += 1
-        self.metrics['language_usage'][language] += 1
+        
+        # Normalize language input using registry
+        normalized_lang = self.registry.normalize_language_input(language)
+        full_lang_name = self.registry.get_full_name(normalized_lang) or language
+        
+        self.metrics['language_usage'][full_lang_name] += 1
 
         try:
             if not text or not text.strip():
                 return ""
 
             # Tier 1: Epitran (highest quality)
-            ipa = self._try_epitran(text, language)
-            if ipa and self._validate_ipa(ipa, language, strict=True):
+            ipa = self._try_epitran(text, normalized_lang)
+            if ipa and self._validate_ipa(ipa, normalized_lang, strict=True):
                 self.metrics['tier_usage']['epitran'] += 1
                 response_time = time.time() - start_time
                 self.metrics['response_times'].append(response_time)
-                logger.info(f"IPA success via Epitran for {language} ({response_time:.3f}s)")
+                logger.info(f"IPA success via Epitran for {full_lang_name} ({response_time:.3f}s)")
                 return ipa
 
             # Tier 2: Phonemizer (broad coverage)
-            ipa = self._try_phonemizer(text, language)
-            if ipa and self._validate_ipa(ipa, language, strict=True):
+            ipa = self._try_phonemizer(text, normalized_lang)
+            if ipa and self._validate_ipa(ipa, normalized_lang, strict=True):
                 self.metrics['tier_usage']['phonemizer'] += 1
                 response_time = time.time() - start_time
                 self.metrics['response_times'].append(response_time)
-                logger.info(f"IPA success via Phonemizer for {language} ({response_time:.3f}s)")
+                logger.info(f"IPA success via Phonemizer for {full_lang_name} ({response_time:.3f}s)")
                 return ipa
 
             # Tier 3: AI fallback (guaranteed)
-            fallback_ipa = self._ensure_fallback_ipa(ai_ipa, text, language)
+            fallback_ipa = self._ensure_fallback_ipa(ai_ipa, text, normalized_lang)
             self.metrics['tier_usage']['ai_fallback'] += 1
             response_time = time.time() - start_time
             self.metrics['response_times'].append(response_time)
-            logger.info(f"IPA fallback used for {language} ({response_time:.3f}s)")
+            logger.info(f"IPA fallback used for {full_lang_name} ({response_time:.3f}s)")
             return fallback_ipa
 
         except Exception as e:
             self.metrics['errors']['generation'] += 1
             response_time = time.time() - start_time
             self.metrics['response_times'].append(response_time)
-            logger.error(f"IPA generation failed for {language}: {e} ({response_time:.3f}s)")
+            logger.error(f"IPA generation failed for {full_lang_name}: {e} ({response_time:.3f}s)")
             # Ultimate fallback
-            return f"[IPA generation error for {language}]"
+            return f"[IPA generation error for {full_lang_name}]"
 
     def get_metrics(self) -> Dict:
         """Get performance metrics for monitoring."""
@@ -422,10 +416,10 @@ class IPAService:
     def _try_epitran(self, text: str, language: str) -> str:
         """Attempt Epitran transliteration with backoff for multi-script languages."""
         # Skip Chinese (returns Pinyin-like output)
-        if "Chinese" in language:
+        if language in ['zh', 'zh-tw']:
             return ""
         
-        epi_code = self.epitran_map.get(language)
+        epi_code = self.registry.get_epitran_code(language)
         if not epi_code:
             return ""
         
@@ -467,7 +461,7 @@ class IPAService:
     
     def _try_phonemizer(self, text: str, language: str) -> str:
         """Attempt Phonemizer with available backends."""
-        phone_code = self.phonemizer_map.get(language)
+        phone_code = self.registry.get_phonemizer_code(language)
         if not phone_code:
             return ""
         

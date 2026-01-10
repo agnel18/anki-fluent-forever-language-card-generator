@@ -453,6 +453,15 @@ Combine all components into a professional Anki deck.
             try:
                 from core_functions import generate_deck_progressive
 
+                # Get enriched word data for current word if available
+                enriched_word_data = None
+                if 'word_enrichment_data' in st.session_state:
+                    # Find the enriched data for this word
+                    for word_data in st.session_state['word_enrichment_data']:
+                        if word_data['word'] == current_word:
+                            enriched_word_data = word_data
+                            break
+
                 # Generate the word using core_functions with log callback
                 result = generate_deck_progressive(
                     word=current_word,
@@ -468,7 +477,8 @@ Combine all components into a professional Anki deck.
                     voice=voice,
                     topics=selected_topics if enable_topics else None,
                     native_language="English",
-                    log_callback=lambda msg: update_log_display(msg, log_display)
+                    log_callback=lambda msg: update_log_display(msg, log_display),
+                    enriched_word_data=enriched_word_data,
                 )
 
                 if result['success']:

@@ -4,20 +4,41 @@
 import json
 import logging
 import time
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Union
 from groq import Groq
 
 # Import cache manager and error recovery
 from cache_manager import cached_api_call
 from error_recovery import resilient_groq_call, with_fallback
 
+logger = logging.getLogger(__name__)
+
 # Import the new grammar analyzer system
-from language_analyzers.analyzer_registry import get_analyzer
+try:
+    from language_analyzers.analyzer_registry import get_analyzer
+    logger.info("Successfully imported analyzer registry")
+except ImportError as e:
+    logger.warning(f"Failed to import analyzer registry: {e}. Grammar analysis will be unavailable.")
+    get_analyzer = None
 
 # Import the new sentence generation services
 from services.sentence_generation import APIClient, BatchProcessor, ResponseParser, DataTransformer, IPAService, MeaningService, LANGUAGE_NAME_TO_CODE
 
-logger = logging.getLogger(__name__)
+# Import the new grammar analyzer system
+try:
+    from language_analyzers.analyzer_registry import get_analyzer
+    logger.info("Successfully imported analyzer registry")
+except ImportError as e:
+    logger.warning(f"Failed to import analyzer registry: {e}. Grammar analysis will be unavailable.")
+    get_analyzer = None
+
+# Import word data fetcher for enrichment
+try:
+    from word_data_fetcher import enrich_word_data as enrich_word_data_func
+    logger.info("Successfully imported word_data_fetcher")
+except ImportError as e:
+    logger.warning(f"Failed to import word_data_fetcher: {e}. Word enrichment will be unavailable.")
+    enrich_word_data_func = None
 
 # ============================================================================
 # IPA GENERATION (Using Epitran)
@@ -56,6 +77,7 @@ def generate_word_meaning_sentences_and_keywords(
     difficulty: str = "intermediate",
     groq_api_key: str = None,
     topics: Optional[List[str]] = None,
+    enriched_meaning: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     COMBINED PASS 1: Generate word meaning, sentences, AND keywords in ONE efficient API call.
@@ -70,6 +92,7 @@ def generate_word_meaning_sentences_and_keywords(
         difficulty: "beginner", "intermediate", "advanced"
         groq_api_key: Groq API key
         topics: List of topics to focus sentence generation around (optional)
+        enriched_meaning: Pre-reviewed word meaning from user (optional)
 
     Returns:
         Dict with keys:
@@ -92,6 +115,35 @@ def generate_word_meaning_sentences_and_keywords(
         else:
             context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
 
+        # Build meaning instruction based on enriched data
+        if enriched_meaning and enriched_meaning != 'N/A':
+            if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+                # Parse the enriched context format
+                context_lines = enriched_meaning[1:-1].split('\n')  # Remove {} and split
+                definitions = []
+                source = "Unknown"
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Source:'):
+                        source = line.replace('Source:', '').strip()
+                    elif line.startswith('Definition'):
+                        # Extract just the definition text
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        # Remove part of speech info
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+
+                if definitions:
+                    meaning_summary = '; '.join(definitions[:2])  # Use first 2 definitions
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning. Data: {meaning_summary}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any Hindi text or raw linguistic data in your response.'
+                else:
+                    enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any raw linguistic data in your response.'
+            else:
+                # Legacy format
+                enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include the original text in your response.'
+        else:
+            enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
         prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
 Your task: Generate a complete learning package for the {language} word "{word}" in ONE response.
@@ -99,7 +151,7 @@ Your task: Generate a complete learning package for the {language} word "{word}"
 ===========================
 STEP 1: WORD MEANING
 ===========================
-Provide a brief English meaning for "{word}".
+{enriched_meaning_instruction}
 Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
 
 ===========================
@@ -374,6 +426,7 @@ def generate_sentences(
     groq_api_key: str = None,
     topics: Optional[List[str]] = None,
     native_language: str = "English",
+    enriched_word_data: Optional[Union[str, Dict[str, Any]]] = None,
 ) -> Tuple[str, List[Dict[str, Any]]]:
     """
     Generate sentences using optimized 3-pass architecture with COMBINED first pass:
@@ -393,6 +446,8 @@ def generate_sentences(
         groq_api_key: Groq API key
         topics: List of topics to focus sentence generation around (optional)
         native_language: User's native language for explanations (default: "English")
+        enriched_word_data: Pre-fetched word enrichment data from user review (optional).
+            Can be either a consolidated meaning string (new format) or a dictionary (legacy format).
 
     Returns:
         Tuple of (meaning, sentences_list) where sentences_list contains dicts with keys:
@@ -402,20 +457,74 @@ def generate_sentences(
         raise ValueError("Groq API key required")
 
     try:
-        # COMBINED PASS 1: Generate meaning + sentences + keywords in ONE call
-        logger.info(f"COMBINED PASS 1: Generating meaning, {num_sentences} sentences, and keywords for '{word}' ({language})...")
-        combined_result = generate_word_meaning_sentences_and_keywords(
-            word=word,
-            language=language,
-            num_sentences=num_sentences,
-            min_length=min_length,
-            max_length=max_length,
-            difficulty=difficulty,
-            groq_api_key=groq_api_key,
-            topics=topics,
-        )
+        # Handle both old dict format and new consolidated string format
+        consolidated_meaning = None
 
-        meaning = combined_result['meaning']
+        if enriched_word_data is None and enrich_word_data_func is not None and language.lower() != 'english':
+            logger.info(f"Fetching enriched word data for '{word}' in {language}")
+            consolidated_meaning = enrich_word_data_func(word, language)
+            logger.info(f"Enriched data: {consolidated_meaning}")
+        elif enriched_word_data is not None:
+            if isinstance(enriched_word_data, str):
+                # New consolidated string format
+                consolidated_meaning = enriched_word_data
+                logger.info(f"Using consolidated meaning string (length: {len(consolidated_meaning)})")
+            elif isinstance(enriched_word_data, dict):
+                # Old dictionary format - extract meaning
+                meaning_from_dict = enriched_word_data.get('meaning', 'N/A')
+                if meaning_from_dict != 'N/A':
+                    consolidated_meaning = meaning_from_dict
+                    logger.info(f"Using meaning from dict: {consolidated_meaning}")
+            else:
+                logger.warning(f"Unexpected enriched_word_data type: {type(enriched_word_data)}")
+
+        # Use enriched word data if available, otherwise generate from API
+        if consolidated_meaning and consolidated_meaning != 'N/A':
+            # Extract clean meaning for return value
+            if consolidated_meaning.startswith('{') and consolidated_meaning.endswith('}'):
+                # Parse the enriched context format to get primary meaning
+                context_lines = consolidated_meaning[1:-1].split('\n')
+                definitions = []
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Definition'):
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+                clean_meaning = '; '.join(definitions[:2]) if definitions else consolidated_meaning
+            else:
+                clean_meaning = consolidated_meaning
+
+            logger.info(f"Using enriched word data for '{word}': consolidated_meaning length={len(consolidated_meaning)}")
+
+            # Still need to generate sentences - use the combined function but with enriched meaning context
+            combined_result = generate_word_meaning_sentences_and_keywords(
+                word=word,
+                language=language,
+                num_sentences=num_sentences,
+                min_length=min_length,
+                max_length=max_length,
+                difficulty=difficulty,
+                groq_api_key=groq_api_key,
+                topics=topics,
+                enriched_meaning=consolidated_meaning,  # Pass full context for AI
+            )
+            meaning = combined_result['meaning']  # Always use AI-generated English meaning
+        else:
+            # COMBINED PASS 1: Generate meaning + sentences + keywords in ONE call
+            logger.info(f"COMBINED PASS 1: Generating meaning, {num_sentences} sentences, and keywords for '{word}' ({language})...")
+            combined_result = generate_word_meaning_sentences_and_keywords(
+                word=word,
+                language=language,
+                num_sentences=num_sentences,
+                min_length=min_length,
+                max_length=max_length,
+                difficulty=difficulty,
+                groq_api_key=groq_api_key,
+                topics=topics,
+            )
+            meaning = combined_result['meaning']
+
         raw_sentences = combined_result['sentences']
         raw_ipa = combined_result.get('ipa', [])
         raw_keywords = combined_result['keywords']
@@ -704,23 +813,50 @@ IMPORTANT:
 
         results = json.loads(response_text)
 
-        # Validate structure
+        # Validate structure and length
         if not isinstance(results, list):
             logger.error("PASS 2 batch: Expected JSON array")
             return []
 
-        # Ensure we have the right number of results
+        # Validate that we have results for all sentences
+        if len(results) != len(sentences):
+            logger.warning(f"PASS 2 batch: Expected {len(sentences)} results, got {len(results)}")
+            # If we have too few results, pad with fallback data
+            while len(results) < len(sentences):
+                results.append({
+                    "sentence": sentences[len(results)],
+                    "valid": True,
+                    "english_translation": "Translation unavailable (incomplete response)",
+                    "ipa": "IPA unavailable (incomplete response)",
+                    "context": "general",
+                    "image_keywords": word,
+                    "role_of_word": "unknown"
+                })
+
+        # Process validated results
         validated_results = []
-        for i, result in enumerate(results[:len(sentences)]):
+        for sentence_idx, result in enumerate(results[:len(sentences)]):
+            original_sentence = sentences[sentence_idx]
             if isinstance(result, dict):
                 validated_results.append({
-                    "sentence": result.get("sentence", sentences[i]),
+                    "sentence": result.get("sentence", original_sentence),
                     "valid": result.get("valid", False),
                     "english_translation": result.get("english_translation", ""),
                     "ipa": result.get("ipa", ""),
                     "context": result.get("context", "general"),
                     "image_keywords": result.get("image_keywords", ""),
                     "role_of_word": result.get("role_of_word", ""),
+                })
+            else:
+                # Fallback for non-dict results
+                validated_results.append({
+                    "sentence": original_sentence,
+                    "valid": True,
+                    "english_translation": "Translation unavailable (invalid result format)",
+                    "ipa": "IPA unavailable (invalid result format)",
+                    "context": "general",
+                    "image_keywords": word,
+                    "role_of_word": "unknown",
                 })
 
         # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
@@ -732,9 +868,9 @@ IMPORTANT:
         logger.error(f"PASS 2 batch JSON parse error: {e}")
         # Return fallback data with populated fields to avoid breaking learning experience
         fallback_results = []
-        for s in sentences:
+        for sentence_idx, original_sentence in enumerate(sentences):
             fallback_results.append({
-                "sentence": s,  # Keep original sentence
+                "sentence": original_sentence,  # Keep original sentence
                 "valid": True,  # Assume valid to not break flow
                 "english_translation": f"Translation unavailable (parsing error: {str(e)[:50]})",
                 "ipa": f"IPA unavailable (parsing error)",
@@ -747,9 +883,9 @@ IMPORTANT:
         logger.error(f"PASS 2 batch error: {e}")
         # Return fallback data with populated fields to avoid breaking learning experience
         fallback_results = []
-        for s in sentences:
+        for sentence_idx, original_sentence in enumerate(sentences):
             fallback_results.append({
-                "sentence": s,  # Keep original sentence
+                "sentence": original_sentence,  # Keep original sentence
                 "valid": True,  # Assume valid to not break flow
                 "english_translation": f"Translation unavailable (error: {str(e)[:50]})",
                 "ipa": f"IPA unavailable (error)",

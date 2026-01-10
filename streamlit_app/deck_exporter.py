@@ -55,10 +55,17 @@ def create_anki_tsv(
                 except Exception:
                     word_explanations_json = str(r.get("word_explanations", ""))
 
+            # Format meaning with line breaks for better readability
+            raw_meaning = r.get("meaning", "")
+            formatted_meaning = raw_meaning
+            if len(raw_meaning) > 50:  # If meaning is long, add line breaks
+                # Split on common separators
+                formatted_meaning = raw_meaning.replace("; ", ";\n").replace(", ", ",\n")
+
             formatted_rows.append({
                 "File Name": r.get("file_name", ""),
                 "What is the Word?": r.get("word", ""),
-                "Meaning of the Word": r.get("meaning", ""),
+                "Meaning of the Word": formatted_meaning,
                 "Sentence": r.get("sentence", ""),
                 "IPA Transliteration": r.get("ipa", ""),
                 "English Translation": r.get("english", ""),

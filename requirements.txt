@@ -18,6 +18,9 @@ google-generativeai>=0.3.0
 # Text-to-Speech
 edge-tts==7.0.0
 
+# Translation
+translate>=3.6.1
+
 # Image generation
 Pillow>=10.0.0
 
@@ -35,6 +38,7 @@ epitran>=1.24
 
 # Utilities
 python-dotenv>=1.0.0
+psutil>=5.9.0
 
 # Testing
 pytest>=7.0.0

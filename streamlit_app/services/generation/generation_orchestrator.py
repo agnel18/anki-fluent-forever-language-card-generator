@@ -6,9 +6,10 @@ import time
 from typing import Dict, List, Any, Optional
 import pathlib
 
-from core_functions import generate_sentences, create_apkg_from_word_data
-from services.generation.file_manager import FileManager
-from services.generation.log_manager import LogManager
+from core_functions import generate_sentences
+from deck_exporter import create_apkg_export
+from .file_manager import FileManager
+from .log_manager import LogManager
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class GenerationOrchestrator:
             apkg_file_path = output_path / f"{selected_lang}.apkg"
 
             # Create the final APKG file
-            success = create_apkg_from_word_data(
+            success = create_apkg_export(
                 results['words_data'],
                 str(media_dir),
                 str(apkg_file_path),

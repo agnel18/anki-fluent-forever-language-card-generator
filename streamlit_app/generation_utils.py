@@ -8,7 +8,17 @@ import time
 from typing import List, Dict
 from groq import Groq
 
+# Import language registry for consistent language handling
+try:
+    from language_registry import get_language_registry
+except ImportError:
+    # Fallback for testing environments
+    from .language_registry import get_language_registry
+
 logger = logging.getLogger(__name__)
+
+# IPA validation constants
+PINYIN_TONE_MARKS = 'āēīōūǖǎěǐǒǔǚ'
 
 # ============================================================================
 # IPA VALIDATION SYSTEM (Phase 1: IPA Strict Enforcement)
@@ -62,8 +72,8 @@ def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
         return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in [{ipa_content}]"
 
     # Check for Pinyin patterns within IPA (shouldn't happen in valid IPA)
-    pinyin_tone_marks = 'āēīōūǖǎěǐǒǔǚ'
-    if any(char in ipa_content for char in pinyin_tone_marks):
+    # Only reject Pinyin tone marks for Chinese languages
+    if language in ['zh', 'zh-tw'] and any(char in ipa_content for char in PINYIN_TONE_MARKS):
         return False, f"Detected Pinyin tone marks in IPA: [{ipa_content}]"
 
     # For bracketed IPA, we accept any text that contains only valid IPA characters
@@ -85,15 +95,14 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
 
     # Check for specific Pinyin tone marks that are NOT IPA symbols
     # Pinyin uses macron (¯) and caron (ˇ) diacritics on vowels: āēīōūǖ and ǎěǐǒǔǚ
-    pinyin_tone_marks = 'āēīōūǖǎěǐǒǔǚ'
-    has_pinyin_tones = any(char in text for char in pinyin_tone_marks)
+    has_pinyin_tones = any(char in text for char in PINYIN_TONE_MARKS)
 
     for pattern in pinyin_patterns:
         if re.search(pattern, text, re.IGNORECASE):
             return False, f"Detected Pinyin romanization: {text}"
 
-    # If it has Pinyin tone marks, reject it
-    if has_pinyin_tones:
+    # If it has Pinyin tone marks, reject it (only for Chinese)
+    if language in ['zh', 'zh-tw'] and has_pinyin_tones:
         return False, f"Detected Pinyin tone marks: {text}"
 
     # For Chinese and other logographic languages, reject plain ASCII words
@@ -135,7 +144,7 @@ def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
 
     Args:
         sentence: The sentence to transliterate
-        language: Language code (e.g., 'zh', 'ja', 'ko')
+        language: Language code (e.g., 'zh', 'ja', 'ko') or full name
         groq_api_key: Groq API key
 
     Returns:
@@ -145,11 +154,16 @@ def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
         logger.warning("No Groq API key provided for IPA generation")
         return ""
 
+    # Get language registry and normalize language input
+    registry = get_language_registry()
+    normalized_lang = registry.normalize_language_input(language)
+    full_lang_name = registry.get_full_name(normalized_lang) or language
+
     try:
         client = Groq(api_key=groq_api_key)
 
-        # Enhanced prompt for IPA-only output
-        prompt = f"""Transliterate this {language} sentence to IPA (International Phonetic Alphabet) only.
+        # Enhanced prompt for IPA-only output using full language name
+        prompt = f"""Transliterate this {full_lang_name} sentence to IPA (International Phonetic Alphabet) only.
 
 IMPORTANT: Use ONLY official IPA symbols. Do NOT use:
 - Pinyin romanization (no āáǎà, no ma1, no zh/ch/sh/r/z/c/s)
@@ -169,8 +183,8 @@ Return ONLY the IPA transliteration, no explanations or additional text."""
 
         ipa_result = response.choices[0].message.content.strip()
 
-        # Validate the IPA output
-        is_valid, result = validate_ipa_output(ipa_result, language)
+        # Validate the IPA output using normalized language code
+        is_valid, result = validate_ipa_output(ipa_result, normalized_lang)
 
         if is_valid:
             logger.info(f"Generated valid IPA: {result}")
@@ -192,7 +206,7 @@ IPA:"""
             )
 
             fallback_ipa = fallback_response.choices[0].message.content.strip()
-            is_valid_fallback, fallback_result = validate_ipa_output(fallback_ipa, language)
+            is_valid_fallback, fallback_result = validate_ipa_output(fallback_ipa, normalized_lang)
 
             if is_valid_fallback:
                 logger.info(f"Fallback IPA successful: {fallback_result}")

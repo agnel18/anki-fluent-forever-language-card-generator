@@ -336,6 +336,7 @@ def generate_deck_progressive(
     topics: list = None,
     native_language: str = "English",
     log_callback: callable = None,
+    enriched_word_data: dict = None,
 ) -> dict:
     """
     Generate deck for a single word with detailed progress callbacks.
@@ -357,7 +358,17 @@ def generate_deck_progressive(
             log_callback(f"<b>🔤 PASS 1/6: Smart Sentences</b>")
             log_callback(f"Generating contextual sentences with pronunciation and visual cues for '{word}'...")
 
-        meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics, native_language)
+        # Extract consolidated meaning string from enriched word data
+        consolidated_meaning = None
+        if enriched_word_data:
+            if isinstance(enriched_word_data, str):
+                # New consolidated string format - use directly
+                consolidated_meaning = enriched_word_data
+            elif isinstance(enriched_word_data, dict):
+                # Legacy dictionary format - extract meaning field
+                consolidated_meaning = enriched_word_data.get('meaning', None)
+
+        meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics, native_language, consolidated_meaning)
         if sentences is None or not sentences:
             raise Exception(f"Failed to generate sentences for '{word}'")
 
