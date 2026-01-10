@@ -134,8 +134,8 @@ def generate_word_meaning_sentences_and_keywords(
                         definitions.append(def_text)
 
                 if definitions:
-                    meaning_summary = '; '.join(definitions[:2])  # Use first 2 definitions
-                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning. Data: {meaning_summary}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any Hindi text or raw linguistic data in your response.'
+                    meaning_summary = '; '.join(definitions[:4])  # Use first 4 definitions instead of 2
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings (letter, deity, etc.) and provide a comprehensive meaning like "letter (seventh letter of Hindi alphabet); deity (Vishnu)" - do NOT focus on just one meaning.'
                 else:
                     enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any raw linguistic data in your response.'
             else:

@@ -838,10 +838,10 @@ def _create_consolidated_meaning_string(data: Dict[str, Any], language: str) -> 
 
     # Process raw definitions (no cleaning/translations for AI)
     if all_definitions:
-        # Sort by verification score and relevance
+        # Sort by definition length first (more detailed definitions), then verification score
         sorted_definitions = sorted(all_definitions,
-                                  key=lambda x: (x.get("verification_score", 0),
-                                               -len(x.get("definition", ""))),
+                                  key=lambda x: (-len(x.get("definition", "")),
+                                               x.get("verification_score", 0)),
                                   reverse=True)
 
         # Take top definitions with raw data, limited to 200 chars each
