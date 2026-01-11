@@ -75,11 +75,31 @@ class AnalyzerRegistry:
                         class_name = ''.join(word.capitalize() for word in normalized_code.split('_')) + 'Analyzer'
                         analyzer_class = getattr(module, class_name, None)
 
-                        if analyzer_class and issubclass(analyzer_class, BaseGrammarAnalyzer):
-                            self._analyzers[language_code] = analyzer_class
-                            logger.info(f"Discovered analyzer for {language_code}")
+                        if analyzer_class:
+                            logger.info(f"Found class {class_name} in {module_name}")
+                            logger.info(f"BaseGrammarAnalyzer id: {id(BaseGrammarAnalyzer)}")
+                            logger.info(f"analyzer_class MRO: {[cls.__name__ for cls in analyzer_class.__mro__]}")
+                            try:
+                                # Check if it's a subclass by MRO instead of issubclass, to avoid import issues
+                                mro_names = [cls.__name__ for cls in analyzer_class.__mro__]
+                                is_subclass = 'BaseGrammarAnalyzer' in mro_names
+                                logger.info(f"'BaseGrammarAnalyzer' in MRO of {class_name}: {is_subclass}")
+                                if is_subclass:
+                                    self._analyzers[language_code] = analyzer_class
+                                    logger.info(f"Discovered analyzer for {language_code}")
+                                else:
+                                    logger.warning(f"Class {class_name} does not inherit from BaseGrammarAnalyzer")
+                            except Exception as e:
+                                logger.error(f"Error checking inheritance for {class_name}: {e}")
                         else:
-                            logger.warning(f"No valid analyzer class found in {analyzer_file}")
+                            logger.warning(f"No class {class_name} found in module {module_name}")
+
+                        # Old code:
+                        # if analyzer_class and issubclass(analyzer_class, BaseGrammarAnalyzer):
+                        #     self._analyzers[language_code] = analyzer_class
+                        #     logger.info(f"Discovered analyzer for {language_code}")
+                        # else:
+                        #     logger.warning(f"No valid analyzer class found in {analyzer_file}")
 
                     except Exception as e:
                         logger.error(f"Failed to load analyzer {language_code}: {e}")
