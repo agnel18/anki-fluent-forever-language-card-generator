@@ -20,6 +20,7 @@ edge-tts==7.0.0
 
 # Translation
 translate>=3.6.1
+beautifulsoup4>=4.12.0
 
 # Image generation
 Pillow>=10.0.0
