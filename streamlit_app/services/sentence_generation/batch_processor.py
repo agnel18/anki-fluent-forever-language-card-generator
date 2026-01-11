@@ -158,6 +158,9 @@ class BatchProcessor:
                            language_code: str, analyzer, complexity_level: str,
                            native_language: str) -> str:
         """Create the appropriate batch prompt based on analyzer availability."""
+        # Common sentences text for all prompts
+        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+        
         if analyzer and hasattr(analyzer, 'get_batch_grammar_prompt'):
             # Use analyzer's batch prompt method
             logger.info(f"Using analyzer's batch prompt for {language_code}")
@@ -165,7 +168,6 @@ class BatchProcessor:
         elif analyzer:
             # Fallback to default batch prompt for analyzers
             logger.info(f"Using fallback batch prompt for {language_code}")
-            sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
 
             return f"""Analyze the grammar of these {language} sentences and provide detailed analysis for each one.
 
