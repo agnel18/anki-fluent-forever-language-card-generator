@@ -117,7 +117,7 @@ Return JSON in this exact format:
       ],
       "explanations": {{
         "sentence_structure": "Brief grammatical summary of the sentence",
-        "complexity_notes": "Notes about grammatical structures used at {complexity} level"
+        "complexity_notes": "Notes about grammatical structures used at {{complexity}} level"
       }}
     }}
   ]

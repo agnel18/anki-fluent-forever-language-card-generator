@@ -168,29 +168,29 @@ CRITICAL: Analyze EVERY word in the sentence!"""
                     parsed = json.loads(json_match.group(1))
                     parsed['sentence'] = sentence
                     logger.info(f"DEBUG Hindi Parse - Successfully parsed JSON from markdown. Words: {len(parsed.get('words', []))}")
-                    logger.info(f"DEBUG Hindi Parse - Parsed words sample: {parsed.get('words', [])[:2]}")
+                    logger.info("DEBUG Hindi Parse - Parsed words sample: " + str(parsed.get('words', [])[:2]))
                     return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError:
-                    logger.error(f"DEBUG Hindi Parse - JSON decode error in markdown: {json_match.group(1)[:200]}...")
+                    logger.error("DEBUG Hindi Parse - JSON decode error in markdown: " + json_match.group(1)[:200] + "...")
 
             # Try direct JSON parsing
             try:
                 parsed = json.loads(ai_response)
                 parsed['sentence'] = sentence
                 logger.info(f"DEBUG Hindi Parse - Successfully parsed direct JSON. Words: {len(parsed.get('words', []))}")
-                logger.info(f"DEBUG Hindi Parse - Parsed words sample: {parsed.get('words', [])[:2]}")
+                logger.info("DEBUG Hindi Parse - Parsed words sample: " + str(parsed.get('words', [])[:2]))
                 return self._transform_to_standard_format(parsed, complexity)
             except json.JSONDecodeError:
-                logger.error(f"DEBUG Hindi Parse - Direct JSON parse failed")
+                logger.error("DEBUG Hindi Parse - Direct JSON parse failed")
 
             # Fallback: extract structured information from text
-            logger.warning(f"DEBUG Hindi Parse - Falling back to text parsing")
+            logger.warning("DEBUG Hindi Parse - Falling back to text parsing")
             fallback_result = self._parse_text_response(ai_response, sentence)
-            logger.info(f"DEBUG Hindi Parse - Fallback result: {fallback_result.keys()}")
+            logger.info("DEBUG Hindi Parse - Fallback result: " + str(fallback_result.keys()))
             return self._transform_to_standard_format(fallback_result, complexity)
 
         except Exception as e:
-            logger.error(f"DEBUG Hindi Parse - Failed to parse grammar response: {e}")
+            logger.error("DEBUG Hindi Parse - Failed to parse grammar response: " + str(e))
             fallback_result = self._create_fallback_parse(ai_response, sentence)
             return self._transform_to_standard_format(fallback_result, complexity)
 
@@ -228,12 +228,12 @@ CRITICAL: Analyze EVERY word in the sentence!"""
 
                 # Create word explanation
                 color = self._get_color_for_category(category)
-                word_explanations.append([word, role, color, f'Extracted from text analysis: {role}'])
+                word_explanations.append([word, role, color, 'Extracted from text analysis: ' + str(role)])
 
             return {
                 'elements': elements,
                 'word_explanations': word_explanations,
-                'explanations': {'fallback': f'Enhanced text analysis extracted {len(word_role_pairs)} word-role pairs'},
+                'explanations': {'fallback': 'Enhanced text analysis extracted ' + str(len(word_role_pairs)) + ' word-role pairs'},
                 'sentence': sentence
             }
 
@@ -288,9 +288,9 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             explanations = parsed_data.get('explanations', {})
 
             logger.info(f"DEBUG Hindi Transform - Input words count: {len(words)}")
-            logger.info(f"DEBUG Hindi Transform - Input explanations keys: {list(explanations.keys())}")
+            logger.info("DEBUG Hindi Transform - Input explanations keys: " + str(list(explanations.keys())))
             for key, value in explanations.items():
-                logger.info(f"DEBUG Hindi Transform - Explanation '{key}': {str(value)[:100]}...")
+                logger.info("DEBUG Hindi Transform - Explanation '" + str(key) + "': " + str(value)[:100] + "...")
 
             # Transform words into elements grouped by grammatical role
             elements = {}
@@ -312,7 +312,7 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             word_explanations = []
             colors = self.get_color_scheme(complexity)  # Use the actual complexity level
 
-            logger.info(f"DEBUG Hindi Transform - Color scheme for complexity '{complexity}': {colors}")
+            logger.info("DEBUG Hindi Transform - Color scheme for complexity '" + str(complexity) + "': " + str(colors))
 
             for word_data in words:
                 word = word_data.get('word', '')
@@ -323,24 +323,24 @@ CRITICAL: Analyze EVERY word in the sentence!"""
                 category = self._map_grammatical_role_to_category(grammatical_role)
                 color = colors.get(category, '#888888')
 
-                logger.info(f"DEBUG Hindi Transform - Word: '{word}', Role: '{grammatical_role}', Category: '{category}', Color: '{color}'")
+                logger.info("DEBUG Hindi Transform - Word: '" + str(word) + "', Role: '" + str(grammatical_role) + "', Category: '" + str(category) + "', Color: '" + str(color) + "'")
 
                 # Create explanation text from available data
                 explanation_parts = []
                 if individual_meaning:
                     explanation_parts.append(individual_meaning)
                 if pronunciation:
-                    explanation_parts.append(f"({pronunciation})")
+                    explanation_parts.append("(" + str(pronunciation) + ")")
 
-                explanation = ", ".join(explanation_parts) if explanation_parts else f"{grammatical_role}"
+                explanation = ", ".join(explanation_parts) if explanation_parts else str(grammatical_role)
 
                 word_explanations.append([word, grammatical_role, color, explanation])
-                logger.info(f"DEBUG Hindi Transform - Added word_explanation: {word_explanations[-1]}")
+                logger.info("DEBUG Hindi Transform - Added word_explanation: " + str(word_explanations[-1]))
 
             logger.info(f"DEBUG Hindi Transform - Final word_explanations count: {len(word_explanations)}")
 
         except Exception as e:
-            logger.error(f"Failed to transform {self.language_name} analysis data: {e}")
+            logger.error("Failed to transform " + str(self.language_name) + " analysis data: " + str(e))
             return {
                 'elements': {},
                 'explanations': {'error': 'Data transformation failed'},
@@ -353,8 +353,8 @@ CRITICAL: Analyze EVERY word in the sentence!"""
         explanations = parsed_data.get('word_explanations', [])
 
         logger.info(f"DEBUG Hindi HTML Gen - Input explanations count: {len(explanations)}")
-        logger.info(f"DEBUG Hindi HTML Gen - Input sentence: '{sentence}'")
-        logger.error(f"DEBUG HTML GEN CALLED: sentence='{sentence}', explanations_count={len(explanations)}")
+        logger.info("DEBUG Hindi HTML Gen - Input sentence: '" + str(sentence) + "'")
+        logger.error("DEBUG HTML GEN CALLED: sentence='" + str(sentence) + "', explanations_count=" + str(len(explanations)))
 
         # Create mapping of words to categories directly from word_explanations (authoritative source)
         word_to_category = {}
@@ -365,15 +365,15 @@ CRITICAL: Analyze EVERY word in the sentence!"""
                 clean_word = re.sub(r'[।!?.,;:\"\'()\[\]{}]', '', word)
                 category = self._map_grammatical_role_to_category(pos)
                 word_to_category[clean_word] = category
-                logger.info(f"DEBUG Hindi HTML Gen - Word '{word}' (clean: '{clean_word}') -> Category '{category}' (POS: '{pos}')")
+                logger.info("DEBUG Hindi HTML Gen - Word '" + str(word) + "' (clean: '" + str(clean_word) + "') -> Category '" + str(category) + "' (POS: '" + str(pos) + "')")
 
-        logger.info(f"DEBUG Hindi HTML Gen - Word-to-category mapping: {word_to_category}")
+        logger.info("DEBUG Hindi HTML Gen - Word-to-category mapping: " + str(word_to_category))
         logger.info(f"DEBUG Hindi HTML Gen - Total words in mapping: {len(word_to_category)}")
 
         # Generate HTML by coloring each word individually using colors from grammar explanations
         words_in_sentence = re.findall(r'\S+', sentence)
 
-        logger.info(f"DEBUG Hindi HTML Gen - Words found in sentence: {words_in_sentence}")
+        logger.info("DEBUG Hindi HTML Gen - Words found in sentence: " + str(words_in_sentence))
 
         html_parts = []
         for word in words_in_sentence:
@@ -382,22 +382,25 @@ CRITICAL: Analyze EVERY word in the sentence!"""
             # Remove common punctuation marks that might be attached to words
             clean_word = re.sub(r'[।!?.,;:\"\'()\[\]{}]', '', word)
 
-            logger.info(f"DEBUG Hindi HTML Gen - Processing word '{word}' -> clean '{clean_word}'")
+            logger.info("DEBUG Hindi HTML Gen - Processing word '" + str(word) + "' -> clean '" + str(clean_word) + "'")
 
             if clean_word in word_to_category:
                 category = word_to_category[clean_word]
                 color_scheme = self.get_color_scheme('intermediate')
                 color = color_scheme.get(category, '#888888')
-                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
-                print(f"DEBUG Hindi HTML Gen - ✓ Colored word '{word}' with category '{category}' and color '{color}'")
+                # Escape curly braces in word to prevent f-string issues
+                safe_word = word.replace('{', '{{').replace('}', '}}')
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{safe_word}</span>')
+                print("DEBUG Hindi HTML Gen - ✓ Colored word '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
             else:
                 # For words without analysis, use default color (should be rare with new architecture)
-                html_parts.append(f'<span style="color: #888888;">{word}</span>')
-                print(f"DEBUG Hindi HTML Gen - ✗ No category found for word '{word}' (clean: '{clean_word}'). Available words: {list(word_to_category.keys())}")
+                safe_word = word.replace('{', '{{').replace('}', '}}')
+                html_parts.append(f'<span style="color: #888888;">{safe_word}</span>')
+                print("DEBUG Hindi HTML Gen - ✗ No category found for word '" + str(word) + "' (clean: '" + str(clean_word) + "'). Available words: " + str(list(word_to_category.keys())))
 
         result = ' '.join(html_parts)
         logger.info(f"DEBUG Hindi HTML Gen - Final HTML output length: {len(result)}")
-        logger.info(f"DEBUG Hindi HTML Gen - Final HTML preview: {result[:300]}...")
+        logger.info("DEBUG Hindi HTML Gen - Final HTML preview: " + str(result[:300]) + "...")
         logger.info(f"DEBUG Hindi HTML Gen - Category distribution: {set(word_to_category.values())}")
         return result
 

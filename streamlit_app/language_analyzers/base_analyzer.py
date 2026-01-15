@@ -123,13 +123,13 @@ Return your analysis in this exact JSON format:
           "word": "example",
           "grammatical_role": "noun",
           "category": "nouns",
-          "explanation": "Explanation in {native_language}"
+          "explanation": "Explanation in {{native_language}}"
         }}
       ],
       "word_combinations": [],
       "explanations": {{
-        "sentence_structure": "Brief grammatical summary in {native_language}",
-        "complexity_notes": "Notes about {complexity} level structures used"
+        "sentence_structure": "Brief grammatical summary in {{native_language}}",
+        "complexity_notes": "Notes about {{complexity}} level structures used"
       }}
     }}
   ]
@@ -258,7 +258,7 @@ IMPORTANT:
             return result
 
         except Exception as e:
-            logger.error(f"Grammar analysis failed for {self.language_name}: {e}")
+            logger.error("Grammar analysis failed for " + self.language_name + ": " + str(e))
             # Return minimal fallback analysis
             return self._create_fallback_analysis(sentence, target_word, complexity)
 
@@ -278,7 +278,7 @@ IMPORTANT:
             return response.choices[0].message.content.strip()
 
         except Exception as e:
-            logger.error(f"AI model call failed: {e}")
+            logger.error("AI model call failed: " + str(e))
             raise
 
     @abc.abstractmethod
@@ -325,7 +325,9 @@ IMPORTANT:
         for word, element_type in all_words:
             # Create colored span with inline style for better compatibility
             color = colors.get(element_type, '#000000')
-            colored_span = f'<span style="color: {color};">{word}</span>'
+            # Escape curly braces in word to prevent f-string format specifier issues
+            safe_word = word.replace('{', '{{').replace('}', '}}')
+            colored_span = f'<span style="color: {color};">{safe_word}</span>'
 
             # Use simple string replacement with word boundaries
             # Split the sentence into words, replace exact matches, then rejoin

@@ -161,7 +161,7 @@ Return JSON in this exact format:
       "word_combinations": [],
       "explanations": {{
         "sentence_structure": "Brief grammatical summary of the sentence",
-        "complexity_notes": "Notes about grammatical structures used at {complexity} level"
+        "complexity_notes": "Notes about grammatical structures used at {{complexity}} level"
       }}
     }}
   ]
@@ -235,20 +235,20 @@ IMPORTANT: Use specific grammatical categories from this list: {', '.join(allowe
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with comprehensive analysis:
-{
+{{
   "words": [
-    {
+    {{
       "word": "राम",
       "individual_meaning": "Ram (proper name)",
       "grammatical_role": "noun"
-    },
-    {
+    }},
+    {{
       "word": "ने",
       "individual_meaning": "ergative postposition (by/agent)",
       "grammatical_role": "postposition"
-    }
+    }}
   ]
-}
+}}
 """
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
@@ -283,20 +283,20 @@ IMPORTANT: Use specific grammatical categories from this list: {', '.join(allowe
 Pay special attention to the target word: TARGET_PLACEHOLDER
 
 Return a JSON object with advanced grammatical analysis:
-{
+{{
   "words": [
-    {
+    {{
       "word": "करवाया",
       "individual_meaning": "caused to do/had done",
       "grammatical_role": "verb"
-    },
-    {
+    }},
+    {{
       "word": "ही",
       "individual_meaning": "only/indeed/emphasis particle",
       "grammatical_role": "particle"
-    }
+    }}
   ]
-}
+}}
 """
         return base_prompt.replace("SENTENCE_PLACEHOLDER", sentence).replace("TARGET_PLACEHOLDER", target_word)
 
@@ -321,8 +321,8 @@ Return a JSON object with advanced grammatical analysis:
                     logger.info(f"Hindi analyzer parsed JSON from markdown successfully: {len(parsed.get('words', []))} words")
                     return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
-                    logger.error(f"JSON decode error in Hindi analyzer (markdown): {e}")
-                    raise ValueError(f"Invalid JSON in markdown block: {e}")
+                    logger.error("JSON decode error in Hindi analyzer (markdown): " + str(e))
+                    raise ValueError("Invalid JSON in markdown block: " + str(e))
 
             # Try to extract JSON from response - look for JSON object after text
             json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
@@ -342,8 +342,8 @@ Return a JSON object with advanced grammatical analysis:
                     logger.info(f"Hindi analyzer parsed JSON successfully: {len(parsed.get('words', []))} words")
                     return self._transform_to_standard_format(parsed, complexity)
                 except json.JSONDecodeError as e:
-                    logger.error(f"JSON decode error in Hindi analyzer: {e}")
-                    raise ValueError(f"Invalid JSON in response: {e}")
+                    logger.error("JSON decode error in Hindi analyzer: " + str(e))
+                    raise ValueError("Invalid JSON in response: " + str(e))
 
             # Try direct JSON parsing
             try:
@@ -360,13 +360,13 @@ Return a JSON object with advanced grammatical analysis:
                 logger.info(f"Hindi analyzer direct JSON parse successful: {len(parsed.get('words', []))} words")
                 return self._transform_to_standard_format(parsed, complexity)
             except json.JSONDecodeError as e:
-                logger.error(f"Direct JSON parse error in Hindi analyzer: {e}")
-                raise ValueError(f"Response is not valid JSON: {e}")
+                logger.error("Direct JSON parse error in Hindi analyzer: " + str(e))
+                raise ValueError("Response is not valid JSON: " + str(e))
 
         except Exception as e:
-            logger.error(f"Failed to parse {self.language_name} grammar response: {e}")
+            logger.error("Failed to parse " + self.language_name + " grammar response: " + str(e))
             # JSON-only parsing - no text fallbacks allowed
-            raise ValueError(f"Grammar analysis failed - response must be valid JSON: {e}")
+            raise ValueError("Grammar analysis failed - response must be valid JSON: " + str(e))
 
     def _parse_text_response(self, ai_response: str, sentence: str) -> Dict[str, Any]:
         """Enhanced fallback text parsing when JSON fails - extracts grammatical roles from AI response"""
@@ -402,12 +402,12 @@ Return a JSON object with advanced grammatical analysis:
 
                 # Create word explanation
                 color = self._get_color_for_category(category)
-                word_explanations.append([word, role, color, f'Extracted from text analysis: {role}'])
+                word_explanations.append([word, role, color, 'Extracted from text analysis: ' + str(role)])
 
             return {
                 'elements': elements,
                 'word_explanations': word_explanations,
-                'explanations': {'fallback': f'Enhanced text analysis extracted {len(word_role_pairs)} word-role pairs'},
+                'explanations': {'fallback': 'Enhanced text analysis extracted ' + str(len(word_role_pairs)) + ' word-role pairs'},
                 'sentence': sentence
             }
 
@@ -440,10 +440,10 @@ Return a JSON object with advanced grammatical analysis:
             word_combinations = parsed_data.get('word_combinations', [])
             explanations = parsed_data.get('explanations', {})
 
-            logger.info(f"Hindi analyzer transforming {len(words)} words")
+            logger.info("Hindi analyzer transforming " + str(len(words)) + " words")
             if words:
                 sample_roles = [w.get('grammatical_role', 'MISSING') for w in words[:3]]
-                logger.info(f"Sample grammatical roles: {sample_roles}")
+                logger.info("Sample grammatical roles: " + str(sample_roles))
 
             # Transform words into elements grouped by grammatical role
             elements = {}
@@ -451,7 +451,7 @@ Return a JSON object with advanced grammatical analysis:
             # Group words by their grammatical role
             for word_data in words:
                 grammatical_role = word_data.get('grammatical_role', 'other')
-                logger.debug(f"Processing word '{word_data.get('word', 'UNKNOWN')}' with role '{grammatical_role}'")
+                logger.debug("Processing word '" + str(word_data.get('word', 'UNKNOWN')) + "' with role '" + str(grammatical_role) + "'")
                 if grammatical_role not in elements:
                     elements[grammatical_role] = []
                 elements[grammatical_role].append(word_data)
@@ -471,7 +471,7 @@ Return a JSON object with advanced grammatical analysis:
                 
                 # Ensure grammatical_role is a string
                 if not isinstance(grammatical_role, str):
-                    logger.warning(f"grammatical_role is not a string: {grammatical_role} (type: {type(grammatical_role)}), defaulting to 'other'")
+                    logger.warning("grammatical_role is not a string: " + str(grammatical_role) + " (type: " + str(type(grammatical_role)) + "), defaulting to 'other'")
                     grammatical_role = 'other'
                 
                 # Clean the grammatical_role for display purposes
@@ -488,42 +488,42 @@ Return a JSON object with advanced grammatical analysis:
                     
                     # Add educational context based on grammatical role
                     educational_enhancements = {
-                        'noun': f"{base_meaning} (thing/object)",
-                        'pronoun': f"{base_meaning} (replaces a noun)",
-                        'adjective': f"{base_meaning} (describes a noun)",
-                        'verb': f"{base_meaning} (action/state)",
-                        'adverb': f"{base_meaning} (modifies verb/adjective)",
-                        'postposition': f"{base_meaning} (shows relationship/location)",
-                        'conjunction': f"{base_meaning} (connects ideas)",
-                        'particle': f"{base_meaning} (adds emphasis/nuance)",
-                        'auxiliary_verb': f"{base_meaning} (helps main verb)",
-                        'interjection': f"{base_meaning} (expresses emotion)"
+                        'noun': base_meaning + " (thing/object)",
+                        'pronoun': base_meaning + " (replaces a noun)",
+                        'adjective': base_meaning + " (describes a noun)",
+                        'verb': base_meaning + " (action/state)",
+                        'adverb': base_meaning + " (modifies verb/adjective)",
+                        'postposition': base_meaning + " (shows relationship/location)",
+                        'conjunction': base_meaning + " (connects ideas)",
+                        'particle': base_meaning + " (adds emphasis/nuance)",
+                        'auxiliary_verb': base_meaning + " (helps main verb)",
+                        'interjection': base_meaning + " (expresses emotion)"
                     }
                     
                     enhanced_meaning = educational_enhancements.get(category, base_meaning)
                     explanation_parts.append(enhanced_meaning)
                 else:
                     # Provide fallback with grammatical context
-                    logger.warning(f"Missing individual_meaning for word '{word}' with grammatical role '{grammatical_role}'")
+                    logger.warning("Missing individual_meaning for word '" + str(word) + "' with grammatical role '" + str(grammatical_role) + "'")
                     fallback_explanations = {
-                        'noun': f'{grammatical_role} (thing/object)',
-                        'pronoun': f'{grammatical_role} (replaces noun)',
-                        'adjective': f'{grammatical_role} (describes noun)',
-                        'verb': f'{grammatical_role} (action/state)',
-                        'adverb': f'{grammatical_role} (modifies verb/adjective)',
-                        'postposition': f'{grammatical_role} (shows relationship)',
-                        'conjunction': f'{grammatical_role} (connects clauses)',
-                        'interjection': f'{grammatical_role} (expresses emotion)',
-                        'particle': f'{grammatical_role} (adds nuance/emphasis)',
-                        'auxiliary_verb': f'{grammatical_role} (supports main verb)'
+                        'noun': grammatical_role + ' (thing/object)',
+                        'pronoun': grammatical_role + ' (replaces noun)',
+                        'adjective': grammatical_role + ' (describes noun)',
+                        'verb': grammatical_role + ' (action/state)',
+                        'adverb': grammatical_role + ' (modifies verb/adjective)',
+                        'postposition': grammatical_role + ' (shows relationship)',
+                        'conjunction': grammatical_role + ' (connects clauses)',
+                        'interjection': grammatical_role + ' (expresses emotion)',
+                        'particle': grammatical_role + ' (adds nuance/emphasis)',
+                        'auxiliary_verb': grammatical_role + ' (supports main verb)'
                     }
-                    explanation_parts.append(fallback_explanations.get(category, f'{grammatical_role}'))
+                    explanation_parts.append(fallback_explanations.get(category, grammatical_role))
                 
                 explanation = ", ".join(explanation_parts)
                 
                 word_explanations.append([word, cleaned_role, color, explanation])
 
-            logger.info(f"Created {len(word_explanations)} word explanations, sample: {word_explanations[:2] if word_explanations else 'None'}")
+            logger.info("Created " + str(len(word_explanations)) + " word explanations, sample: " + str(word_explanations[:2] if word_explanations else 'None'))
 
             # Reorder word_explanations to match sentence word order
             sentence = parsed_data.get('sentence', '')
@@ -539,7 +539,7 @@ Return a JSON object with advanced grammatical analysis:
             }
 
         except Exception as e:
-            logger.error(f"Failed to transform Hindi analysis data: {e}")
+            logger.error("Failed to transform Hindi analysis data: " + str(e))
             return {
                 'elements': {},
                 'explanations': {'error': 'Data transformation failed'},
@@ -917,7 +917,7 @@ Return a JSON object with advanced grammatical analysis:
             return confidence
 
         except Exception as e:
-            logger.error(f"Validation failed: {e}")
+            logger.error("Validation failed: " + str(e))
             return 0.5  # Conservative fallback
 
     def _perform_hindi_specific_checks(self, elements: Dict[str, Any], original_sentence: str) -> float:
@@ -1013,24 +1013,83 @@ Return a JSON object with advanced grammatical analysis:
 
                 # If confidence is good enough, return immediately
                 if confidence >= 0.85:
-                    logger.info(f"Hindi analysis successful on attempt {attempt + 1} with confidence {confidence}")
+                    logger.info("Hindi analysis successful on attempt " + str(attempt + 1) + " with confidence " + str(confidence))
                     return result
 
                 # If not the last attempt, log and continue
                 if attempt < max_retries:
-                    logger.warning(f"Hindi analysis attempt {attempt + 1} failed with confidence {confidence} < 0.85, retrying...")
+                    logger.warning("Hindi analysis attempt " + str(attempt + 1) + " failed with confidence " + str(confidence) + " < 0.85, retrying...")
 
             except Exception as e:
-                logger.error(f"Hindi analysis attempt {attempt + 1} failed with exception: {e}")
+                logger.error("Hindi analysis attempt " + str(attempt + 1) + " failed with exception: " + str(e))
                 if attempt == max_retries:
                     raise  # Re-raise on final attempt
 
         # Return best result if all attempts failed but we have a result
         if best_result:
-            logger.warning(f"All Hindi analysis attempts failed, returning best result with confidence {best_confidence}")
+            logger.warning("All Hindi analysis attempts failed, returning best result with confidence " + str(best_confidence))
             return best_result
         else:
             raise ValueError("All Hindi analysis attempts failed")
+
+    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
+        """
+        Generate Hindi-specific AI prompt for batch grammar analysis.
+        Overrides base implementation to avoid f-string formatting issues with dynamic content.
+        """
+        # Create sentences text safely
+        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+
+        # Use string concatenation and .format() to avoid f-string issues with dynamic content
+        prompt_template = """Analyze the grammar of these {language_name} sentences and provide detailed analysis for each one.
+
+Target word: "{target_word}"
+Language: {language_name}
+Complexity level: {complexity}
+Analysis should be in {native_language}
+
+Sentences to analyze:
+{sentences_text}
+
+Return your analysis in this exact JSON format:
+{{
+  "batch_results": [
+    {{
+      "sentence_index": 1,
+      "sentence": "PLACEHOLDER_SENTENCE",
+      "words": [
+        {{
+          "word": "example",
+          "grammatical_role": "noun",
+          "category": "nouns",
+          "explanation": "Explanation in {native_language}"
+        }}
+      ],
+      "word_combinations": [],
+      "explanations": {{
+        "sentence_structure": "Brief grammatical summary in {native_language}",
+        "complexity_notes": "Notes about {complexity} level structures used"
+      }}
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Analyze ALL {num_sentences} sentences in this single response
+- Each sentence must have complete word-by-word grammatical analysis
+- Use {language_name}-specific grammatical categories
+- Provide explanations in {native_language}
+- Return ONLY the JSON object, no additional text or markdown formatting
+"""
+
+        return prompt_template.format(
+            language_name=self.language_name,
+            target_word=target_word,
+            complexity=complexity,
+            native_language=native_language,
+            sentences_text=sentences_text,
+            num_sentences=len(sentences)
+        )
 
     def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
         """
