@@ -5,7 +5,7 @@ import abc
 import json
 import logging
 from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class GrammarAnalysis:
     color_scheme: Dict[str, str]
     html_output: str
     confidence_score: float
+    word_explanations: List[List[Any]] = field(default_factory=list)
 
 @dataclass
 class LanguageConfig:
@@ -261,6 +262,76 @@ IMPORTANT:
             logger.error("Grammar analysis failed for " + self.language_name + ": " + str(e))
             # Return minimal fallback analysis
             return self._create_fallback_analysis(sentence, target_word, complexity)
+
+    def batch_analyze_grammar(self, sentences: List[str], target_word: str,
+                             complexity: str, groq_api_key: str) -> List[GrammarAnalysis]:
+        """
+        Batch analyze multiple sentences in a single API call for efficiency.
+
+        Args:
+            sentences: List of sentences to analyze
+            target_word: Target word being learned (same for all sentences)
+            complexity: Complexity level ('beginner', 'intermediate', 'advanced')
+            groq_api_key: API key for Groq AI
+
+        Returns:
+            List of GrammarAnalysis objects, one per sentence
+        """
+        try:
+            # Validate inputs
+            if complexity not in self.supported_levels:
+                raise ValueError(f"Unsupported complexity level: {complexity}")
+
+            if not sentences:
+                return []
+
+            # Generate batch AI prompt
+            prompt = self.get_batch_grammar_prompt(complexity, sentences, target_word)
+
+            # Call AI model once for all sentences
+            analysis_data = self._call_ai_model(prompt, groq_api_key)
+
+            # Parse batch response
+            batch_results = self.parse_batch_grammar_response(analysis_data, sentences, complexity)
+
+            # Convert to GrammarAnalysis objects
+            results = []
+            for i, (sentence, parsed_data) in enumerate(zip(sentences, batch_results)):
+                try:
+                    # Validate quality
+                    confidence = self.validate_analysis(parsed_data, sentence)
+                    if confidence < 0.85:
+                        logger.warning(f"Batch analysis confidence below 85% for sentence {i+1}: {confidence}")
+
+                    # Generate HTML output
+                    html_output = self._generate_html_output(parsed_data, sentence, complexity)
+
+                    # Create result object
+                    result = GrammarAnalysis(
+                        sentence=sentence,
+                        target_word=target_word,
+                        language_code=self.language_code,
+                        complexity_level=complexity,
+                        grammatical_elements=parsed_data.get('elements', {}),
+                        explanations=parsed_data.get('explanations', {}),
+                        color_scheme=self.get_color_scheme(complexity),
+                        html_output=html_output,
+                        confidence_score=confidence
+                    )
+                    results.append(result)
+
+                except Exception as e:
+                    logger.error(f"Failed to create GrammarAnalysis for sentence {i+1}: {e}")
+                    # Return fallback for this sentence
+                    results.append(self._create_fallback_analysis(sentence, target_word, complexity))
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Batch grammar analysis failed for {self.language_name}: {e}")
+            # Return fallbacks for all sentences
+            return [self._create_fallback_analysis(sentence, target_word, complexity)
+                   for sentence in sentences]
 
     def _call_ai_model(self, prompt: str, api_key: str) -> str:
         """Call Groq AI model with the generated prompt"""

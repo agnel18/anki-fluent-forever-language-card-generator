@@ -1,4 +1,5 @@
 # Language Grammar Analyzer Generator Template
+# Version: 2026-01-17 (Updated with IPA Romanization, Token Limits, and Repository Cleanup)
 
 ## Overview
 You are tasked with adapting the gold standard Hindi analyzer (hi_analyzer.py) to create a comprehensive grammar analyzer for **{language}** focused specifically on **Pass 3: Grammar Analysis** in the 6-step language learning deck generation process.
@@ -6,38 +7,187 @@ You are tasked with adapting the gold standard Hindi analyzer (hi_analyzer.py) t
 ## Critical Process Requirement
 **BEFORE BEGINNING ANY CODING**, you **MUST** first create a comprehensive **{language}_grammar_concepts.md** file that documents all linguistic research, grammatical structures, and implementation requirements. This ensures focused, high-quality work by separating research from implementation.
 
+## 🔧 RECENT IMPROVEMENTS AND LESSONS LEARNED (2026-01-17)
+
+### **IPA Romanization Support for Learner Languages**
+**Lesson:** For Indic and Arabic-script languages, romanized transliterations are more pedagogically valuable than strict IPA for language learners.
+
+**Implementation:**
+- Add romanization support in `generation_utils.py` `validate_ipa_output()`
+- Include language-specific diacritic sets for romanization validation
+- Update AI prompts to request romanization for allowed languages
+- Maintain strict IPA validation for phonetic languages (Chinese, European)
+
+**Code Pattern:**
+```python
+romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+
+if language in romanization_allowed_languages:
+    romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
+    if re.match(romanization_pattern, text.strip()):
+        return True, text
+```
+
+### **Grammar Analysis Token Limits**
+**Lesson:** AI responses for batch grammar analysis require higher token limits to prevent JSON truncation.
+
+**Implementation:**
+- Increase `max_tokens` from 1000 to 2000 in analyzer `_call_ai` methods
+- Test with 8-sentence batches to ensure complete responses
+- Monitor for JSON parsing failures and adjust accordingly
+
+**Code Pattern:**
+```python
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=2000,  # Increased for batch processing
+    temperature=0.1
+)
+```
+
+### **Word Explanation Quality**
+**Lesson:** Ensure AI provides detailed `individual_meaning` fields rather than generic descriptions.
+
+**Implementation:**
+- Explicitly require `individual_meaning` in AI prompts
+- Test for meaningful explanations vs. generic fallbacks
+- Validate that explanations match the target language's context
+
+**Prompt Pattern:**
+```python
+For each word:
+- individual_meaning: the English translation/meaning of this specific word (MANDATORY - do not leave empty)
+- grammatical_role: EXACTLY ONE category from the allowed list
+```
+
 ## Gold Standard References
 
 Use the following files and implementations as your gold standard:
 
 ### Core Files to Reference:
-- **hi_analyzer.py**: Complete LTR implementation with all enhancements (patterns, validation, retries, batch processing, Devanagari support)
+- **hi_analyzer.py**: Complete LTR implementation with all enhancements (patterns, validation, retries, batch processing, Devanagari support, 2000 max_tokens for complete responses)
 - **ar_analyzer.py**: Complete RTL implementation with proper word ordering, contextual meanings, and script-aware processing
 - **indo_european_analyzer.py**: Base class structure and common functionality
 - **batch_processor.py**: Batch processing with partial fallbacks and exponential backoff
 - **DataTransformer**: Color mapping and HTML generation utilities
+- **generation_utils.py**: IPA validation with romanization support for Indic languages
 - **hindi_analyzer_enhancement_master.md**: Complete documentation of LTR improvements
 - **arabic_grammar_concepts.md**: Complete documentation of RTL linguistic research and implementation
 
+### Key Implementation Patterns:
+
+#### **Token Limits & Response Handling**
+```python
+# Gold Standard: Increased token limits for complete responses
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=2000,  # Critical: Prevents JSON truncation
+    temperature=0.1
+)
+```
+
+#### **IPA Romanization Support**
+```python
+# Gold Standard: Romanization for learner languages
+romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+
+if language in romanization_allowed_languages:
+    romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
+    if re.match(romanization_pattern, text.strip()):
+        return True, text  # Accept romanized IPA
+```
+
+#### **Word Explanation Quality Assurance**
+```python
+# Gold Standard: Detailed meanings, not generic descriptions
+For each word:
+- individual_meaning: the English translation/meaning of this specific word (MANDATORY - do not leave empty)
+- grammatical_role: EXACTLY ONE category from the allowed list
+```
+
 ### Organized File Structure:
-All language files are now organized in the `languages/` directory:
+All language files are now organized in the `languages/` directory with a standardized structure:
 
 ```
 languages/
-├── arabic/
-│   ├── ar_analyzer.py                    # Analyzer implementation
-│   ├── ar_grammar_concepts.md           # Linguistic research
-│   ├── ar_analyzer_documentation.md     # Technical documentation
-│   └── tests/test_ar_analyzer.py         # Unit tests
-├── hindi/
-│   ├── hi_analyzer.py
-│   ├── hi_analyzer_enhancement.md
-│   └── tests/test_hi_analyzer.py
-└── [language_code]/
-    ├── [lang_code]_analyzer.py
-    ├── [lang_code]_grammar_concepts.md
-    ├── [lang_code]_analyzer_documentation.md
-    └── tests/test_[lang_code]_analyzer.py
+├── arabic/                           # RTL Reference Implementation
+│   ├── ar_analyzer.py               # Complete RTL analyzer with word reordering
+│   ├── ar_grammar_concepts.md       # Linguistic research documentation
+│   ├── ar_analyzer_documentation.md # Technical implementation details
+│   └── tests/
+│       └── test_ar_analyzer.py      # Comprehensive test suite
+│
+├── hindi/                           # LTR Reference Implementation
+│   ├── hi_analyzer.py               # Enhanced with 2000 token limits
+│   ├── hi_analyzer_enhancement.md   # Recent improvements documentation
+│   ├── hi_config.py                 # Language-specific configuration
+│   ├── hi_prompt_builder.py         # AI prompt generation
+│   ├── hi_response_parser.py        # Response parsing logic
+│   ├── hi_fallbacks.py              # Fallback analysis patterns
+│   ├── hi_validator.py              # Validation rules
+│   ├── domain/                      # Domain-driven design components
+│   │   ├── hi_config.py
+│   │   ├── hi_prompt_builder.py
+│   │   ├── hi_response_parser.py
+│   │   ├── hi_fallbacks.py
+│   │   └── hi_validator.py
+│   └── tests/
+│       └── test_hi_analyzer.py
+│
+├── [language_code]/                 # New Language Implementation Template
+│   ├── [lang_code]_analyzer.py      # Main analyzer implementation
+│   ├── [lang_code]_grammar_concepts.md  # Linguistic research (CREATE FIRST)
+│   ├── [lang_code]_analyzer_documentation.md  # Technical docs
+│   ├── [lang_code]_config.py        # Language configuration
+│   ├── [lang_code]_prompt_builder.py  # AI prompt generation
+│   ├── [lang_code]_response_parser.py  # Response parsing
+│   ├── [lang_code]_fallbacks.py     # Fallback patterns
+│   ├── [lang_code]_validator.py     # Validation rules
+│   ├── domain/                      # Domain components (optional)
+│   └── tests/
+│       └── test_[lang_code]_analyzer.py
+```
+
+### File Responsibilities:
+
+#### **Core Analyzer Files:**
+- **`[lang_code]_analyzer.py`**: Main analyzer class inheriting from appropriate base class
+- **`[lang_code]_config.py`**: Language-specific configuration (colors, categories, patterns)
+- **`[lang_code]_prompt_builder.py`**: AI prompt generation for grammar analysis
+- **`[lang_code]_response_parser.py`**: Parse AI responses into structured data
+- **`[lang_code]_fallbacks.py`**: Fallback analysis when AI fails
+- **`[lang_code]_validator.py`**: Validation rules and confidence scoring
+
+#### **Documentation Files:**
+- **`[lang_code]_grammar_concepts.md`**: Linguistic research and grammatical concepts (CREATE FIRST)
+- **`[lang_code]_analyzer_documentation.md`**: Technical implementation details
+
+#### **Test Files:**
+- **`test_[lang_code]_analyzer.py`**: Unit tests for analyzer functionality
+
+### Directory Structure Best Practices:
+
+#### **Domain-Driven Design (Recommended for Complex Languages):**
+```
+languages/[lang_code]/domain/
+├── __init__.py
+├── [lang_code]_config.py
+├── [lang_code]_prompt_builder.py
+├── [lang_code]_response_parser.py
+├── [lang_code]_fallbacks.py
+└── [lang_code]_validator.py
+```
+
+#### **Simple Languages (Direct Implementation):**
+```
+languages/[lang_code]/
+├── [lang_code]_analyzer.py  # All logic in main analyzer
+├── [lang_code]_grammar_concepts.md
+└── tests/test_[lang_code]_analyzer.py
 ```
 
 ### Key Gold Standard Features by Script Direction:
@@ -51,6 +201,8 @@ languages/
 6. **Multilingual Support**: Native language explanations and parameterized prompts
 7. **Robust Error Handling**: Logging, fallbacks, and graceful degradation
 8. **Word Ordering**: Grammar explanations appear in sentence word order (LTR) for optimal user experience
+9. **Token Limit Management**: 2000 max_tokens to prevent JSON truncation in batch responses
+10. **IPA Integration**: Romanization support for Indic scripts when beneficial for learners
 
 #### **RTL Languages (Reference: Arabic)**
 1. **RTL Word Ordering**: Explanations must be reordered to match RTL reading direction using position-based sorting
@@ -60,6 +212,135 @@ languages/
 5. **Position-Based Reordering**: Use sentence position indexing to reorder explanations for RTL display
 6. **Definite Article Handling**: Special processing for assimilated definite articles (ال → ات/اض/اظ/ان)
 7. **Root-Based Morphology**: Pattern recognition for triliteral roots and verb forms (ʾabwāb I-X)
+8. **Token Limit Management**: 2000 max_tokens for complete batch responses
+9. **IPA Integration**: Romanization support for Arabic script languages
+
+#### **Logographic Languages (Reference: Chinese Planning)**
+1. **Character vs Word Analysis**: Decide between character-level or word-level analysis based on pedagogical needs
+2. **Compound Word Recognition**: Identify and handle multi-character compounds as single units
+3. **Tone Integration**: Include tone markers in validation and display
+4. **Particle Recognition**: Special handling for aspect particles (了, 着, 过) and structural particles (的, 地, 得)
+5. **Classifier System**: Recognition and categorization of measure words
+6. **Token Limit Management**: 2000 max_tokens for complex character-based responses
+7. **IPA Integration**: Strict IPA validation (no romanization) for tonal languages
+
+#### **Agglutinative Languages (Reference: Turkish Planning)**
+1. **Suffix Sequence Analysis**: Pattern recognition for agglutinated morphemes
+2. **Harmony Rules**: Vowel harmony validation and generation
+3. **Stem Recognition**: Identification of root words vs. derived forms
+4. **Case Marker Detection**: Automatic recognition of case suffixes
+5. **Token Limit Management**: 2000 max_tokens for morphologically complex responses
+6. **IPA Integration**: Strict IPA validation for phonetic precision
+
+### Development Workflow & Quality Assurance
+
+#### **Phase 1: Linguistic Research (MANDATORY FIRST STEP)**
+```markdown
+# [language_code]_grammar_concepts.md - Create This FIRST
+
+## Language Overview
+- Family: [Language family]
+- Script: [Writing system and direction]
+- Complexity: [Morphological complexity rating]
+
+## Grammatical Categories
+- [Category 1]: [Description and examples]
+- [Category 2]: [Description and examples]
+- etc.
+
+## Key Features
+- [Feature 1]: [Linguistic description]
+- [Feature 2]: [Linguistic description]
+- etc.
+
+## Script-Specific Considerations
+- [Special handling requirements]
+- [Unicode ranges, diacritics, etc.]
+```
+
+#### **Phase 2: Implementation Planning**
+1. **Choose Base Class**: `BaseGrammarAnalyzer` vs. `IndoEuropeanAnalyzer`
+2. **Define Categories**: Language-appropriate grammatical roles
+3. **Script Direction**: LTR/RTL implications for word ordering
+4. **IPA Strategy**: Strict IPA vs. romanization based on learner needs
+5. **Token Limits**: Set appropriate max_tokens for batch processing
+
+#### **Phase 3: Core Implementation**
+```python
+# Standard analyzer structure
+class [LangCode]Analyzer(BaseGrammarAnalyzer):
+    def __init__(self):
+        config = LanguageConfig(
+            code="[lang_code]",
+            name="[Language Name]",
+            native_name="[Native Name]",
+            family="[Family]",
+            script_type="[script_type]",  # logographic/abugida/alphabet
+            complexity_rating="[low/medium/high]",
+            key_features=[list of features],
+            supported_complexity_levels=["beginner", "intermediate", "advanced"]
+        )
+        super().__init__(config)
+    
+    def _call_ai(self, prompt: str, groq_api_key: str) -> str:
+        # Gold Standard: 2000 max_tokens
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=2000,  # Prevents JSON truncation
+            temperature=0.1
+        )
+        return response.choices[0].message.content.strip()
+```
+
+#### **Phase 4: Testing & Validation**
+```python
+# Comprehensive test suite structure
+def test_[lang_code]_analyzer():
+    analyzer = [LangCode]Analyzer()
+    
+    # Test basic functionality
+    result = analyzer.analyze_grammar("test sentence", "target", "intermediate", "api_key")
+    assert result is not None
+    assert len(result.word_explanations) > 0
+    
+    # Test batch processing
+    sentences = ["sentence 1", "sentence 2", "sentence 3"]
+    batch_results = analyzer.batch_analyze_grammar(sentences, "target", "intermediate", "api_key")
+    assert len(batch_results) == len(sentences)
+    
+    # Test word ordering (LTR/RTL specific)
+    # Test IPA integration
+    # Test error handling
+```
+
+#### **Quality Gates**
+- ✅ **Linguistic Accuracy**: Categories match language's actual grammar
+- ✅ **Script Compliance**: Proper handling of writing direction and special characters
+- ✅ **Batch Processing**: Handles 8-sentence batches without failures
+- ✅ **Word Ordering**: Explanations appear in correct reading order
+- ✅ **IPA Integration**: Appropriate validation (strict IPA or romanization)
+- ✅ **Error Handling**: Graceful fallbacks and meaningful error messages
+- ✅ **Performance**: <5 second response times for batch processing
+- ✅ **Test Coverage**: >90% accuracy on test sentences
+
+### Integration Points
+
+#### **Pass 3 Integration**
+- Analyzer called by `sentence_generator.py` for grammar analysis
+- Results processed by `batch_processor.py` for HTML generation
+- Word explanations must be in list format: `[word, role, color, meaning]`
+- Colored sentences use span tags with grammar class names
+
+#### **IPA Integration**
+- `generation_utils.py` handles IPA generation and validation
+- Romanization allowed for specified languages
+- Fallback to placeholder if IPA generation fails
+
+#### **File System Integration**
+- Analyzers auto-discovered by `analyzer_registry.py`
+- Configuration loaded from language-specific config files
+- Tests run via pytest with standard naming conventions
 
 ## Target Language: {language}
 
@@ -312,15 +593,16 @@ Create language-specific prompts that:
 
 ### 5. Testing and Validation
 - Achieve >90% accuracy on test sentences
-- Handle 16-sentence batches efficiently
+- Handle 8-sentence batches efficiently (not 16 - use 8 for consistency with gold standards)
 - Support multilingual explanations
 - Include comprehensive logging
+- Test all Quality Gates before deployment
 
 ## Output Format
 **Recommended phased output:**
 1. **First response**: Complete `{language}_grammar_concepts.md` (research + architecture decision)
 2. **Second response**: Analyzer class skeleton + core patterns + validation checks
-3. **Third response**: Full implementation + batch handling adaptations
+3. **Third response**: Full implementation + batch handling adaptations (test with 8-sentence batches)
 4. **Fourth response** (optional): Tests + documentation
 
 ## Success Criteria
@@ -330,9 +612,57 @@ Create language-specific prompts that:
 - **Maintainable**: Clear documentation and extensible patterns
 - **User-Friendly**: Word explanations appear in sentence order (respecting script direction) for optimal learning experience
 
+### Quality Gates (Must Pass All Before Deployment)
+- ✅ **Linguistic Accuracy**: Categories match language's actual grammar
+- ✅ **Script Compliance**: Proper handling of writing direction and special characters
+- ✅ **Batch Processing**: Handles 8-sentence batches without failures
+- ✅ **Word Ordering**: Explanations appear in correct reading order
+- ✅ **IPA Integration**: Appropriate validation (strict IPA or romanization)
+- ✅ **Error Handling**: Graceful fallbacks and meaningful error messages
+- ✅ **Performance**: <5 second response times for batch processing
+- ✅ **Test Coverage**: >90% accuracy on test sentences
+
 ## Process Steps
 1. **FIRST**: Create **{language}_grammar_concepts.md** with complete linguistic research and concepts
 2. **THEN**: Create the analyzer implementation using the concepts document as reference
 3. **FINALLY**: Create tests and documentation
+
+### Repository Organization Note
+- **Active Code**: All current implementations in `languages/` directory with domain-driven design
+- **Archived Files**: Old test files, debugging scripts, and backups moved to `old_20260117/` directory
+- **File Structure**: Follow the standardized domain-driven design pattern for new analyzers
+
+## Common Pitfalls to Avoid
+
+### **Token Limit Issues**
+- ❌ **Don't use 1000 max_tokens** - causes JSON truncation in batch responses
+- ✅ **Always use 2000 max_tokens** for complete grammar analysis responses
+- Test with 8-sentence batches to ensure no truncation occurs
+
+### **IPA Validation Problems**
+- ❌ **Don't force strict IPA on learner languages** - Indic/Arabic scripts benefit from romanization
+- ✅ **Use romanization for**: hi, ar, fa, ur, bn, pa, gu, or, ta, te, kn, ml, si
+- ✅ **Use strict IPA for**: Chinese, European languages, tonal languages
+- Include proper diacritic validation patterns
+
+### **Word Explanation Quality**
+- ❌ **Don't accept generic descriptions** - "noun", "verb" without context
+- ✅ **Require detailed individual_meaning** - include grammatical context and specific translation
+- ✅ **Test for meaningful explanations** - validate against target language context
+
+### **Word Ordering Issues**
+- ❌ **Don't ignore script direction** - RTL languages need special handling
+- ✅ **Implement position-based reordering** - `_reorder_explanations_by_sentence_position()`
+- ✅ **Test with RTL languages** - ensure explanations match reading direction
+
+### **Architecture Mistakes**
+- ❌ **Don't create premature family base classes** - wait until you have 3+ similar languages planned
+- ✅ **Prefer BaseGrammarAnalyzer inheritance** - keep language logic in concrete classes
+- ✅ **Use domain-driven design** - separate concerns for complex languages
+
+### **Testing Oversights**
+- ❌ **Don't skip batch processing tests** - single sentence tests miss truncation issues
+- ✅ **Test 8-sentence batches** - validate complete workflow
+- ✅ **Include all Quality Gates** - comprehensive validation before deployment
 
 Begin with **{language}** and create the complete analyzer implementation following this gold standard approach.

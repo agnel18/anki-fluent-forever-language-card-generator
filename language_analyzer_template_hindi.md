@@ -1,6 +1,6 @@
 # 🌍 Language Analyzer Template: Hindi Example
 # Complete Specification for Automated Language Analyzer Generation
-# Version: 2026-01-06 (Hindi Reference Implementation)
+# Version: 2026-01-17 (Hindi Reference Implementation - Post-Fixes)
 
 ## 🎯 OVERVIEW
 
@@ -15,6 +15,56 @@ This document provides the **complete detailed specification** needed to generat
 6. Complexity Rating Justification
 7. Script Type Implications
 8. Example Sentence Analysis
+9. **NEW:** Recent Improvements and Fixes
+
+---
+
+## 🔧 RECENT IMPROVEMENTS AND FIXES (2026-01-17)
+
+### **IPA Romanization Support for Indic Languages**
+**Problem Solved:** IPA validation was rejecting romanized Hindi transliterations, leaving IPA fields blank.
+
+**Solution Implemented:**
+- Added romanization support for Indic languages (Hindi, Bengali, Gujarati, etc.)
+- Enhanced `validate_ipa_output()` to accept romanized text with diacritics
+- Updated AI prompts to request romanization instead of strict IPA for learner-friendly languages
+
+**Technical Details:**
+```python
+# Romanization allowed languages
+romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+
+# Enhanced validation for romanization
+romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
+
+if language in romanization_allowed_languages:
+    if re.match(romanization_pattern, text.strip()):
+        return True, text  # Accept romanized IPA
+```
+
+**Result:** Hindi sentences now display romanized IPA like "jātrā mēṁ upyōg hōnē vālī cīj." instead of blank fields.
+
+### **Grammar Analysis JSON Truncation Fix**
+**Problem Solved:** AI responses were truncated due to insufficient max_tokens, causing JSON parsing failures and generic fallback explanations.
+
+**Solution Implemented:**
+- Increased max_tokens from 1000 to 2000 in `hi_analyzer.py`
+- Ensures complete JSON responses for 8-sentence batch processing
+- Prevents fallback to generic "a word that describes a noun" explanations
+
+**Technical Details:**
+```python
+# In hi_analyzer.py _call_ai method
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=2000,  # Increased from 1000
+    temperature=0.1
+)
+```
+
+**Result:** Grammar analysis now provides detailed meanings like "यात्रा (noun): travel or journey" instead of generic descriptions.
 
 ---
 

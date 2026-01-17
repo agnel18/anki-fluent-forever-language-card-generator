@@ -6,7 +6,8 @@ import time
 from typing import Dict, List, Any, Optional
 import pathlib
 
-from core_functions import generate_sentences
+# Remove the circular import - will import locally where needed
+# from core_functions import generate_sentences
 from deck_exporter import create_apkg_export
 from .file_manager import FileManager
 from .log_manager import LogManager
@@ -79,6 +80,9 @@ class GenerationOrchestrator:
                 # Generate sentences for this word
                 topics = selected_topics if enable_topics and selected_topics else None
                 native_language = "English"  # Could be made configurable
+
+                # Import here to avoid circular dependency
+                from core_functions import generate_sentences
 
                 meaning, sentences = generate_sentences(
                     word=word,

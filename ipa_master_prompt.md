@@ -1,5 +1,5 @@
 # 🌍 IPA Generation Master Prompt - 77 Languages Extension
-# Version: 2026-01-07 (COMPREHENSIVE IPA COVERAGE)
+# Version: 2026-01-17 (Updated with Recent Romanization Improvements and Repository Cleanup)
 # Reference: IPAService Tiered Approach (Epitran → Phonemizer → AI)
 
 ## 🎯 MISSION
@@ -7,24 +7,26 @@ Extend IPAService to provide reliable International Phonetic Alphabet (IPA) tran
 
 ## 📊 CURRENT SITUATION (January 2026)
 
-### **✅ What's Working**
-- IPAService with basic Epitran integration
-- AI fallback via Groq API
-- `validate_ipa_output()` function with comprehensive IPA character support
-- Support for ~14 popular languages
+### **✅ What's Working (Updated 2026-01-17)**
+- IPAService with tiered approach (Epitran → Phonemizer → AI)
+- Romanization support for learner-friendly languages (13 Indic/Arabic languages)
+- Enhanced `validate_ipa_output()` with romanization validation
+- AI fallback via Groq API with improved prompts
+- Support for 40+ languages with reliable fallbacks
+- Never-empty guarantee with meaningful placeholders
 
-### **❌ Critical Issues**
-- **Limited Coverage**: Only ~14 languages supported vs. 77 needed
-- **Chinese Pinyin Problem**: Epitran returns Pinyin (xǎi àn biān) instead of IPA
-- **Empty Field Risk**: When validation fails, fields become blank, breaking learning experience
-- **No Fallback Guarantee**: Current implementation can return empty strings
-- **Missing Libraries**: No Phonemizer integration for broad coverage
+### **❌ Remaining Issues**
+- **Full 77-Language Coverage**: Need Phonemizer integration for complete coverage
+- **Chinese IPA Quality**: Still need proper IPA (not Pinyin) for Chinese languages
+- **Performance Optimization**: Some languages still exceed 3s target
+- **Complex Script Handling**: Some rare languages need additional research
 
-### **🎯 Quality Requirements**
-- **Never Empty**: Always return plausible IPA, even if validation fails
+### **🎯 Quality Requirements (Updated)**
+- **Never Empty**: Always return plausible IPA/romanization, even if validation fails
+- **Learner-Appropriate**: Use romanization for Indic/Arabic scripts, strict IPA for others
 - **Maximum Quality**: Use highest-quality source available (Epitran when possible)
 - **Broad Coverage**: Support all 77 languages reliably
-- **Validation First**: Always run `validate_ipa_output()` but don't discard valid-looking IPA
+- **Validation First**: Always run `validate_ipa_output()` but don't discard valid-looking output
 - **Performance**: <3s average response time
 - **Reliability**: <5% failure rate across all languages
 
@@ -53,11 +55,12 @@ Extend IPAService to provide reliable International Phonetic Alphabet (IPA) tran
 | **17. Eskimo-Aleut** (2) | Inuit, Aleut | High (polysynthetic) | Limited |
 | **18. Australian Aboriginal** (3) | Pitjantjatjara, Warlpiri, Arrernte | High (complex phonology) | None |
 
-**PROGRESS TRACKING:**
-- ✅ **FULLY SUPPORTED**: 14 languages (English, Spanish, Hindi, Arabic, etc.)
-- 🔄 **PARTIALLY SUPPORTED**: 40+ languages via Epitran
-- ⏳ **NEEDS IMPLEMENTATION**: 23 languages (Niger-Congo, Hmong-Mien, etc.)
-- 🎯 **TARGET**: 100% coverage with acceptable quality
+**PROGRESS TRACKING (Updated 2026-01-17):**
+- ✅ **FULLY SUPPORTED**: 40+ languages with Epitran + AI fallback
+- ✅ **ROMANIZATION SUPPORT**: 13 Indic/Arabic languages (hi, ar, fa, ur, bn, pa, gu, or, ta, te, kn, ml, si)
+- 🔄 **PARTIALLY SUPPORTED**: 30+ languages via Phonemizer integration
+- ⏳ **NEEDS IMPLEMENTATION**: 7 languages (rare/endangered languages)
+- 🎯 **TARGET**: 100% coverage with learner-appropriate output (IPA or romanization)
 
 ## 🏗️ TECHNICAL APPROACH: TIERED IPA GENERATION
 
@@ -99,7 +102,67 @@ def generate_ipa_hybrid(self, text: str, language: str, ai_ipa: str = "") -> str
     return ipa or ai_ipa or f"[IPA unavailable for {language}]"
 ```
 
-#### **2. Validation But Not Rejection**
+#### **2. Romanization Support for Learner-Friendly Languages**
+```python
+# For languages where romanization is more useful than strict IPA
+romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+
+def should_use_romanization(language: str) -> bool:
+    """Determine if romanization is preferred over strict IPA for learners."""
+    return language in romanization_allowed_languages
+
+# AI prompts adapt based on language needs
+if should_use_romanization(normalized_lang):
+    prompt = f"""Transliterate this {full_lang_name} sentence to romanized pronunciation using Latin letters.
+
+Use standard romanization conventions for {full_lang_name}. Show pronunciation clearly with familiar letters.
+
+Sentence: {sentence}
+
+Return ONLY the romanized transliteration, no explanations or additional text."""
+else:
+    prompt = f"""Transliterate this {full_lang_name} sentence to IPA (International Phonetic Alphabet) only.
+
+IMPORTANT: Use ONLY official IPA symbols. Do NOT use:
+- Pinyin romanization (no āáǎà, no ma1, no zh/ch/sh/r/z/c/s)
+- Any non-IPA romanization systems
+- Latin letters that aren't IPA symbols
+- Any delimiters like / or [ ] 
+
+Sentence: {sentence}
+
+Return ONLY the IPA transliteration, no explanations or additional text."""
+```
+
+#### **3. Enhanced Validation with Romanization Support**
+```python
+def validate_ipa_output(ipa_text: str, language: str = "zh") -> tuple[bool, str]:
+    """
+    Validates IPA or romanized text based on language requirements.
+    
+    For romanization-allowed languages, accepts romanized text with common diacritics.
+    For others, enforces strict IPA validation.
+    """
+    if not ipa_text or not ipa_text.strip():
+        return False, "Empty IPA text"
+
+    clean_text = ipa_text.strip()
+
+    # For romanization-allowed languages, accept romanized text
+    romanization_allowed = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+    if language in romanization_allowed:
+        romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+        romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
+        if re.match(romanization_pattern, clean_text):
+            return True, clean_text
+        else:
+            return False, f"Invalid romanization format for {language}"
+
+    # For strict IPA languages, use full IPA validation
+    # ... existing IPA validation logic
+```
+
+#### **4. Validation But Not Rejection**
 ```python
 def _validate_ipa(self, ipa: str, language: str) -> bool:
     """Validate but allow best-effort returns."""
@@ -109,13 +172,6 @@ def _validate_ipa(self, ipa: str, language: str) -> bool:
     # Log warning but don't discard - return best effort
     logger.warning(f"IPA validation failed: {msg}")
     return len(ipa.strip()) > 0  # Accept if not empty
-```
-
-#### **3. Chinese Special Handling**
-```python
-# Skip Epitran for Chinese (returns Pinyin)
-if language in ["Chinese (Simplified)", "Chinese (Traditional)"]:
-    epitran_result = ""  # Skip to Phonemizer
 ```
 
 ## 📋 IMPLEMENTATION PHASES

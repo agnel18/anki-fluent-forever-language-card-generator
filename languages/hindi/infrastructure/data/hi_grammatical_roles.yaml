@@ -1,0 +1,23 @@
+# languages/hindi/infrastructure/data/hi_grammatical_roles.yaml
+complexity_levels:
+  beginner: "Basic Hindi grammar analysis"
+  intermediate: "Intermediate with cases and agreement"
+  advanced: "Advanced with discourse and pragmatics"
+
+grammatical_roles:
+  noun: "Noun category"
+  verb: "Verb category"
+  pronoun: "Pronoun category"
+  adjective: "Adjective category"
+  adverb: "Adverb category"
+  postposition: "Postposition category"
+  conjunction: "Conjunction category"
+  interjection: "Interjection category"
+  particle: "Particle category"
+
+role_mappings:
+  subject: pronoun
+  object: noun
+  predicate: verb
+  modifier: adjective
+  # Add more mappings from original file

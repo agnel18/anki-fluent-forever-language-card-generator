@@ -1,0 +1,7 @@
+# languages/hindi/infrastructure/data/hi_case_markers.yaml
+nominative: "Nominative case"
+accusative: "Accusative case"
+dative: "Dative case"
+genitive: "Genitive case"
+locative: "Locative case"
+ablative: "Ablative case"

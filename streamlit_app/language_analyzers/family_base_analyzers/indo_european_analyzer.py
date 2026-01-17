@@ -354,7 +354,6 @@ CRITICAL: Analyze EVERY word in the sentence!"""
 
         logger.info(f"DEBUG Hindi HTML Gen - Input explanations count: {len(explanations)}")
         logger.info("DEBUG Hindi HTML Gen - Input sentence: '" + str(sentence) + "'")
-        logger.error("DEBUG HTML GEN CALLED: sentence='" + str(sentence) + "', explanations_count=" + str(len(explanations)))
 
         # Create mapping of words to categories directly from word_explanations (authoritative source)
         word_to_category = {}

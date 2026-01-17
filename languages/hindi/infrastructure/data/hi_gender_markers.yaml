@@ -1,0 +1,4 @@
+# languages/hindi/infrastructure/data/hi_gender_markers.yaml
+masculine: "Masculine gender markers"
+feminine: "Feminine gender markers"
+neuter: "Neuter gender markers"

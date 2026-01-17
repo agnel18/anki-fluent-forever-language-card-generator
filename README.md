@@ -2,7 +2,7 @@
 
 **Generate professional language learning Anki decks in minutes.**
 
-Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 74 languages**. Built with Groq, Edge TTS, Pixabay, and genanki.
+Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 77 languages**. Built with Groq, Edge TTS, Pixabay, and genanki.
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized context, and multi-sensory learning.
 
@@ -41,13 +41,13 @@ streamlit run app.py
 - **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
 - **Native Audio** — Edge TTS with 200+ voices, adjustable speed & pitch
 - **Beautiful Images** — Pixabay API with keyword extraction
-- **IPA Transcriptions** — Official phonetic transcriptions ([IPA Chart Reference](https://www.ipachart.com/))
+- **IPA Transcriptions** — Official phonetic transcriptions or romanization for learner-friendly languages ([IPA Chart Reference](https://www.ipachart.com/))
 - **3-Card Anki Template** — Listening, Production, Reading cards
 - **Direct Anki Import** — `.apkg` files ready to use
 - **Progress Tracking** — SQLite database saves your progress
 
 ### Advanced Features
-- **74 Languages** — Pre-built frequency word lists
+- **77 Languages** — Pre-built frequency word lists
 - **Custom Word Lists** — Upload your own CSV files
 - **Audio Controls** — Speed (0.5x-1.5x) and pitch (-20% to +20%)
 - **Rate Limit Monitoring** — Smart warnings for API limits
@@ -110,6 +110,8 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 - `/ɪ/` = "i" as in "sit"
 - `/ŋ/` = "ng" as in "sing"
 - `/k/` = "k" as in "cat"
+
+**Note**: For learner-friendly languages with complex scripts (Hindi, Arabic, Persian, etc.), we provide romanization using familiar letters instead of strict IPA symbols for easier learning.
 
 📖 **For a comprehensive IPA learning guide**, see [docs/guides/IPA_GUIDE.md](docs/guides/IPA_GUIDE.md)
 
@@ -186,6 +188,7 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 
 ## 🚀 What's New (v3.2)
 
+- ✅ **Romanization Support** — Learner-friendly pronunciation for 13 Indic/Arabic languages (hi, ar, fa, ur, bn, pa, gu, or, ta, te, kn, ml, si)
 - ✅ **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
 - ✅ **Fixed Image Display** — Images now show properly in Anki cards
 - ✅ **Repository Cleanup** — Removed obsolete files (~10MB saved)

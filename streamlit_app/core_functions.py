@@ -51,6 +51,14 @@ try:
 except ImportError as e:
     logger.warning(f"Failed to import from generation_utils: {e}. Using fallback implementations.")
 
+# Import grammar processor for sentence coloring
+try:
+    from services.generation.grammar_processor import get_grammar_processor
+    logger.info("Successfully imported grammar processor")
+except ImportError as e:
+    logger.warning(f"Failed to import grammar processor: {e}. Grammar analysis will be unavailable.")
+    get_grammar_processor = None
+
 # ============================================================================
 # MAIN ORCHESTRATOR FUNCTION
 # ============================================================================
@@ -110,6 +118,36 @@ def generate_complete_deck(
                         "critical": True
                     })
                     continue  # Skip this word entirely
+
+                # 1.5. Analyze grammar and color sentences
+                if get_grammar_processor:
+                    try:
+                        grammar_processor = get_grammar_processor()
+                        # Get language code for analyzer
+                        from language_registry import get_language_registry
+                        registry = get_language_registry()
+                        language_code = registry.get_iso_code(language)
+                        
+                        grammar_results = grammar_processor.batch_analyze_grammar_and_color(
+                            sentences=[s['sentence'] for s in sentences],
+                            target_words=[word] * len(sentences),
+                            language=language,
+                            groq_api_key=groq_api_key,
+                            language_code=language_code
+                        )
+                        
+                        # Update sentences with grammar analysis results
+                        for i, result in enumerate(grammar_results):
+                            sentences[i]['colored_sentence'] = result.get('colored_sentence', '')
+                            sentences[i]['word_explanations'] = result.get('word_explanations', [])
+                            sentences[i]['grammar_summary'] = result.get('grammar_summary', '')
+                        
+                        logger.info(f"Grammar analysis completed for {len(sentences)} sentences")
+                    except Exception as e:
+                        logger.warning(f"Grammar analysis failed for '{word}': {e}")
+                        # Continue without grammar analysis
+                else:
+                    logger.info("Grammar processor not available, skipping grammar analysis")
 
                 # 2. Generate audio (with graceful degradation)
                 try:
@@ -389,9 +427,63 @@ def generate_deck_progressive(
             log_callback(f"<b>🎨 PASS 3/6: Grammar Analysis</b>")
             log_callback(f"Breaking down sentence structure with grammar analysis for '{word}'...")
 
-        # Grammar analysis is also handled within generate_sentences
-        if log_callback:
-            log_callback(f"✅ Grammar analysis completed for '{word}'")
+        # Grammar analysis using the grammar processor
+        logger.info(f"Starting grammar analysis for '{word}' in {language}")
+        if get_grammar_processor:
+            logger.info("get_grammar_processor is available")
+            try:
+                grammar_processor = get_grammar_processor()
+                logger.info("Got grammar processor instance")
+                # Get language code for analyzer
+                from language_registry import get_language_registry
+                registry = get_language_registry()
+                language_code = registry.get_iso_code(language)
+                logger.info(f"Language code for {language}: {language_code}")
+                
+                grammar_results = grammar_processor.batch_analyze_grammar_and_color(
+                    sentences=[s['sentence'] for s in sentences],
+                    target_words=[word] * len(sentences),
+                    language=language,
+                    groq_api_key=groq_api_key,
+                    language_code=language_code
+                )
+                
+                # Update sentences with grammar analysis results
+                for i, result in enumerate(grammar_results):
+                    sentences[i]['colored_sentence'] = result.get('colored_sentence', '')
+                    sentences[i]['word_explanations'] = result.get('word_explanations', [])
+                    sentences[i]['grammar_summary'] = result.get('grammar_summary', '')
+                
+                if log_callback:
+                    log_callback(f"✅ Grammar analysis completed for {len(sentences)} sentences")
+                logger.info(f"Grammar analysis completed successfully for {len(sentences)} sentences")
+            except Exception as e:
+                logger.error(f"Grammar analysis failed for '{word}': {e}")
+                if log_callback:
+                    log_callback(f"⚠️ Grammar analysis failed for '{word}': {e}")
+                # Continue without grammar analysis
+        else:
+            logger.warning("get_grammar_processor is None")
+            if log_callback:
+                log_callback("ℹ️ Grammar processor not available, skipping grammar analysis")
+
+        # Ensure all sentences have colored_sentence (fallback to basic highlighting)
+        for i in range(len(sentences)):
+            if 'colored_sentence' not in sentences[i] or not sentences[i]['colored_sentence']:
+                # Basic fallback: highlight target word in red
+                sentence = sentences[i]['sentence']
+                words = sentence.split()
+                colored_words = []
+                for w in words:
+                    if w.lower().strip('.,!?;:"\'') == word.lower():
+                        colored_words.append(f"<span style='color: #FF6B6B; font-weight: bold;'>{w}</span>")
+                    else:
+                        colored_words.append(w)
+                sentences[i]['colored_sentence'] = ' '.join(colored_words)
+            if 'word_explanations' not in sentences[i]:
+                sentences[i]['word_explanations'] = []
+            if 'grammar_summary' not in sentences[i]:
+                sentences[i]['grammar_summary'] = ''
 
         # PASS 4: Audio Generation
         if log_callback:

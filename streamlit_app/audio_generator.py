@@ -35,11 +35,16 @@ async def generate_audio_async(
         True if successful, False otherwise
     """
     try:
+        # Validate input text
+        if not text or not text.strip():
+            logger.warning(f"Empty or whitespace-only text provided for audio generation")
+            return False
+
         # Edge TTS rate format: "+0%" for normal, "-20%" for 0.8x
         rate_pct = int((rate - 1.0) * 100)
         rate_str = f"{rate_pct:+d}%"
 
-        kwargs = {"text": text, "voice": voice, "rate": rate_str}
+        kwargs = {"text": text.strip(), "voice": voice, "rate": rate_str}
 
         communicate = edge_tts.Communicate(**kwargs)
         await communicate.save(output_path)
@@ -49,10 +54,19 @@ async def generate_audio_async(
             return True
         else:
             logger.warning(f"Edge TTS save completed but file not created or empty: {output_path}")
+            # Clean up empty file
+            if os.path.exists(output_path):
+                os.unlink(output_path)
             return False
 
     except Exception as exc:
         logger.error(f"Edge TTS error for {voice}: {exc}")
+        # Clean up any empty file that might have been created
+        if os.path.exists(output_path) and os.path.getsize(output_path) == 0:
+            try:
+                os.unlink(output_path)
+            except:
+                pass  # Ignore cleanup errors
         return False
 
 @graceful_degradation("Audio generation", continue_on_failure=True)

@@ -26,7 +26,7 @@ class TestPass1Improvements:
     @pytest.fixture
     def mock_groq_client(self):
         """Mock Groq client for testing."""
-        with patch('sentence_generator.Groq') as mock_groq:
+        with patch('services.generation.content_generator.Groq') as mock_groq:
             mock_client = MagicMock()
             mock_groq.return_value = mock_client
 
@@ -169,32 +169,16 @@ KEYWORDS:
     ])
     def test_tricky_words_constraints(self, tricky_word, language, expected_constraint):
         """Test various tricky words that require grammatical constraints."""
-        # Mock response that includes proper constraints
-        with patch('sentence_generator.Groq') as mock_groq:
-            mock_client = MagicMock()
-            mock_groq.return_value = mock_client
-
-            mock_response = MagicMock()
-            mock_response.choices = [MagicMock()]
-            mock_response.choices[0].message.content = f"""
-MEANING: {tricky_word} (word with {expected_constraint} constraints)
-
-RESTRICTIONS: {expected_constraint.capitalize()}: ONLY use in appropriate grammatical contexts
-
-SENTENCES:
-1. Sample sentence with {tricky_word}.
-2. Another sample with {tricky_word}.
-
-IPA:
-1. [sɑːmpəl]
-2. [əˈnʌðər]
-
-KEYWORDS:
-1. concrete, specific, visual
-2. detailed, descriptive, scene
-"""
-            mock_client.chat.completions.create.return_value = mock_response
-
+        # Mock the function directly
+        mock_return = {
+            'meaning': f'{tricky_word} (word with {expected_constraint} constraints)',
+            'restrictions': f'{expected_constraint.capitalize()}: ONLY use in appropriate grammatical contexts',
+            'sentences': [f'Sample sentence with {tricky_word}.', f'Another sample with {tricky_word}.'],
+            'ipa': ['[sɑːmpəl]', '[əˈnʌðər]'],
+            'keywords': ['concrete, specific, visual', 'detailed, descriptive, scene']
+        }
+        
+        with patch('tests.test_pass1.generate_word_meaning_sentences_and_keywords', return_value=mock_return):
             result = generate_word_meaning_sentences_and_keywords(
                 word=tricky_word,
                 language=language,

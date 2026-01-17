@@ -41,21 +41,55 @@ def validate_ipa_output(ipa_text: str, language: str = "zh") -> tuple[bool, str]
     # Clean the text for validation
     clean_text = ipa_text.strip()
 
+    # Check if it's in IPA slashes /text/
+    if clean_text.startswith('/') and clean_text.endswith('/'):
+        ipa_content = clean_text[1:-1]
+        return validate_ipa_slashed(ipa_content, language)
+
     # Check if it's in IPA brackets [text]
     if clean_text.startswith('[') and clean_text.endswith(']'):
         ipa_content = clean_text[1:-1]
         return validate_ipa_bracketed(ipa_content, language)
 
-    # If not in brackets, check if it's valid IPA without brackets
+    # If not in brackets or slashes, check if it's valid IPA without brackets
     return validate_ipa_unbracketed(clean_text, language)
+
+
+def validate_ipa_slashed(ipa_content: str, language: str) -> tuple[bool, str]:
+    """Validate IPA content within slashes / /."""
+    # Same validation as bracketed IPA
+    pulmonic_consonants = 'pbtdʈɖcɟkɡgqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧś'
+    non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
+    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃āīūē'
+    diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
+    tones_stress = 'ˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'
+    other_symbols = '.,;:!?\'"() '
+
+    allowed_chars = pulmonic_consonants + non_pulmonic + vowels + diacritics + tones_stress + other_symbols
+
+    # Check for invalid characters
+    invalid_chars = []
+    for char in ipa_content:
+        if char not in allowed_chars:
+            invalid_chars.append(char)
+
+    if invalid_chars:
+        return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in /{ipa_content}/"
+
+    # Check for Pinyin patterns within IPA (shouldn't happen in valid IPA)
+    # Only reject Pinyin tone marks for Chinese languages
+    if language in ['zh', 'zh-tw'] and any(char in ipa_content for char in PINYIN_TONE_MARKS):
+        return False, f"Detected Pinyin tone marks in IPA: /{ipa_content}/"
+
+    return True, ipa_content
 
 
 def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
     """Validate IPA content within brackets [ ]."""
     # Comprehensive IPA character set - includes all official IPA symbols
-    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧ'
+    pulmonic_consonants = 'pbtdʈɖcɟkɡgqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧś'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
-    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
+    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃āīūē'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
     tones_stress = 'ˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'
     other_symbols = '.,;:!?\'"() '
@@ -76,11 +110,7 @@ def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
     if language in ['zh', 'zh-tw'] and any(char in ipa_content for char in PINYIN_TONE_MARKS):
         return False, f"Detected Pinyin tone marks in IPA: [{ipa_content}]"
 
-    # For bracketed IPA, we accept any text that contains only valid IPA characters
-    # The key is rejecting Pinyin patterns, not enforcing complex IPA structure rules
-    return True, f"Valid IPA: [{ipa_content}]"
-
-    return True, f"Valid IPA: [{ipa_content}]"
+    return True, ipa_content
 
 
 def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
@@ -106,15 +136,25 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
         return False, f"Detected Pinyin tone marks: {text}"
 
     # For Chinese and other logographic languages, reject plain ASCII words
-    if language in ['zh', 'ja', 'ko']:
+    # But allow romanization for languages that commonly use it (like Hindi, Arabic, etc.)
+    romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+    
+    if language in ['zh', 'ja', 'ko'] and language not in romanization_allowed_languages:
         # If it contains only ASCII letters and spaces, it's likely romanization/Pinyin
         if re.match(r'^[a-zA-Z\s]+$', text.strip()):
             return False, f"Detected romanization (plain ASCII text): {text}"
+    
+    # For languages that allow romanization, accept romanized text with common diacritics
+    romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+    if language in romanization_allowed_languages:
+        romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
+        if re.match(romanization_pattern, text.strip()):
+            return True, text
 
     # Check if it contains only valid IPA symbols (unbracketed IPA is also valid)
-    pulmonic_consonants = 'pbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧ'
+    pulmonic_consonants = 'pbtdʈɖcɟkɡgqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟʤʧś'
     non_pulmonic = 'ʼʍwɥʜʢʡɕʑɺɧ'
-    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃'
+    vowels = 'iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒɚɝíéáóúãẽĩõũỹɒ̃āīūē'
     diacritics = '̴̴̵̶̷̸̡̢̥̬̤̰̼̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼̊̽̾̿͡ʰ'
     tones_stress = 'ˈˌːˑʼʲʷʸˠˤ˞̴̵̶̷̸̙̘̗̖̝̞̟̠̜̹̜̹̪̺̻̼̩̯̰̪̫̬̭̮̯̰̱̲̳̹̺̻̼̚꜀꜁꜂꜃꜄꜅꜆꜇꜈꜉꜊꜋꜌꜍꜎꜏꜐꜑꜒꜓꜔꜕꜖ꜗꜘꜙꜚꜛꜜꜝꜞꜟ꜠꜡Ꜣꜣ˥˦˧˨˩̋̌̂᷄᷅᷆᷇᷈᷉'
     other_symbols = '.,;:!?\'"() '
@@ -135,7 +175,7 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
         else:
             return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in {text}"
 
-    return True, f"Valid IPA: {text}"
+    return True, text
 
 
 def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
@@ -163,12 +203,25 @@ def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
         client = Groq(api_key=groq_api_key)
 
         # Enhanced prompt for IPA-only output using full language name
-        prompt = f"""Transliterate this {full_lang_name} sentence to IPA (International Phonetic Alphabet) only.
+        # For some languages, romanization is more useful than strict IPA
+        romanization_allowed = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+        
+        if normalized_lang in romanization_allowed:
+            prompt = f"""Transliterate this {full_lang_name} sentence to romanized pronunciation using Latin letters.
+
+Use standard romanization conventions for {full_lang_name}. Show pronunciation clearly with familiar letters.
+
+Sentence: {sentence}
+
+Return ONLY the romanized transliteration, no explanations or additional text."""
+        else:
+            prompt = f"""Transliterate this {full_lang_name} sentence to IPA (International Phonetic Alphabet) only.
 
 IMPORTANT: Use ONLY official IPA symbols. Do NOT use:
 - Pinyin romanization (no āáǎà, no ma1, no zh/ch/sh/r/z/c/s)
 - Any non-IPA romanization systems
 - Latin letters that aren't IPA symbols
+- Any delimiters like / or [ ]
 
 Sentence: {sentence}
 
@@ -192,7 +245,14 @@ Return ONLY the IPA transliteration, no explanations or additional text."""
         else:
             logger.warning(f"Invalid IPA generated: {result}")
             # Try one more time with stricter instructions
-            fallback_prompt = f"""Convert to IPA only. NO Pinyin, NO romanization, ONLY IPA symbols:
+            if normalized_lang in romanization_allowed:
+                fallback_prompt = f"""Convert to romanized pronunciation using Latin letters:
+
+{sentence}
+
+Romanization:"""
+            else:
+                fallback_prompt = f"""Convert to IPA only. NO Pinyin, NO romanization, NO delimiters like / or [ ], ONLY IPA symbols:
 
 {sentence}
 

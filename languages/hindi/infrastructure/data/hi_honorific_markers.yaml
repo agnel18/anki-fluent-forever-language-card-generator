@@ -1,0 +1,4 @@
+# languages/hindi/infrastructure/data/hi_honorific_markers.yaml
+formal: "Formal honorifics"
+informal: "Informal honorifics"
+intimate: "Intimate honorifics"
