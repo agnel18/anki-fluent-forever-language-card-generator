@@ -70,22 +70,26 @@ class ContentGenerator:
         if not groq_api_key:
             raise ValueError("Groq API key required")
 
+        # Validate API key format
+        if not groq_api_key.startswith('gsk_'):
+            logger.error(f"Invalid API key format: does not start with 'gsk_'")
+            raise ValueError("Invalid Groq API key format")
+        
+        if len(groq_api_key) < 20:
+            logger.error(f"API key too short: {len(groq_api_key)} characters")
+            raise ValueError("Groq API key too short")
+
         logger.info(f"Content generation called with word='{word}', language='{language}', num_sentences={num_sentences}")
         logger.info(f"API key provided: {'YES' if groq_api_key else 'NO'} (length: {len(groq_api_key) if groq_api_key else 0})")
+        if groq_api_key:
+            logger.info(f"API key starts with: {groq_api_key[:10]}... (ends with: ...{groq_api_key[-10:] if len(groq_api_key) > 10 else groq_api_key})")
 
         try:
             client = self._get_client(groq_api_key)
             logger.info("Groq client created successfully")
             
-            # Test basic connectivity (optional debug)
-            try:
-                import requests
-                test_response = requests.get("https://api.groq.com/openai/v1/models", 
-                                           headers={"Authorization": f"Bearer {groq_api_key}"}, 
-                                           timeout=5)
-                logger.info(f"Groq API connectivity test: {test_response.status_code}")
-            except Exception as conn_e:
-                logger.warning(f"Connectivity test failed: {conn_e} - proceeding with API call anyway")
+            # Skip connectivity test in online environments as it may not work
+            # and could cause delays
 
             # Build context instruction based on topics
             if topics:
@@ -226,7 +230,7 @@ IMPORTANT:
 - Ensure exactly {num_sentences} sentences, translations, and keywords"""
 
             # Try the primary model, fallback to alternative if needed
-            models_to_try = ["llama-3.3-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768"]
+            models_to_try = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"]
             
             response = None
             last_error = None
