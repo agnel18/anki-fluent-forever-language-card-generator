@@ -71,9 +71,21 @@ class ContentGenerator:
             raise ValueError("Groq API key required")
 
         logger.info(f"Content generation called with word='{word}', language='{language}', num_sentences={num_sentences}")
+        logger.info(f"API key provided: {'YES' if groq_api_key else 'NO'} (length: {len(groq_api_key) if groq_api_key else 0})")
 
         try:
             client = self._get_client(groq_api_key)
+            logger.info("Groq client created successfully")
+            
+            # Test basic connectivity (optional debug)
+            try:
+                import requests
+                test_response = requests.get("https://api.groq.com/openai/v1/models", 
+                                           headers={"Authorization": f"Bearer {groq_api_key}"}, 
+                                           timeout=5)
+                logger.info(f"Groq API connectivity test: {test_response.status_code}")
+            except Exception as conn_e:
+                logger.warning(f"Connectivity test failed: {conn_e} - proceeding with API call anyway")
 
             # Build context instruction based on topics
             if topics:
@@ -213,23 +225,63 @@ IMPORTANT:
 - Keywords must be comma-separated
 - Ensure exactly {num_sentences} sentences, translations, and keywords"""
 
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,  # Creativity for sentence variety
-                max_tokens=2000,  # Enough for meaning + sentences + keywords
-            )
+            # Try the primary model, fallback to alternative if needed
+            models_to_try = ["llama-3.3-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768"]
+            
+            response = None
+            last_error = None
+            
+            for model in models_to_try:
+                try:
+                    logger.info(f"Attempting API call with model: {model}")
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.7,  # Creativity for sentence variety
+                        max_tokens=2000,  # Enough for meaning + sentences + keywords
+                        timeout=30.0  # 30 second timeout for online environments
+                    )
+                    logger.info(f"API call successful with model: {model}")
+                    break
+                except Exception as model_e:
+                    logger.warning(f"Model {model} failed: {str(model_e)}")
+                    last_error = model_e
+                    continue
+            
+            if response is None:
+                raise last_error or Exception("All models failed")
 
+            logger.info("API call completed successfully")
             response_text = response.choices[0].message.content.strip()
-            logger.info(f"Content generation raw response: {response_text}")
+            logger.info(f"Content generation raw response length: {len(response_text)}")
+            logger.debug(f"Content generation raw response: {response_text[:500]}...")
 
             # Parse the response
             result = self._parse_generation_response(response_text, word, language, num_sentences, max_length)
             return result
 
         except Exception as e:
-            logger.error(f"Error in content generation: {e}")
-            # Return fallback structure
+            logger.error(f"Content generation failed for word '{word}': {str(e)}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            
+            # Try to provide more specific error information
+            error_msg = str(e).lower()
+            if "timeout" in error_msg:
+                logger.error("API call timed out - possible network issue in online environment")
+            elif "connection" in error_msg:
+                logger.error("Connection error - possible network/firewall issue")
+            elif "rate limit" in error_msg or "429" in error_msg:
+                logger.error("Rate limit exceeded")
+            elif "unauthorized" in error_msg or "401" in error_msg:
+                logger.error("API key invalid or unauthorized")
+            elif "forbidden" in error_msg or "403" in error_msg:
+                logger.error("API access forbidden")
+            else:
+                logger.error(f"Unknown API error: {str(e)}")
+            
+            # Return fallback structure with error indication
             return self._create_fallback_response(word, num_sentences)
 
     def _parse_generation_response(self, response_text: str, word: str, language: str, num_sentences: int, max_length: int) -> Dict[str, Any]:
