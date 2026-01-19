@@ -1,0 +1,15 @@
+# Chinese Simplified Patterns Configuration
+# Additional patterns for validation and processing
+
+# Character validation patterns
+han_range: "\\u4e00-\\u9fff"
+pinyin_pattern: "[a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü]+[1-5]?"
+
+# Sentence structure patterns
+topic_comment_pattern: ".+(.+)"  # Basic topic-comment structure
+serial_verb_pattern: ".+(.)+(.)+"  # Multiple verbs without conjunction
+
+# Validation patterns
+min_sentence_length: 1
+max_word_length: 10
+required_han_ratio: 0.5  # Minimum ratio of Han characters in sentence

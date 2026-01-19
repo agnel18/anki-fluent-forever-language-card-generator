@@ -1,8 +1,8 @@
-# languages/hindi/domain/hi_response_parser.py
+# languages/zh/domain/zh_response_parser.py
 """
-Hindi Response Parser - Domain Component
+Chinese Simplified Response Parser - Domain Component
 
-GOLD STANDARD RESPONSE PARSING:
+CHINESE RESPONSE PARSING:
 This component demonstrates robust AI response handling with comprehensive fallbacks.
 It parses JSON responses, applies transformations, and provides graceful error recovery.
 
@@ -16,13 +16,13 @@ RESPONSIBILITIES:
 FALLBACK HIERARCHY:
 1. Primary: Successful AI parsing and transformation
 2. Secondary: Pattern-based parsing with partial recovery
-3. Tertiary: Rule-based fallbacks using language patterns
-4. Quaternary: Basic word-splitting fallbacks
+3. Tertiary: Rule-based fallbacks using Chinese patterns
+4. Quaternary: Basic character-splitting fallbacks
 
-USAGE FOR NEW LANGUAGES:
+USAGE FOR CHINESE:
 1. Copy parsing logic structure
-2. Update JSON field mappings for language-specific roles
-3. Implement language-appropriate fallback patterns
+2. Update JSON field mappings for Chinese-specific roles
+3. Implement Chinese-appropriate fallback patterns
 4. Test with various AI response formats (clean JSON, markdown, errors)
 5. Ensure fallbacks maintain reasonable quality
 
@@ -36,16 +36,16 @@ INTEGRATION:
 import json
 import logging
 from typing import List, Dict, Any
-from .hi_config import HiConfig
-from .hi_fallbacks import HiFallbacks
+from .zh_config import ZhConfig
+from .zh_fallbacks import ZhFallbacks
 
 logger = logging.getLogger(__name__)
 
-class HiResponseParser:
+class ZhResponseParser:
     """
     Parses AI responses, cleans data, and applies fallbacks.
 
-    GOLD STANDARD PARSING STRATEGY:
+    CHINESE PARSING STRATEGY:
     - JSON extraction: Handle various response formats (clean, markdown, malformed)
     - Error detection: Identify and handle AI error responses
     - Batch processing: Parse multiple results with individual fallbacks
@@ -59,7 +59,7 @@ class HiResponseParser:
     - Consistent output format regardless of success/failure
     """
 
-    def __init__(self, config: HiConfig):
+    def __init__(self, config: ZhConfig):
         """
         Initialize parser with configuration and fallbacks.
 
@@ -70,42 +70,42 @@ class HiResponseParser:
         4. Enables testing with mock components
         """
         self.config = config
-        self.fallbacks = HiFallbacks(config)
-    
+        self.fallbacks = ZhFallbacks(config)
+
     def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str = None) -> Dict[str, Any]:
         """Parse single response with fallbacks."""
         logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
         try:
             json_data = self._extract_json(ai_response)
-            
+
             # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
-            
+
             return self._transform_to_standard_format(json_data, complexity, target_word)
         except Exception as e:
             logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
             return self.fallbacks.create_fallback(sentence, complexity)
-    
+
     def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
         """Parse batch response with per-result fallbacks."""
         logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
         try:
             json_data = self._extract_json(ai_response)
-            
+
             # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
-            
+
             if isinstance(json_data, list):
                 batch_results = json_data
             else:
                 batch_results = json_data.get('batch_results', [])
-            
+
             # If no valid batch results, treat as error
             if not batch_results:
                 raise ValueError("No valid batch results in AI response")
-                
+
             results = []
             for i, item in enumerate(batch_results):
                 if i < len(sentences):
@@ -117,16 +117,16 @@ class HiResponseParser:
                         results.append(self.fallbacks.create_fallback(sentences[i], complexity))
                 else:
                     results.append(self.fallbacks.create_fallback(sentences[i], complexity))
-            
+
             # If we don't have results for all sentences, add fallbacks
             while len(results) < len(sentences):
                 results.append(self.fallbacks.create_fallback(sentences[len(results)], complexity))
-                
+
             return results
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
             return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
-    
+
     def _extract_json(self, response: str) -> Dict[str, Any]:
         """Extract JSON from AI response."""
         logger.info(f"DEBUG: Extracting JSON from response: {response[:1000]}...")
@@ -144,7 +144,7 @@ class HiResponseParser:
             logger.error(f"DEBUG: Failed to extract JSON from response: {e}")
             logger.error(f"DEBUG: Response that failed: {response}")
             raise
-    
+
     def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
         """Transform parsed data to standard format."""
         # Simplified: apply role mapping, etc. from config
@@ -152,7 +152,7 @@ class HiResponseParser:
         elements = {}
         word_explanations = []
         colors = self._get_color_scheme(complexity)
-        
+
         for word_data in words:
             word = word_data.get('word', '')
             role = word_data.get('grammatical_role', 'other')
@@ -163,18 +163,18 @@ class HiResponseParser:
             color = colors.get(standard_role, '#AAAAAA')
             explanation = word_data.get('individual_meaning', standard_role)
             word_explanations.append([word, standard_role, color, explanation])
-            
+
             if standard_role not in elements:
                 elements[standard_role] = []
             elements[standard_role].append(word_data)
-        
+
         return {
             'sentence': data.get('sentence', ''),
             'elements': elements,
             'explanations': data.get('explanations', {}),
             'word_explanations': word_explanations
         }
-    
+
     def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Get color scheme based on complexity."""
         return self.config.get_color_scheme(complexity)

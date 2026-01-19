@@ -1,28 +1,28 @@
-# languages/hindi/domain/hi_fallbacks.py
+# languages/zh/domain/zh_fallbacks.py
 """
-Hindi Fallbacks - Domain Component
+Chinese Simplified Fallbacks - Domain Component
 
-GOLD STANDARD FALLBACK SYSTEM:
-This component demonstrates comprehensive error recovery for grammar analysis.
+CHINESE FALLBACK SYSTEM:
+This component demonstrates comprehensive error recovery for Chinese grammar analysis.
 It provides rule-based fallbacks when AI parsing fails, ensuring users always get results.
 
 RESPONSIBILITIES:
 1. Generate basic grammar analysis when AI fails
-2. Apply rule-based role assignment using language patterns
+2. Apply rule-based role assignment using Chinese patterns
 3. Provide meaningful explanations for fallback results
 4. Maintain consistent output format with AI results
 5. Use configuration data for accurate fallback assignments
 
 FALLBACK STRATEGIES:
 1. Dictionary lookup: Pre-defined meanings for known words
-2. Pattern matching: Regex-based role detection
-3. Morphological analysis: Suffix/prefix-based role guessing
-4. Contextual defaults: Language-appropriate default assignments
+2. Pattern matching: Character-based role detection for particles/aspect
+3. Morphological analysis: Basic compound word recognition
+4. Contextual defaults: Chinese-appropriate default assignments
 5. Color coding: Consistent with main analyzer color schemes
 
-USAGE FOR NEW LANGUAGES:
+USAGE FOR CHINESE:
 1. Copy fallback structure and pattern logic
-2. Implement language-specific role guessing rules
+2. Implement Chinese-specific role guessing rules (particles, aspect, classifiers)
 3. Create comprehensive word lists for target language
 4. Test fallbacks provide reasonable quality
 5. Ensure fallbacks maintain user experience continuity
@@ -36,60 +36,61 @@ INTEGRATION:
 
 import logging
 from typing import Dict, Any
-from .hi_config import HiConfig
+from .zh_config import ZhConfig
 
 logger = logging.getLogger(__name__)
 
-class HiFallbacks:
+class ZhFallbacks:
     """
     Provides fallback responses when parsing fails.
 
-    GOLD STANDARD FALLBACK DESIGN:
+    CHINESE FALLBACK DESIGN:
     - Rule-based analysis: Linguistic patterns over random guessing
-    - Configuration-driven: Uses language-specific data and patterns
+    - Configuration-driven: Uses Chinese-specific data and patterns
     - Quality preservation: Better than no analysis, guides improvement
     - Consistent format: Same output structure as AI results
     - Logging: Tracks fallback usage for monitoring
 
     FALLBACK QUALITY PRINCIPLES:
     - Better than nothing: Useful even if not perfect
-    - Language-aware: Uses real Hindi grammar patterns
+    - Language-aware: Uses real Chinese grammar patterns
     - Consistent: Same logic produces same results
     - Maintainable: Easy to improve with new patterns
     """
 
-    def __init__(self, config: HiConfig):
+    def __init__(self, config: ZhConfig):
         """
         Initialize fallbacks with configuration.
 
         CONFIGURATION INTEGRATION:
         1. Access to pre-defined word meanings
-        2. Common postpositions and particles
-        3. Gender, case, and honorific markers
+        2. Common classifiers and particles
+        3. Aspect markers and structural particles
         4. Pattern definitions for rule-based analysis
         5. Color schemes for consistent output
         """
         self.config = config
-    
+
     def create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
         """Create a basic fallback analysis."""
         logger.info(f"Creating fallback analysis for sentence: '{sentence}'")
-        words = sentence.split()
+        # For Chinese, split by spaces (assuming pre-segmented) or by characters
+        words = sentence.split() if ' ' in sentence else list(sentence)  # Character-level fallback
         word_explanations = []
         elements = {}
-        
+
         for word in words:
             # Try to get meaning from config
             meaning = self.config.word_meanings.get(word, self._generate_fallback_explanation(word))
             role = self._guess_role(word)
             color = self._get_fallback_color(role)
-            
+
             word_explanations.append([word, role, color, meaning])
-            
+
             if role not in elements:
                 elements[role] = []
             elements[role].append({'word': word, 'grammatical_role': role})
-        
+
         result = {
             'sentence': sentence,
             'elements': elements,
@@ -100,49 +101,73 @@ class HiFallbacks:
         }
         logger.info(f"Fallback created with {len(word_explanations)} word explanations")
         return result
-    
+
     def _guess_role(self, word: str) -> str:
         """Guess grammatical role based on word characteristics."""
-        # Clean the word for better matching
-        clean_word = word.strip('।!?.,;:\"\'()[]{}')
-        
+        # Clean the word
+        clean_word = word.strip('。！？，、；："''（）【】{}')
+
+        # Aspect markers (very important in Chinese)
+        if clean_word in ['了', '着', '过']:
+            return 'aspect_marker'
+
+        # Modal particles
+        if clean_word in ['吗', '呢', '吧', '啊', '呀', '啦', '嘛']:
+            return 'modal_particle'
+
+        # Structural particles
+        if clean_word in ['的', '地', '得']:
+            return 'structural_particle'
+
+        # General particles
+        if clean_word in ['了', '着', '过', '的', '地', '得', '吗', '呢', '吧', '啊']:
+            return 'particle'
+
+        # Common classifiers
+        if clean_word in self.config.classifiers:
+            return 'classifier'
+
         # Pronouns
-        if clean_word in ['मैं', 'तुम', 'यह', 'वह', 'हम', 'तुम्हें', 'वे', 'उस', 'इन', 'उन', 'मुझ', 'तुझ', 'उसको', 'हमको']:
+        if clean_word in ['我', '你', '他', '她', '它', '我们', '你们', '他们', '她们', '这', '那', '这些', '那些']:
             return 'pronoun'
-        
-        # Postpositions (common ones)
-        if clean_word in self.config.postpositions:
-            return 'postposition'
-        
+
         # Question words
-        if clean_word in ['क्या', 'कौन', 'कहाँ', 'कब', 'कैसे', 'क्यों', 'कितना', 'कितने']:
+        if clean_word in ['什么', '谁', '哪里', '什么时候', '怎么', '为什么', '多少', '几']:
             return 'interrogative'
-        
+
         # Conjunctions
-        if clean_word in ['और', 'या', 'पर', 'लेकिन', 'किंतु', 'अतः', 'इसलिए', 'तथा']:
+        if clean_word in ['和', '与', '或', '但是', '因为', '所以', '如果', '虽然']:
             return 'conjunction'
-        
-        # Verb endings (basic heuristics)
-        if clean_word.endswith(('ता', 'ना', 'या', 'गा', 'गी', 'गे', 'कर', 'करता', 'करती', 'करते')):
-            return 'verb'
-        
-        # Adjective endings
-        if clean_word.endswith(('ा', 'ी', 'े', 'ू')) and len(clean_word) > 2:
-            return 'adjective'
-        
+
+        # Prepositions
+        if clean_word in ['在', '从', '到', '给', '对', '向', '跟', '被']:
+            return 'preposition'
+
         # Numbers
-        if clean_word.isdigit() or clean_word in ['एक', 'दो', 'तीन', 'चार', 'पाँच', 'छह', 'सात', 'आठ', 'नौ', 'दस']:
+        if clean_word.isdigit() or clean_word in ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '百', '千', '万']:
             return 'numeral'
-        
-        # Default to noun for most other words
+
+        # Interjections
+        if clean_word in ['啊', '哦', '哎呀', '嗯', '唉']:
+            return 'interjection'
+
+        # Verb-like endings or common verbs (basic heuristics)
+        if len(clean_word) >= 2 and any(clean_word.endswith(suffix) for suffix in ['了', '着', '过', '来', '去', '到']):
+            return 'verb'
+
+        # Adjective-like (basic heuristics - adjectives often end with 的 or are single syllable)
+        if len(clean_word) == 1 or clean_word.endswith('的'):
+            return 'adjective'
+
+        # Default to noun for most other words (most common in Chinese)
         return 'noun'
-    
+
     def _get_fallback_color(self, role: str) -> str:
         """Get color for fallback role."""
         # Use the same color scheme as the main analyzer
         colors = self.config.get_color_scheme('intermediate')
         return colors.get(role, '#AAAAAA')
-    
+
     def _generate_fallback_explanation(self, word: str) -> str:
         """Generate a basic explanation for a word when no specific meaning is available."""
         role = self._guess_role(word)
@@ -151,11 +176,16 @@ class HiFallbacks:
             'verb': 'an action or state of being',
             'adjective': 'a word that describes a noun',
             'pronoun': 'a word that replaces a noun',
-            'postposition': 'a word that shows relationship or direction',
-            'adverb': 'a word that describes a verb, adjective, or adverb',
-            'conjunction': 'a word that connects clauses or sentences',
-            'interrogative': 'a question word',
+            'particle': 'a grammatical function word',
+            'aspect_marker': 'a marker indicating action completion, ongoing state, or experience',
+            'modal_particle': 'a particle expressing mood, tone, or attitude',
+            'structural_particle': 'a particle connecting elements in a sentence',
+            'classifier': 'a measure word used with numerals and nouns',
+            'preposition': 'a word showing relationship or direction',
+            'conjunction': 'a word connecting clauses or sentences',
+            'interjection': 'an exclamation or sound',
             'numeral': 'a number',
+            'interrogative': 'a question word',
             'other': 'a word in the sentence'
         }
-        return role_descriptions.get(role, f'a {role} in Hindi')
+        return role_descriptions.get(role, f'a {role} in Chinese')

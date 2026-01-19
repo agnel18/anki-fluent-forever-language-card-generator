@@ -2,7 +2,7 @@
 # Central source of truth for language mappings and configurations
 
 import logging
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, List
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class LanguageRegistry:
             family='Sino-Tibetan',
             script_type='logographic',
             complexity='high'
-        ))
+        ), variant_names=['Chinese (Simplified)', 'Chinese Simplified', '简体中文'])
 
         self._add_language(LanguageConfig(
             iso_code='zh-tw',
@@ -55,7 +55,7 @@ class LanguageRegistry:
             family='Sino-Tibetan',
             script_type='logographic',
             complexity='high'
-        ))
+        ), variant_names=['Chinese (Traditional)', 'Chinese Traditional', '繁体中文'])
 
         self._add_language(LanguageConfig(
             iso_code='hi',
@@ -170,11 +170,16 @@ class LanguageRegistry:
 
         logger.info(f"Loaded {len(self._languages)} language configurations")
 
-    def _add_language(self, config: LanguageConfig):
+    def _add_language(self, config: LanguageConfig, variant_names: List[str] = None):
         """Add a language configuration to the registry."""
         self._languages[config.iso_code] = config
         self._iso_to_full[config.iso_code] = config.full_name
         self._full_to_iso[config.full_name] = config.iso_code
+
+        # Add variant names if provided
+        if variant_names:
+            for variant in variant_names:
+                self._full_to_iso[variant] = config.iso_code
 
     def get_config(self, identifier: str) -> Optional[LanguageConfig]:
         """

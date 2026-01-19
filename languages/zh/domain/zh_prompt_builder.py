@@ -1,15 +1,15 @@
-# languages/hindi/domain/hi_prompt_builder.py
+# languages/zh/domain/zh_prompt_builder.py
 """
-Hindi Prompt Builder - Domain Component
+Chinese Simplified Prompt Builder - Domain Component
 
-GOLD STANDARD PROMPT BUILDING:
-This component demonstrates how to construct effective AI prompts for grammar analysis.
+CHINESE PROMPT BUILDING:
+This component demonstrates how to construct effective AI prompts for Chinese grammar analysis.
 It uses Jinja2 templates for maintainable, parameterized prompts.
 
 RESPONSIBILITIES:
 1. Build single-sentence analysis prompts
 2. Build batch analysis prompts for multiple sentences
-3. Parameterize prompts with language-specific context
+3. Parameterize prompts with Chinese-specific context
 4. Ensure prompts produce consistent JSON output
 5. Handle template rendering errors gracefully
 
@@ -17,19 +17,19 @@ PROMPT ENGINEERING PRINCIPLES:
 - Clear instructions: Explicit JSON structure requirements
 - Contextual information: Include complexity level and target word
 - Error prevention: Specify exact field names and formats
-- Language specificity: Hindi-appropriate grammatical categories
+- Language specificity: Chinese-appropriate grammatical categories
 - Consistency: Same structure for single and batch prompts
 
-USAGE FOR NEW LANGUAGES:
+USAGE FOR CHINESE:
 1. Copy template structure and modify content
-2. Update grammatical role lists for target language
-3. Adjust examples and instructions for language-specific features
+2. Update grammatical role lists for Chinese features
+3. Adjust examples and instructions for Chinese-specific features
 4. Test prompts produce valid JSON with expected structure
-5. Include language-specific prompt context and examples
+5. Include Chinese-specific prompt context and examples
 
 INTEGRATION:
 - Called by main analyzer for prompt generation
-- Receives configuration from HiConfig
+- Receives configuration from ZhConfig
 - Templates support parameterization for different contexts
 - Error handling prevents crashes from template issues
 """
@@ -37,17 +37,17 @@ INTEGRATION:
 import logging
 from typing import List
 from jinja2 import Template
-from .hi_config import HiConfig
+from .zh_config import ZhConfig
 
 logger = logging.getLogger(__name__)
 
-class HiPromptBuilder:
+class ZhPromptBuilder:
     """
-    Builds prompts for Hindi grammar analysis using templates.
+    Builds prompts for Chinese Simplified grammar analysis using templates.
 
-    GOLD STANDARD TEMPLATE SYSTEM:
+    CHINESE TEMPLATE SYSTEM:
     - Jinja2 templates: Maintainable and parameterized
-    - Language-specific: Hindi-appropriate instructions and examples
+    - Language-specific: Chinese-appropriate instructions and examples
     - Structured output: Explicit JSON format requirements
     - Error handling: Graceful fallbacks for template failures
 
@@ -56,9 +56,10 @@ class HiPromptBuilder:
     - Target word highlighting: Special handling for focus words
     - Batch support: Efficient multi-sentence processing
     - JSON validation: Clear structure requirements
+    - Chinese-specific: Aspect markers, classifiers, particles
     """
 
-    def __init__(self, config: HiConfig):
+    def __init__(self, config: ZhConfig):
         """
         Initialize with configuration.
 
@@ -71,7 +72,7 @@ class HiPromptBuilder:
         self.config = config
         self.single_template = Template(self.config.prompt_templates['single'])
         self.batch_template = Template(self.config.prompt_templates['batch'])
-    
+
     def build_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str:
         """Build prompt for single sentence analysis."""
         try:
@@ -87,8 +88,8 @@ class HiPromptBuilder:
             return prompt
         except Exception as e:
             logger.error(f"Failed to build single prompt for '{sentence}': {e}")
-            return f"Analyze this Hindi sentence: {sentence}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide JSON response with grammatical analysis."
-    
+            return f"Analyze this Chinese sentence: {sentence}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide JSON response with grammatical analysis."
+
     def build_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str:
         """Build prompt for batch analysis."""
         try:
@@ -105,4 +106,4 @@ class HiPromptBuilder:
         except Exception as e:
             logger.error(f"Failed to build batch prompt: {e}")
             sentences_text = '\n'.join(sentences)
-            return f"Analyze these Hindi sentences:\n{sentences_text}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide batch JSON response."
+            return f"Analyze these Chinese sentences:\n{sentences_text}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide batch JSON response."

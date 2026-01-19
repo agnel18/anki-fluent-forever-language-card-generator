@@ -110,7 +110,7 @@ For each word:
 ```
 
 ### Organized File Structure:
-All language files are now organized in the `languages/` directory with a standardized structure:
+All language files are now organized in the `languages/` directory with a standardized structure. **ALL FILES MUST BE KEPT WITHIN THEIR RESPECTIVE LANGUAGE FOLDERS** for proper organization and maintainability.
 
 ```
 languages/
@@ -118,74 +118,111 @@ languages/
 │   ├── ar_analyzer.py               # Complete RTL analyzer with word reordering
 │   ├── ar_grammar_concepts.md       # Linguistic research documentation
 │   ├── ar_analyzer_documentation.md # Technical implementation details
-│   └── tests/
-│       └── test_ar_analyzer.py      # Comprehensive test suite
-│
-├── hindi/                           # LTR Reference Implementation
-│   ├── hi_analyzer.py               # Enhanced with 2000 token limits
-│   ├── hi_analyzer_enhancement.md   # Recent improvements documentation
-│   ├── hi_config.py                 # Language-specific configuration
-│   ├── hi_prompt_builder.py         # AI prompt generation
-│   ├── hi_response_parser.py        # Response parsing logic
-│   ├── hi_fallbacks.py              # Fallback analysis patterns
-│   ├── hi_validator.py              # Validation rules
 │   ├── domain/                      # Domain-driven design components
-│   │   ├── hi_config.py
-│   │   ├── hi_prompt_builder.py
-│   │   ├── hi_response_parser.py
-│   │   ├── hi_fallbacks.py
-│   │   └── hi_validator.py
+│   │   ├── ar_config.py            # Language-specific configuration
+│   │   ├── ar_prompt_builder.py    # AI prompt generation
+│   │   ├── ar_response_parser.py   # Response parsing logic
+│   │   ├── ar_fallbacks.py         # Fallback analysis patterns
+│   │   └── ar_validator.py         # Validation rules
 │   └── tests/
-│       └── test_hi_analyzer.py
+│       └── test_ar_analyzer.py     # Comprehensive test suite
+│
+├── hindi/                           # LTR Reference Implementation (GOLD STANDARD)
+│   ├── hi_analyzer.py               # Main facade with comprehensive comments
+│   ├── hi_analyzer_enhancement.md   # Recent improvements documentation
+│   ├── domain/                      # Domain-driven design components
+│   │   ├── hi_config.py            # Configuration with external file loading
+│   │   ├── hi_prompt_builder.py    # Jinja2 template-based prompt building
+│   │   ├── hi_response_parser.py   # JSON parsing with comprehensive fallbacks
+│   │   ├── hi_fallbacks.py         # Rule-based error recovery
+│   │   ├── hi_validator.py         # Confidence scoring and validation
+│   │   └── hi_patterns.py          # Regex patterns for linguistic features
+│   └── tests/
+│       └── test_hi_analyzer.py     # Comprehensive test suite
 │
 ├── [language_code]/                 # New Language Implementation Template
-│   ├── [lang_code]_analyzer.py      # Main analyzer implementation
+│   ├── [lang_code]_analyzer.py      # Main facade (COPY FROM hi_analyzer.py)
 │   ├── [lang_code]_grammar_concepts.md  # Linguistic research (CREATE FIRST)
-│   ├── [lang_code]_analyzer_documentation.md  # Technical docs
-│   ├── [lang_code]_config.py        # Language configuration
-│   ├── [lang_code]_prompt_builder.py  # AI prompt generation
-│   ├── [lang_code]_response_parser.py  # Response parsing
-│   ├── [lang_code]_fallbacks.py     # Fallback patterns
-│   ├── [lang_code]_validator.py     # Validation rules
-│   ├── domain/                      # Domain components (optional)
+│   ├── [lang_code]_analyzer_documentation.md  # Technical implementation docs
+│   ├── domain/                      # Domain-driven design components
+│   │   ├── [lang_code]_config.py    # Language configuration (COPY FROM hi_config.py)
+│   │   ├── [lang_code]_prompt_builder.py  # AI prompts (ADAPT FROM hi_prompt_builder.py)
+│   │   ├── [lang_code]_response_parser.py # Response parsing (COPY FROM hi_response_parser.py)
+│   │   ├── [lang_code]_fallbacks.py # Fallbacks (ADAPT FROM hi_fallbacks.py)
+│   │   ├── [lang_code]_validator.py # Validation (COPY FROM hi_validator.py)
+│   │   └── [lang_code]_patterns.py  # Patterns (ADAPT FROM hi_patterns.py)
 │   └── tests/
-│       └── test_[lang_code]_analyzer.py
+│       └── test_[lang_code]_analyzer.py  # Test suite (ADAPT FROM test_hi_analyzer.py)
 ```
 
-### File Responsibilities:
+### CRITICAL ORGANIZATION RULE:
+**ALL FILES FOR A LANGUAGE MUST BE CONTAINED WITHIN ITS LANGUAGE FOLDER.** No files should be placed outside the `languages/[language_code]/` directory structure. This ensures:
 
-#### **Core Analyzer Files:**
-- **`[lang_code]_analyzer.py`**: Main analyzer class inheriting from appropriate base class
-- **`[lang_code]_config.py`**: Language-specific configuration (colors, categories, patterns)
-- **`[lang_code]_prompt_builder.py`**: AI prompt generation for grammar analysis
-- **`[lang_code]_response_parser.py`**: Parse AI responses into structured data
-- **`[lang_code]_fallbacks.py`**: Fallback analysis when AI fails
-- **`[lang_code]_validator.py`**: Validation rules and confidence scoring
+- **Clean separation**: Each language is self-contained
+- **Easy maintenance**: Language-specific changes don't affect others
+- **Scalability**: New languages can be added without conflicts
+- **Version control**: Clear ownership and change tracking
+- **Testing isolation**: Language tests run independently
 
-#### **Documentation Files:**
-- **`[lang_code]_grammar_concepts.md`**: Linguistic research and grammatical concepts (CREATE FIRST)
+### File Responsibilities (Domain-Driven Design):
+
+#### **Main Facade Files:**
+- **`[lang_code]_analyzer.py`**: Orchestrates all components, provides public API
+- **`[lang_code]_grammar_concepts.md`**: Linguistic research documentation
 - **`[lang_code]_analyzer_documentation.md`**: Technical implementation details
 
+#### **Domain Components (in domain/ folder):**
+- **`[lang_code]_config.py`**: Configuration loading and color schemes
+- **`[lang_code]_prompt_builder.py`**: AI prompt generation with templates
+- **`[lang_code]_response_parser.py`**: JSON parsing and fallback application
+- **`[lang_code]_fallbacks.py`**: Rule-based error recovery
+- **`[lang_code]_validator.py`**: Quality validation and confidence scoring
+- **`[lang_code]_patterns.py`**: Regex patterns for linguistic features
+
 #### **Test Files:**
-- **`test_[lang_code]_analyzer.py`**: Unit tests for analyzer functionality
+- **`test_[lang_code]_analyzer.py`**: Unit tests for all components
 
 ### Directory Structure Best Practices:
 
-#### **Domain-Driven Design (Recommended for Complex Languages):**
+#### **MANDATORY: Domain-Driven Design for ALL Languages**
+**ALL NEW LANGUAGE IMPLEMENTATIONS MUST USE DOMAIN-DRIVEN DESIGN** with all files properly organized in language folders:
+
 ```
-languages/[lang_code]/domain/
-├── __init__.py
-├── [lang_code]_config.py
-├── [lang_code]_prompt_builder.py
-├── [lang_code]_response_parser.py
-├── [lang_code]_fallbacks.py
-└── [lang_code]_validator.py
+languages/[lang_code]/                    # Language container (MANDATORY)
+├── [lang_code]_analyzer.py              # Main facade (COPY FROM hi_analyzer.py)
+├── [lang_code]_grammar_concepts.md      # Linguistic research (CREATE FIRST)
+├── [lang_code]_analyzer_documentation.md # Technical docs
+├── domain/                              # Domain components (MANDATORY)
+│   ├── __init__.py                      # Package initialization
+│   ├── [lang_code]_config.py            # Configuration (COPY FROM hi_config.py)
+│   ├── [lang_code]_prompt_builder.py    # AI prompts (ADAPT FROM hi_prompt_builder.py)
+│   ├── [lang_code]_response_parser.py   # Response parsing (COPY FROM hi_response_parser.py)
+│   ├── [lang_code]_fallbacks.py         # Fallbacks (ADAPT FROM hi_fallbacks.py)
+│   ├── [lang_code]_validator.py         # Validation (COPY FROM hi_validator.py)
+│   └── [lang_code]_patterns.py          # Patterns (ADAPT FROM hi_patterns.py)
+├── infrastructure/                      # External data files
+│   └── data/                            # YAML/JSON config files
+│       ├── [lang_code]_grammatical_roles.yaml
+│       ├── [lang_code]_common_postpositions.yaml
+│       └── [lang_code]_word_meanings.json
+└── tests/                               # Test suite
+    └── test_[lang_code]_analyzer.py     # Unit tests
 ```
 
-#### **Simple Languages (Direct Implementation):**
-```
+#### **File Organization Rules:**
+1. **NO FILES OUTSIDE LANGUAGE FOLDERS**: All language-specific code must be in `languages/[lang_code]/`
+2. **DOMAIN-DRIVEN DESIGN**: Separate business logic into domain components
+3. **INFRASTRUCTURE SEPARATION**: External data files in infrastructure/data/
+4. **TEST ISOLATION**: Tests in dedicated tests/ subfolder
+5. **DOCUMENTATION**: Linguistic research and technical docs in language folder
+
+#### **Deprecated: Simple Languages Structure**
+The simple structure below is **DEPRECATED** - use domain-driven design for all languages:
+
+```python
+# DEPRECATED - DO NOT USE
 languages/[lang_code]/
-├── [lang_code]_analyzer.py  # All logic in main analyzer
+├── [lang_code]_analyzer.py  # All logic in main analyzer - NOT RECOMMENDED
 ├── [lang_code]_grammar_concepts.md
 └── tests/test_[lang_code]_analyzer.py
 ```
@@ -234,9 +271,19 @@ languages/[lang_code]/
 
 ### Development Workflow & Quality Assurance
 
+#### **CRITICAL: File Organization Requirements**
+**ALL FILES MUST BE CREATED WITHIN THE LANGUAGE FOLDER STRUCTURE:**
+- Create folder: `languages/[language_code]/`
+- Create subfolder: `languages/[language_code]/domain/`
+- Create subfolder: `languages/[language_code]/infrastructure/data/`
+- Create subfolder: `languages/[language_code]/tests/`
+- **NO FILES should be created outside the language folder**
+
 #### **Phase 1: Linguistic Research (MANDATORY FIRST STEP)**
+Create `languages/[language_code]/[language_code]_grammar_concepts.md` FIRST:
+
 ```markdown
-# [language_code]_grammar_concepts.md - Create This FIRST
+# [language_code]_grammar_concepts.md - Create This FIRST in languages/[language_code]/
 
 ## Language Overview
 - Family: [Language family]
@@ -264,23 +311,25 @@ languages/[lang_code]/
 3. **Script Direction**: LTR/RTL implications for word ordering
 4. **IPA Strategy**: Strict IPA vs. romanization based on learner needs
 5. **Token Limits**: Set appropriate max_tokens for batch processing
+6. **Create Folder Structure**: Set up all required directories
 
 #### **Phase 3: Core Implementation**
+Create `languages/[language_code]/[language_code]_analyzer.py` (copy from hi_analyzer.py):
+
 ```python
-# Standard analyzer structure
-class [LangCode]Analyzer(BaseGrammarAnalyzer):
+# languages/[language_code]/[language_code]_analyzer.py
+"""
+[Language Name] Grammar Analyzer - Clean Architecture Implementation
+Based on Hindi analyzer gold standard.
+"""
+
+class [LangCode]Analyzer(IndoEuropeanAnalyzer):  # or BaseGrammarAnalyzer
     def __init__(self):
-        config = LanguageConfig(
-            code="[lang_code]",
-            name="[Language Name]",
-            native_name="[Native Name]",
-            family="[Family]",
-            script_type="[script_type]",  # logographic/abugida/alphabet
-            complexity_rating="[low/medium/high]",
-            key_features=[list of features],
-            supported_complexity_levels=["beginner", "intermediate", "advanced"]
-        )
-        super().__init__(config)
+        # Initialize domain components from languages/[language_code]/domain/
+        self.[lang_code]_config = [LangCode]Config()
+        self.prompt_builder = [LangCode]PromptBuilder(self.[lang_code]_config)
+        # ... etc
+```
     
     def _call_ai(self, prompt: str, groq_api_key: str) -> str:
         # Gold Standard: 2000 max_tokens
@@ -628,9 +677,13 @@ Create language-specific prompts that:
 3. **FINALLY**: Create tests and documentation
 
 ### Repository Organization Note
+- **MANDATORY FILE ORGANIZATION**: ALL language files MUST be contained within their respective `languages/[language_code]/` folders
+- **Domain-Driven Design**: Use the standardized domain/ subfolder structure for all components
+- **Infrastructure Separation**: External data files in `infrastructure/data/` subfolders
 - **Active Code**: All current implementations in `languages/` directory with domain-driven design
 - **Archived Files**: Old test files, debugging scripts, and backups moved to `old_20260117/` directory
 - **File Structure**: Follow the standardized domain-driven design pattern for new analyzers
+- **NO EXCEPTIONS**: Never place language-specific files outside their designated language folders
 
 ## Common Pitfalls to Avoid
 

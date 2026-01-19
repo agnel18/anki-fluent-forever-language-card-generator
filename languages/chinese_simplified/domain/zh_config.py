@@ -1,33 +1,32 @@
-# languages/hindi/domain/hi_config.py
+# languages/zh/domain/zh_config.py
 """
-Hindi Configuration - Domain Component
+Chinese Simplified Configuration - Domain Component
 
-GOLD STANDARD CONFIGURATION PATTERN:
-This file demonstrates how to structure language-specific configuration.
-It serves as the single source of truth for all Hindi-specific settings.
+CHINESE CONFIGURATION PATTERN:
+This file demonstrates how to structure Chinese-specific configuration.
+It serves as the single source of truth for all Chinese-specific settings.
 
 RESPONSIBILITIES:
 1. Load external configuration files (YAML/JSON)
-2. Define grammatical roles and mappings
+2. Define grammatical roles and mappings for Chinese
 3. Provide color schemes for different complexity levels
-4. Store language-specific patterns and rules
+4. Store Chinese-specific patterns and rules
 5. Handle configuration loading errors gracefully
 
 CONFIGURATION FILES LOADED:
-- hi_grammatical_roles.yaml: Role definitions and mappings
-- hi_common_postpositions.yaml: Postposition lists
-- hi_gender_markers.yaml: Gender agreement patterns
-- hi_case_markers.yaml: Case marking rules
-- hi_honorific_markers.yaml: Honorific system patterns
-- hi_word_meanings.json: Pre-defined word meanings
-- hi_patterns.yaml: Regex patterns and validation rules
+- zh_grammatical_roles.yaml: Role definitions and mappings
+- zh_common_classifiers.yaml: Classifier lists
+- zh_aspect_markers.yaml: Aspect particle patterns
+- zh_structural_particles.yaml: Particle system rules
+- zh_word_meanings.json: Pre-defined word meanings
+- zh_patterns.yaml: Regex patterns and validation rules
 
-USAGE FOR NEW LANGUAGES:
-1. Create language-specific YAML/JSON config files
+USAGE FOR CHINESE:
+1. Create Chinese-specific YAML/JSON config files
 2. Copy this structure, changing only file names and content
-3. Implement language-appropriate grammatical roles
+3. Implement Chinese-appropriate grammatical roles
 4. Define complexity-appropriate color schemes
-5. Add language-specific patterns and markers
+5. Add Chinese-specific patterns and markers
 
 INTEGRATION:
 - Used by all domain components (prompt_builder, validator, fallbacks)
@@ -53,24 +52,29 @@ class ComplexityLevel(Enum):
     ADVANCED = "advanced"
 
 class GrammaticalRole(Enum):
-    """Hindi grammatical roles - comprehensive coverage."""
+    """Chinese grammatical roles - comprehensive coverage."""
     NOUN = "noun"
     VERB = "verb"
     PRONOUN = "pronoun"
     ADJECTIVE = "adjective"
     ADVERB = "adverb"
-    POSTPOSITION = "postposition"
+    NUMERAL = "numeral"
+    CLASSIFIER = "classifier"
+    PARTICLE = "particle"
+    PREPOSITION = "preposition"
     CONJUNCTION = "conjunction"
     INTERJECTION = "interjection"
-    PARTICLE = "particle"
+    ASPECT_MARKER = "aspect_marker"
+    MODAL_PARTICLE = "modal_particle"
+    STRUCTURAL_PARTICLE = "structural_particle"
     # Add more as needed
 
 @dataclass
-class HiConfig:
+class ZhConfig:
     """
-    Configuration for Hindi analyzer, loaded from external files.
+    Configuration for Chinese Simplified analyzer, loaded from external files.
 
-    GOLD STANDARD CONFIGURATION:
+    CHINESE CONFIGURATION:
     - External files: Keep configuration separate from code
     - Error handling: Graceful fallbacks for missing files
     - Type safety: Use dataclasses and enums for validation
@@ -82,10 +86,10 @@ class HiConfig:
     - Maintainability: Easy to modify without code changes
     """
     grammatical_roles: Dict[str, str]
-    common_postpositions: List[str]
-    gender_markers: Dict[str, str]
-    case_markers: Dict[str, str]
-    honorific_markers: Dict[str, str]
+    common_classifiers: List[str]
+    aspect_markers: Dict[str, str]
+    structural_particles: Dict[str, str]
+    modal_particles: Dict[str, str]
     word_meanings: Dict[str, str]
     prompt_templates: Dict[str, str]
     patterns: Dict[str, Any]  # For regex patterns, etc.
@@ -102,16 +106,16 @@ class HiConfig:
         5. Log errors but don't crash - maintain functionality
         """
         config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
-        self.grammatical_roles = self._load_yaml(config_dir / "hi_grammatical_roles.yaml")
-        self.common_postpositions = self._load_yaml(config_dir / "hi_common_postpositions.yaml")
-        self.gender_markers = self._load_yaml(config_dir / "hi_gender_markers.yaml")
-        self.case_markers = self._load_yaml(config_dir / "hi_case_markers.yaml")
-        self.honorific_markers = self._load_yaml(config_dir / "hi_honorific_markers.yaml")
-        self.word_meanings = self._load_json(config_dir / "hi_word_meanings.json")
+        self.grammatical_roles = self._load_yaml(config_dir / "zh_grammatical_roles.yaml")
+        self.common_classifiers = self._load_yaml(config_dir / "zh_common_classifiers.yaml")
+        self.aspect_markers = self._load_yaml(config_dir / "zh_aspect_markers.yaml")
+        self.structural_particles = self._load_yaml(config_dir / "zh_structural_particles.yaml")
+        self.modal_particles = self._load_yaml(config_dir / "zh_modal_particles.yaml")
+        self.word_meanings = self._load_json(config_dir / "zh_word_meanings.json")
         # For simplicity, define templates inline or load from file
         self.prompt_templates = {
             "single": """
-Analyze this Hindi sentence and provide a detailed grammatical breakdown.
+Analyze this Chinese sentence and provide a detailed grammatical breakdown.
 
 Sentence: {{sentence}}
 Target word: {{target_word}}
@@ -123,29 +127,30 @@ Return a JSON object with exactly this structure:
   "words": [
     {
       "word": "first_word",
-      "grammatical_role": "noun|verb|pronoun|adjective|adverb|postposition|conjunction|interjection|particle|other",
+      "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
       "individual_meaning": "brief explanation of this word's role in the sentence"
     },
     {
-      "word": "second_word", 
-      "grammatical_role": "noun|verb|pronoun|adjective|adverb|postposition|conjunction|interjection|particle|other",
+      "word": "second_word",
+      "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
       "individual_meaning": "brief explanation of this word's role in the sentence"
     }
   ],
   "explanations": {
     "overall_structure": "brief explanation of sentence structure",
-    "key_features": "any notable grammatical features"
+    "key_features": "any notable grammatical features like aspect markers or classifiers"
   }
 }
 
-Important: 
-- Break down the sentence into individual words
+Important:
+- Break down the sentence into individual words/characters as appropriate
 - Assign appropriate grammatical roles from the list above
+- Pay special attention to aspect markers (了, 着, 过), classifiers (个, 本, 杯), and particles (的, 地, 得)
 - Provide meaningful explanations for each word
 - Use only valid JSON format
 """,
             "batch": """
-Analyze these Hindi sentences and provide detailed grammatical breakdowns for each.
+Analyze these Chinese sentences and provide detailed grammatical breakdowns for each.
 
 Sentences: {{sentences}}
 Target word: {{target_word}}
@@ -159,13 +164,13 @@ Return a JSON object with exactly this structure:
       "words": [
         {
           "word": "first_word",
-          "grammatical_role": "noun|verb|pronoun|adjective|adverb|postposition|conjunction|interjection|particle|other",
+          "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
           "individual_meaning": "brief explanation of this word's role"
         }
       ],
       "explanations": {
         "overall_structure": "brief explanation",
-        "key_features": "notable features"
+        "key_features": "notable features like aspect usage or classifier selection"
       }
     },
     {
@@ -178,14 +183,15 @@ Return a JSON object with exactly this structure:
 
 Important:
 - Analyze each sentence separately
-- Break down each sentence into individual words
+- Break down each sentence into individual words/characters
 - Assign appropriate grammatical roles
+- Pay special attention to Chinese-specific features (aspect, classifiers, particles)
 - Provide meaningful explanations
 - Use only valid JSON format
 """
         }
-        self.patterns = self._load_yaml(config_dir / "hi_patterns.yaml")
-        self.postpositions = self.common_postpositions  # Alias for compatibility
+        self.patterns = self._load_yaml(config_dir / "zh_patterns.yaml")
+        self.classifiers = self.common_classifiers  # Alias for compatibility
 
     def _load_yaml(self, path: Path) -> Dict[str, Any]:
         try:
@@ -205,23 +211,23 @@ Important:
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """
-        Return color scheme for Hindi grammatical elements based on complexity.
+        Return color scheme for Chinese Simplified grammatical elements based on complexity.
 
-        GOLD STANDARD COLOR CODING:
+        CHINESE COLOR CODING:
         - Progressive disclosure: More roles at higher complexity levels
         - Consistency: Same colors for same roles across levels
         - Accessibility: High contrast, colorblind-friendly colors
-        - Language-appropriate: Colors that reflect Hindi grammatical concepts
+        - Language-appropriate: Colors that reflect Chinese grammatical concepts
 
         COMPLEXITY PROGRESSION:
-        - BEGINNER: Core roles only (noun, verb, adjective, etc.)
-        - INTERMEDIATE: More distinctions (pronoun types, auxiliary verbs)
-        - ADVANCED: Full granularity (all particle types, honorifics)
+        - BEGINNER: Core roles only (noun, verb, adjective, particles)
+        - INTERMEDIATE: More distinctions (classifiers, aspect markers, pronouns)
+        - ADVANCED: Full granularity (all particle types, structural elements)
 
         COLOR PHILOSOPHY:
         - Warm colors for content words (nouns, verbs)
-        - Cool colors for function words (postpositions, particles)
-        - Distinct colors for different pronoun types
+        - Cool colors for function words (particles, classifiers)
+        - Distinct colors for aspect markers and modal particles
         - Consistent target word highlighting
         """
         schemes = {
@@ -231,10 +237,13 @@ Important:
                 "verb": "#44FF44",          # Green - actions
                 "adverb": "#44FFFF",        # Cyan - manner
                 "pronoun": "#FF4444",       # Red - replacements
-                "postposition": "#4444FF",  # Blue - relationships
+                "particle": "#AA44FF",      # Purple - grammatical particles
+                "aspect_marker": "#9370DB", # Medium purple - aspect particles (了, 着, 过)
+                "numeral": "#FFD700",       # Gold - numbers
+                "classifier": "#FF8C00",    # Dark orange - measure words
+                "preposition": "#4444FF",   # Blue - relationships
                 "conjunction": "#888888",   # Gray - connectors
                 "interjection": "#FFD700",  # Gold - exclamations
-                "particle": "#AA44FF",      # Purple - grammatical particles
                 "other": "#AAAAAA"          # Light gray - miscellaneous
             },
             "intermediate": {
@@ -245,10 +254,14 @@ Important:
                 "pronoun": "#FFEAA7",       # Light orange - general pronouns
                 "personal_pronoun": "#FFEAA7",
                 "demonstrative_pronoun": "#FFEAA7",
-                "postposition": "#4444FF",
-                "auxiliary_verb": "#4ECDC4", # Same as verb - related function
-                "conjunction": "#888888",
                 "particle": "#AA44FF",
+                "aspect_marker": "#9370DB", # Medium purple - aspect particles
+                "modal_particle": "#DA70D6", # Plum - modal particles
+                "structural_particle": "#AA44FF", # Purple - structural particles
+                "numeral": "#FFD700",
+                "classifier": "#FF8C00",
+                "preposition": "#4444FF",
+                "conjunction": "#888888",
                 "other": "#AAAAAA"
             },
             "advanced": {
@@ -260,15 +273,15 @@ Important:
                 "personal_pronoun": "#FF4444",
                 "demonstrative_pronoun": "#FF4444",
                 "interrogative_pronoun": "#FF4444",
-                "relative_pronoun": "#FF4444",
-                "postposition": "#4444FF",
-                "auxiliary_verb": "#44FF44",
+                "particle": "#AA44FF",
+                "aspect_marker": "#9370DB", # Medium purple - 了, 着, 过
+                "modal_particle": "#DA70D6", # Plum - 吗, 呢, 吧, 啊
+                "structural_particle": "#AA44FF", # Purple - 的, 地, 得
+                "numeral": "#FFD700",
+                "classifier": "#FF8C00",
+                "preposition": "#4444FF",
                 "conjunction": "#888888",
                 "interjection": "#FFD700",
-                "particle": "#AA44FF",
-                "onomatopoeia": "#FFD700",   # Same as interjection
-                "ideophone": "#FFD700",     # Same as interjection
-                "echo_word": "#FFD700",     # Same as interjection
                 "other": "#AAAAAA"
             }
         }
