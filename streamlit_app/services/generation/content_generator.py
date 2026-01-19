@@ -230,7 +230,7 @@ IMPORTANT:
 - Ensure exactly {num_sentences} sentences, translations, and keywords"""
 
             # Try the primary model, fallback to alternative if needed
-            models_to_try = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"]
+            models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
             
             response = None
             last_error = None
