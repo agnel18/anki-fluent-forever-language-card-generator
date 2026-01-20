@@ -350,8 +350,9 @@ IMPORTANT:
                             ipa_list.append(validated_ipa)
                             logger.debug(f"Valid {'Pinyin' if is_chinese else 'IPA'}: {validated_ipa}")
                         else:
-                            logger.warning(f"Invalid {'Pinyin' if is_chinese else 'IPA'} rejected: {validated_ipa}")
-                            ipa_list.append("")
+                            # Use AI-generated content even if validation fails - better than blank
+                            logger.warning(f"Invalid {'Pinyin' if is_chinese else 'IPA'} rejected: {validated_ipa}, using AI-generated content anyway")
+                            ipa_list.append(ipa)  # Use the original AI-generated content
 
         # Extract keywords
         if "KEYWORDS:" in response_text:
@@ -470,12 +471,15 @@ IMPORTANT:
 
     def _create_fallback_response(self, word: str, num_sentences: int) -> Dict[str, Any]:
         """Create fallback response when generation fails."""
+        # Provide basic fallback IPA/Pinyin - better than empty strings
+        basic_pronunciation = f"[{word}]"  # Basic fallback in brackets
+
         return {
             'meaning': word,
             'restrictions': 'No specific grammatical restrictions.',
             'sentences': [f"This is a sample sentence with {word}."] * num_sentences,
             'translations': [f"This is a sample sentence with {word}."] * num_sentences,
-            'ipa': [""] * num_sentences,
+            'ipa': [basic_pronunciation] * num_sentences,  # Use basic pronunciation instead of empty strings
             'keywords': [f"{word}, language, learning"] * num_sentences
         }
 

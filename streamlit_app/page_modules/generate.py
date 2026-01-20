@@ -12,144 +12,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 logger = logging.getLogger(__name__)
 
 try:
-    from word_data_fetcher import enrich_word_data as fetch_word_data, enrich_word_data_batch, get_word_data_for_cards_batch
     from persistent_cache import process_large_dataset_with_memory_management, optimize_memory_for_large_datasets
 except ImportError:
-    def fetch_word_data(word, lang):
-        return f"{word} = [No enrichment module available]"
-    def enrich_word_data_batch(words, lang, batch_size=5):
-        return {word: fetch_word_data(word, lang) for word in words}
-
-def fetch_word_enrichment_data(selected_words, selected_lang):
-    """Fetch enrichment data for selected words with progress tracking, batch processing, and memory management."""
-    if not selected_words:
-        return []
-
-    # Initialize progress
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-
-    # Use full language name instead of 2-letter code
-    lang_name = selected_lang
-
-    # Determine processing strategy based on dataset size
-    word_count = len(selected_words)
-    large_dataset_threshold = 50  # Consider datasets > 50 words as large
-
-    if word_count > large_dataset_threshold:
-        # Use memory-managed processing for large datasets
-        status_text.text(f"Processing large dataset ({word_count} words) with memory management...")
-
-        def progress_callback(batch_num, total_batches, batch_size):
-            progress = batch_num / total_batches
-            progress_bar.progress(progress)
-            status_text.text(f"Processing batch {batch_num}/{total_batches} ({batch_size} words)")
-
-        def process_batch(batch):
-            """Process a batch of words and return word data entries."""
-            batch_results = enrich_word_data_batch([word for word, _ in batch], lang_name, batch_size=len(batch))
-
-            word_entries = []
-            for word in [word for word, _ in batch]:
-                consolidated_data = batch_results.get(word, f"{word} = [Batch processing error]")
-                word_entries.append({
-                    'word': word,
-                    'meaning': consolidated_data,
-                    'source': _extract_source_from_consolidated(consolidated_data)
-                })
-            return word_entries
-
-        # Prepare batch data (word, index pairs for tracking)
-        batch_data = [(word, i) for i, word in enumerate(selected_words)]
-
-        try:
-            word_data = process_large_dataset_with_memory_management(
-                batch_data,
-                process_batch,
-                batch_size=min(10, word_count),  # Smaller batches for memory management
-                max_memory_mb=400,  # 400MB limit
-                progress_callback=progress_callback
-            )
-
-        except Exception as e:
-            logger.error(f"Memory-managed processing failed: {e}")
-            status_text.text("⚠️ Memory-managed processing failed, falling back to standard batch processing...")
-            # Fall back to regular batch processing
-            return _fetch_with_standard_batch_processing(selected_words, lang_name, progress_bar, status_text)
-
-    else:
-        # Use standard batch processing for smaller datasets
-        word_data = _fetch_with_standard_batch_processing(selected_words, lang_name, progress_bar, status_text)
-
-    progress_bar.progress(1.0)
-    status_text.text("✅ Word enrichment data fetched successfully!")
-    progress_bar.empty()
-    status_text.empty()
-
-    return word_data
-
-
-def _fetch_with_standard_batch_processing(selected_words, lang_name, progress_bar, status_text):
-    """Standard batch processing implementation."""
-    # Use batch processing for better performance
-    batch_size = min(5, len(selected_words))  # Process up to 5 words at a time
-    status_text.text(f"Batch processing {len(selected_words)} words (batch size: {batch_size})...")
-
-    try:
-        # Batch enrich all words at once
-        enriched_data = enrich_word_data_batch(selected_words, lang_name, batch_size)
-
-        # Convert to expected format
-        word_data = []
-        for i, word in enumerate(selected_words):
-            progress_bar.progress((i + 1) / len(selected_words))
-            status_text.text(f"Processing results for word {i+1}/{len(selected_words)}: {word}")
-
-            consolidated_data = enriched_data.get(word, f"{word} = [Batch processing error]")
-            word_data.append({
-                'word': word,
-                'meaning': consolidated_data,  # Single consolidated field
-                'source': _extract_source_from_consolidated(consolidated_data)
-            })
-
-    except Exception as e:
-        logger.error(f"Batch processing failed, falling back to sequential: {e}")
-        # Fallback to original sequential processing
-        word_data = []
-        for i, word in enumerate(selected_words):
-            status_text.text(f"Fetching data for word {i+1}/{len(selected_words)}: {word}")
-            progress_bar.progress(i / len(selected_words))
-
-            try:
-                consolidated_data = fetch_word_data(word, lang_name)
-                word_data.append({
-                    'word': word,
-                    'meaning': consolidated_data,
-                    'source': _extract_source_from_consolidated(consolidated_data)
-                })
-            except Exception as e:
-                word_data.append({
-                    'word': word,
-                    'meaning': f'{word} = [Error fetching data: {str(e)}]',
-                    'source': 'Error'
-                })
-
-    return word_data
-
-def _extract_source_from_consolidated(consolidated_text: str) -> str:
-    """Extract source information from consolidated meaning text."""
-    if "Sources:" in consolidated_text:
-        # Find the sources section
-        sources_start = consolidated_text.find("Sources:")
-        sources_section = consolidated_text[sources_start:]
-        # Extract the first line after "Sources:"
-        lines = sources_section.split('\n')
-        if len(lines) > 1:
-            source_line = lines[1].strip()
-            if source_line.startswith('- Data from:'):
-                return source_line.replace('- Data from:', '').strip()
-    return "Unknown"
-
+    pass
 
 def render_generate_page():
     """Render the generate deck page."""
@@ -210,23 +75,21 @@ def render_generate_page():
     
     # Separate section for viewing and editing selected words with enrichment data
     st.markdown("---")
-    st.markdown("### 📚 **Review & Edit Word Meanings**")
-    st.markdown("Review the consolidated meaning data fetched from reliable sources. Edit the single meaning field to add multiple definitions, variations, examples, and cultural context - the AI will intelligently parse all information for better sentence generation.")
+    st.markdown("### Word Enrichment and Review")
+    st.markdown("Provide optional word meanings to enhance AI-generated sentences. Leave blank to skip - the AI will generate content based on the word itself.")
     
     if selected_words:
-        # Fetch word enrichment data if not already cached in session
-        # Force refresh for now to test new consolidated format
-        with st.spinner("🔍 Fetching word enrichment data..."):
-            word_data = fetch_word_enrichment_data(selected_words, selected_lang)
-            st.session_state.word_enrichment_data = word_data
-            st.session_state.last_selected_words = selected_words.copy()
+        # Initialize with empty meanings for user input
+        word_data = [{'word': word, 'meaning': '', 'source': 'User Input'} for word in selected_words]
+        st.session_state.word_enrichment_data = word_data
+        st.session_state.last_selected_words = selected_words.copy()
         
         # Convert to DataFrame for editing
         df = pd.DataFrame(word_data)
         
         # Display editable consolidated meaning fields for each word
-        st.markdown("**Edit the consolidated meaning data below to improve sentence generation quality:**")
-        st.markdown("*💡 Tip: You can add multiple meanings, variations, examples, and cultural notes in each field. The AI will intelligently parse all information.*")
+        st.markdown("**Provide optional meaning information below to improve sentence generation quality:**")
+        st.markdown("*💡 Tip: You can add meanings, variations, examples, and cultural notes. Leave blank for AI to generate based on the word alone.*")
 
         # Create individual text areas for each word
         edited_data = []
@@ -243,13 +106,17 @@ def render_generate_page():
                 f"Consolidated meaning for '{word}':",
                 value=current_meaning,
                 height=200,
+                max_chars=300,
                 help=f"Enter comprehensive meaning information for '{word}'. Include alternatives, examples, and context. The AI will parse this intelligently.",
                 key=f"meaning_editor_{idx}"
             )
 
+            # Encapsulate user input in {} for AI processing
+            meaning_to_use = f"{{{edited_meaning}}}" if edited_meaning.strip() else ""
+
             edited_data.append({
                 'word': word,
-                'meaning': edited_meaning,
+                'meaning': meaning_to_use,
                 'source': source
             })
 

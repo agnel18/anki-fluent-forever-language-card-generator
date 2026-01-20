@@ -361,26 +361,48 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         print(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
         print("DEBUG Chinese HTML Gen - Input sentence: '" + str(sentence) + "'")
 
-        # For Chinese (logographic script without spaces), use sequential replacement instead of space splitting
+        # For Chinese (logographic script without spaces), use position-based replacement
         color_scheme = self.get_color_scheme('intermediate')
-        html = sentence
 
-        for exp in explanations:
-            if len(exp) >= 3:
-                word = exp[0]
-                pos = exp[1]
-                category = self._map_grammatical_role_to_category(pos)
-                color = color_scheme.get(category, '#888888')
+        # Sort explanations by position in sentence to avoid conflicts
+        sorted_explanations = sorted(explanations, key=lambda x: sentence.find(x[0]) if len(x) >= 3 else len(sentence))
 
-                # Replace the word with colored version (first occurrence only, in order)
-                safe_word = re.escape(word)
-                # Escape curly braces in word to prevent f-string issues
-                safe_word_display = word.replace('{', '{{').replace('}', '}}')
-                colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
-                html = re.sub(safe_word, colored_word, html, count=1)
+        # Build HTML by processing the sentence character by character
+        html_parts = []
+        i = 0
+        sentence_len = len(sentence)
 
-                print("DEBUG Chinese HTML Gen - Replaced '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
+        while i < sentence_len:
+            # Check if current position matches any word explanation
+            matched = False
+            for exp in sorted_explanations:
+                if len(exp) >= 3:
+                    word = exp[0]
+                    word_len = len(word)
 
+                    # Check if word matches at current position
+                    if i + word_len <= sentence_len and sentence[i:i + word_len] == word:
+                        pos = exp[1]
+                        category = self._map_grammatical_role_to_category(pos)
+                        color = color_scheme.get(category, '#888888')
+
+                        # Escape curly braces in word to prevent f-string issues
+                        safe_word_display = word.replace('{', '{{').replace('}', '}}')
+                        colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
+                        html_parts.append(colored_word)
+
+                        print("DEBUG Chinese HTML Gen - Replaced '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
+
+                        i += word_len
+                        matched = True
+                        break
+
+            if not matched:
+                # No match, add character as-is
+                html_parts.append(sentence[i])
+                i += 1
+
+        html = ''.join(html_parts)
         print("DEBUG Chinese HTML Gen - Final HTML result: " + html)
         return html
 

@@ -22,11 +22,10 @@ except ImportError as e:
 
 # Import word data fetcher for enrichment
 try:
-    from word_data_fetcher import enrich_word_data as enrich_word_data_func
-    logger.info("Successfully imported word_data_fetcher")
+    # Removed - now using user-provided enrichment data
+    logger.info("Word enrichment now uses user input")
 except ImportError as e:
-    logger.warning(f"Failed to import word_data_fetcher: {e}. Word enrichment will be unavailable.")
-    enrich_word_data_func = None
+    logger.warning(f"Word enrichment uses user input: {e}.")
 
 # ============================================================================
 # MAIN API FUNCTIONS - Now use modular services
