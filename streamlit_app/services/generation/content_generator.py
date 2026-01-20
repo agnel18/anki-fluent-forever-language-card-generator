@@ -126,6 +126,11 @@ class ContentGenerator:
             else:
                 enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
 
+            # Check if language is Chinese for Pinyin instead of IPA
+            is_chinese = language in ["Chinese Simplified", "Chinese Traditional", "Chinese (Simplified)", "Chinese (Traditional)"]
+            pronunciation_label = "PINYIN" if is_chinese else "IPA"
+            pronunciation_instruction = "Pinyin romanization (with tone marks)" if is_chinese else "official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)"
+
             prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
 Your task: Generate a complete learning package for the {language} word "{word}" in ONE response.
@@ -211,10 +216,10 @@ TRANSLATIONS:
 2. [natural English translation for sentence 2]
 3. [natural English translation for sentence 3]
 
-IPA:
-1. [IPA transcription for sentence 1]
-2. [IPA transcription for sentence 2]
-3. [IPA transcription for sentence 3]
+{pronunciation_label}:
+1. [{pronunciation_instruction} for sentence 1]
+2. [{pronunciation_instruction} for sentence 2]
+3. [{pronunciation_instruction} for sentence 3]
 
 KEYWORDS:
 1. [keyword1, keyword2, keyword3]
@@ -225,7 +230,7 @@ IMPORTANT:
 - Return ONLY the formatted text, no extra explanation
 - Sentences must be in {language} only
 - Translations must be natural, fluent English
-- IPA must use official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)
+- {pronunciation_label} must use {pronunciation_instruction}
 - Keywords must be comma-separated
 - Ensure exactly {num_sentences} sentences, translations, and keywords"""
 
@@ -296,6 +301,9 @@ IMPORTANT:
         ipa_list = []
         keywords = []
 
+        is_chinese = language in ["Chinese Simplified", "Chinese Traditional", "Chinese (Simplified)", "Chinese (Traditional)"]
+        pronunciation_section = "PINYIN:" if is_chinese else "IPA:"
+
         # Extract meaning
         if "MEANING:" in response_text:
             meaning_part = response_text.split("MEANING:")[1].split("RESTRICTIONS:")[0].strip()
@@ -318,8 +326,8 @@ IMPORTANT:
 
         # Extract translations
         translations = []
-        if "TRANSLATIONS:" in response_text and "IPA:" in response_text:
-            translations_part = response_text.split("TRANSLATIONS:")[1].split("IPA:")[0].strip()
+        if "TRANSLATIONS:" in response_text and pronunciation_section in response_text:
+            translations_part = response_text.split("TRANSLATIONS:")[1].split(pronunciation_section)[0].strip()
             for line in translations_part.split("\n"):
                 line = line.strip()
                 if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
@@ -327,22 +335,22 @@ IMPORTANT:
                     if translation:
                         translations.append(translation)
 
-        # Extract IPA
-        if "IPA:" in response_text and "KEYWORDS:" in response_text:
-            ipa_part = response_text.split("IPA:")[1].split("KEYWORDS:")[0].strip()
+        # Extract IPA/Pinyin
+        if pronunciation_section in response_text and "KEYWORDS:" in response_text:
+            ipa_part = response_text.split(pronunciation_section)[1].split("KEYWORDS:")[0].strip()
             for line in ipa_part.split("\n"):
                 line = line.strip()
                 if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
                     ipa = line.split(".", 1)[1].strip() if "." in line else line
                     if ipa:
-                        # Validate IPA output
+                        # Validate IPA/Pinyin output
                         language_code = LANGUAGE_NAME_TO_CODE.get(language, "en")
                         is_valid, validated_ipa = validate_ipa_output(ipa, language_code)
                         if is_valid:
                             ipa_list.append(validated_ipa)
-                            logger.debug(f"Valid IPA: {validated_ipa}")
+                            logger.debug(f"Valid {'Pinyin' if is_chinese else 'IPA'}: {validated_ipa}")
                         else:
-                            logger.warning(f"Invalid IPA rejected: {validated_ipa}")
+                            logger.warning(f"Invalid {'Pinyin' if is_chinese else 'IPA'} rejected: {validated_ipa}")
                             ipa_list.append("")
 
         # Extract keywords
@@ -355,7 +363,7 @@ IMPORTANT:
                     if kw:
                         keywords.append(kw)
 
-        logger.info(f"Parsed: meaning='{meaning}', restrictions='{restrictions}', sentences={len(sentences)}, translations={len(translations)}, ipa={len(ipa_list)}, keywords={len(keywords)}")
+        logger.info(f"Parsed: meaning='{meaning}', restrictions='{restrictions}', sentences={len(sentences)}, translations={len(translations)}, {'pinyin' if is_chinese else 'ipa'}={len(ipa_list)}, keywords={len(keywords)}")
 
         # Validate and create fallbacks
         validated_sentences, validated_translations, validated_ipa, validated_keywords = self._validate_and_create_fallbacks(

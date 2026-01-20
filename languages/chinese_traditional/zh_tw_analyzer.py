@@ -443,6 +443,56 @@ IMPORTANT:
             }
         }
 
+    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
+        """Generate HTML output for Chinese Traditional text with CSS classes for Anki compatibility"""
+        explanations = parsed_data.get('word_explanations', [])
+
+        logger.info(f"DEBUG Chinese Traditional HTML Gen - Input explanations count: {len(explanations)}")
+        logger.info("DEBUG Chinese Traditional HTML Gen - Input sentence: '" + str(sentence) + "'")
+
+        # For Chinese Traditional (logographic script without spaces), use sequential replacement instead of space splitting
+        html = sentence
+
+        for exp in explanations:
+            if len(exp) >= 3:
+                word = exp[0]
+                pos = exp[1]
+                category = self._map_grammatical_role_to_category(pos)
+
+                # Replace the word with CSS class version (first occurrence only, in order)
+                safe_word = re.escape(word)
+                css_class = f'grammar-{category}'
+                colored_word = f'<span class="{css_class}">{word}</span>'
+                html = re.sub(safe_word, colored_word, html, count=1)
+
+                logger.info("DEBUG Chinese Traditional HTML Gen - Replaced '" + str(word) + "' with class '" + str(css_class) + "'")
+
+        logger.info("DEBUG Chinese Traditional HTML Gen - Final HTML result: " + html)
+        return html
+
+    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        """Map Chinese Traditional grammatical roles to color scheme categories"""
+        role_mapping = {
+            'noun': 'noun',
+            'verb': 'verb',
+            'adjective': 'adjective',
+            'numeral': 'numeral',
+            'measure_word': 'measure_word',
+            'pronoun': 'pronoun',
+            'time_word': 'time_word',
+            'locative_word': 'locative_word',
+            'aspect_particle': 'aspect_particle',
+            'modal_particle': 'modal_particle',
+            'structural_particle': 'structural_particle',
+            'preposition': 'preposition',
+            'conjunction': 'conjunction',
+            'adverb': 'adverb',
+            'interjection': 'interjection',
+            'onomatopoeia': 'onomatopoeia',
+            'other': 'other'
+        }
+        return role_mapping.get(grammatical_role, 'other')
+
 
 # Register analyzer
 def create_analyzer():

@@ -18,7 +18,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # IPA validation constants
-PINYIN_TONE_MARKS = 'āēīōūǖǎěǐǒǔǚ'
+PINYIN_TONE_MARKS = 'āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ'
 
 # ============================================================================
 # IPA VALIDATION SYSTEM (Phase 1: IPA Strict Enforcement)
@@ -67,6 +67,10 @@ def validate_ipa_slashed(ipa_content: str, language: str) -> tuple[bool, str]:
 
     allowed_chars = pulmonic_consonants + non_pulmonic + vowels + diacritics + tones_stress + other_symbols
 
+    # For Chinese languages, allow Pinyin tone marks as valid transliteration
+    if language in ['zh', 'zh-tw']:
+        allowed_chars += PINYIN_TONE_MARKS
+
     # Check for invalid characters
     invalid_chars = []
     for char in ipa_content:
@@ -77,8 +81,11 @@ def validate_ipa_slashed(ipa_content: str, language: str) -> tuple[bool, str]:
         return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in /{ipa_content}/"
 
     # Check for Pinyin patterns within IPA (shouldn't happen in valid IPA)
-    # Only reject Pinyin tone marks for Chinese languages
-    if language in ['zh', 'zh-tw'] and any(char in ipa_content for char in PINYIN_TONE_MARKS):
+    # For Chinese languages, Pinyin with tone marks IS acceptable as transliteration
+    if language in ['zh', 'zh-tw']:
+        # Allow Pinyin tone marks for Chinese - this is appropriate for learners
+        pass  # Don't reject Pinyin for Chinese
+    elif any(char in ipa_content for char in PINYIN_TONE_MARKS):
         return False, f"Detected Pinyin tone marks in IPA: /{ipa_content}/"
 
     return True, ipa_content
@@ -96,6 +103,10 @@ def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
 
     allowed_chars = pulmonic_consonants + non_pulmonic + vowels + diacritics + tones_stress + other_symbols
 
+    # For Chinese languages, allow Pinyin tone marks as valid transliteration
+    if language in ['zh', 'zh-tw']:
+        allowed_chars += PINYIN_TONE_MARKS
+
     # Check for invalid characters
     invalid_chars = []
     for char in ipa_content:
@@ -106,8 +117,11 @@ def validate_ipa_bracketed(ipa_content: str, language: str) -> tuple[bool, str]:
         return False, f"Contains non-IPA characters: {''.join(set(invalid_chars))} in [{ipa_content}]"
 
     # Check for Pinyin patterns within IPA (shouldn't happen in valid IPA)
-    # Only reject Pinyin tone marks for Chinese languages
-    if language in ['zh', 'zh-tw'] and any(char in ipa_content for char in PINYIN_TONE_MARKS):
+    # For Chinese languages, Pinyin with tone marks IS acceptable as transliteration
+    if language in ['zh', 'zh-tw']:
+        # Allow Pinyin tone marks for Chinese - this is appropriate for learners
+        pass  # Don't reject Pinyin for Chinese
+    elif any(char in ipa_content for char in PINYIN_TONE_MARKS):
         return False, f"Detected Pinyin tone marks in IPA: [{ipa_content}]"
 
     return True, ipa_content
@@ -131,21 +145,23 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
         if re.search(pattern, text, re.IGNORECASE):
             return False, f"Detected Pinyin romanization: {text}"
 
-    # If it has Pinyin tone marks, reject it (only for Chinese)
-    if language in ['zh', 'zh-tw'] and has_pinyin_tones:
+    # If it has Pinyin tone marks, reject it (only for non-Chinese languages)
+    # For Chinese, Pinyin with tone marks IS acceptable romanization
+    if language not in ['zh', 'zh-tw'] and has_pinyin_tones:
         return False, f"Detected Pinyin tone marks: {text}"
 
     # For Chinese and other logographic languages, reject plain ASCII words
     # But allow romanization for languages that commonly use it (like Hindi, Arabic, etc.)
-    romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
+    # For Chinese, Pinyin romanization is acceptable
+    romanization_allowed_languages = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si', 'zh', 'zh-tw']
     
-    if language in ['zh', 'ja', 'ko'] and language not in romanization_allowed_languages:
+    if language in ['ja', 'ko'] and language not in romanization_allowed_languages:
         # If it contains only ASCII letters and spaces, it's likely romanization/Pinyin
         if re.match(r'^[a-zA-Z\s]+$', text.strip()):
             return False, f"Detected romanization (plain ASCII text): {text}"
     
     # For languages that allow romanization, accept romanized text with common diacritics
-    romanization_diacritics = 'āēīōūǖǎěǐǒǔǚñḍṭṅṇṃśṣḥḷḻṛṝṁ'
+    romanization_diacritics = 'āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜñḍṭṅṇṃśṣḥḷḻṛṝṁ'
     if language in romanization_allowed_languages:
         romanization_pattern = r'^[a-zA-Z\s\'' + romanization_diacritics + r'.,;:!?]+$'
         if re.match(romanization_pattern, text.strip()):

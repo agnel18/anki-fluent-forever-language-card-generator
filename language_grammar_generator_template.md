@@ -1,5 +1,5 @@
 # Language Grammar Analyzer Generator Template
-# Version: 2026-01-17 (Updated with IPA Romanization, Token Limits, and Repository Cleanup)
+# Version: 2026-01-20 (Updated with Sino-Tibetan Family Base Class, Inline Styles for Anki, Complete Pinyin Support)
 
 ## Overview
 You are tasked with adapting the gold standard Hindi analyzer (hi_analyzer.py) to create a comprehensive grammar analyzer for **{language}** focused specifically on **Pass 3: Grammar Analysis** in the 6-step language learning deck generation process.
@@ -61,6 +61,20 @@ For each word:
 - individual_meaning: the English translation/meaning of this specific word (MANDATORY - do not leave empty)
 - grammatical_role: EXACTLY ONE category from the allowed list
 ```
+
+## 🎯 IMMEDIATE ACTION PLAN
+
+### **Phase 5: Word-Level Analysis Pivot (PASS 3)**
+**Goal:** Transform Chinese analyzer from character-level to word-level analysis
+
+**Steps:**
+1. **Rewrite AI Prompts:** Change `get_batch_grammar_prompt()` to focus on words, not characters
+2. **Update Parsing:** Modify `parse_batch_grammar_response()` for word-level processing
+3. **Compounds-First Ordering:** Place compound words higher in explanations for beginner comprehension
+4. **Chinese Categories:** Use linguistically appropriate categories (实词/虚词 distinction)
+5. **Testing:** Validate word segmentation works reliably before full implementation
+
+**Critical Constraint:** Abandon character-level analysis entirely. Focus on authentic Chinese word-level grammar.
 
 ## Gold Standard References
 
@@ -391,6 +405,44 @@ def test_[lang_code]_analyzer():
 - Configuration loaded from language-specific config files
 - Tests run via pytest with standard naming conventions
 
+### Linguistic Research Database (AI Can Reference)
+
+**Language Families & Eldest Sisters:**
+- **Sino-Tibetan**: Chinese (Simplified/Traditional) → Tibetan, Burmese
+- **Indo-European**: Sanskrit → Hindi ✅, Bengali, Persian, English, Spanish, Russian
+- **Afro-Asiatic**: Arabic → Hebrew, Amharic, Hausa
+- **Niger-Congo**: Swahili → Zulu, Yoruba
+- **Austronesian**: Malay → Indonesian, Tagalog, Maori
+
+**Complete 77-Language Inventory by Family:**
+
+| Family | Languages | Eldest Sister | Notes |
+|--------|-----------|---------------|-------|
+| **1. Sino-Tibetan** (8) | Chinese Simplified ✅, Chinese Traditional ✅, Tibetan, Burmese, Karen, Yi, Bai, Tujia | Chinese (logographic) | Character-based, tonal |
+| **2. Indo-European** (23) | English, German, Dutch, Swedish, Danish, Norwegian, Icelandic, Spanish ✅, French, Italian, Portuguese, Romanian, Catalan, Russian ✅, Polish, Czech, Ukrainian, Bulgarian, Serbian, Hindi ✅, Bengali, Persian, Urdu, Punjabi, Gujarati, Marathi, Greek, Lithuanian, Latvian, Irish, Welsh, Breton, Armenian, Albanian | Sanskrit → Hindi, Spanish, Russian | Diverse scripts, inflectional |
+| **3. Afro-Asiatic** (12) | Arabic ✅, Hebrew, Amharic, Hausa, Somali, Tigrinya, Berber, Coptic, Maltese | Arabic | Abugida, root-based morphology |
+| **4. Niger-Congo** (15) | Swahili ✅, Zulu, Yoruba, Igbo, Hausa, Wolof, Bambara, Ewe, Tswana, Sesotho | Swahili | Tonal, agglutinative |
+| **5. Austronesian** (7) | Malay ✅, Indonesian, Tagalog, Maori, Hawaiian, Malagasy, Javanese | Malay | Syllabic, reduplication |
+| **6. Turkic** (6) | Turkish ✅, Uzbek, Kazakh, Kyrgyz, Tatar, Azerbaijani | Turkish | Agglutinative, vowel harmony |
+| **7. Dravidian** (4) | Tamil ✅, Telugu, Kannada, Malayalam | Tamil | Retroflex consonants, diglossia |
+| **8. Japonic** (2) | Japanese ✅, Ryukyuan | Japanese | Mixed script, honorifics |
+| **9. Koreanic** (1) | Korean ✅ | Korean | Alphabet + Sino-Korean |
+| **10. Tai-Kadai** (3) | Thai ✅, Lao, Zhuang | Thai | Tonal, analytic |
+| **11. Hmong-Mien** (2) | Hmong, Mien | - | Tonal, monosyllabic |
+| **12. Austroasiatic** (4) | Vietnamese ✅, Khmer, Mon, Khasi | Vietnamese | Monosyllabic, tonal |
+| **13. Tibeto-Burman** (6) | Tibetan ✅, Burmese ✅, Karen, Yi ✅, Bai ✅, Tujia ✅ | (Covered in Sino-Tibetan) | Tonal, agglutinative |
+| **14. Nubian** (1) | Nobiin | - | Endangered, tonal |
+| **15. Basque** (1) | Basque ✅ | Basque (isolate) | Ergative-absolutive |
+| **16. Na-Dene** (2) | Navajo, Apache | - | Tonal, complex consonants |
+| **17. Eskimo-Aleut** (2) | Inuit, Aleut | - | Polysynthetic |
+| **18. Australian Aboriginal** (3) | Pitjantjatjara, Warlpiri, Arrernte | - | Complex phonology |
+
+**PROGRESS TRACKING:**
+- ✅ **COMPLETED**: Hindi (Indo-European) - `languages/hindi/`
+- 🔄 **IN PROGRESS**: Chinese Simplified (Sino-Tibetan) - `languages/chinese_simplified/`
+- ⏳ **PENDING**: 75 languages across 18 families
+- 🎯 **NEXT**: Chinese Traditional, then Spanish (Romance eldest sister)
+
 ## Target Language: {language}
 
 ### Linguistic Research Requirements
@@ -430,8 +482,9 @@ Conduct thorough research on **{language}** grammar using authoritative sources:
 - **Root-Based Morphology** (Arabic, Hebrew): Implement root-and-pattern validation
 - **Polysynthetic Languages**: Handle complex word formation and incorporation
 
-**Important Architecture Decision (MUST READ):**
-- Do **NOT** create new family base classes (`SinoTibetanAnalyzer`, etc.) unless you already have 3+ very similar languages planned in the next 3 months **and** they share ≥70% of implementation patterns.
+**Important Architecture Decision (UPDATED 2026-01-20):**
+- **FOR SINO-TIBETAN LANGUAGES (Chinese, Tibetan, Burmese, etc.)**: Create a `SinoTibetanAnalyzer` family base class since we have multiple related languages (Chinese Simplified/Traditional, Tibetan, Burmese) that share core linguistic patterns (logographic scripts, tonal systems, analytic grammar).
+- For other families, do **NOT** create new family base classes unless you already have 3+ very similar languages planned in the next 3 months **and** they share ≥70% of implementation patterns.
 - Prefer keeping inheritance from `BaseGrammarAnalyzer` (or `IndoEuropeanAnalyzer` as pure skeleton) and doing **all** language-specific logic inside the concrete class.
 - Premature family base classes almost always become maintenance nightmares.
 

@@ -50,7 +50,6 @@ class AnalyzerRegistry:
             'arabic': 'ar',
             'hindi': 'hi',
             'spanish': 'es',
-            'chinese_simplified': 'zh',
             'chinese_traditional': 'zh-tw'
         }
 

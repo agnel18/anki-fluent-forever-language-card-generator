@@ -8,7 +8,7 @@ import os
 import json
 sys.path.append(os.path.dirname(__file__))
 
-from sentence_generator import analyze_grammar_and_color
+from services.generation.grammar_processor import GrammarProcessor
 
 def load_api_key():
     """Load API key from user_secrets.json"""
@@ -34,7 +34,18 @@ def test_chinese_analyzer():
         return
 
     try:
-        result = analyze_grammar_and_color(
+        processor = GrammarProcessor()
+        
+        # Check if analyzer is loaded
+        from language_registry import get_language_registry
+        registry = get_language_registry()
+        language_code = registry.get_iso_code(language)
+        print(f"Language code for '{language}': {language_code}")
+        
+        analyzer = processor._get_analyzer(language_code) if hasattr(processor, '_get_analyzer') else None
+        print(f"Analyzer found: {type(analyzer).__name__ if analyzer else 'None'}")
+        
+        result = processor.analyze_grammar_and_color(
             sentence=sentence,
             word=word,
             language=language,

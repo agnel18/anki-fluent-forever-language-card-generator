@@ -369,7 +369,7 @@ IMPORTANT:
         pass
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Anki cards with color-coded elements"""
+        """Generate HTML output for Anki cards with color-coded elements using inline styles"""
         colors = self.get_color_scheme(complexity)
         elements = parsed_data.get('elements', {})
 
@@ -387,18 +387,15 @@ IMPORTANT:
             for word_data in word_list:
                 word = word_data.get('word', '').strip()
                 if word:
-                    all_words.append((word, element_type))
+                    all_words.append((word, color))
 
         # Sort by length descending to handle longer matches first
         all_words.sort(key=lambda x: len(x[0]), reverse=True)
 
         # Replace each word with colored version using inline styles
-        for word, element_type in all_words:
-            # Create colored span with inline style for better compatibility
-            color = colors.get(element_type, '#000000')
-            # Escape curly braces in word to prevent f-string format specifier issues
-            safe_word = word.replace('{', '{{').replace('}', '}}')
-            colored_span = f'<span style="color: {color};">{safe_word}</span>'
+        for word, color in all_words:
+            # Use inline style for Anki compatibility
+            colored_span = f'<span style="color: {color};">{word}</span>'
 
             # Use simple string replacement with word boundaries
             # Split the sentence into words, replace exact matches, then rejoin

@@ -41,6 +41,7 @@ USAGE FOR NEW LANGUAGES:
 """
 
 import logging
+import re
 from typing import Dict, List, Any
 from pathlib import Path
 
@@ -352,3 +353,55 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """Validate Chinese analysis quality and return confidence score."""
         return self.validator.validate_result(parsed_data, original_sentence)['confidence']
+
+    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
+        """Generate HTML output for Chinese text with inline color styling for Anki compatibility"""
+        explanations = parsed_data.get('word_explanations', [])
+
+        print(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
+        print("DEBUG Chinese HTML Gen - Input sentence: '" + str(sentence) + "'")
+
+        # For Chinese (logographic script without spaces), use sequential replacement instead of space splitting
+        color_scheme = self.get_color_scheme('intermediate')
+        html = sentence
+
+        for exp in explanations:
+            if len(exp) >= 3:
+                word = exp[0]
+                pos = exp[1]
+                category = self._map_grammatical_role_to_category(pos)
+                color = color_scheme.get(category, '#888888')
+
+                # Replace the word with colored version (first occurrence only, in order)
+                safe_word = re.escape(word)
+                # Escape curly braces in word to prevent f-string issues
+                safe_word_display = word.replace('{', '{{').replace('}', '}}')
+                colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
+                html = re.sub(safe_word, colored_word, html, count=1)
+
+                print("DEBUG Chinese HTML Gen - Replaced '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
+
+        print("DEBUG Chinese HTML Gen - Final HTML result: " + html)
+        return html
+
+    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
+        """Map Chinese grammatical roles to color scheme categories"""
+        role_mapping = {
+            'noun': 'noun',
+            'verb': 'verb',
+            'adjective': 'adjective',
+            'adverb': 'adverb',
+            'pronoun': 'pronoun',
+            'preposition': 'preposition',
+            'conjunction': 'conjunction',
+            'interjection': 'interjection',
+            'particle': 'particle',
+            'classifier': 'classifier',
+            'aspect_marker': 'aspect_marker',
+            'modal_particle': 'modal_particle',
+            'structural_particle': 'structural_particle',
+            'measure_word': 'measure_word',
+            'numeral': 'numeral',
+            'other': 'other'
+        }
+        return role_mapping.get(grammatical_role, 'other')
