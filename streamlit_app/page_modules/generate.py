@@ -79,11 +79,12 @@ def render_generate_page():
     st.markdown("Provide optional word meanings to enhance AI-generated sentences. Leave blank to skip - the AI will generate content based on the word itself.")
     
     st.markdown("**How it works:**")
-    st.markdown("- 💡 **Optional Input**: Add your own meanings, examples, or cultural notes")
-    st.markdown("- 🤖 **AI Enhancement**: The AI uses your input (if provided) to create better sentences")
-    st.markdown("- 📝 **Leave Blank**: Skip entirely and let AI generate based on the word alone")
+    st.markdown("- 💡 **Optional Input**: Add your own meanings, examples, or cultural notes (max 300 characters)")
+    st.markdown("- 🤖 **AI Enhancement**: Your input helps create more personalized and accurate sentences")
+    st.markdown("- 📝 **Skip Anytime**: Leave blank and let AI generate based on the word alone")
     
-    st.markdown("**Example:** For \"house\" you might enter: `a building where people live; home; residence`")
+    st.markdown("**Example:** For \"house\" you might enter:")
+    st.code("a building where people live; home; residence", language=None)
     
     if selected_words:
         # Initialize with empty meanings for user input
@@ -100,7 +101,7 @@ def render_generate_page():
         st.markdown("- Include multiple meanings or variations")
         st.markdown("- Add examples or cultural context")
         st.markdown("- Use semicolons (;) to separate different meanings")
-        st.markdown("- Max 300 characters per word")
+        st.markdown("- Try it out - your input helps create better sentences!")
 
         # Create individual text areas for each word
         edited_data = []
