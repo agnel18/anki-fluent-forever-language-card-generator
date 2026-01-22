@@ -11,7 +11,7 @@ pyyaml>=6.0
 groq>=0.9.0
 
 # Text-to-Speech
-edge-tts==7.0.0  # Fixed version (7.0.0 works, newer versions have Microsoft endpoint issues)
+azure-cognitiveservices-speech>=1.32.0
 
 # Image generation
 Pillow>=10.0.0

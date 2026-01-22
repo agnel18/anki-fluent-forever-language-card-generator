@@ -71,6 +71,17 @@ def render_sidebar():
 
     st.sidebar.markdown("---")
 
+    # TTS Status Indicator
+    try:
+        from audio_generator import get_tts_provider
+        tts_provider = get_tts_provider()
+        if "Azure" in tts_provider and "not configured" not in tts_provider:
+            st.sidebar.caption("🔊 Azure TTS Active")
+        else:
+            st.sidebar.caption("🔊 TTS Not Configured")
+    except ImportError:
+        st.sidebar.caption("🔊 TTS Unavailable")
+
     # Authentication section - prominent placement
     if is_signed_in():
         user = st.session_state.get("user", {})

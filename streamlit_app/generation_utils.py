@@ -330,7 +330,7 @@ def estimate_api_costs(num_words: int, num_sentences: int = 10) -> dict:
         "total_images": total_sentences,
         "pixabay_requests": total_sentences,  # One per sentence
         "groq_tokens_est": int(num_words * 400),  # 2-pass architecture: ~400 tokens/word
-        "edge_tts_chars": int(total_sentences * avg_chars_per_sentence),
+        "azure_tts_chars": int(total_sentences * avg_chars_per_sentence),
     }
 
 def parse_csv_upload(file_content: bytes) -> list[dict]:

@@ -68,7 +68,7 @@ def render_terms_conditions_page():
     - You are responsible for ensuring your content does not violate third-party rights
 
     ### Third-Party Services
-    - Content from Groq AI, Pixabay, and Edge TTS is subject to their respective terms
+    - Content from Groq AI, Pixabay, and Azure Cognitive Services is subject to their respective terms
     - You agree to comply with all third-party service terms
 
     ## 6. Privacy and Data Protection

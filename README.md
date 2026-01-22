@@ -2,7 +2,7 @@
 
 **Generate professional language learning Anki decks in minutes.**
 
-Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 77 languages**. Built with Groq, Edge TTS, Pixabay, and genanki.
+Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 77 languages**. Built with Groq, Azure Cognitive Services TTS, Pixabay, and genanki.
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized context, and multi-sensory learning.
 
@@ -16,21 +16,31 @@ cd LanguagLearning
 pip install -r requirements.txt
 ```
 
-### 2. Get Free API Keys
+### 2. Get API Keys
+
+#### Required APIs
 - **Groq** (AI sentences): https://console.groq.com/keys
 - **Pixabay** (images): https://pixabay.com/api/docs/
+- **Azure Cognitive Services** (audio): Configure in the app's API Setup page
 
-### 3. Run
+**Note**: Without Azure TTS, the app falls back to Edge TTS (may have reliability issues).
+
+### 3. Run & Configure APIs
 ```bash
 streamlit run app.py
 ```
+**In the app:**
+1. Enter your Groq API key (required)
+2. Enter your Pixabay API key (required)  
+3. Enter your Azure TTS key (required for audio)
+4. Test each API key
+5. Save and proceed
 
 ### 4. Generate Your First Deck
-1. Paste your API keys
-2. Pick a language
-3. Select 1-10 words (max 10 per generation)
-4. Hit "Generate"
-5. Download & import to Anki ✅
+1. Pick a language (API keys already configured)
+2. Select 1-10 words (max 10 per generation)
+3. Hit "Generate"
+4. Download & import to Anki ✅
 
 ---
 
@@ -39,7 +49,7 @@ streamlit run app.py
 ### Core Functionality
 - **AI Sentences** — Groq generates 10 contextual sentences per word
 - **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
-- **Native Audio** — Edge TTS with 200+ voices, adjustable speed & pitch
+- **Native Audio** — Azure Cognitive Services TTS with 200+ neural voices, adjustable speed & pitch
 - **Beautiful Images** — Pixabay API with keyword extraction
 - **IPA Transcriptions** — Official phonetic transcriptions or romanization for learner-friendly languages ([IPA Chart Reference](https://www.ipachart.com/))
 - **3-Card Anki Template** — Listening, Production, Reading cards

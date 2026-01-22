@@ -30,7 +30,7 @@ def render_privacy_policy_page():
     - **Log Data**: IP address, access times, error reports
 
     ### Third-Party Service Data
-    - **API Usage**: Information sent to and received from Groq AI, Pixabay, and Edge TTS services
+    - **API Usage**: Information sent to and received from Groq AI, Pixabay, and Azure Cognitive Services
     - **Generated Content**: Language learning cards and audio files you create
 
     ## 3. How We Use Your Information
@@ -97,7 +97,7 @@ def render_privacy_policy_page():
 
     - **Groq AI**: Processes text for sentence generation (see their [privacy policy](https://groq.com/privacy/))
     - **Pixabay**: Provides images for flashcards (see their [privacy policy](https://pixabay.com/service/privacy/))
-    - **Edge TTS**: Generates audio pronunciations (Microsoft service)
+    - **Azure Cognitive Services**: Generates audio pronunciations (Microsoft service)
     - **Firebase**: Cloud storage and authentication (see their [privacy policy](https://firebase.google.com/support/privacy))
 
     ## 10. International Data Transfers

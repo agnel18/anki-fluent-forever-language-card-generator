@@ -65,33 +65,21 @@ def render_main_page():
 
     st.markdown("---")
 
-    # Introduction section - moved after Features
-    with st.container():
-        st.markdown("## 🎯 How It Works")
-        st.markdown("This app guides you through a **5-step process** to create custom Anki decks:")
+    # Check for missing API keys and show consolidated warning
+    missing_keys = []
+    if not st.session_state.get("groq_api_key"):
+        missing_keys.append("Groq")
+    if not st.session_state.get("pixabay_api_key"):
+        missing_keys.append("Pixabay")
+    if not st.session_state.get("azure_tts_key"):
+        missing_keys.append("Azure TTS")
 
-        # Step indicators in a nice layout
-        steps = [
-            ("📋 Language Selection", "Choose your target language"),
-            ("📚 Word Selection", "Pick words from frequency lists or upload your own"),
-            ("⚙️ Sentence Settings", "Configure sentence generation parameters"),
-            ("✨ Generate", "Create your Anki deck with AI sentences and images"),
-            ("📥 Complete", "Download your ready-to-use Anki deck")
-        ]
-
-        for i, (title, desc) in enumerate(steps, 1):
-            st.markdown(f"**{i}. {title}** - {desc}")
-
-        st.markdown("*Each step is on a separate page so you can focus without confusion.*")
-        st.markdown("---")
+    if missing_keys:
+        st.warning(f"⚠️ **API Keys Required**: {', '.join(missing_keys)} API key(s) not configured. You'll be redirected to set them up.")
 
     # Quick start section - moved to bottom, left-aligned with bigger button
     with st.container():
-        # Check if API keys are already set
-        has_api_keys = bool(st.session_state.get("groq_api_key") and st.session_state.get("pixabay_api_key"))
-        button_text = "🚀 Start Creating Your Deck" if not has_api_keys else "🚀 Continue Creating Your Deck"
-        help_text = "Begin the 5-step deck creation process" if not has_api_keys else "Continue with your saved API keys"
-        
+
         # Add custom CSS class for enhanced styling
         st.markdown("""
         <style>
@@ -104,15 +92,25 @@ def render_main_page():
         }
         </style>
         """, unsafe_allow_html=True)
-        
+
         # Wrap button in container with custom class
         st.markdown('<div class="primary-action-button">', unsafe_allow_html=True)
+        
+        # Define button text and help text
+        has_all_api_keys = bool(
+            st.session_state.get("groq_api_key") and
+            st.session_state.get("pixabay_api_key") and
+            st.session_state.get("azure_tts_key")
+        )
+        button_text = "🚀 Start Creating Your Deck" if not has_all_api_keys else "🚀 Continue Creating Your Deck"
+        help_text = "Begin the 5-step deck creation process" if not has_all_api_keys else "Continue with your saved API keys"
+        
         if st.button(button_text, type="primary", help=help_text, use_container_width=True):
             # Add brief loading animation
             with st.spinner("🚀 Getting started..."):
                 import time
                 time.sleep(0.3)  # Brief pause for visual feedback
-            if has_api_keys:
+            if has_all_api_keys:
                 st.session_state.page = "language_select"
             else:
                 st.session_state.page = "api_setup"

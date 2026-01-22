@@ -23,12 +23,6 @@ from pathlib import Path
 
 # Import constants and functions from local modules
 try:
-    from edge_tts_voices import EDGE_TTS_VOICES
-except ImportError:
-    EDGE_TTS_VOICES = {}  # Fallback empty dict
-    print("Warning: Could not import EDGE_TTS_VOICES, using empty fallback")
-
-try:
     from frequency_utils import get_available_frequency_lists, get_csv_template, get_words_with_ranks, validate_word_list, parse_uploaded_word_file
 except ImportError as e:
     print(f"Warning: Could not import frequency_utils: {e}")
@@ -248,7 +242,7 @@ def main():
 
         # Ensure critical session state variables are initialized (mobile compatibility)
         if "sentence_length_range" not in st.session_state:
-            st.session_state.sentence_length_range = (6, 16)
+            st.session_state.sentence_length_range = (8, 16)
         if "sentences_per_word" not in st.session_state:
             st.session_state.sentences_per_word = 10
         if "difficulty" not in st.session_state:

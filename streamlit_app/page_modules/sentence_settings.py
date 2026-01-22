@@ -1,10 +1,6 @@
 # pages/sentence_settings.py - Sentence settings page for the language learning app
 
 import streamlit as st
-try:
-    from edge_tts_voices import EDGE_TTS_VOICES
-except ImportError:
-    EDGE_TTS_VOICES = {}  # Fallback empty dict
 from constants import CURATED_TOPICS
 
 
@@ -234,22 +230,33 @@ def render_sentence_settings_page():
         col_voice, col_speed = st.columns(2)
         with col_voice:
             lang = st.session_state.selected_language
-            if lang in EDGE_TTS_VOICES:
-                voice_options = [f"{v[0]} ({v[1]}, {v[2]})" for v in EDGE_TTS_VOICES[lang]]
-                selected_voice_idx = voice_options.index(st.session_state.selected_voice_display) if st.session_state.selected_voice_display in voice_options else 0
+            # Map language names to language codes for Azure TTS
+            lang_code_map = {
+                "Spanish": "es", "French": "fr", "German": "de", "Italian": "it",
+                "Portuguese": "pt", "Russian": "ru", "Japanese": "ja", "Korean": "ko",
+                "Chinese (Simplified)": "zh", "Chinese (Traditional)": "zh",
+                "Arabic": "ar", "Hindi": "hi", "English": "en"
+            }
+            lang_code = lang_code_map.get(lang, "en")
+
+            try:
+                from audio_generator import get_available_voices
+                voice_options = get_available_voices(lang_code)
+                selected_voice_idx = voice_options.index(st.session_state.selected_voice) if st.session_state.selected_voice in voice_options else 0
                 st.markdown("**Voice**")
-                selected_voice_display = st.selectbox(
+                selected_voice = st.selectbox(
                     label="Voice Selection",
                     options=voice_options,
                     index=selected_voice_idx,
-                    help="Choose the voice for audio generation.",
+                    help="Choose the Azure TTS voice for audio generation.",
                     label_visibility="collapsed"
                 )
-                st.session_state.selected_voice_display = selected_voice_display
-                st.session_state.selected_voice = EDGE_TTS_VOICES[lang][voice_options.index(selected_voice_display)][0]
-            else:
-                st.session_state.selected_voice_display = "en-US-AvaNeural (Female, Ava)"
-                st.session_state.selected_voice = "en-US-AvaNeural"
+                st.session_state.selected_voice = selected_voice
+                st.session_state.selected_voice_display = selected_voice
+            except ImportError:
+                st.error("Azure TTS not configured. Please set up Azure TTS key in API Setup.")
+                st.session_state.selected_voice = "en-US-AriaNeural"
+                st.session_state.selected_voice_display = "en-US-AriaNeural"
         with col_speed:
             st.markdown("**Audio Speed**")
             audio_speed = st.slider(

@@ -6,7 +6,7 @@ import asyncio
 import logging
 import re
 from typing import Optional, List
-import edge_tts
+import azure.cognitiveservices.speech as speechsdk
 
 # Import error recovery
 from error_recovery import graceful_degradation, resilient_audio_generation
@@ -14,7 +14,55 @@ from error_recovery import graceful_degradation, resilient_audio_generation
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# AUDIO GENERATION (Edge TTS)
+# AZURE COGNITIVE SERVICES TTS CONFIGURATION
+# ============================================================================
+
+# Azure TTS Configuration
+def get_azure_tts_config():
+    # Check session state first, then environment variables
+    import streamlit as st
+    subscription_key = ""
+    try:
+        subscription_key = st.session_state.get("azure_tts_key", os.getenv("AZURE_TTS_KEY", ""))
+    except:
+        subscription_key = os.getenv("AZURE_TTS_KEY", "")
+    
+    return {
+        "subscription_key": subscription_key,
+        "region": "centralindia",  # From deployment
+        "resource_name": "anki-audio-gen-1"  # From deployment
+    }
+
+def get_azure_speech_config():
+    """Get Azure Speech configuration."""
+    config = get_azure_tts_config()
+    if not config["subscription_key"]:
+        raise ValueError("AZURE_TTS_KEY environment variable not set")
+
+    speech_config = speechsdk.SpeechConfig(
+        subscription=config["subscription_key"],
+        region=config["region"]
+    )
+    speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"  # Default voice
+    return speech_config
+
+def is_azure_tts_configured():
+    """Check if Azure TTS is properly configured."""
+    try:
+        get_azure_speech_config()
+        return True
+    except ValueError:
+        return False
+
+def get_tts_provider():
+    """Get the current TTS provider being used."""
+    if is_azure_tts_configured():
+        return "Azure Cognitive Services TTS"
+    else:
+        return "Azure TTS (not configured)"
+
+# ============================================================================
+# AUDIO GENERATION (Azure TTS)
 # ============================================================================
 async def generate_audio_async(
     text: str,
@@ -23,11 +71,11 @@ async def generate_audio_async(
     rate: float = 0.8,  # Playback speed for learners
 ) -> bool:
     """
-    Generate audio asynchronously using Edge TTS.
+    Generate audio asynchronously using Azure Cognitive Services TTS.
 
     Args:
         text: Text to synthesize
-        voice: Edge TTS voice code (e.g., "en-US-AvaNeural")
+        voice: Azure TTS voice name (e.g., "en-US-AriaNeural")
         output_path: Path to save MP3 file
         rate: Playback speed (0.5-2.0; 0.8 is learner-friendly)
 
@@ -37,30 +85,49 @@ async def generate_audio_async(
     try:
         # Validate input text
         if not text or not text.strip():
-            logger.warning(f"Empty or whitespace-only text provided for audio generation")
+            logger.warning("Empty or whitespace-only text provided for audio generation")
             return False
 
-        # Edge TTS rate format: "+0%" for normal, "-20%" for 0.8x
+        # Get Azure speech configuration
+        speech_config = get_azure_speech_config()
+
+        # Configure audio output
+        audio_config = speechsdk.audio.AudioOutputConfig(filename=output_path)
+
+        # Create synthesizer
+        synthesizer = speechsdk.SpeechSynthesizer(
+            speech_config=speech_config,
+            audio_config=audio_config
+        )
+
+        # Set speech rate using SSML (Azure TTS uses percentage: 0% = normal, -50% = half speed)
         rate_pct = int((rate - 1.0) * 100)
-        rate_str = f"{rate_pct:+d}%"
+        ssml = f"""<speak version='1.0' xml:lang='en-US'>
+            <voice name='{voice}'>
+                <prosody rate='{rate_pct}%'>
+                    {text.strip()}
+                </prosody>
+            </voice>
+        </speak>"""
 
-        kwargs = {"text": text.strip(), "voice": voice, "rate": rate_str}
+        # Synthesize speech using SSML
+        result = synthesizer.speak_ssml_async(ssml).get()
 
-        communicate = edge_tts.Communicate(**kwargs)
-        await communicate.save(output_path)
-
-        # Check if file was actually created and has content
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+        # Check result
+        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            logger.info(f"Azure TTS synthesis completed for voice: {voice}")
             return True
-        else:
-            logger.warning(f"Edge TTS save completed but file not created or empty: {output_path}")
-            # Clean up empty file
-            if os.path.exists(output_path):
-                os.unlink(output_path)
+        elif result.reason == speechsdk.ResultReason.Canceled:
+            cancellation_details = result.cancellation_details
+            logger.error(f"Azure TTS synthesis canceled: {cancellation_details.reason}")
+            if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                logger.error(f"Azure TTS error details: {cancellation_details.error_details}")
             return False
+
+        return False
 
     except Exception as exc:
-        logger.error(f"Edge TTS error for {voice}: {exc}")
+        logger.error(f"Azure TTS error for {voice}: {exc}")
         # Clean up any empty file that might have been created
         if os.path.exists(output_path) and os.path.getsize(output_path) == 0:
             try:
@@ -82,11 +149,11 @@ def generate_audio(
     unique_id: str = None,
 ) -> List[str]:
     """
-    Batch generate audio files synchronously using Edge TTS.
+    Batch generate audio files synchronously using Azure TTS.
 
     Args:
         sentences: List of sentences to synthesize
-        voice: Edge TTS voice code
+        voice: Azure TTS voice name
         output_dir: Directory to save MP3 files
         batch_name: Prefix for filenames
         rate: Playback speed
@@ -110,7 +177,7 @@ def generate_audio(
                 filename = f"{batch_name}_{i+1:02d}{unique_suffix}.mp3"
             output_path = Path(output_dir) / filename
 
-            # Use Edge TTS
+            # Use Azure TTS
             tasks.append(generate_audio_async(sentence, voice, str(output_path), rate))
 
         results = await asyncio.gather(*tasks)
@@ -147,6 +214,7 @@ def _sanitize_word(word: str) -> str:
     return safe or "word"
 
 def _voice_for_language(language: str) -> str:
+    """Get default Azure TTS voice for a language."""
     voice_map = {
         "Spanish": "es-ES-ElviraNeural",
         "French": "fr-FR-DeniseNeural",
@@ -155,41 +223,40 @@ def _voice_for_language(language: str) -> str:
         "Portuguese": "pt-BR-FranciscaNeural",
         "Russian": "ru-RU-SvetlanaNeural",
         "Japanese": "ja-JP-NanamiNeural",
-        "Korean": "ko-KR-SoonBokNeural",
+        "Korean": "ko-KR-SunHiNeural",
         "Chinese (Simplified)": "zh-CN-XiaoxiaoNeural",
         "Chinese (Traditional)": "zh-TW-HsiaoChenNeural",
-        "Arabic": "ar-SA-LeenNeural",
+        "Arabic": "ar-SA-ZariyahNeural",
         "Hindi": "hi-IN-SwaraNeural",
         "Mandarin Chinese": "zh-CN-XiaoxiaoNeural",
-        "English": "en-US-AvaNeural",
+        "English": "en-US-AriaNeural",
     }
-    return voice_map.get(language, "en-US-AvaNeural")
+    return voice_map.get(language, "en-US-AriaNeural")
 
 def get_available_voices(language_code: str) -> list[str]:
     """
-    Get available Edge TTS voices for a language (async).
-    Falls back to language defaults if full list unavailable.
+    Get available Azure TTS voices for a language.
 
     Args:
         language_code: ISO language code (e.g., "en", "es")
 
     Returns:
-        List of voice codes
+        List of Azure TTS voice names
     """
-    # Map language codes to available voices (can be extended)
+    # Map language codes to available Azure TTS voices
     voice_map = {
-        "en": ["en-US-AvaNeural", "en-US-BrianNeural", "en-GB-RyanNeural"],
+        "en": ["en-US-AriaNeural", "en-US-ZiraNeural", "en-GB-SoniaNeural"],
         "es": ["es-ES-ElviraNeural", "es-MX-DaliaNeural"],
         "fr": ["fr-FR-DeniseNeural", "fr-FR-HenriNeural"],
-        "de": ["de-DE-KatjaNeural", "de-DE-SashaNeural"],
-        "it": ["it-IT-IsabellaNeural"],
-        "pt": ["pt-BR-FranciscaNeural"],
-        "ru": ["ru-RU-DmitryNeural"],
-        "ja": ["ja-JP-NanamiNeural"],
-        "ko": ["ko-KR-SunHiNeural"],
-        "zh": ["zh-CN-XiaoxiaoNeural"],
-        "ar": ["ar-SA-ZariyahNeural"],
-        "hi": ["hi-IN-SwatiNeural"],
+        "de": ["de-DE-KatjaNeural", "de-DE-ConradNeural"],
+        "it": ["it-IT-ElsaNeural", "it-IT-IsabellaNeural"],
+        "pt": ["pt-BR-FranciscaNeural", "pt-BR-AntonioNeural"],
+        "ru": ["ru-RU-SvetlanaNeural", "ru-RU-DmitryNeural"],
+        "ja": ["ja-JP-NanamiNeural", "ja-JP-KeitaNeural"],
+        "ko": ["ko-KR-SunHiNeural", "ko-KR-InJoonNeural"],
+        "zh": ["zh-CN-XiaoxiaoNeural", "zh-CN-YunxiNeural"],
+        "ar": ["ar-SA-ZariyahNeural", "ar-SA-HamedNeural"],
+        "hi": ["hi-IN-SwaraNeural", "hi-IN-MadhurNeural"],
     }
 
-    return voice_map.get(language_code, ["en-US-AvaNeural"])
+    return voice_map.get(language_code, ["en-US-AriaNeural"])

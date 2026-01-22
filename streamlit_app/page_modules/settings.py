@@ -3,6 +3,7 @@
 import streamlit as st
 import datetime
 import time
+import os
 from pathlib import Path
 from utils import persist_api_keys
 
@@ -211,70 +212,292 @@ def render_settings_page():
     
     st.markdown("---")
 
-    # --- API Keys Management Section ---
-    st.markdown("## 🔑 API Keys Management")
-    st.info("Manage your API keys for Groq and Pixabay services.")
+    # --- API Configuration Sections ---
+    st.markdown("## 🔑 API Configuration")
+    st.markdown("Configure the required APIs for AI generation, images, and audio. All three are needed for full functionality.")
 
-    if api_key_manager:
-        # Current API keys status
-        status = api_key_manager.get_api_key_status()
+    # Load current API keys
+    groq_key = st.session_state.get("groq_api_key", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+    azure_key = st.session_state.get("azure_tts_key", os.getenv("AZURE_TTS_KEY", ""))
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.success(status.get('groq', "❌ No Groq API key set"))
+    # Check current API status
+    azure_configured = bool(azure_key)
+    groq_configured = bool(groq_key)
+    pixabay_configured = bool(pixabay_key)
 
-        with col2:
-            st.success(status.get('pixabay', "❌ No Pixabay API key set"))
+    # Status overview
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if groq_configured:
+            st.success("✅ **Groq API** - Configured")
+        else:
+            st.error("❌ **Groq API** - Not configured")
+    with col2:
+        if pixabay_configured:
+            st.success("✅ **Pixabay API** - Configured")
+        else:
+            st.error("❌ **Pixabay API** - Not configured")
+    with col3:
+        if azure_configured:
+            st.success("✅ **Azure TTS** - Configured")
+        else:
+            st.error("❌ **Azure TTS** - Not configured")
 
-        # API key management options
-        st.markdown("**Manage API Keys:**")
-        manage_col1, manage_col2, manage_col3 = st.columns(3)
+    if not all([groq_configured, pixabay_configured, azure_configured]):
+        st.warning("⚠️ Some APIs are not configured. Please set up all required APIs below for full functionality.")
 
-        with manage_col1:
-            if st.button("🔄 Update API Keys", help="Go back to API setup to change your keys"):
-                st.session_state.page = "api_setup"
-                st.rerun()
+    # === GROQ API SECTION ===
+    st.markdown("### 🔗 Groq API (AI Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not groq_configured):
+        st.markdown("""
+        **Follow these steps to get your Groq API key:**
 
-        with manage_col2:
-            if st.button("💾 Save to Cloud", help="Save current API keys to Firebase for cross-device sync"):
-                api_key_manager.save_api_keys_to_cloud()
+        1. **Go to** https://console.groq.com/
+        2. **Create an account** (if you don't have one)
+        3. **Navigate to** API keys section
+        4. **Create new API key**
+        5. **Copy and paste** the key into the field below
+        """)
 
-        with manage_col3:
-            if st.button("📥 Load from Cloud", help="Load API keys from Firebase"):
-                if api_key_manager.load_api_keys_from_cloud():
+    # Groq API Key Input
+    groq_key_input = st.text_input(
+        "Groq API Key",
+        value=groq_key,
+        type="password",
+        help="Paste your Groq API key here",
+        key="groq_key_input"
+    )
+
+    col_save, col_test = st.columns([1, 1])
+    with col_save:
+        if st.button("💾 Save Groq Key", help="Save the Groq API key"):
+            if groq_key_input:
+                # Save to environment variable
+                os.environ["GROQ_API_KEY"] = groq_key_input
+
+                # Save to .env file
+                env_path = Path(__file__).parent.parent / ".env"
+                try:
+                    env_content = ""
+                    if env_path.exists():
+                        env_content = env_path.read_text()
+
+                    lines = env_content.split('\n')
+                    key_found = False
+                    for i, line in enumerate(lines):
+                        if line.startswith('GROQ_API_KEY='):
+                            lines[i] = f'GROQ_API_KEY={groq_key_input}'
+                            key_found = True
+                            break
+
+                    if not key_found:
+                        lines.append(f'GROQ_API_KEY={groq_key_input}')
+
+                    env_path.write_text('\n'.join(lines))
+                    st.success("✅ Groq API key saved successfully!")
+                    st.info("🔄 Refresh the page to apply changes.")
+                    time.sleep(1)
                     st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to save to .env file: {e}")
+                    st.info("💡 The key is set for this session.")
+            else:
+                st.error("❌ Please enter a valid Groq API key")
 
-        # API key validation section
-        st.markdown("**Test API Keys:**")
-        test_col1, test_col2 = st.columns(2)
+    with col_test:
+        if groq_key_input or groq_key:
+            test_key = groq_key_input or groq_key
+            if st.button("🧪 Test Groq Connection", help="Test your Groq API key"):
+                with st.spinner("Testing Groq API connection..."):
+                    try:
+                        from groq import Groq
+                        client = Groq(api_key=test_key)
+                        # Simple test call
+                        response = client.chat.completions.create(
+                            model="mixtral-8x7b-32768",
+                            messages=[{"role": "user", "content": "Hello"}],
+                            max_tokens=10
+                        )
+                        st.success("✅ Groq API connection successful!")
+                        st.info("🎉 You can now generate AI content with Groq!")
+                    except Exception as e:
+                        st.error(f"❌ Groq API test failed: {str(e)}")
+                        st.info("💡 Check your API key and internet connection.")
 
-        with test_col1:
-            if st.button("🧪 Test Groq Key", help="Test your Groq API key with a simple request"):
-                groq_key, _ = api_key_manager.get_api_keys()
-                if groq_key:
-                    with st.spinner("Testing Groq API key..."):
-                        is_valid, message = api_key_manager.validate_api_key(groq_key, 'groq')
-                    if is_valid:
-                        st.success(message)
-                    else:
-                        st.error(message)
-                else:
-                    st.error("❌ No Groq API key set")
+    st.markdown("---")
 
-        with test_col2:
-            if st.button("🧪 Test Pixabay Key", help="Test your Pixabay API key with a simple request"):
-                _, pixabay_key = api_key_manager.get_api_keys()
-                if pixabay_key:
-                    with st.spinner("Testing Pixabay API key..."):
-                        is_valid, message = api_key_manager.validate_api_key(pixabay_key, 'pixabay')
-                    if is_valid:
-                        st.success(message)
-                    else:
-                        st.error(message)
-                else:
-                    st.error("❌ No Pixabay API key set")
-    else:
-        st.warning("API key management unavailable - API key service not loaded")
+    # === PIXABAY API SECTION ===
+    st.markdown("### 🖼️ Pixabay API (Image Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not pixabay_configured):
+        st.markdown("""
+        **Follow these steps to get your Pixabay API key:**
+
+        1. **Go to** https://pixabay.com/api/docs/
+        2. **Register** for a free account
+        3. **Find your API key** in the "Parameters" section
+        4. **Copy the key** (format: 53693289-1c945bxxxxxxxxx)
+        5. **Paste into the field** below
+        """)
+
+    # Pixabay API Key Input
+    pixabay_key_input = st.text_input(
+        "Pixabay API Key",
+        value=pixabay_key,
+        type="password",
+        help="Paste your Pixabay API key here",
+        key="pixabay_key_input"
+    )
+
+    col_save, col_test = st.columns([1, 1])
+    with col_save:
+        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
+            if pixabay_key_input:
+                # Save to environment variable
+                os.environ["PIXABAY_API_KEY"] = pixabay_key_input
+
+                # Save to .env file
+                env_path = Path(__file__).parent.parent / ".env"
+                try:
+                    env_content = ""
+                    if env_path.exists():
+                        env_content = env_path.read_text()
+
+                    lines = env_content.split('\n')
+                    key_found = False
+                    for i, line in enumerate(lines):
+                        if line.startswith('PIXABAY_API_KEY='):
+                            lines[i] = f'PIXABAY_API_KEY={pixabay_key_input}'
+                            key_found = True
+                            break
+
+                    if not key_found:
+                        lines.append(f'PIXABAY_API_KEY={pixabay_key_input}')
+
+                    env_path.write_text('\n'.join(lines))
+                    st.success("✅ Pixabay API key saved successfully!")
+                    st.info("🔄 Refresh the page to apply changes.")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to save to .env file: {e}")
+                    st.info("💡 The key is set for this session.")
+            else:
+                st.error("❌ Please enter a valid Pixabay API key")
+
+    with col_test:
+        if pixabay_key_input or pixabay_key:
+            test_key = pixabay_key_input or pixabay_key
+            if st.button("🧪 Test Pixabay Connection", help="Test your Pixabay API key"):
+                with st.spinner("Testing Pixabay API connection..."):
+                    try:
+                        import requests
+                        response = requests.get(
+                            "https://pixabay.com/api/",
+                            params={"key": test_key, "q": "test", "per_page": 1}
+                        )
+                        if response.status_code == 200:
+                            data = response.json()
+                            if "hits" in data:
+                                st.success("✅ Pixabay API connection successful!")
+                                st.info("🎉 You can now generate images with Pixabay!")
+                            else:
+                                st.error("❌ Pixabay API returned unexpected response")
+                        else:
+                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                    except Exception as e:
+                        st.error(f"❌ Pixabay API test failed: {str(e)}")
+                        st.info("💡 Check your API key and internet connection.")
+
+    st.markdown("---")
+
+    # === AZURE TTS API SECTION ===
+    st.markdown("### 🔊 Azure TTS API (Audio Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not azure_configured):
+        st.markdown("""
+        **Follow these steps to get your Azure TTS API key:**
+
+        1. **Go to** [Azure Portal](https://portal.azure.com/)
+        2. **Click** "Create a resource"
+        3. **Search for** "Speech" and select "Speech" by Microsoft
+        4. **Configure:**
+           - Subscription: Choose your subscription
+           - Resource group: Create new or select existing
+           - Region: Choose closest region (e.g., "Central India", "East US")
+           - Name: Choose unique name (e.g., "language-learning-tts")
+           - Pricing tier: Free F0 (5M free/month) or Standard S0
+        5. **Click** "Review + create" → "Create"
+
+        6. **Get your key:**
+           - Go to your Speech resource
+           - Click "Keys and Endpoint" (left menu)
+           - Copy "Key 1" or "Key 2"
+        """)
+
+    # Azure TTS API Key Input
+    azure_key_input = st.text_input(
+        "Azure TTS API Key",
+        value=azure_key,
+        type="password",
+        help="Paste your Azure Cognitive Services subscription key here",
+        key="azure_key_input"
+    )
+
+    col_save, col_test = st.columns([1, 1])
+    with col_save:
+        if st.button("💾 Save Azure TTS Key", help="Save the Azure TTS API key"):
+            if azure_key_input:
+                # Save to session state
+                st.session_state.azure_tts_key = azure_key_input
+                
+                # Save to environment variable
+                os.environ["AZURE_TTS_KEY"] = azure_key_input
+
+                # Save to .env file
+                env_path = Path(__file__).parent.parent / ".env"
+                try:
+                    env_content = ""
+                    if env_path.exists():
+                        env_content = env_path.read_text()
+
+                    lines = env_content.split('\n')
+                    key_found = False
+                    for i, line in enumerate(lines):
+                        if line.startswith('AZURE_TTS_KEY='):
+                            lines[i] = f'AZURE_TTS_KEY={azure_key_input}'
+                            key_found = True
+                            break
+
+                    if not key_found:
+                        lines.append(f'AZURE_TTS_KEY={azure_key_input}')
+
+                    env_path.write_text('\n'.join(lines))
+                    st.success("✅ Azure TTS key saved successfully!")
+                    st.info("🔄 Refresh the page to apply changes.")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to save to .env file: {e}")
+                    st.info("💡 The key is set for this session.")
+            else:
+                st.error("❌ Please enter a valid Azure TTS API key")
+
+    with col_test:
+        if azure_key_input or azure_key:
+            test_key = azure_key_input or azure_key
+            if st.button("🧪 Test Azure TTS Connection", help="Test your Azure TTS API key"):
+                with st.spinner("Testing Azure TTS connection..."):
+                    try:
+                        import azure.cognitiveservices.speech as speechsdk
+                        speech_config = speechsdk.SpeechConfig(
+                            subscription=test_key,
+                            region="centralindia"
+                        )
+                        st.success("✅ Azure TTS connection successful!")
+                        st.info("🎉 You can now generate high-quality audio with Azure TTS!")
+                    except Exception as e:
+                        st.error(f"❌ Azure TTS test failed: {str(e)}")
+                        st.info("💡 Check your subscription key and ensure the Azure resource is active.")
 
     st.markdown("---")
     st.markdown("## 🎨 Theme")
@@ -471,9 +694,12 @@ def render_settings_page():
                     TOPIC_LIMIT = 5
                     if current_topic_count < TOPIC_LIMIT:
                         st.info(f"📊 **Topics selected:** {current_topic_count}/{TOPIC_LIMIT}")
+            else:
+                # When topics are disabled, allow all selections
+                is_valid = True
 
-                # Get curated topics
-                curated_topics = prefs_manager.get_curated_topics()
+            # Get curated topics
+            curated_topics = prefs_manager.get_curated_topics()
 
             # Curated topics selection in two columns
             st.markdown("**Select topics:**")

@@ -75,16 +75,13 @@ def render_generate_page():
     
     # Separate section for viewing and editing selected words with enrichment data
     st.markdown("---")
-    st.markdown("### 📚 Word Enrichment and Review")
-    st.markdown("Provide optional word meanings to enhance AI-generated sentences. Leave blank to skip - the AI will generate content based on the word itself.")
-    
-    st.markdown("**How it works:**")
-    st.markdown("- 💡 **Optional Input**: Add your own meanings, examples, or cultural notes (max 300 characters)")
-    st.markdown("- 🤖 **AI Enhancement**: Your input helps create more personalized and accurate sentences")
-    st.markdown("- 📝 **Skip Anytime**: Leave blank and let AI generate based on the word alone")
+    st.markdown("### 📚 Word Enrichment and Review (Optional)")
+    st.markdown("Provide Word Meanings, Variations, Examples, or cultural notes (max 300 characters).")
+    st.markdown("Your input helps create more personalized and accurate sentences.")
+    st.markdown("*Leave blank to skip - the AI will generate content based on the word itself.*")
     
     st.markdown("**Example:** For \"house\" you might enter:")
-    st.code("a building where people live; home; residence", language=None)
+    st.code("Meanings: A building where people live; home; residence\nUsage: He built a house in the outskirts of town.", language=None)
     
     if selected_words:
         # Initialize with empty meanings for user input
@@ -96,12 +93,6 @@ def render_generate_page():
         df = pd.DataFrame(word_data)
         
         # Display editable consolidated meaning fields for each word
-        st.markdown("**Provide optional meaning information below to improve sentence generation quality:**")
-        st.markdown("**Tips for better results:**")
-        st.markdown("- Include multiple meanings or variations")
-        st.markdown("- Add examples or cultural context")
-        st.markdown("- Use semicolons (;) to separate different meanings")
-        st.markdown("- Try it out - your input helps create better sentences!")
 
         # Create individual text areas for each word
         edited_data = []
