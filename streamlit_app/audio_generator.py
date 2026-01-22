@@ -6,7 +6,14 @@ import asyncio
 import logging
 import re
 from typing import Optional, List
-import azure.cognitiveservices.speech as speechsdk
+
+# Conditional import for Azure SDK
+try:
+    import azure.cognitiveservices.speech as speechsdk
+    AZURE_AVAILABLE = True
+except ImportError:
+    AZURE_AVAILABLE = False
+    speechsdk = None
 
 # Import error recovery
 from error_recovery import graceful_degradation, resilient_audio_generation
@@ -35,6 +42,9 @@ def get_azure_tts_config():
 
 def get_azure_speech_config():
     """Get Azure Speech configuration."""
+    if not AZURE_AVAILABLE:
+        raise ValueError("Azure Cognitive Services Speech SDK not available")
+
     config = get_azure_tts_config()
     if not config["subscription_key"]:
         raise ValueError("AZURE_TTS_KEY environment variable not set")
@@ -82,6 +92,10 @@ async def generate_audio_async(
     Returns:
         True if successful, False otherwise
     """
+    if not AZURE_AVAILABLE:
+        logger.warning("Azure Cognitive Services Speech SDK not available")
+        return False
+
     try:
         # Validate input text
         if not text or not text.strip():
@@ -163,6 +177,10 @@ def generate_audio(
     Returns:
         List of generated file paths
     """
+    if not AZURE_AVAILABLE:
+        logger.warning("Azure Cognitive Services Speech SDK not available")
+        return []
+
     os.makedirs(output_dir, exist_ok=True)
 
     async def batch_generate():

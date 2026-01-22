@@ -29,6 +29,14 @@ try:
     logger.info("Successfully imported from audio_generator")
 except ImportError as e:
     logger.warning(f"Failed to import from audio_generator: {e}. Using fallback implementations.")
+    # Define fallback functions
+    def generate_audio(sentences, voice, output_dir, **kwargs):
+        """Fallback audio generation - returns empty list when audio is unavailable."""
+        logger.warning("Audio generation not available - returning empty audio list")
+        return []
+    def _voice_for_language(language):
+        """Fallback voice selection."""
+        return "en-US-AriaNeural"
 
 # Import from image_generator module
 try:
