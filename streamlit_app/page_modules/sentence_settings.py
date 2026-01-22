@@ -240,8 +240,12 @@ def render_sentence_settings_page():
             lang_code = lang_code_map.get(lang, "en")
 
             try:
-                from audio_generator import get_available_voices
-                voice_options = get_available_voices(lang_code)
+                from audio_generator import get_available_voices, AZURE_AVAILABLE
+                if not AZURE_AVAILABLE:
+                    st.warning("⚠️ Azure TTS not available in this environment. Audio generation will be skipped.")
+                    voice_options = ["en-US-AriaNeural"]  # Default fallback
+                else:
+                    voice_options = get_available_voices(lang_code)
                 selected_voice_idx = voice_options.index(st.session_state.selected_voice) if st.session_state.selected_voice in voice_options else 0
                 st.markdown("**Voice**")
                 selected_voice = st.selectbox(
@@ -249,7 +253,8 @@ def render_sentence_settings_page():
                     options=voice_options,
                     index=selected_voice_idx,
                     help="Choose the Azure TTS voice for audio generation.",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    disabled=not AZURE_AVAILABLE
                 )
                 st.session_state.selected_voice = selected_voice
                 st.session_state.selected_voice_display = selected_voice

@@ -67,15 +67,21 @@ def render_main_page():
 
     # Check for missing API keys and show consolidated warning
     missing_keys = []
-    if not st.session_state.get("groq_api_key"):
+    groq_key = st.session_state.get("groq_api_key") or os.environ.get("GROQ_API_KEY", "")
+    pixabay_key = st.session_state.get("pixabay_api_key") or os.environ.get("PIXABAY_API_KEY", "")
+    azure_key = st.session_state.get("azure_tts_key") or os.environ.get("AZURE_TTS_KEY", "")
+
+    if not groq_key:
         missing_keys.append("Groq")
-    if not st.session_state.get("pixabay_api_key"):
+    if not pixabay_key:
         missing_keys.append("Pixabay")
-    if not st.session_state.get("azure_tts_key"):
+    if not azure_key:
         missing_keys.append("Azure TTS")
 
     if missing_keys:
         st.warning(f"⚠️ **API Keys Required**: {', '.join(missing_keys)} API key(s) not configured. You'll be redirected to set them up.")
+    else:
+        st.success("✅ All API keys configured! Ready to generate decks.")
 
     # Quick start section - moved to bottom, left-aligned with bigger button
     with st.container():
