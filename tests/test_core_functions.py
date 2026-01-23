@@ -13,7 +13,7 @@ def test_generate_complete_deck_success():
     # Mock the dependencies
     with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
          patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
-         patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images, \
+         patch('streamlit_app.core_functions.generate_images_google') as mock_generate_images, \
          patch('streamlit_app.core_functions.create_apkg_export') as mock_create_apkg:
 
         # Setup mocks
@@ -28,15 +28,15 @@ def test_generate_complete_deck_success():
         # Test parameters
         words = ['test']
         language = 'English'
-        groq_api_key = 'test_key'
-        pixabay_api_key = 'test_key'
+        gemini_api_key = 'test_key'
+        google_custom_search_engine_id = 'test_cx'
         output_dir = 'test_output'
 
         result = generate_complete_deck(
             words=words,
             language=language,
-            groq_api_key=groq_api_key,
-            pixabay_api_key=pixabay_api_key,
+            gemini_api_key=gemini_api_key,
+            google_custom_search_engine_id=google_custom_search_engine_id,
             output_dir=output_dir
         )
 
@@ -52,8 +52,8 @@ def test_generate_complete_deck_sentence_failure():
         result = generate_complete_deck(
             words=['test'],
             language='English',
-            groq_api_key='test_key',
-            pixabay_api_key='test_key',
+            gemini_api_key='test_key',
+            google_custom_search_engine_id='test_cx',
             output_dir='test_output'
         )
 
@@ -64,7 +64,7 @@ def test_generate_complete_deck_apkg_failure():
     """Test deck generation when APKG creation fails."""
     with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
          patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
-         patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images, \
+         patch('streamlit_app.core_functions.generate_images_google') as mock_generate_images, \
          patch('streamlit_app.core_functions.create_apkg_export') as mock_create_apkg:
 
         mock_generate_sentences.return_value = ("test meaning", [
@@ -77,8 +77,8 @@ def test_generate_complete_deck_apkg_failure():
         result = generate_complete_deck(
             words=['test'],
             language='English',
-            groq_api_key='test_key',
-            pixabay_api_key='test_key',
+            gemini_api_key='test_key',
+            google_custom_search_engine_id='test_cx',
             output_dir='test_output'
         )
 

@@ -25,36 +25,19 @@ class TestPass1Improvements:
 
     @pytest.fixture
     def mock_groq_client(self):
-        """Mock Groq client for testing."""
-        with patch('services.generation.content_generator.Groq') as mock_groq:
-            mock_client = MagicMock()
-            mock_groq.return_value = mock_client
-
-            # Mock response with proper format
-            mock_response = MagicMock()
-            mock_response.choices = [MagicMock()]
-            mock_response.choices[0].message.content = """
-MEANING: come (imperative form used to command someone to approach)
-
-RESTRICTIONS: Imperatives: ONLY use in direct commands, never in statements
-
-SENTENCES:
-1. ए आओ!
-2. ए यहाँ आओ!
-3. ए मेरे पास आओ!
-
-IPA:
-1. [eː aːoː]
-2. [eː jʰɑ̃ː aːoː]
-3. [eː mɛːrɛː pɑːs aːoː]
-
-KEYWORDS:
-1. person gesturing come, hand waving approach, command signal
-2. someone calling come here, pointing finger, urgent beckoning
-3. friend waving over, come closer gesture, inviting approach
-"""
-            mock_client.chat.completions.create.return_value = mock_response
-            yield mock_client
+        """Mock content generator for testing."""
+        with patch('streamlit_app.services.generation.content_generator.ContentGenerator.generate_word_meaning_sentences_and_keywords') as mock_generate:
+            mock_generate.return_value = {
+                'meaning': 'come (imperative form used to command someone to approach)',
+                'restrictions': 'Imperatives: ONLY use in direct commands, never in statements',
+                'sentences': ['ए आओ!', 'ए यहाँ आओ!', 'ए मेरे पास आओ!'],
+                'translations': ['Come here!', 'Come here!', 'Come to me!'],
+                'ipa': ['[eː aːoː]', '[eː jʰɑ̃ː aːoː]', '[eː mɛːrɛː pɑːs aːoː]'],
+                'keywords': ['person gesturing come, hand waving approach, command signal',
+                           'someone calling come here, pointing finger, urgent beckoning',
+                           'friend waving over, come closer gesture, inviting approach']
+            }
+            yield mock_generate
 
     def test_hindi_imperative_enforcement(self, mock_groq_client):
         """Test that Hindi imperative 'ए' is only used in command contexts."""
@@ -64,7 +47,7 @@ KEYWORDS:
             num_sentences=3,
             min_length=2,
             max_length=5,
-            groq_api_key="test_key"
+            gemini_api_key="AIzaSyDummyTestKeyForTestingPurposes123456789"
         )
 
         # Check that meaning identifies it as imperative
@@ -87,7 +70,7 @@ KEYWORDS:
             num_sentences=3,
             min_length=2,  # This parameter is now ignored
             max_length=5,
-            groq_api_key="test_key"
+            gemini_api_key="AIzaSyDummyTestKeyForTestingPurposes123456789"
         )
 
         for sentence in result['sentences']:
@@ -102,7 +85,7 @@ KEYWORDS:
             num_sentences=3,
             min_length=1,  # Allow short sentences for this test
             max_length=10,
-            groq_api_key="test_key"
+            gemini_api_key="AIzaSyDummyTestKeyForTestingPurposes123456789"
         )
 
         generic_terms = ['language', 'learning', 'word', 'text', 'communication']
@@ -183,7 +166,7 @@ KEYWORDS:
                 word=tricky_word,
                 language=language,
                 num_sentences=2,
-                groq_api_key="test_key"
+                gemini_api_key=gemini_api_key
             )
 
             assert expected_constraint in result['restrictions'].lower()
@@ -196,7 +179,7 @@ KEYWORDS:
             word="hello",
             language="English",
             num_sentences=5,
-            groq_api_key="test_key"
+            gemini_api_key="AIzaSyDummyTestKeyForTestingPurposes123456789"
         )
 
         # Should return expected keys
@@ -347,21 +330,21 @@ LANGUAGE_CHARACTERS = {
 }
 
 @pytest.fixture
-def groq_api_key():
-    """Fixture to provide Groq API key for tests."""
+def gemini_api_key():
+    """Fixture to provide Gemini API key for tests."""
     # In a real setup, this would come from environment or config
     # For now, return a placeholder - tests will be skipped if no key
     import os
-    key = os.getenv("GROQ_API_KEY")
+    key = os.getenv("GEMINI_API_KEY")
     if not key:
-        pytest.skip("GROQ_API_KEY not set")
+        pytest.skip("GEMINI_API_KEY not set")
     return key
 
 @pytest.mark.parametrize("language,word", [
     (language, word) for language in TRICKY_WORDS.keys()
     for word in TRICKY_WORDS[language]
 ])
-def test_pass1_tricky_words(language, word, groq_api_key):
+def test_pass1_tricky_words(language, word, gemini_api_key):
     """Test PASS 1 with tricky words that have grammatical restrictions."""
     result = generate_word_meaning_sentences_and_keywords(
         word=word,
@@ -370,7 +353,7 @@ def test_pass1_tricky_words(language, word, groq_api_key):
         min_length=6,
         max_length=12,
         difficulty="intermediate",
-        groq_api_key=groq_api_key,
+        gemini_api_key=gemini_api_key,
     )
     
     # Basic validation
@@ -410,7 +393,7 @@ def test_pass1_tricky_words(language, word, groq_api_key):
                 f"Generic term in keywords: {keyword_set}"
 
 @pytest.mark.parametrize("language", TRICKY_WORDS.keys())
-def test_pass1_language_coverage(language, groq_api_key):
+def test_pass1_language_coverage(language, gemini_api_key):
     """Test that each language generates valid output."""
     # Use first word from each language
     word = TRICKY_WORDS[language][0]
@@ -421,7 +404,7 @@ def test_pass1_language_coverage(language, groq_api_key):
         num_sentences=2,
         min_length=5,
         max_length=10,
-        groq_api_key=groq_api_key,
+        gemini_api_key=gemini_api_key,
     )
     
     assert len(result["sentences"]) == 2

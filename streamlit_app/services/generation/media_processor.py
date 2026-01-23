@@ -7,6 +7,7 @@ Extracted from sentence_generator.py for better separation of concerns.
 
 import logging
 from typing import Optional, List, Dict, Any
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,14 @@ class MediaProcessor:
     """
     Service for processing media-related tasks: IPA generation, audio, images.
     """
+
+    def __init__(self):
+        """Initialize media processor with output directories."""
+        self.audio_output_dir = "output/audio"
+        self.image_output_dir = "output/images"
+        # Ensure directories exist
+        Path(self.audio_output_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.image_output_dir).mkdir(parents=True, exist_ok=True)
 
     def generate_ipa_hybrid(self, text: str, language: str, ai_ipa: str = "") -> str:
         """
@@ -47,7 +56,7 @@ class MediaProcessor:
         # Very basic fallback - just return the original text
         return text
 
-    def generate_audio_batch(self, sentences: List[str], language: str, voice: str = None) -> List[str]:
+    def generate_audio_batch(self, sentences: List[str], language: str, voice: str = None, batch_name: str = "batch", unique_id: str = None) -> List[str]:
         """
         Generate audio files for multiple sentences.
 
@@ -55,6 +64,8 @@ class MediaProcessor:
             sentences: List of sentences to convert to audio
             language: Language name
             voice: Voice to use (optional)
+            batch_name: Prefix for filenames
+            unique_id: Unique identifier for filename uniqueness
 
         Returns:
             List of audio file paths
@@ -62,7 +73,7 @@ class MediaProcessor:
         audio_files = []
         for i, sentence in enumerate(sentences):
             try:
-                audio_file = self.generate_audio(sentence, language, voice, index=i)
+                audio_file = self.generate_audio(sentence, language, voice, index=i, batch_name=batch_name, unique_id=unique_id)
                 audio_files.append(audio_file)
             except Exception as e:
                 logger.error(f"Failed to generate audio for sentence {i}: {e}")
@@ -70,7 +81,7 @@ class MediaProcessor:
 
         return audio_files
 
-    def generate_audio(self, text: str, language: str, voice: str = None, index: int = 0) -> str:
+    def generate_audio(self, text: str, language: str, voice: str = None, index: int = 0, batch_name: str = "audio", unique_id: str = None) -> str:
         """
         Generate audio file for a single text.
 
@@ -79,15 +90,38 @@ class MediaProcessor:
             language: Language name
             voice: Voice to use (optional)
             index: Index for file naming
+            batch_name: Prefix for filename
+            unique_id: Unique identifier for filename uniqueness
 
         Returns:
             Audio file path
         """
         try:
-            from audio_generator import generate_audio_async
-            # This would need to be adapted based on the actual audio_generator implementation
-            # For now, return placeholder
-            return f"audio_{index}.mp3"
+            import asyncio
+            import os
+            from pathlib import Path
+
+            # Import audio generator
+            from audio_generator import generate_audio_async, get_google_voices_for_language
+
+            # Create output path with unique filename
+            output_dir = Path("output/audio")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate unique filename following the pattern: {batch_name}_{index:02d}_{unique_id}.mp3
+            unique_suffix = f"_{unique_id}" if unique_id else ""
+            filename = f"{batch_name}_{index+1:02d}{unique_suffix}.mp3"
+            output_path = output_dir / filename
+
+            # Generate audio asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            success = loop.run_until_complete(
+                generate_audio_async(text, voice, str(output_path))
+            )
+            loop.close()
+
+            return filename if success else ""
         except ImportError:
             logger.warning("Audio generator not available")
             return ""
@@ -95,13 +129,15 @@ class MediaProcessor:
             logger.error(f"Error generating audio: {e}")
             return ""
 
-    def generate_images_batch(self, keywords_list: List[str], language: str) -> List[str]:
+    def generate_images_batch(self, keywords_list: List[str], language: str, batch_name: str = "batch", unique_id: str = None) -> List[str]:
         """
         Generate images for multiple keyword sets.
 
         Args:
             keywords_list: List of keyword strings (comma-separated)
             language: Language name
+            batch_name: Prefix for filenames
+            unique_id: Unique identifier for filename uniqueness
 
         Returns:
             List of image file paths
@@ -109,7 +145,7 @@ class MediaProcessor:
         image_files = []
         for i, keywords in enumerate(keywords_list):
             try:
-                image_file = self.generate_image(keywords, language, index=i)
+                image_file = self.generate_image(keywords, language, index=i, batch_name=batch_name, unique_id=unique_id)
                 image_files.append(image_file)
             except Exception as e:
                 logger.error(f"Failed to generate image for keywords {i}: {e}")
@@ -117,7 +153,7 @@ class MediaProcessor:
 
         return image_files
 
-    def generate_image(self, keywords: str, language: str, index: int = 0) -> str:
+    def generate_image(self, keywords: str, language: str, index: int = 0, batch_name: str = "batch", unique_id: str = None) -> str:
         """
         Generate image for keywords.
 
@@ -125,15 +161,37 @@ class MediaProcessor:
             keywords: Comma-separated keywords
             language: Language name
             index: Index for file naming
+            batch_name: Prefix for filenames
+            unique_id: Unique identifier for filename uniqueness
 
         Returns:
             Image file path
         """
         try:
-            from image_generator import generate_images_pixabay
-            # This would need to be adapted based on the actual image_generator implementation
-            # For now, return placeholder
-            return f"image_{index}.jpg"
+            from image_generator import generate_images_google
+            import streamlit as st
+
+            # Get API keys from session state
+            google_api_key = getattr(st.session_state, 'google_api_key', None)
+            custom_search_engine_id = getattr(st.session_state, 'custom_search_engine_id', None)
+
+            if not google_api_key or not custom_search_engine_id:
+                logger.warning("Google API keys not available for image generation")
+                return ""
+
+            # Generate image using Google Custom Search
+            image_files, _ = generate_images_google(
+                queries=[keywords],
+                output_dir=self.image_output_dir,
+                batch_name=batch_name,
+                num_images=1,
+                google_api_key=google_api_key,
+                custom_search_engine_id=custom_search_engine_id,
+                unique_id=unique_id,
+            )
+
+            return image_files[0] if image_files else ""
+
         except ImportError:
             logger.warning("Image generator not available")
             return ""
@@ -146,7 +204,9 @@ class MediaProcessor:
         sentences: List[str],
         keywords_list: List[str],
         language: str,
-        voice: str = None
+        voice: str = None,
+        batch_name: str = "batch",
+        unique_id: str = None
     ) -> Dict[str, List[str]]:
         """
         Process all media (IPA, audio, images) for a batch of sentences.
@@ -156,6 +216,8 @@ class MediaProcessor:
             keywords_list: List of keyword strings
             language: Language name
             voice: Voice for audio (optional)
+            batch_name: Prefix for filenames
+            unique_id: Unique identifier for filename uniqueness
 
         Returns:
             Dict with 'ipa', 'audio', 'images' lists
@@ -164,10 +226,10 @@ class MediaProcessor:
         ipa_list = [self.generate_ipa_hybrid(sentence, language) for sentence in sentences]
 
         # Generate audio for all sentences
-        audio_list = self.generate_audio_batch(sentences, language, voice)
+        audio_list = self.generate_audio_batch(sentences, language, voice, batch_name, unique_id)
 
         # Generate images for all keyword sets
-        image_list = self.generate_images_batch(keywords_list, language)
+        image_list = self.generate_images_batch(keywords_list, language, batch_name, unique_id)
 
         return {
             'ipa': ipa_list,

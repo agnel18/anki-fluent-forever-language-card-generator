@@ -5,7 +5,7 @@ if not hasattr(st, "session_state") or st.session_state is None:
     st.session_state = {}
 import os
 import datetime
-from constants import GROQ_CALL_LIMIT, GROQ_TOKEN_LIMIT, PIXABAY_CALL_LIMIT
+from constants import GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_LIMIT
 
 def handle_auto_sync():
     """Handle automatic sync operations."""
@@ -73,10 +73,9 @@ def render_sidebar():
 
     # TTS Status Indicator
     try:
-        from audio_generator import get_tts_provider
-        tts_provider = get_tts_provider()
-        if "Azure" in tts_provider and "not configured" not in tts_provider:
-            st.sidebar.caption("🔊 Azure TTS Active")
+        from audio_generator import is_google_tts_configured
+        if is_google_tts_configured():
+            st.sidebar.caption("🔊 Google TTS Active")
         else:
             st.sidebar.caption("🔊 TTS Not Configured")
     except ImportError:
@@ -136,13 +135,13 @@ def render_sidebar():
     # Use persistent stats if logged in, else session stats
     stats = st.session_state.get("persistent_usage_stats") if not st.session_state.get("is_guest", True) else None
     if stats:
-        groq_calls = stats.get("groq_calls", 0)
-        groq_tokens = stats.get("groq_tokens", 0)
-        pixabay_calls = stats.get("pixabay_calls", 0)
+        gemini_calls = stats.get("gemini_calls", 0)
+        gemini_tokens = stats.get("gemini_tokens", 0)
+        google_search_calls = stats.get("google_search_calls", 0)
     else:
-        groq_calls = st.session_state.get("groq_api_calls", 0)
-        groq_tokens = st.session_state.get("groq_tokens_used", 0)
-        pixabay_calls = st.session_state.get("pixabay_api_calls", 0)
+        gemini_calls = st.session_state.get("gemini_api_calls", 0)
+        gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
+        google_search_calls = st.session_state.get("google_search_api_calls", 0)
 
     def format_number_compact(num):
         if num >= 1000000:
@@ -154,16 +153,16 @@ def render_sidebar():
 
     # Display metrics with compact formatting
     st.sidebar.metric(
-        "Groq Calls",
-        f"{format_number_compact(groq_calls)} / {format_number_compact(GROQ_CALL_LIMIT)}"
+        "Gemini Calls",
+        f"{format_number_compact(gemini_calls)} / {format_number_compact(GEMINI_CALL_LIMIT)}"
     )
     st.sidebar.metric(
-        "Groq Tokens",
-        f"{format_number_compact(groq_tokens)} / {format_number_compact(GROQ_TOKEN_LIMIT)}"
+        "Gemini Tokens",
+        f"{format_number_compact(gemini_tokens)} / {format_number_compact(GEMINI_TOKEN_LIMIT)}"
     )
     st.sidebar.metric(
-        "Pixabay Calls",
-        f"{format_number_compact(pixabay_calls)} / {format_number_compact(PIXABAY_CALL_LIMIT)}"
+        "Google Search Calls",
+        f"{format_number_compact(google_search_calls)} / {format_number_compact(GOOGLE_SEARCH_CALL_LIMIT)}"
     )
 
     st.sidebar.caption("Limits are approximate—check your API dashboard for exact quotas.")

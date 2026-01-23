@@ -1,9 +1,9 @@
 # constants.py - Centralized constants for the language learning app
 
 # API Limits
-GROQ_CALL_LIMIT = 1000
-GROQ_TOKEN_LIMIT = 3000000
-PIXABAY_CALL_LIMIT = 5000
+GEMINI_CALL_LIMIT = 1000
+GEMINI_TOKEN_LIMIT = 3000000
+GOOGLE_SEARCH_CALL_LIMIT = 100
 
 # Default Settings
 DEFAULT_BATCH_SIZE = 5
@@ -40,8 +40,7 @@ LANGUAGES_CONFIG_PATH = "languages.yaml"
 
 # Session state keys (for consistency)
 SESSION_PAGE = "page"
-SESSION_GROQ_API_KEY = "groq_api_key"
-SESSION_PIXABAY_API_KEY = "pixabay_api_key"
+SESSION_GOOGLE_API_KEY = "google_api_key"
 SESSION_CURRENT_BATCH_SIZE = "current_batch_size"
 SESSION_LOADED_WORDS = "loaded_words"
 SESSION_CURRENT_LANG_WORDS = "current_lang_words"

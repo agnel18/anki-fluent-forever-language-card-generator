@@ -1,27 +1,27 @@
 # API Client Service for Sentence Generation
-# Handles all Groq API communication with error recovery and rate limiting
+# Handles all Gemini API communication with error recovery and rate limiting
 
 import logging
 import time
 from typing import Optional, Dict, Any
-from groq import Groq
+import google.generativeai as genai
 
-from error_recovery import resilient_groq_call
+from streamlit_app.error_recovery import retry_with_exponential_backoff
 
 logger = logging.getLogger(__name__)
 
 
 class APIClient:
     """
-    Service for handling all Groq API communication.
+    Service for handling all Gemini API communication.
     Provides unified interface for different types of API calls with error recovery.
     """
 
     def __init__(self, api_key: str):
-        self.client = Groq(api_key=api_key)
-        self.model = "llama-3.3-70b-versatile"
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
-    @resilient_groq_call(max_retries=3)
+    @retry_with_exponential_backoff(max_retries=3)
     def call_completion(self, prompt: str, temperature: float = 0.3,
                        max_tokens: int = 2000) -> str:
         """
@@ -38,14 +38,18 @@ class APIClient:
         Raises:
             Exception: If all retry attempts fail
         """
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
+        # Configure generation parameters
+        generation_config = genai.types.GenerationConfig(
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_output_tokens=max_tokens,
         )
 
-        response_text = response.choices[0].message.content.strip()
+        response = self.model.generate_content(
+            prompt,
+            generation_config=generation_config
+        )
+
+        response_text = response.text.strip()
         logger.info(f"API call successful: {len(response_text)} characters")
         return response_text
 

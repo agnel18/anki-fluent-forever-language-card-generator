@@ -8,7 +8,7 @@ import pathlib
 
 # Remove the circular import - will import locally where needed
 # from core_functions import generate_sentences
-from deck_exporter import create_apkg_export
+from streamlit_app.deck_exporter import create_apkg_export
 from .file_manager import FileManager
 from .log_manager import LogManager
 
@@ -29,7 +29,7 @@ class GenerationOrchestrator:
         self,
         selected_words: List[str],
         selected_lang: str,
-        groq_api_key: str,
+        gemini_api_key: str,
         pixabay_api_key: str,
         num_sentences: int,
         min_length: int,
@@ -48,7 +48,7 @@ class GenerationOrchestrator:
         Args:
             selected_words: List of words to generate
             selected_lang: Target language
-            groq_api_key: Groq API key
+            gemini_api_key: Google Gemini API key
             pixabay_api_key: Pixabay API key
             num_sentences: Number of sentences per word
             min_length/max_length: Sentence length constraints
@@ -82,7 +82,7 @@ class GenerationOrchestrator:
                 native_language = "English"  # Could be made configurable
 
                 # Import here to avoid circular dependency
-                from core_functions import generate_sentences
+                from streamlit_app.core_functions import generate_sentences
 
                 meaning, sentences = generate_sentences(
                     word=word,
@@ -91,7 +91,7 @@ class GenerationOrchestrator:
                     min_length=min_length,
                     max_length=max_length,
                     difficulty=difficulty,
-                    groq_api_key=groq_api_key,
+                    gemini_api_key=gemini_api_key,
                     topics=topics,
                     native_language=native_language
                 )

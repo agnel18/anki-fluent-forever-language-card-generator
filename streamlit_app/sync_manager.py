@@ -34,8 +34,7 @@ def sync_user_data() -> bool:
         
         if "API Keys" in sync_prefs:
             sync_data.update({
-                'groq_api_key': st.session_state.get('groq_api_key', ''),
-                'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
+                'google_api_key': st.session_state.get('google_api_key', ''),
             })
             
         if "Theme Settings" in sync_prefs:
@@ -83,8 +82,7 @@ def load_cloud_data() -> bool:
             # Merge with local data (cloud takes precedence for conflicts)
             resolved_data = resolve_data_conflicts(
                 local_data={
-                    'groq_api_key': st.session_state.get('groq_api_key', ''),
-                    'pixabay_api_key': st.session_state.get('pixabay_api_key', ''),
+                    'google_api_key': st.session_state.get('google_api_key', ''),
                     'theme': st.session_state.get('theme', 'dark'),
                     'audio_speed': st.session_state.get('audio_speed', 0.8),
                 },

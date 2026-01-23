@@ -50,8 +50,8 @@ def persist_api_keys() -> None:
         save_settings_to_firebase(
             st.session_state.session_id,
             {
-                "groq_api_key": st.session_state.get("groq_api_key", ""),
-                "pixabay_api_key": st.session_state.get("pixabay_api_key", "")
+                "gemini_api_key": st.session_state.get("gemini_api_key", ""),
+                "google_api_key": st.session_state.get("google_api_key", "")
             }
         )
 

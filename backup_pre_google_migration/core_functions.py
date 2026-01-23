@@ -25,10 +25,10 @@ except ImportError as e:
 
 # Import from audio_generator module
 try:
-    from audio_generator import generate_audio_google as generate_audio, _voice_for_language, is_google_tts_configured
-    logger.info("Successfully imported Google TTS from audio_generator")
+    from audio_generator import generate_audio, _voice_for_language
+    logger.info("Successfully imported from audio_generator")
 except ImportError as e:
-    logger.warning(f"Failed to import Google TTS from audio_generator: {e}. Using fallback implementations.")
+    logger.warning(f"Failed to import from audio_generator: {e}. Using fallback implementations.")
     # Define fallback functions
     def generate_audio(sentences, voice, output_dir, **kwargs):
         """Fallback audio generation - returns empty list when audio is unavailable."""
@@ -40,7 +40,7 @@ except ImportError as e:
 
 # Import from image_generator module
 try:
-    from image_generator import generate_images_google
+    from image_generator import generate_images_pixabay
     logger.info("Successfully imported from image_generator")
 except ImportError as e:
     logger.warning(f"Failed to import from image_generator: {e}. Using fallback implementations.")
@@ -74,8 +74,8 @@ except ImportError as e:
 def generate_complete_deck(
     words: list,
     language: str,
-    gemini_api_key: str,
-    google_custom_search_engine_id: str,
+    groq_api_key: str,
+    pixabay_api_key: str,
     output_dir: str,
     num_sentences: int = 10,
     min_length: int = 5,
@@ -116,7 +116,7 @@ def generate_complete_deck(
 
             try:
                 # 1. Generate meaning + sentences + keywords (combined in one API call)
-                meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, gemini_api_key, topics, native_language)
+                meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics, native_language)
                 if sentences is None:
                     sentences = []
                 if not sentences:
@@ -140,7 +140,7 @@ def generate_complete_deck(
                             sentences=[s['sentence'] for s in sentences],
                             target_words=[word] * len(sentences),
                             language=language,
-                            gemini_api_key=gemini_api_key,
+                            groq_api_key=groq_api_key,
                             language_code=language_code
                         )
                         
@@ -179,13 +179,12 @@ def generate_complete_deck(
                     
                     # Reset used_image_urls for each word to allow image reuse across different words
                     used_image_urls = set()
-                    image_filenames, used_image_urls = generate_images_google(
+                    image_filenames, used_image_urls = generate_images_pixabay(
                         queries,
                         str(media_dir),
                         batch_name=word,
                         num_images=1,
-                        google_api_key=gemini_api_key,
-                        custom_search_engine_id=google_custom_search_engine_id,
+                        pixabay_api_key=pixabay_api_key,
                         used_image_urls=used_image_urls,  # Pass the word-specific set
                         unique_id=deck_unique_id,
                     )
@@ -371,8 +370,8 @@ def _create_error_summary(errors):
 def generate_deck_progressive(
     word: str,
     language: str,
-    gemini_api_key: str,
-    google_custom_search_engine_id: str,
+    groq_api_key: str,
+    pixabay_api_key: str,
     output_dir: str,
     num_sentences: int = 10,
     min_length: int = 5,
@@ -415,7 +414,7 @@ def generate_deck_progressive(
                 # Legacy dictionary format - extract meaning field
                 consolidated_meaning = enriched_word_data.get('meaning', None)
 
-        meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, gemini_api_key, topics, native_language, consolidated_meaning)
+        meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, groq_api_key, topics, native_language, consolidated_meaning)
         if sentences is None or not sentences:
             raise Exception(f"Failed to generate sentences for '{word}'")
 
@@ -453,7 +452,7 @@ def generate_deck_progressive(
                     sentences=[s['sentence'] for s in sentences],
                     target_words=[word] * len(sentences),
                     language=language,
-                    gemini_api_key=gemini_api_key,
+                    groq_api_key=groq_api_key,
                     language_code=language_code
                 )
                 
@@ -512,10 +511,9 @@ def generate_deck_progressive(
 
         queries = [s.get('image_keywords', f"{word}, language, learning") for s in sentences]
         used_image_urls = set()
-        image_filenames, used_image_urls = generate_images_google(
+        image_filenames, used_image_urls = generate_images_pixabay(
             queries, str(media_dir), batch_name=word,
-            num_images=1, google_api_key=gemini_api_key,
-            custom_search_engine_id=google_custom_search_engine_id,
+            num_images=1, pixabay_api_key=pixabay_api_key,
             used_image_urls=used_image_urls, unique_id=word_unique_id
         )
 
@@ -662,7 +660,7 @@ __all__ = [
     # Audio generation
     'generate_audio', '_voice_for_language',
     # Image generation
-    'generate_images_google',
+    'generate_images_pixabay',
     # Deck export
     'create_anki_tsv', 'create_apkg_export',
     # Utilities

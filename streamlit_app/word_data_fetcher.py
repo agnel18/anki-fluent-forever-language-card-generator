@@ -365,7 +365,7 @@ def generate_english_meaning_from_definitions(word: str, definitions: List[Dict]
             word=word,
             language=language,
             num_sentences=1,
-            groq_api_key=os.getenv('GROQ_API_KEY'),
+            google_api_key=os.getenv('GOOGLE_API_KEY'),
             enriched_word_data=enriched_data
         )
 

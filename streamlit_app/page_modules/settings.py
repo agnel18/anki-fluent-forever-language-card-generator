@@ -217,64 +217,61 @@ def render_settings_page():
     st.markdown("Configure the required APIs for AI generation, images, and audio. All three are needed for full functionality.")
 
     # Load current API keys
-    groq_key = st.session_state.get("groq_api_key", "")
-    pixabay_key = st.session_state.get("pixabay_api_key", "")
-    azure_key = st.session_state.get("azure_tts_key", os.getenv("AZURE_TTS_KEY", ""))
+    gemini_key = st.session_state.get("gemini_api_key", "")
+    google_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
 
     # Check current API status
-    azure_configured = bool(azure_key)
-    groq_configured = bool(groq_key)
-    pixabay_configured = bool(pixabay_key)
+    google_configured = bool(google_key)
+    gemini_configured = bool(gemini_key)
 
     # Status overview
     col1, col2, col3 = st.columns(3)
     with col1:
-        if groq_configured:
-            st.success("✅ **Groq API** - Configured")
+        if gemini_configured:
+            st.success("✅ **Gemini API** - Configured")
         else:
-            st.error("❌ **Groq API** - Not configured")
+            st.error("❌ **Gemini API** - Not configured")
     with col2:
-        if pixabay_configured:
-            st.success("✅ **Pixabay API** - Configured")
+        if google_configured:
+            st.success("✅ **Google Custom Search** - Configured")
         else:
-            st.error("❌ **Pixabay API** - Not configured")
+            st.error("❌ **Google Custom Search** - Not configured")
     with col3:
-        if azure_configured:
-            st.success("✅ **Azure TTS** - Configured")
+        if google_configured:
+            st.success("✅ **Google TTS** - Configured")
         else:
-            st.error("❌ **Azure TTS** - Not configured")
+            st.error("❌ **Google TTS** - Not configured")
 
-    if not all([groq_configured, pixabay_configured, azure_configured]):
+    if not all([gemini_configured, google_configured]):
         st.warning("⚠️ Some APIs are not configured. Please set up all required APIs below for full functionality.")
 
-    # === GROQ API SECTION ===
-    st.markdown("### 🔗 Groq API (AI Generation)")
-    with st.expander("📖 Setup Instructions", expanded=not groq_configured):
+    # === GEMINI API SECTION ===
+    st.markdown("### 🔗 Google Gemini API (AI Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not gemini_configured):
         st.markdown("""
-        **Follow these steps to get your Groq API key:**
+        **Follow these steps to get your Google Gemini API key:**
 
-        1. **Go to** https://console.groq.com/
-        2. **Create an account** (if you don't have one)
-        3. **Navigate to** API keys section
-        4. **Create new API key**
-        5. **Copy and paste** the key into the field below
+        1. **Go to** https://makersuite.google.com/app/apikey
+        2. **Sign in** with your Google account
+        3. **Create a new API key**
+        4. **Copy and paste** the key into the field below
         """)
 
-    # Groq API Key Input
-    groq_key_input = st.text_input(
-        "Groq API Key",
-        value=groq_key,
+    # Gemini API Key Input
+    gemini_key_input = st.text_input(
+        "Google Gemini API Key",
+        value=gemini_key,
         type="password",
-        help="Paste your Groq API key here",
-        key="groq_key_input"
+        help="Paste your Google Gemini API key here",
+        key="gemini_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Groq Key", help="Save the Groq API key"):
-            if groq_key_input:
+        if st.button("💾 Save Gemini Key", help="Save the Google Gemini API key"):
+            if gemini_key_input:
                 # Save to environment variable
-                os.environ["GROQ_API_KEY"] = groq_key_input
+                os.environ["GOOGLE_API_KEY"] = gemini_key_input
 
                 # Save to .env file
                 env_path = Path(__file__).parent.parent / ".env"
@@ -286,16 +283,16 @@ def render_settings_page():
                     lines = env_content.split('\n')
                     key_found = False
                     for i, line in enumerate(lines):
-                        if line.startswith('GROQ_API_KEY='):
-                            lines[i] = f'GROQ_API_KEY={groq_key_input}'
+                        if line.startswith('GOOGLE_API_KEY='):
+                            lines[i] = f'GOOGLE_API_KEY={gemini_key_input}'
                             key_found = True
                             break
 
                     if not key_found:
-                        lines.append(f'GROQ_API_KEY={groq_key_input}')
+                        lines.append(f'GOOGLE_API_KEY={gemini_key_input}')
 
                     env_path.write_text('\n'.join(lines))
-                    st.success("✅ Groq API key saved successfully!")
+                    st.success("✅ Google Gemini API key saved successfully!")
                     st.info("🔄 Refresh the page to apply changes.")
                     time.sleep(1)
                     st.rerun()
@@ -303,58 +300,70 @@ def render_settings_page():
                     st.error(f"❌ Failed to save to .env file: {e}")
                     st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Groq API key")
+                st.error("❌ Please enter a valid Google Gemini API key")
 
     with col_test:
-        if groq_key_input or groq_key:
-            test_key = groq_key_input or groq_key
-            if st.button("🧪 Test Groq Connection", help="Test your Groq API key"):
-                with st.spinner("Testing Groq API connection..."):
+        if gemini_key_input or gemini_key:
+            test_key = gemini_key_input or gemini_key
+            if st.button("🧪 Test Gemini Connection", help="Test your Google Gemini API key"):
+                with st.spinner("Testing Google Gemini API connection..."):
                     try:
-                        from groq import Groq
-                        client = Groq(api_key=test_key)
-                        # Simple test call
-                        response = client.chat.completions.create(
-                            model="mixtral-8x7b-32768",
-                            messages=[{"role": "user", "content": "Hello"}],
-                            max_tokens=10
-                        )
-                        st.success("✅ Groq API connection successful!")
-                        st.info("🎉 You can now generate AI content with Groq!")
+                        import google.generativeai as genai
+                        genai.configure(api_key=test_key)
+                        model = genai.GenerativeModel('gemini-2.5-flash')
+                        response = model.generate_content("Hello")
+                        st.success("✅ Google Gemini API connection successful!")
+                        st.info("🎉 You can now generate AI content with Gemini!")
                     except Exception as e:
-                        st.error(f"❌ Groq API test failed: {str(e)}")
+                        st.error(f"❌ Google Gemini API test failed: {str(e)}")
                         st.info("💡 Check your API key and internet connection.")
 
     st.markdown("---")
 
-    # === PIXABAY API SECTION ===
-    st.markdown("### 🖼️ Pixabay API (Image Generation)")
-    with st.expander("📖 Setup Instructions", expanded=not pixabay_configured):
+    # === GOOGLE CUSTOM SEARCH API SECTION ===
+    st.markdown("### 🖼️ Google Custom Search API (Image Search)")
+    with st.expander("📖 Setup Instructions", expanded=not google_configured):
         st.markdown("""
-        **Follow these steps to get your Pixabay API key:**
+        **Follow these steps to set up Google Custom Search API:**
 
-        1. **Go to** https://pixabay.com/api/docs/
-        2. **Register** for a free account
-        3. **Find your API key** in the "Parameters" section
-        4. **Copy the key** (format: 53693289-1c945bxxxxxxxxx)
-        5. **Paste into the field** below
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Create or select** a Google Cloud project
+        3. **Enable the Custom Search JSON API:**
+           - Go to "APIs & Services" > "Library"
+           - Search for "Custom Search JSON API"
+           - Click "Enable"
+        4. **Create credentials:**
+           - Go to "APIs & Services" > "Credentials"
+           - Click "Create Credentials" > "API Key"
+           - Copy the generated API key
+        5. **Create a Custom Search Engine:**
+           - Go to [Custom Search Engine](https://cse.google.com/cse/)
+           - Click "Add"
+           - Set search engine name and description
+           - Set "Sites to search" to "www.google.com" (or leave empty for global search)
+           - Click "Create"
+           - Copy the "Search engine ID" from the control panel
+        6. **Save both keys** below
         """)
 
-    # Pixabay API Key Input
-    pixabay_key_input = st.text_input(
-        "Pixabay API Key",
-        value=pixabay_key,
+    # Google Custom Search API Key Input
+    google_key_input = st.text_input(
+        "Google API Key",
+        value=google_key,
         type="password",
-        help="Paste your Pixabay API key here",
-        key="pixabay_key_input"
+        help="Paste your Google Cloud API key here (used for TTS, Gemini, and Custom Search)",
+        key="google_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
-            if pixabay_key_input:
+        if st.button("💾 Save Google API Key", help="Save the Google API key"):
+            if google_key_input:
+                # Save to session state
+                st.session_state.google_api_key = google_key_input
+
                 # Save to environment variable
-                os.environ["PIXABAY_API_KEY"] = pixabay_key_input
+                os.environ["GOOGLE_API_KEY"] = google_key_input
 
                 # Save to .env file
                 env_path = Path(__file__).parent.parent / ".env"
@@ -366,16 +375,16 @@ def render_settings_page():
                     lines = env_content.split('\n')
                     key_found = False
                     for i, line in enumerate(lines):
-                        if line.startswith('PIXABAY_API_KEY='):
-                            lines[i] = f'PIXABAY_API_KEY={pixabay_key_input}'
+                        if line.startswith('GOOGLE_API_KEY='):
+                            lines[i] = f'GOOGLE_API_KEY={google_key_input}'
                             key_found = True
                             break
 
                     if not key_found:
-                        lines.append(f'PIXABAY_API_KEY={pixabay_key_input}')
+                        lines.append(f'GOOGLE_API_KEY={google_key_input}')
 
                     env_path.write_text('\n'.join(lines))
-                    st.success("✅ Pixabay API key saved successfully!")
+                    st.success("✅ Google API key saved successfully!")
                     st.info("🔄 Refresh the page to apply changes.")
                     time.sleep(1)
                     st.rerun()
@@ -383,75 +392,77 @@ def render_settings_page():
                     st.error(f"❌ Failed to save to .env file: {e}")
                     st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Pixabay API key")
+                st.error("❌ Please enter a valid Google API key")
 
     with col_test:
-        if pixabay_key_input or pixabay_key:
-            test_key = pixabay_key_input or pixabay_key
-            if st.button("🧪 Test Pixabay Connection", help="Test your Pixabay API key"):
-                with st.spinner("Testing Pixabay API connection..."):
+        if google_key_input or google_key:
+            test_key = google_key_input or google_key
+            if st.button("🧪 Test Google Custom Search Connection", help="Test your Google API key"):
+                with st.spinner("Testing Google Custom Search API connection..."):
                     try:
                         import requests
                         response = requests.get(
-                            "https://pixabay.com/api/",
-                            params={"key": test_key, "q": "test", "per_page": 1}
+                            "https://www.googleapis.com/customsearch/v1",
+                            params={
+                                "key": test_key,
+                                "cx": "017576662512468239146:omuauf_lfve",  # Default CSE ID
+                                "q": "test",
+                                "searchType": "image",
+                                "num": 1
+                            }
                         )
                         if response.status_code == 200:
                             data = response.json()
-                            if "hits" in data:
-                                st.success("✅ Pixabay API connection successful!")
-                                st.info("🎉 You can now generate images with Pixabay!")
+                            if "items" in data:
+                                st.success("✅ Google Custom Search API connection successful!")
+                                st.info("🎉 You can now search for images with Google!")
                             else:
-                                st.error("❌ Pixabay API returned unexpected response")
+                                st.error("❌ Google Custom Search API returned unexpected response")
                         else:
-                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                            st.error(f"❌ Google Custom Search API test failed: HTTP {response.status_code}")
                     except Exception as e:
-                        st.error(f"❌ Pixabay API test failed: {str(e)}")
+                        st.error(f"❌ Google Custom Search API test failed: {str(e)}")
                         st.info("💡 Check your API key and internet connection.")
 
     st.markdown("---")
 
-    # === AZURE TTS API SECTION ===
-    st.markdown("### 🔊 Azure TTS API (Audio Generation)")
-    with st.expander("📖 Setup Instructions", expanded=not azure_configured):
+    # === GOOGLE TTS API SECTION ===
+    st.markdown("### 🔊 Google Cloud Text-to-Speech API (Audio Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not google_configured):
         st.markdown("""
-        **Follow these steps to get your Azure TTS API key:**
+        **Follow these steps to get your Google TTS API key:**
 
-        1. **Go to** [Azure Portal](https://portal.azure.com/)
-        2. **Click** "Create a resource"
-        3. **Search for** "Speech" and select "Speech" by Microsoft
-        4. **Configure:**
-           - Subscription: Choose your subscription
-           - Resource group: Create new or select existing
-           - Region: Choose closest region (e.g., "Central India", "East US")
-           - Name: Choose unique name (e.g., "language-learning-tts")
-           - Pricing tier: Free F0 (5M free/month) or Standard S0
-        5. **Click** "Review + create" → "Create"
-
-        6. **Get your key:**
-           - Go to your Speech resource
-           - Click "Keys and Endpoint" (left menu)
-           - Copy "Key 1" or "Key 2"
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Create or select** a Google Cloud project
+        3. **Enable the Text-to-Speech API:**
+           - Go to "APIs & Services" > "Library"
+           - Search for "Text-to-Speech API"
+           - Click "Enable"
+        4. **Create credentials:**
+           - Go to "APIs & Services" > "Credentials"
+           - Click "Create Credentials" > "API Key"
+           - Copy the generated API key
+        5. **Enable billing** (required for TTS API usage)
         """)
 
-    # Azure TTS API Key Input
-    azure_key_input = st.text_input(
-        "Azure TTS API Key",
-        value=azure_key,
+    # Google TTS API Key Input
+    google_key_input = st.text_input(
+        "Google API Key",
+        value=google_key,
         type="password",
-        help="Paste your Azure Cognitive Services subscription key here",
-        key="azure_key_input"
+        help="Paste your Google Cloud API key here (used for TTS, Gemini, and Custom Search)",
+        key="google_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Azure TTS Key", help="Save the Azure TTS API key"):
-            if azure_key_input:
+        if st.button("💾 Save Google API Key", help="Save the Google API key"):
+            if google_key_input:
                 # Save to session state
-                st.session_state.azure_tts_key = azure_key_input
-                
+                st.session_state.google_api_key = google_key_input
+
                 # Save to environment variable
-                os.environ["AZURE_TTS_KEY"] = azure_key_input
+                os.environ["GOOGLE_API_KEY"] = google_key_input
 
                 # Save to .env file
                 env_path = Path(__file__).parent.parent / ".env"
@@ -463,16 +474,16 @@ def render_settings_page():
                     lines = env_content.split('\n')
                     key_found = False
                     for i, line in enumerate(lines):
-                        if line.startswith('AZURE_TTS_KEY='):
-                            lines[i] = f'AZURE_TTS_KEY={azure_key_input}'
+                        if line.startswith('GOOGLE_API_KEY='):
+                            lines[i] = f'GOOGLE_API_KEY={google_key_input}'
                             key_found = True
                             break
 
                     if not key_found:
-                        lines.append(f'AZURE_TTS_KEY={azure_key_input}')
+                        lines.append(f'GOOGLE_API_KEY={google_key_input}')
 
                     env_path.write_text('\n'.join(lines))
-                    st.success("✅ Azure TTS key saved successfully!")
+                    st.success("✅ Google API key saved successfully!")
                     st.info("🔄 Refresh the page to apply changes.")
                     time.sleep(1)
                     st.rerun()
@@ -480,24 +491,24 @@ def render_settings_page():
                     st.error(f"❌ Failed to save to .env file: {e}")
                     st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Azure TTS API key")
+                st.error("❌ Please enter a valid Google API key")
 
     with col_test:
-        if azure_key_input or azure_key:
-            test_key = azure_key_input or azure_key
-            if st.button("🧪 Test Azure TTS Connection", help="Test your Azure TTS API key"):
-                with st.spinner("Testing Azure TTS connection..."):
+        if google_key_input or google_key:
+            test_key = google_key_input or google_key
+            if st.button("🧪 Test Google TTS Connection", help="Test your Google API key"):
+                with st.spinner("Testing Google TTS connection..."):
                     try:
-                        import azure.cognitiveservices.speech as speechsdk
-                        speech_config = speechsdk.SpeechConfig(
-                            subscription=test_key,
-                            region="centralindia"
-                        )
-                        st.success("✅ Azure TTS connection successful!")
-                        st.info("🎉 You can now generate high-quality audio with Azure TTS!")
+                        from audio_generator import is_google_tts_configured
+                        if is_google_tts_configured():
+                            st.success("✅ Google TTS connection successful!")
+                            st.info("🎉 You can now generate high-quality audio with Google TTS!")
+                        else:
+                            st.error("❌ Google TTS test failed: API key not configured properly")
+                            st.info("💡 Check your API key and ensure Google Cloud Text-to-Speech API is enabled.")
                     except Exception as e:
-                        st.error(f"❌ Azure TTS test failed: {str(e)}")
-                        st.info("💡 Check your subscription key and ensure the Azure resource is active.")
+                        st.error(f"❌ Google TTS test failed: {str(e)}")
+                        st.info("💡 Check your API key and internet connection.")
 
     st.markdown("---")
     st.markdown("## 🎨 Theme")
@@ -895,9 +906,9 @@ def render_settings_page():
             ns_col1, ns_col2, ns_col3 = st.columns(3)
 
             with ns_col1:
-                if st.button("🗣️ Clear Groq Cache", key="clear_groq_cache", help="Clear cached Groq API responses"):
-                    cleared = cache_service.clear_groq_cache()
-                    st.success(f"Cleared {cleared} Groq cached entries!")
+                if st.button("🗣️ Clear Gemini Cache", key="clear_gemini_cache", help="Clear cached Gemini API responses"):
+                    cleared = cache_service.clear_gemini_cache()
+                    st.success(f"Cleared {cleared} Gemini cached entries!")
 
             with ns_col2:
                 if st.button("🖼️ Clear Image Cache", key="clear_image_cache", help="Clear cached Pixabay search results"):

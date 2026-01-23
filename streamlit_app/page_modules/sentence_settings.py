@@ -3,6 +3,105 @@
 import streamlit as st
 from constants import CURATED_TOPICS
 
+def _get_bcp47_code(language_name: str) -> str:
+    """
+    Convert language name to BCP-47 code for Google TTS.
+
+    Args:
+        language_name: Language name (e.g., "Chinese", "Spanish")
+
+    Returns:
+        BCP-47 language code (e.g., "zh-CN", "es-ES")
+    """
+    # Comprehensive mapping from language names to BCP-47 codes
+    bcp47_map = {
+        # Chinese variants
+        "Chinese": "zh-CN",
+        "Chinese (Simplified)": "zh-CN",
+        "Chinese (Traditional)": "zh-TW",
+        "Mandarin Chinese": "zh-CN",
+        "Cantonese": "zh-HK",
+
+        # Major European languages
+        "English": "en-US",
+        "Spanish": "es-ES",
+        "French": "fr-FR",
+        "German": "de-DE",
+        "Italian": "it-IT",
+        "Portuguese": "pt-BR",
+        "Russian": "ru-RU",
+        "Dutch": "nl-NL",
+        "Polish": "pl-PL",
+        "Turkish": "tr-TR",
+        "Swedish": "sv-SE",
+        "Norwegian": "nb-NO",
+        "Danish": "da-DK",
+        "Finnish": "fi-FI",
+        "Greek": "el-GR",
+        "Czech": "cs-CZ",
+        "Hungarian": "hu-HU",
+        "Romanian": "ro-RO",
+        "Bulgarian": "bg-BG",
+        "Croatian": "hr-HR",
+        "Slovak": "sk-SK",
+        "Slovenian": "sl-SI",
+        "Ukrainian": "uk-UA",
+        "Serbian": "sr-RS",
+        "Bosnian": "bs-BA",
+
+        # Asian languages
+        "Japanese": "ja-JP",
+        "Korean": "ko-KR",
+        "Hindi": "hi-IN",
+        "Arabic": "ar-SA",
+        "Hebrew": "he-IL",
+        "Thai": "th-TH",
+        "Vietnamese": "vi-VN",
+        "Indonesian": "id-ID",
+        "Malay": "ms-MY",
+        "Tamil": "ta-IN",
+        "Telugu": "te-IN",
+        "Kannada": "kn-IN",
+        "Bengali": "bn-IN",
+        "Gujarati": "gu-IN",
+        "Marathi": "mr-IN",
+        "Urdu": "ur-IN",
+        "Persian": "fa-IR",
+        "Pashto": "ps-AF",
+
+        # Other languages
+        "Afrikaans": "af-ZA",
+        "Albanian": "sq-AL",
+        "Amharic": "am-ET",
+        "Armenian": "hy-AM",
+        "Azerbaijani": "az-AZ",
+        "Basque": "eu-ES",
+        "Belarusian": "be-BY",
+        "Estonian": "et-EE",
+        "Georgian": "ka-GE",
+        "Icelandic": "is-IS",
+        "Irish": "ga-IE",
+        "Kazakh": "kk-KZ",
+        "Khmer": "km-KH",
+        "Lao": "lo-LA",
+        "Latvian": "lv-LV",
+        "Lithuanian": "lt-LT",
+        "Macedonian": "mk-MK",
+        "Maltese": "mt-MT",
+        "Mongolian": "mn-MN",
+        "Nepali": "ne-NP",
+        "Sinhala": "si-LK",
+        "Swahili": "sw-KE",
+        "Welsh": "cy-GB",
+        "Zulu": "zu-ZA",
+        "Burmese": "my-MM",
+        "Javanese": "jv-ID",
+        "Sundanese": "su-ID",
+        "Uzbek": "uz-UZ",
+    }
+
+    return bcp47_map.get(language_name, "en-US")
+
 
 def render_sentence_settings_page():
     """Render the sentence settings page."""
@@ -230,38 +329,47 @@ def render_sentence_settings_page():
         col_voice, col_speed = st.columns(2)
         with col_voice:
             lang = st.session_state.selected_language
-            # Map language names to language codes for Azure TTS
-            lang_code_map = {
-                "Spanish": "es", "French": "fr", "German": "de", "Italian": "it",
-                "Portuguese": "pt", "Russian": "ru", "Japanese": "ja", "Korean": "ko",
-                "Chinese (Simplified)": "zh", "Chinese (Traditional)": "zh",
-                "Arabic": "ar", "Hindi": "hi", "English": "en"
-            }
-            lang_code = lang_code_map.get(lang, "en")
 
             try:
-                from audio_generator import get_available_voices, AZURE_AVAILABLE
-                if not AZURE_AVAILABLE:
-                    st.warning("⚠️ Azure TTS not available in this environment. Audio generation will be skipped.")
-                    voice_options = ["en-US-AriaNeural"]  # Default fallback
+                from audio_generator import get_google_voices_for_language, GOOGLE_TTS_AVAILABLE, is_google_tts_configured
+                if not GOOGLE_TTS_AVAILABLE or not is_google_tts_configured():
+                    st.warning("⚠️ Google Cloud Text-to-Speech not configured. Audio generation will be skipped.")
+                    voice_options = ["D (Female, Neural2)"]  # Default fallback
+                    voice_display_map = {"D (Female, Neural2)": "en-US-Neural2-D"}
                 else:
-                    voice_options = get_available_voices(lang_code)
-                selected_voice_idx = voice_options.index(st.session_state.selected_voice) if st.session_state.selected_voice in voice_options else 0
+                    voice_options = get_google_voices_for_language(lang)
+                    # Create a mapping from display names to actual voice names
+                    voice_display_map = {}
+                    for display_name in voice_options:
+                        # Extract voice identifier (e.g., "D" from "D (Female, Neural2)")
+                        voice_id = display_name.split(' ')[0]
+                        # Construct full voice name (this is a simplified mapping)
+                        bcp47_code = _get_bcp47_code(lang)
+                        voice_name = f"{bcp47_code}-Neural2-{voice_id}"
+                        voice_display_map[display_name] = voice_name
+
+                # Get current selection or default to first option
+                current_display = getattr(st.session_state, 'selected_voice_display', voice_options[0])
+                selected_voice_idx = voice_options.index(current_display) if current_display in voice_options else 0
+
                 st.markdown("**Voice**")
-                selected_voice = st.selectbox(
+                selected_voice_display = st.selectbox(
                     label="Voice Selection",
                     options=voice_options,
                     index=selected_voice_idx,
-                    help="Choose the Azure TTS voice for audio generation.",
+                    help="Choose the Google TTS voice for audio generation. Shows all available voices for your selected language.",
                     label_visibility="collapsed",
-                    disabled=not AZURE_AVAILABLE
+                    disabled=not (GOOGLE_TTS_AVAILABLE and is_google_tts_configured())
                 )
-                st.session_state.selected_voice = selected_voice
-                st.session_state.selected_voice_display = selected_voice
-            except ImportError:
-                st.error("Azure TTS not configured. Please set up Azure TTS key in API Setup.")
-                st.session_state.selected_voice = "en-US-AriaNeural"
-                st.session_state.selected_voice_display = "en-US-AriaNeural"
+
+                # Store both display name and actual voice name
+                st.session_state.selected_voice_display = selected_voice_display
+                st.session_state.selected_voice = voice_display_map.get(selected_voice_display, "en-US-Neural2-D")
+
+            except ImportError as e:
+                st.error(f"Google TTS not configured. Please set up Google API key in API Setup. Error: {e}")
+                st.session_state.selected_voice = "en-US-Neural2-D"
+                st.session_state.selected_voice_display = "D (Female, Neural2)"
         with col_speed:
             st.markdown("**Audio Speed**")
             audio_speed = st.slider(

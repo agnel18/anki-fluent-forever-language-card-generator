@@ -8,10 +8,11 @@ requests>=2.31.0
 pyyaml>=6.0
 
 # AI/ML
-groq>=0.9.0
+google-generativeai>=0.8.0
+google-api-python-client>=2.100.0
 
-# Text-to-Speech (optional - app works without it)
-# azure-cognitiveservices-speech>=1.32.0
+# Text-to-Speech (Google Cloud TTS)
+google-cloud-texttospeech>=2.16.0
 
 # Image generation
 Pillow>=10.0.0

@@ -208,7 +208,7 @@ IMPORTANT:
         pass
 
     def analyze_grammar(self, sentence: str, target_word: str,
-                       complexity: str, groq_api_key: str) -> GrammarAnalysis:
+                       complexity: str, gemini_api_key: str) -> GrammarAnalysis:
         """
         Main analysis method - orchestrates the complete grammar analysis process.
 
@@ -216,7 +216,7 @@ IMPORTANT:
             sentence: Sentence to analyze
             target_word: Target word being learned
             complexity: Complexity level ('beginner', 'intermediate', 'advanced')
-            groq_api_key: API key for Groq AI
+            gemini_api_key: Google Gemini API key
 
         Returns:
             Complete GrammarAnalysis object
@@ -230,7 +230,7 @@ IMPORTANT:
             prompt = self.get_grammar_prompt(complexity, sentence, target_word)
 
             # Call AI model
-            analysis_data = self._call_ai_model(prompt, groq_api_key)
+            analysis_data = self._call_ai_model(prompt, gemini_api_key)
 
             # Parse response
             parsed_data = self.parse_grammar_response(analysis_data, complexity, sentence)
@@ -264,7 +264,7 @@ IMPORTANT:
             return self._create_fallback_analysis(sentence, target_word, complexity)
 
     def batch_analyze_grammar(self, sentences: List[str], target_word: str,
-                             complexity: str, groq_api_key: str) -> List[GrammarAnalysis]:
+                             complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
         """
         Batch analyze multiple sentences in a single API call for efficiency.
 
@@ -272,7 +272,7 @@ IMPORTANT:
             sentences: List of sentences to analyze
             target_word: Target word being learned (same for all sentences)
             complexity: Complexity level ('beginner', 'intermediate', 'advanced')
-            groq_api_key: API key for Groq AI
+            gemini_api_key: Google Gemini API key
 
         Returns:
             List of GrammarAnalysis objects, one per sentence
@@ -289,7 +289,7 @@ IMPORTANT:
             prompt = self.get_batch_grammar_prompt(complexity, sentences, target_word)
 
             # Call AI model once for all sentences
-            analysis_data = self._call_ai_model(prompt, groq_api_key)
+            analysis_data = self._call_ai_model(prompt, gemini_api_key)
 
             # Parse batch response
             batch_results = self.parse_batch_grammar_response(analysis_data, sentences, complexity)
@@ -334,19 +334,22 @@ IMPORTANT:
                    for sentence in sentences]
 
     def _call_ai_model(self, prompt: str, api_key: str) -> str:
-        """Call Groq AI model with the generated prompt"""
+        """Call Google Gemini AI model with the generated prompt"""
         try:
-            from groq import Groq
+            import google.generativeai as genai
 
-            client = Groq(api_key=api_key)
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=1500,  # Allow detailed analysis
-                temperature=0.3   # Consistent, focused responses
-            )
-
-            return response.choices[0].message.content.strip()
+            genai.configure(api_key=api_key)
+            # Try primary model first
+            try:
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as primary_error:
+                logger.warning(f"Primary model gemini-2.5-flash failed: {primary_error}")
+                # Fallback to preview model
+                model = genai.GenerativeModel('gemini-3-flash-preview')
+                response = model.generate_content(prompt)
+                return response.text.strip()
 
         except Exception as e:
             logger.error("AI model call failed: " + str(e))

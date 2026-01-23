@@ -6,7 +6,7 @@ Handles data format conversions and transformations for sentence generation.
 import logging
 from typing import List, Dict, Any
 
-from language_analyzers.analyzer_registry import get_analyzer
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
 
 logger = logging.getLogger(__name__)
 

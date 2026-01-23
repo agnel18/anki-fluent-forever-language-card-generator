@@ -16,7 +16,7 @@ class TestWordFieldConsistency:
         """Test that generate_deck_progressive always sets word field to selected word."""
         with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
              patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
-             patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images:
+             patch('streamlit_app.core_functions.generate_images_google') as mock_generate_images:
 
             # Setup mocks
             mock_generate_sentences.return_value = ("test meaning", [
@@ -30,8 +30,8 @@ class TestWordFieldConsistency:
                 result = generate_deck_progressive(
                     word='कहो',  # Selected word
                     language='Hindi',
-                    groq_api_key='test_key',
-                    pixabay_api_key='test_key',
+                    gemini_api_key='test_key',
+                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=2
                 )

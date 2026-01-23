@@ -30,7 +30,7 @@ class TestFilenameUniqueness:
         """Test that generate_deck_progressive includes unique_id in word_data."""
         with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
              patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
-             patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images:
+             patch('streamlit_app.core_functions.generate_images_google') as mock_generate_images:
 
             # Setup mocks
             mock_generate_sentences.return_value = ("test meaning", [
@@ -44,8 +44,8 @@ class TestFilenameUniqueness:
                 result = generate_deck_progressive(
                     word='test',
                     language='English',
-                    groq_api_key='test_key',
-                    pixabay_api_key='test_key',
+                    gemini_api_key='test_key',
+                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=2
                 )
@@ -142,7 +142,7 @@ class TestFilenameUniqueness:
         """Test that multiple deck generations produce different unique IDs."""
         with patch('streamlit_app.core_functions.generate_sentences') as mock_generate_sentences, \
              patch('streamlit_app.core_functions.generate_audio') as mock_generate_audio, \
-             patch('streamlit_app.core_functions.generate_images_pixabay') as mock_generate_images:
+             patch('streamlit_app.core_functions.generate_images_google') as mock_generate_images:
 
             # Setup mocks
             mock_generate_sentences.return_value = ("test meaning", [
@@ -156,8 +156,8 @@ class TestFilenameUniqueness:
                 result1 = generate_deck_progressive(
                     word='test',
                     language='English',
-                    groq_api_key='test_key',
-                    pixabay_api_key='test_key',
+                    gemini_api_key='test_key',
+                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=1
                 )
@@ -166,8 +166,8 @@ class TestFilenameUniqueness:
                 result2 = generate_deck_progressive(
                     word='test',
                     language='English',
-                    groq_api_key='test_key',
-                    pixabay_api_key='test_key',
+                    gemini_api_key='test_key',
+                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=1
                 )

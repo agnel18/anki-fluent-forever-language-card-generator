@@ -1,346 +1,346 @@
-# Language configurations with Edge TTS voices
-# Top 5 most-spoken languages on the internet + all 109 supported
+# Language configurations with Google Cloud Text-to-Speech voices
+# Top 5 most-spoken languages on the internet + all supported languages
 
 top_5:
   - code: "en"
     name: "English"
     speakers: "1.5B"
-    edge_tts_voice: "en-US-AvaNeural"
+    google_tts_voice: "en-US-Neural2-D"
     flag: "🇬🇧"
-    
+
   - code: "zh-CN"
     name: "Chinese (Simplified)"
     speakers: "1.1B"
-    edge_tts_voice: "zh-CN-XiaoxiaoNeural"
+    google_tts_voice: "cmn-CN-Neural2-D"
     flag: "🇨🇳"
-    
+
   - code: "hi"
     name: "Hindi"
     speakers: "609M"
-    edge_tts_voice: "hi-IN-SwatiNeural"
+    google_tts_voice: "hi-IN-Neural2-D"
     flag: "🇮🇳"
-    
+
   - code: "es"
     name: "Spanish"
     speakers: "560M"
-    edge_tts_voice: "es-ES-ElviraNeural"
+    google_tts_voice: "es-ES-Neural2-F"
     flag: "🇪🇸"
-    
+
   - code: "ar"
     name: "Arabic"
     speakers: "422M"
-    edge_tts_voice: "ar-SA-ZariyahNeural"
+    google_tts_voice: "ar-XA-Neural2-D"
     flag: "🇸🇦"
 
 # Full list of 109 languages (subset shown; extend as needed)
 all_languages:
   - code: "en"
     name: "English"
-    edge_tts_voice: "en-US-AvaNeural"
+    google_tts_voice: "en-US-AvaNeural"
     
   - code: "es"
     name: "Spanish"
-    edge_tts_voice: "es-ES-ElviraNeural"
+    google_tts_voice: "es-ES-ElviraNeural"
     
   - code: "fr"
     name: "French"
-    edge_tts_voice: "fr-FR-DeniseNeural"
+    google_tts_voice: "fr-FR-DeniseNeural"
     
   - code: "de"
     name: "German"
-    edge_tts_voice: "de-DE-KatjaNeural"
+    google_tts_voice: "de-DE-KatjaNeural"
     
   - code: "it"
     name: "Italian"
-    edge_tts_voice: "it-IT-IsabellaNeural"
+    google_tts_voice: "it-IT-IsabellaNeural"
     
   - code: "pt"
     name: "Portuguese"
-    edge_tts_voice: "pt-BR-FranciscaNeural"
+    google_tts_voice: "pt-BR-FranciscaNeural"
     
   - code: "ru"
     name: "Russian"
-    edge_tts_voice: "ru-RU-DmitryNeural"
+    google_tts_voice: "ru-RU-DmitryNeural"
     
   - code: "ja"
     name: "Japanese"
-    edge_tts_voice: "ja-JP-NanamiNeural"
+    google_tts_voice: "ja-JP-NanamiNeural"
     
   - code: "ko"
     name: "Korean"
-    edge_tts_voice: "ko-KR-SunHiNeural"
+    google_tts_voice: "ko-KR-SunHiNeural"
     
   - code: "zh-CN"
     name: "Chinese (Simplified)"
-    edge_tts_voice: "zh-CN-XiaoxiaoNeural"
+    google_tts_voice: "zh-CN-XiaoxiaoNeural"
 
   - code: "zh-TW"
     name: "Chinese (Traditional)"
-    edge_tts_voice: "zh-TW-HsiaoChenNeural"
+    google_tts_voice: "zh-TW-HsiaoChenNeural"
     
   - code: "ar"
     name: "Arabic"
-    edge_tts_voice: "ar-SA-ZariyahNeural"
+    google_tts_voice: "ar-SA-ZariyahNeural"
     
   - code: "hi"
     name: "Hindi"
-    edge_tts_voice: "hi-IN-SwatiNeural"
+    google_tts_voice: "hi-IN-SwatiNeural"
     
   - code: "bn"
     name: "Bengali"
-    edge_tts_voice: "bn-IN-TithiNeural"
+    google_tts_voice: "bn-IN-TithiNeural"
     
   - code: "te"
     name: "Telugu"
-    edge_tts_voice: "te-IN-ValluvasalaNeural"
+    google_tts_voice: "te-IN-ValluvasalaNeural"
     
   - code: "ta"
     name: "Tamil"
-    edge_tts_voice: "ta-IN-VeenaNeural"
+    google_tts_voice: "ta-IN-VeenaNeural"
     
   - code: "mr"
     name: "Marathi"
-    edge_tts_voice: "mr-IN-AnanyaNeural"
+    google_tts_voice: "mr-IN-AnanyaNeural"
     
   - code: "gu"
     name: "Gujarati"
-    edge_tts_voice: "gu-IN-AarohiNeural"
+    google_tts_voice: "gu-IN-AarohiNeural"
     
   - code: "tr"
     name: "Turkish"
-    edge_tts_voice: "tr-TR-EmelNeural"
+    google_tts_voice: "tr-TR-EmelNeural"
     
   - code: "vi"
     name: "Vietnamese"
-    edge_tts_voice: "vi-VN-HoaiMyNeural"
+    google_tts_voice: "vi-VN-HoaiMyNeural"
     
   - code: "pl"
     name: "Polish"
-    edge_tts_voice: "pl-PL-ZofiaNeural"
+    google_tts_voice: "pl-PL-ZofiaNeural"
     
   - code: "nl"
     name: "Dutch"
-    edge_tts_voice: "nl-NL-MayaNeural"
+    google_tts_voice: "nl-NL-MayaNeural"
     
   - code: "sv"
     name: "Swedish"
-    edge_tts_voice: "sv-SE-SofieNeural"
+    google_tts_voice: "sv-SE-SofieNeural"
     
   - code: "el"
     name: "Greek"
-    edge_tts_voice: "el-GR-AthinaNeural"
+    google_tts_voice: "el-GR-AthinaNeural"
     
   - code: "cs"
     name: "Czech"
-    edge_tts_voice: "cs-CZ-VlastaNeural"
+    google_tts_voice: "cs-CZ-VlastaNeural"
     
   - code: "hu"
     name: "Hungarian"
-    edge_tts_voice: "hu-HU-NoemiNeural"
+    google_tts_voice: "hu-HU-NoemiNeural"
     
   - code: "ro"
     name: "Romanian"
-    edge_tts_voice: "ro-RO-AleaNeural"
+    google_tts_voice: "ro-RO-AleaNeural"
     
   - code: "th"
     name: "Thai"
-    edge_tts_voice: "th-TH-PremwadeeNeural"
+    google_tts_voice: "th-TH-PremwadeeNeural"
     
   - code: "id"
     name: "Indonesian"
-    edge_tts_voice: "id-ID-GadisNeural"
+    google_tts_voice: "id-ID-GadisNeural"
     
   - code: "ml"
     name: "Malayalam"
-    edge_tts_voice: "ml-IN-AadhiNeural"
+    google_tts_voice: "ml-IN-AadhiNeural"
     
   - code: "uk"
     name: "Ukrainian"
-    edge_tts_voice: "uk-UA-OstapNeural"
+    google_tts_voice: "uk-UA-OstapNeural"
     
   - code: "af"
     name: "Afrikaans"
-    edge_tts_voice: "af-ZA-WillemNeural"
+    google_tts_voice: "af-ZA-WillemNeural"
     
   - code: "sq"
     name: "Albanian"
-    edge_tts_voice: "sq-AL-IlseNeural"
+    google_tts_voice: "sq-AL-IlseNeural"
     
   - code: "am"
     name: "Amharic"
-    edge_tts_voice: "am-ET-MekdesNeural"
+    google_tts_voice: "am-ET-MekdesNeural"
     
   - code: "hy"
     name: "Armenian"
-    edge_tts_voice: "hy-AM-AnahitNeural"
+    google_tts_voice: "hy-AM-AnahitNeural"
     
   - code: "az"
     name: "Azerbaijani"
-    edge_tts_voice: "az-AZ-BanuNeural"
+    google_tts_voice: "az-AZ-BanuNeural"
     
   - code: "bg"
     name: "Bulgarian"
-    edge_tts_voice: "bg-BG-KrystalNeural"
+    google_tts_voice: "bg-BG-KrystalNeural"
     
   - code: "ca"
     name: "Catalan"
-    edge_tts_voice: "ca-ES-JoanaNeural"
+    google_tts_voice: "ca-ES-JoanaNeural"
     
   - code: "cy"
     name: "Welsh"
-    edge_tts_voice: "cy-GB-NiaNeural"
+    google_tts_voice: "cy-GB-NiaNeural"
     
   - code: "da"
     name: "Danish"
-    edge_tts_voice: "da-DK-ChristelNeural"
+    google_tts_voice: "da-DK-ChristelNeural"
     
   - code: "et"
     name: "Estonian"
-    edge_tts_voice: "et-EE-AnuNeural"
+    google_tts_voice: "et-EE-AnuNeural"
     
   - code: "fi"
     name: "Finnish"
-    edge_tts_voice: "fi-FI: NooraNeural"
+    google_tts_voice: "fi-FI: NooraNeural"
     
   - code: "gl"
     name: "Galician"
-    edge_tts_voice: "gl-ES-RosamariaNeuralNeural"
+    google_tts_voice: "gl-ES-RosamariaNeuralNeural"
     
   - code: "ka"
     name: "Georgian"
-    edge_tts_voice: "ka-GE: EkaNeural"
+    google_tts_voice: "ka-GE: EkaNeural"
     
   - code: "he"
     name: "Hebrew"
-    edge_tts_voice: "he-IL:HilaNeural"
+    google_tts_voice: "he-IL:HilaNeural"
     
   - code: "is"
     name: "Icelandic"
-    edge_tts_voice: "is-IS:GudrunNeural"
+    google_tts_voice: "is-IS:GudrunNeural"
     
   - code: "ga"
     name: "Irish"
-    edge_tts_voice: "ga-IE:OrlaNeural"
+    google_tts_voice: "ga-IE:OrlaNeural"
     
   - code: "lv"
     name: "Latvian"
-    edge_tts_voice: "lv-LV:EVITANeural"
+    google_tts_voice: "lv-LV:EVITANeural"
     
   - code: "lt"
     name: "Lithuanian"
-    edge_tts_voice: "lt-LT:LiepaNeural"
+    google_tts_voice: "lt-LT:LiepaNeural"
     
   - code: "mk"
     name: "Macedonian"
-    edge_tts_voice: "mk-MK:MarijaNeural"
+    google_tts_voice: "mk-MK:MarijaNeural"
     
   - code: "nb"
     name: "Norwegian"
-    edge_tts_voice: "nb-NO:PernilleNeural"
+    google_tts_voice: "nb-NO:PernilleNeural"
     
   - code: "fa"
     name: "Persian"
-    edge_tts_voice: "fa-IR:DilaNeural"
+    google_tts_voice: "fa-IR:DilaNeural"
     
   - code: "sk"
     name: "Slovak"
-    edge_tts_voice: "sk-SK:VioletaNeural"
+    google_tts_voice: "sk-SK:VioletaNeural"
     
   - code: "sl"
     name: "Slovenian"
-    edge_tts_voice: "sl-SI:PetraNeural"
+    google_tts_voice: "sl-SI:PetraNeural"
     
   - code: "sr"
     name: "Serbian"
-    edge_tts_voice: "sr-RS:SophieNeural"
+    google_tts_voice: "sr-RS:SophieNeural"
 
   - code: "bs"
     name: "Bosnian"
-    edge_tts_voice: "bs-BA-GoranNeural"
+    google_tts_voice: "bs-BA-GoranNeural"
     
   - code: "eu"
     name: "Basque"
-    edge_tts_voice: "eu-ES-AinhoaNeural"
+    google_tts_voice: "eu-ES-AinhoaNeural"
     
   - code: "be"
     name: "Belarusian"
-    edge_tts_voice: "be-BY-NatashaSergeyevichNeural"
+    google_tts_voice: "be-BY-NatashaSergeyevichNeural"
     
   - code: "my"
     name: "Burmese"
-    edge_tts_voice: "my-MM-NilarNeural"
+    google_tts_voice: "my-MM-NilarNeural"
     
   - code: "hr"
     name: "Croatian"
-    edge_tts_voice: "hr-HR-GabrijelaNeural"
+    google_tts_voice: "hr-HR-GabrijelaNeural"
     
   - code: "kn"
     name: "Kannada"
-    edge_tts_voice: "kn-IN-GaganNeural"
+    google_tts_voice: "kn-IN-GaganNeural"
     
   - code: "kk"
     name: "Kazakh"
-    edge_tts_voice: "kk-KZ-AigulNeural"
+    google_tts_voice: "kk-KZ-AigulNeural"
     
   - code: "km"
     name: "Khmer"
-    edge_tts_voice: "km-KH-PisethNeural"
+    google_tts_voice: "km-KH-PisethNeural"
     
   - code: "lo"
     name: "Lao"
-    edge_tts_voice: "lo-LA-ChanthavongNeural"
+    google_tts_voice: "lo-LA-ChanthavongNeural"
     
   - code: "ms"
     name: "Malay"
-    edge_tts_voice: "ms-MY-OsmanNeural"
+    google_tts_voice: "ms-MY-OsmanNeural"
     
   - code: "mt"
     name: "Maltese"
-    edge_tts_voice: "mt-MT-GraceNeural"
+    google_tts_voice: "mt-MT-GraceNeural"
     
   - code: "mn"
     name: "Mongolian"
-    edge_tts_voice: "mn-MN-BataaNeural"
+    google_tts_voice: "mn-MN-BataaNeural"
     
   - code: "ne"
     name: "Nepali"
-    edge_tts_voice: "ne-NP-HemkalaNeural"
+    google_tts_voice: "ne-NP-HemkalaNeural"
     
   - code: "ps"
     name: "Pashto"
-    edge_tts_voice: "ps-AF-GulNawazNeural"
+    google_tts_voice: "ps-AF-GulNawazNeural"
     
   - code: "si"
     name: "Sinhala"
-    edge_tts_voice: "si-LK-SameeraNeural"
+    google_tts_voice: "si-LK-SameeraNeural"
     
   - code: "so"
     name: "Somali"
-    edge_tts_voice: "so-SO-MuuseNeural"
+    google_tts_voice: "so-SO-MuuseNeural"
     
   - code: "su"
     name: "Sundanese"
-    edge_tts_voice: "su-ID-JajangNeural"
+    google_tts_voice: "su-ID-JajangNeural"
     
   - code: "sw"
     name: "Swahili"
-    edge_tts_voice: "sw-KE-RafikiNeural"
+    google_tts_voice: "sw-KE-RafikiNeural"
     
   - code: "ur"
     name: "Urdu"
-    edge_tts_voice: "ur-IN-GulNeural"
+    google_tts_voice: "ur-IN-GulNeural"
     
   - code: "uz"
     name: "Uzbek"
-    edge_tts_voice: "uz-UZ-MadinaNeural"
+    google_tts_voice: "uz-UZ-MadinaNeural"
     
   - code: "zu"
     name: "Zulu"
-    edge_tts_voice: "zu-ZA-ThandoNeural"
+    google_tts_voice: "zu-ZA-ThandoNeural"
     
   - code: "jv"
     name: "Javanese"
-    edge_tts_voice: "jv-ID-DimasNeural"
+    google_tts_voice: "jv-ID-DimasNeural"
 
 # Map language codes to frequency list file names
 frequency_list_map:

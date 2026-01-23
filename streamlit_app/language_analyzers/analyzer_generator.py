@@ -5,15 +5,16 @@ import json
 import logging
 import re
 from typing import Dict, Any, Optional
-from groq import Groq
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
 class AnalyzerGenerator:
     """Generates language analyzers using AI based on Chinese template."""
 
-    def __init__(self, groq_api_key: str):
-        self.client = Groq(api_key=groq_api_key)
+    def __init__(self, gemini_api_key: str):
+        genai.configure(api_key=gemini_api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def generate_analyzer(self, language_name: str, language_code: str, family: str, script_type: str, complexity: str) -> str:
         """
@@ -73,14 +74,17 @@ IMPORTANT:
 Return ONLY the complete Python code for the analyzer, no explanations."""
 
         try:
-            response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
+            generation_config = genai.types.GenerationConfig(
                 temperature=0.3,  # Consistency for code generation
-                max_tokens=4000,
+                max_output_tokens=4000,
             )
 
-            generated_code = response.choices[0].message.content.strip()
+            response = self.model.generate_content(
+                prompt,
+                generation_config=generation_config
+            )
+
+            generated_code = response.text.strip()
 
             # Clean up markdown code blocks if present
             if generated_code.startswith("```python"):

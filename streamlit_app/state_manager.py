@@ -8,7 +8,7 @@ from constants import (
     DEFAULT_BATCH_SIZE, DEFAULT_SENTENCES_PER_WORD, DEFAULT_AUDIO_SPEED,
     DEFAULT_SELECTION_MODE, DEFAULT_DIFFICULTY, DEFAULT_VOICE_DISPLAY, DEFAULT_VOICE,
     DEFAULT_ENABLE_TOPICS, DEFAULT_SELECTED_TOPICS,
-    LANGUAGES_CONFIG_PATH, SESSION_PAGE, SESSION_GROQ_API_KEY, SESSION_PIXABAY_API_KEY,
+    LANGUAGES_CONFIG_PATH, SESSION_PAGE, SESSION_GOOGLE_API_KEY,
     SESSION_CURRENT_BATCH_SIZE, SESSION_LOADED_WORDS, SESSION_CURRENT_LANG_WORDS,
     SESSION_COMPLETED_WORDS, SESSION_SELECTION_MODE, SESSION_SENTENCES_PER_WORD,
     SESSION_AUDIO_SPEED, SESSION_DIFFICULTY, SESSION_SELECTED_VOICE_DISPLAY,
@@ -25,11 +25,9 @@ def initialize_session_state():
         st.session_state[SESSION_PAGE] = PAGE_MAIN
 
     # API keys - load from saved secrets if available
-    if SESSION_GROQ_API_KEY not in st.session_state:
-        st.session_state[SESSION_GROQ_API_KEY] = ""
-    if SESSION_PIXABAY_API_KEY not in st.session_state:
-        st.session_state[SESSION_PIXABAY_API_KEY] = ""
-    
+    if SESSION_GOOGLE_API_KEY not in st.session_state:
+        st.session_state[SESSION_GOOGLE_API_KEY] = ""
+
     # Try to load saved API keys from user_secrets.json
     try:
         secrets_path = Path(__file__).parent / "user_secrets.json"
@@ -37,10 +35,8 @@ def initialize_session_state():
             import json
             with open(secrets_path, "r", encoding="utf-8") as f:
                 user_secrets = json.load(f)
-            if user_secrets.get("groq_api_key") and not st.session_state[SESSION_GROQ_API_KEY]:
-                st.session_state[SESSION_GROQ_API_KEY] = user_secrets["groq_api_key"]
-            if user_secrets.get("pixabay_api_key") and not st.session_state[SESSION_PIXABAY_API_KEY]:
-                st.session_state[SESSION_PIXABAY_API_KEY] = user_secrets["pixabay_api_key"]
+            if user_secrets.get("google_api_key") and not st.session_state[SESSION_GOOGLE_API_KEY]:
+                st.session_state[SESSION_GOOGLE_API_KEY] = user_secrets["google_api_key"]
     except Exception:
         # If loading fails, continue with empty keys
         pass
@@ -178,10 +174,8 @@ def initialize_firebase_settings():
         firebase_settings = load_settings_from_firebase(st.session_state.session_id)
         if firebase_settings:
             # Load settings from Firebase (cloud takes precedence for API keys)
-            if firebase_settings.get("groq_api_key"):
-                st.session_state.groq_api_key = firebase_settings["groq_api_key"]
-            if firebase_settings.get("pixabay_api_key"):
-                st.session_state.pixabay_api_key = firebase_settings["pixabay_api_key"]
+            if firebase_settings.get("google_api_key"):
+                st.session_state.google_api_key = firebase_settings["google_api_key"]
             # Load other settings if available
             if "theme" in firebase_settings:
                 st.session_state.theme = firebase_settings["theme"]

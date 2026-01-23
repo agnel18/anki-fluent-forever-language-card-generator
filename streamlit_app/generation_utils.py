@@ -6,7 +6,7 @@ import pandas as pd
 import re
 import time
 from typing import List, Dict
-from groq import Groq
+import google.generativeai as genai
 
 # Import language registry for consistent language handling
 try:
@@ -194,20 +194,20 @@ def validate_ipa_unbracketed(text: str, language: str) -> tuple[bool, str]:
     return True, text
 
 
-def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
+def generate_ipa_hybrid(sentence: str, language: str, gemini_api_key: str) -> str:
     """
     Generate IPA transliteration with strict validation to ensure IPA-only output.
 
     Args:
         sentence: The sentence to transliterate
         language: Language code (e.g., 'zh', 'ja', 'ko') or full name
-        groq_api_key: Groq API key
+        gemini_api_key: Gemini API key
 
     Returns:
         Validated IPA transliteration string
     """
-    if not groq_api_key:
-        logger.warning("No Groq API key provided for IPA generation")
+    if not gemini_api_key:
+        logger.warning("No Gemini API key provided for IPA generation")
         return ""
 
     # Get language registry and normalize language input
@@ -216,12 +216,13 @@ def generate_ipa_hybrid(sentence: str, language: str, groq_api_key: str) -> str:
     full_lang_name = registry.get_full_name(normalized_lang) or language
 
     try:
-        client = Groq(api_key=groq_api_key)
+        genai.configure(api_key=gemini_api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
         # Enhanced prompt for IPA-only output using full language name
         # For some languages, romanization is more useful than strict IPA
         romanization_allowed = ['hi', 'ar', 'fa', 'ur', 'bn', 'pa', 'gu', 'or', 'ta', 'te', 'kn', 'ml', 'si']
-        
+
         if normalized_lang in romanization_allowed:
             prompt = f"""Transliterate this {full_lang_name} sentence to romanized pronunciation using Latin letters.
 
@@ -243,14 +244,9 @@ Sentence: {sentence}
 
 Return ONLY the IPA transliteration, no explanations or additional text."""
 
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=500,
-            temperature=0.1  # Low temperature for consistent IPA output
-        )
+        response = model.generate_content(prompt)
 
-        ipa_result = response.choices[0].message.content.strip()
+        ipa_result = response.text.strip()
 
         # Validate the IPA output using normalized language code
         is_valid, result = validate_ipa_output(ipa_result, normalized_lang)
@@ -274,14 +270,9 @@ Romanization:"""
 
 IPA:"""
 
-            fallback_response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": fallback_prompt}],
-                max_tokens=300,
-                temperature=0.0  # Zero temperature for strict IPA compliance
-            )
+            fallback_response = model.generate_content(fallback_prompt)
 
-            fallback_ipa = fallback_response.choices[0].message.content.strip()
+            fallback_ipa = fallback_response.text.strip()
             is_valid_fallback, fallback_result = validate_ipa_output(fallback_ipa, normalized_lang)
 
             if is_valid_fallback:
@@ -328,9 +319,9 @@ def estimate_api_costs(num_words: int, num_sentences: int = 10) -> dict:
     return {
         "total_sentences": total_sentences,
         "total_images": total_sentences,
-        "pixabay_requests": total_sentences,  # One per sentence
-        "groq_tokens_est": int(num_words * 400),  # 2-pass architecture: ~400 tokens/word
-        "azure_tts_chars": int(total_sentences * avg_chars_per_sentence),
+        "google_search_requests": total_sentences,  # One per sentence
+        "gemini_tokens_est": int(num_words * 400),  # 2-pass architecture: ~400 tokens/word
+        "google_tts_chars": int(total_sentences * avg_chars_per_sentence),
     }
 
 def parse_csv_upload(file_content: bytes) -> list[dict]:
@@ -363,7 +354,7 @@ def parse_csv_upload(file_content: bytes) -> list[dict]:
         return []
 
 
-def generate_image_keywords(sentence: str, translation: str, target_word: str, groq_api_key: str) -> str:
+def generate_image_keywords(sentence: str, translation: str, target_word: str, gemini_api_key: str) -> str:
     """
     Generate AI-powered keywords for image search based on sentence content.
 
@@ -371,24 +362,21 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         sentence: The sentence text
         translation: English translation
         target_word: The target word being learned
-        groq_api_key: Groq API key
+        gemini_api_key: Gemini API key
 
     Returns:
         Comma-separated keywords string
     """
-    if not groq_api_key:
-        logger.warning("Groq API key not available, using fallback keywords")
+    if not gemini_api_key:
+        logger.warning("Gemini API key not available, using fallback keywords")
         return f"{target_word}, language, learning"
 
     try:
-        client = Groq(api_key=groq_api_key)
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": f"Generate exactly 3 diverse and specific keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Make the keywords unique and visual - avoid generic terms like 'language' or 'learning'. Focus on concrete objects, actions, or scenes. Return only a comma-separated list of 3 keywords, no explanations or formatting."}],
-            max_tokens=100
-        )
-        raw_response = response.choices[0].message.content.strip()
-        
+        genai.configure(api_key=gemini_api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(f"Generate exactly 3 diverse and specific keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Make the keywords unique and visual - avoid generic terms like 'language' or 'learning'. Focus on concrete objects, actions, or scenes. Return only a comma-separated list of 3 keywords, no explanations or formatting.")
+        raw_response = response.text.strip()
+
         # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
         time.sleep(5)
         
@@ -431,7 +419,7 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
 
 def batch_generate_image_keywords(
     sentences_data: List[Dict[str, str]],
-    groq_api_key: str
+    gemini_api_key: str
 ) -> List[str]:
     """
     Generate AI-powered keywords for image search for MULTIPLE sentences in ONE API call.
@@ -439,20 +427,21 @@ def batch_generate_image_keywords(
 
     Args:
         sentences_data: List of dicts with keys 'sentence', 'english_translation', 'target_word'
-        groq_api_key: Groq API key
+        gemini_api_key: Gemini API key
 
     Returns:
         List of comma-separated keywords strings, one per sentence
     """
-    if not groq_api_key:
-        logger.warning("Groq API key not available, using fallback keywords")
+    if not gemini_api_key:
+        logger.warning("Gemini API key not available, using fallback keywords")
         return [f"{data['target_word']}, language, learning" for data in sentences_data]
 
     if not sentences_data:
         return []
 
     try:
-        client = Groq(api_key=groq_api_key)
+        genai.configure(api_key=gemini_api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
         # Build a single prompt for all sentences
         prompt_parts = []
@@ -468,15 +457,10 @@ Sentence 1: keyword1, keyword2, keyword3
 Sentence 2: keyword1, keyword2, keyword3
 ..."""
 
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=200  # Enough for all sentences
-        )
+        response = model.generate_content(prompt)
+        raw_response = response.text.strip()
 
-        raw_response = response.choices[0].message.content.strip()
-
-        # Rate limiting: wait 2 seconds between API calls to respect per-minute limits
+        # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
         time.sleep(5)
 
         # Parse the response

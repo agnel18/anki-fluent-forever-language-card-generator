@@ -2,7 +2,7 @@
 
 import streamlit as st
 from constants import (
-    GROQ_CALL_LIMIT, GROQ_TOKEN_LIMIT, PIXABAY_CALL_LIMIT,
+    GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, PIXABAY_CALL_LIMIT,
     PAGE_LANGUAGE_SELECT, PAGE_LOGIN
 )
 from utils import fmt_num, usage_bar
@@ -22,8 +22,8 @@ def render_statistics_page():
     # Use persistent stats if logged in, else session stats
     stats = st.session_state.get("persistent_usage_stats") if not st.session_state.get("is_guest", True) else None
     if stats:
-        groq_calls = stats.get("groq_calls", 0)
-        groq_tokens = stats.get("groq_tokens", 0)
+        gemini_calls = stats.get("gemini_calls", 0)
+        gemini_tokens = stats.get("gemini_tokens", 0)
         pixabay_calls = stats.get("pixabay_calls", 0)
         decks_exported = stats.get("decks_exported", 0)
         cards_generated = stats.get("cards_generated", 0)
@@ -32,8 +32,8 @@ def render_statistics_page():
         api_errors = stats.get("api_errors", 0)
         per_language = stats.get("per_language", {})
     else:
-        groq_calls = st.session_state.get("groq_api_calls", 0)
-        groq_tokens = st.session_state.get("groq_tokens_used", 0)
+        gemini_calls = st.session_state.get("gemini_api_calls", 0)
+        gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
         pixabay_calls = st.session_state.get("pixabay_api_calls", 0)
         decks_exported = st.session_state.get("decks_exported", 0)
         cards_generated = st.session_state.get("cards_generated", 0)
@@ -44,12 +44,12 @@ def render_statistics_page():
 
     st.markdown("#### API Usage")
     st.markdown("*Track your usage of external AI and image services*")
-    st.markdown(f"Groq Calls: {fmt_num(groq_calls)} / {fmt_num(GROQ_CALL_LIMIT)}", unsafe_allow_html=True)
-    st.markdown(usage_bar(groq_calls, GROQ_CALL_LIMIT), unsafe_allow_html=True)
-    st.caption("🤖 Groq API calls for generating sentences and translations")
-    st.markdown(f"Groq Tokens: {fmt_num(groq_tokens)} / {fmt_num(GROQ_TOKEN_LIMIT)}", unsafe_allow_html=True)
-    st.markdown(usage_bar(groq_tokens, GROQ_TOKEN_LIMIT), unsafe_allow_html=True)
-    st.caption("📊 Text tokens processed by Groq AI (includes prompts and responses)")
+    st.markdown(f"Gemini Calls: {fmt_num(gemini_calls)} / {fmt_num(GEMINI_CALL_LIMIT)}", unsafe_allow_html=True)
+    st.markdown(usage_bar(gemini_calls, GEMINI_CALL_LIMIT), unsafe_allow_html=True)
+    st.caption("🤖 Gemini API calls for generating sentences and translations")
+    st.markdown(f"Gemini Tokens: {fmt_num(gemini_tokens)} / {fmt_num(GEMINI_TOKEN_LIMIT)}", unsafe_allow_html=True)
+    st.markdown(usage_bar(gemini_tokens, GEMINI_TOKEN_LIMIT), unsafe_allow_html=True)
+    st.caption("📊 Text tokens processed by Gemini AI (includes prompts and responses)")
     st.markdown(f"Pixabay Calls: {fmt_num(pixabay_calls)} / {fmt_num(PIXABAY_CALL_LIMIT)}", unsafe_allow_html=True)
     st.markdown(usage_bar(pixabay_calls, PIXABAY_CALL_LIMIT), unsafe_allow_html=True)
     st.caption("🖼️ Image searches on Pixabay for word illustrations")

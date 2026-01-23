@@ -1,7 +1,7 @@
 """
 Content Generator Service
 
-Handles AI-powered content generation using Groq API.
+Handles AI-powered content generation using Google Gemini API.
 Extracted from sentence_generator.py for better separation of concerns.
 """
 
@@ -9,36 +9,35 @@ import json
 import logging
 import time
 from typing import Optional, List, Dict, Any, Tuple, Union
-from groq import Groq
+import google.generativeai as genai
 
-from cache_manager import cached_api_call
-from error_recovery import resilient_groq_call, with_fallback
-from services.sentence_generation import LANGUAGE_NAME_TO_CODE
-from generation_utils import validate_ipa_output
+from streamlit_app.cache_manager import cached_api_call
+from streamlit_app.error_recovery import retry_with_exponential_backoff, with_fallback
+from streamlit_app.services.sentence_generation import LANGUAGE_NAME_TO_CODE
+from streamlit_app.generation_utils import validate_ipa_output
 
 logger = logging.getLogger(__name__)
 
 
 class ContentGenerator:
     """
-    Service for generating educational content using AI.
+    Service for generating educational content using Google Gemini AI.
     """
 
     def __init__(self):
         self.client = None
 
-    def _get_client(self, api_key: str) -> Groq:
-        """Get or create Groq client."""
-        if self.client is None:
-            self.client = Groq(api_key=api_key)
-        return self.client
+    def _get_client(self, api_key: str):
+        """Configure Google Generative AI client."""
+        genai.configure(api_key=api_key)
+        return genai
 
     def generate_word_meaning_sentences_and_keywords(
         self,
         word: str,
         language: str,
         num_sentences: int,
-        groq_api_key: str,
+        gemini_api_key: str,
         enriched_meaning: str = "",
         min_length: int = 3,
         max_length: int = 15,
@@ -52,7 +51,7 @@ class ContentGenerator:
             word: Target word to generate content for
             language: Language name (e.g., "Hindi", "Spanish")
             num_sentences: Number of sentences to generate
-            groq_api_key: Groq API key for AI calls
+            gemini_api_key: Google Gemini API key for AI calls
             enriched_meaning: Pre-enriched meaning data (optional)
             min_length: Minimum sentence length in words
             max_length: Maximum sentence length in words
@@ -67,26 +66,26 @@ class ContentGenerator:
             - ipa: List of IPA transcriptions
             - keywords: List of keyword strings (one per sentence)
         """
-        if not groq_api_key:
-            raise ValueError("Groq API key required")
+        if not gemini_api_key:
+            raise ValueError("Google Gemini API key required")
 
         # Validate API key format
-        if not groq_api_key.startswith('gsk_'):
-            logger.error(f"Invalid API key format: does not start with 'gsk_'")
-            raise ValueError("Invalid Groq API key format")
+        if not gemini_api_key.startswith('AIza'):
+            logger.error(f"Invalid API key format: does not start with 'AIza'")
+            raise ValueError("Invalid Google Gemini API key format")
         
-        if len(groq_api_key) < 20:
-            logger.error(f"API key too short: {len(groq_api_key)} characters")
-            raise ValueError("Groq API key too short")
+        if len(gemini_api_key) < 20:
+            logger.error(f"API key too short: {len(gemini_api_key)} characters")
+            raise ValueError("Google Gemini API key too short")
 
         logger.info(f"Content generation called with word='{word}', language='{language}', num_sentences={num_sentences}")
-        logger.info(f"API key provided: {'YES' if groq_api_key else 'NO'} (length: {len(groq_api_key) if groq_api_key else 0})")
-        if groq_api_key:
-            logger.info(f"API key starts with: {groq_api_key[:10]}... (ends with: ...{groq_api_key[-10:] if len(groq_api_key) > 10 else groq_api_key})")
+        logger.info(f"API key provided: {'YES' if gemini_api_key else 'NO'} (length: {len(gemini_api_key) if gemini_api_key else 0})")
+        if gemini_api_key:
+            logger.info(f"API key starts with: {gemini_api_key[:10]}... (ends with: ...{gemini_api_key[-10:] if len(gemini_api_key) > 10 else gemini_api_key})")
 
         try:
-            client = self._get_client(groq_api_key)
-            logger.info("Groq client created successfully")
+            client = self._get_client(gemini_api_key)
+            logger.info("Google Gemini client configured successfully")
             
             # Skip connectivity test in online environments as it may not work
             # and could cause delays
@@ -234,26 +233,28 @@ IMPORTANT:
 - Keywords must be comma-separated
 - Ensure exactly {num_sentences} sentences, translations, and keywords"""
 
-            # Try the primary model, fallback to alternative if needed
-            models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+            # Try Gemini models with fallback - using recommended models for Anki generation accuracy
+            # Best for Anki generation accuracy
+            models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
             
             response = None
             last_error = None
             
-            for model in models_to_try:
+            for model_name in models_to_try:
                 try:
-                    logger.info(f"Attempting API call with model: {model}")
-                    response = client.chat.completions.create(
-                        model=model,
-                        messages=[{"role": "user", "content": prompt}],
-                        temperature=0.7,  # Creativity for sentence variety
-                        max_tokens=2000,  # Enough for meaning + sentences + keywords
-                        timeout=30.0  # 30 second timeout for online environments
+                    logger.info(f"Attempting API call with model: {model_name}")
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=0.7,  # Creativity for sentence variety
+                            max_output_tokens=2000,  # Enough for meaning + sentences + keywords
+                        )
                     )
-                    logger.info(f"API call successful with model: {model}")
+                    logger.info(f"API call successful with model: {model_name}")
                     break
                 except Exception as model_e:
-                    logger.warning(f"Model {model} failed: {str(model_e)}")
+                    logger.warning(f"Model {model_name} failed: {str(model_e)}")
                     last_error = model_e
                     continue
             
@@ -261,7 +262,7 @@ IMPORTANT:
                 raise last_error or Exception("All models failed")
 
             logger.info("API call completed successfully")
-            response_text = response.choices[0].message.content.strip()
+            response_text = response.text.strip()
             logger.info(f"Content generation raw response length: {len(response_text)}")
             logger.debug(f"Content generation raw response: {response_text[:500]}...")
 

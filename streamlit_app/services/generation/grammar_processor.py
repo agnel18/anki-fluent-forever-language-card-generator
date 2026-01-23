@@ -32,7 +32,7 @@ class GrammarProcessor:
         sentence: str,
         word: str,
         language: str,
-        groq_api_key: str,
+        gemini_api_key: str,
         language_code: Optional[str] = None
     ) -> Dict[str, Any]:
         """
@@ -42,7 +42,7 @@ class GrammarProcessor:
             sentence: The sentence to analyze
             word: Target word in the sentence
             language: Language name
-            groq_api_key: API key for fallback analysis
+            gemini_api_key: Google Gemini API key for fallback analysis
             language_code: ISO language code (optional)
 
         Returns:
@@ -65,7 +65,7 @@ class GrammarProcessor:
                     sentence=sentence,
                     target_word=word,
                     complexity=complexity,
-                    groq_api_key=groq_api_key
+                    gemini_api_key=gemini_api_key
                 )
 
                 # Convert analyzer result to expected format
@@ -99,7 +99,7 @@ class GrammarProcessor:
 
         # Fallback to generic analysis
         logger.info(f"Using generic grammar analysis for {language}")
-        return self._analyze_grammar_generic(sentence, word, language, groq_api_key)
+        return self._analyze_grammar_generic(sentence, word, language, gemini_api_key)
 
     def _convert_analyzer_output_to_explanations(self, analysis_result, language_code: str) -> List[List[Any]]:
         """Convert analyzer output to word explanations format."""
@@ -194,14 +194,14 @@ class GrammarProcessor:
         sentence: str,
         word: str,
         language: str,
-        groq_api_key: str,
+        gemini_api_key: str,
     ) -> Dict[str, Any]:
         """
         Generic grammar analysis fallback when no language-specific analyzer is available.
         """
-        from groq import Groq
+        import google.generativeai as genai
 
-        client = Groq(api_key=groq_api_key)
+        genai.configure(api_key=gemini_api_key)
 
         # Color mapping for different POS categories
         color_map = {
@@ -260,14 +260,16 @@ IMPORTANT:
 - Each word_explanations entry must have exactly 4 elements: [word, pos, color, explanation]"""
 
         try:
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,  # Lower temperature for consistent analysis
-                max_tokens=1500,
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.3,  # Lower temperature for consistent analysis
+                    max_output_tokens=1500,
+                )
             )
 
-            response_text = response.choices[0].message.content.strip()
+            response_text = response.text.strip()
 
             # Parse JSON response
             try:
@@ -328,7 +330,7 @@ IMPORTANT:
         sentences: List[str],
         target_words: List[str],
         language: str,
-        groq_api_key: str,
+        gemini_api_key: str,
         language_code: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
@@ -339,7 +341,7 @@ IMPORTANT:
             sentences: List of sentences to analyze
             target_words: Corresponding target words
             language: Language name
-            groq_api_key: API key
+            gemini_api_key: Google Gemini API key
             language_code: ISO language code
 
         Returns:
@@ -380,7 +382,7 @@ IMPORTANT:
                         sentences=batch_sentences,
                         target_word=target_word,
                         complexity=complexity,
-                        groq_api_key=groq_api_key
+                        gemini_api_key=gemini_api_key
                     )
 
                     # Convert to expected format
@@ -429,7 +431,7 @@ IMPORTANT:
                     sentence=sentence,
                     word=target_word,
                     language=language,
-                    groq_api_key=groq_api_key,
+                    groq_api_key=gemini_api_key,
                     language_code=language_code
                 )
                 results.append(result)

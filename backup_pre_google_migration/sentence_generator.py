@@ -7,10 +7,10 @@ from typing import Optional, List, Dict, Any
 logger = logging.getLogger(__name__)
 
 # Import the new modular services
-from streamlit_app.services.generation.content_generator import get_content_generator
-from streamlit_app.services.generation.grammar_processor import get_grammar_processor
-from streamlit_app.services.generation.media_processor import get_media_processor
-from streamlit_app.services.generation.deck_assembler import get_deck_assembler
+from services.generation.content_generator import get_content_generator
+from services.generation.grammar_processor import get_grammar_processor
+from services.generation.media_processor import get_media_processor
+from services.generation.deck_assembler import get_deck_assembler
 
 # Legacy imports for backward compatibility
 try:
@@ -38,7 +38,7 @@ def generate_word_meaning_sentences_and_keywords(
     min_length: int = 5,
     max_length: int = 20,
     difficulty: str = "intermediate",
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
     topics: Optional[List[str]] = None,
     enriched_meaning: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -54,7 +54,7 @@ def generate_word_meaning_sentences_and_keywords(
         min_length: Minimum sentence length in words
         max_length: Maximum sentence length in words
         difficulty: "beginner", "intermediate", "advanced"
-        groq_api_key: API key for AI generation
+        groq_api_key: Groq API key
         topics: List of topics to focus sentence generation around (optional)
         enriched_meaning: Pre-reviewed word meaning from user (optional)
 
@@ -66,8 +66,8 @@ def generate_word_meaning_sentences_and_keywords(
         - keywords: List of keyword strings (one per sentence)
         - ipa: List of IPA transcriptions (one per sentence)
     """
-    if not gemini_api_key:
-        raise ValueError("Google Gemini API key required")
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
 
     logger.info(f"Generating content for word='{word}', language='{language}', num_sentences={num_sentences}")
 
@@ -81,7 +81,7 @@ def generate_word_meaning_sentences_and_keywords(
             min_length=min_length,
             max_length=max_length,
             difficulty=difficulty,
-            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
             topics=topics,
             enriched_meaning=enriched_meaning
         )
@@ -105,7 +105,7 @@ def generate_complete_deck(
     word: str,
     language: str,
     num_sentences: int = 10,
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
     enriched_meaning: str = "",
     language_code: Optional[str] = None,
     voice: str = None,
@@ -133,8 +133,8 @@ def generate_complete_deck(
     Returns:
         Complete deck data dictionary
     """
-    if not gemini_api_key:
-        raise ValueError("Gemini API key required")
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
 
     logger.info(f"Generating complete deck for word '{word}' in {language}")
 
@@ -145,7 +145,7 @@ def generate_complete_deck(
             word=word,
             language=language,
             num_sentences=num_sentences,
-            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
             enriched_meaning=enriched_meaning,
             language_code=language_code,
             voice=voice,
@@ -191,7 +191,7 @@ def generate_sentences(
     min_length: int = 5,
     max_length: int = 20,
     difficulty: str = "intermediate",
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
     topics: Optional[List[str]] = None,
     native_language: str = "English",
     enriched_word_data: Optional[Any] = None,
@@ -202,8 +202,8 @@ def generate_sentences(
 
     This function now uses the new modular services but maintains the old interface.
     """
-    if not gemini_api_key:
-        raise ValueError("Google Gemini API key required")
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
 
     logger.info(f"Generating sentences for word='{word}', language='{language}' (legacy interface)")
 
@@ -217,7 +217,7 @@ def generate_sentences(
             min_length=min_length,
             max_length=max_length,
             difficulty=difficulty,
-            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
             topics=topics,
             enriched_meaning=enriched_word_data if isinstance(enriched_word_data, str) else None
         )
@@ -255,7 +255,7 @@ def generate_sentences(
 def generate_word_meaning(
     word: str,
     language: str,
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
 ) -> str:
     """
     Legacy compatibility function for generate_word_meaning.
@@ -263,8 +263,8 @@ def generate_word_meaning(
 
     This function now uses the new meaning service but maintains the old interface.
     """
-    if not gemini_api_key:
-        raise ValueError("Gemini API key required")
+    if not groq_api_key:
+        raise ValueError("Groq API key required")
 
     logger.info(f"Generating meaning for word='{word}', language='{language}' (legacy interface)")
 
@@ -275,7 +275,7 @@ def generate_word_meaning(
         return meaning_service.generate_word_meaning(
             word=word,
             language=language,
-            gemini_api_key=gemini_api_key
+            groq_api_key=groq_api_key
         )
     except Exception as e:
         logger.error(f"Error in legacy generate_word_meaning: {e}")
@@ -290,7 +290,7 @@ def analyze_grammar_and_color(
     sentence: str,
     target_words: List[str],
     language: str,
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
     language_code: Optional[str] = None
 ) -> Dict[str, Any]:
     """
@@ -302,7 +302,7 @@ def analyze_grammar_and_color(
         sentence=sentence,
         target_words=target_words,
         language=language,
-        gemini_api_key=gemini_api_key,
+        groq_api_key=groq_api_key,
         language_code=language_code
     )
 
@@ -310,7 +310,7 @@ def _batch_analyze_grammar_and_color(
     sentences: List[str],
     target_words: List[str],
     language: str,
-    gemini_api_key: str = None,
+    groq_api_key: str = None,
     language_code: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
@@ -322,7 +322,7 @@ def _batch_analyze_grammar_and_color(
         sentences=sentences,
         target_words=target_words,
         language=language,
-        gemini_api_key=gemini_api_key,
+        groq_api_key=groq_api_key,
         language_code=language_code
     )
 

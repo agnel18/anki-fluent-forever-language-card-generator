@@ -106,7 +106,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         )
         super().__init__(config)
 
-    def analyze_grammar(self, sentence: str, target_word: str, complexity: str, groq_api_key: str) -> GrammarAnalysis:
+    def analyze_grammar(self, sentence: str, target_word: str, complexity: str, gemini_api_key: str) -> GrammarAnalysis:
         """
         Analyze grammar for a single sentence.
 
@@ -130,7 +130,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         """
         try:
             prompt = self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
-            ai_response = self._call_ai(prompt, groq_api_key)
+            ai_response = self._call_ai(prompt, gemini_api_key)
             result = self.response_parser.parse_response(ai_response, complexity, sentence, target_word)
             validated_result = self.validator.validate_result(result, sentence)
 
@@ -168,7 +168,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
                 word_explanations=fallback_result.get('word_explanations', [])
             )
 
-    def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, groq_api_key: str) -> List[GrammarAnalysis]:
+    def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
         """
         Analyze grammar for multiple sentences.
 
@@ -192,7 +192,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
         try:
             prompt = self.prompt_builder.build_batch_prompt(sentences, target_word, complexity)
-            ai_response = self._call_ai(prompt, groq_api_key)
+            ai_response = self._call_ai(prompt, gemini_api_key)
             results = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
 
             grammar_analyses = []
@@ -235,21 +235,22 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
                 ))
             return fallback_analyses
 
-    def _call_ai(self, prompt: str, groq_api_key: str) -> str:
+    def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
         """
-        Call Groq AI for grammar analysis.
+        Call Google Gemini AI for grammar analysis.
 
         GOLD STANDARD AI INTEGRATION:
-        - Uses llama-3.3-70b-versatile model (current production model)
+        - Uses gemini-2.5-flash model (current production model)
+        - gemini-3-flash-preview as fallback
         - 2000 max_tokens prevents JSON truncation in batch responses
         - 30-second timeout for online environments
         - Comprehensive error handling with meaningful logging
         - Returns error response for fallback processing
 
         MODEL SELECTION:
-        - llama-3.3-70b-versatile: Best balance of quality and speed
-        - Avoid deprecated models (llama3-70b-8192, etc.)
-        - Future-proof: Update model names as Groq releases new versions
+        - gemini-2.5-flash: Best balance of quality and speed
+        - gemini-3-flash-preview: Fallback for reliability
+        - Future-proof: Update model names as Google releases new versions
 
         ERROR HANDLING:
         - Catches all exceptions to prevent crashes
@@ -258,15 +259,19 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         """
         logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
         try:
-            from groq import Groq
-            client = Groq(api_key=groq_api_key)
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",  # Current production model
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=2000,  # Prevents JSON truncation
-                temperature=0.1  # Low creativity for consistent grammar analysis
-            )
-            ai_response = response.choices[0].message.content.strip()
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_api_key)
+            # Try primary model first
+            try:
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                response = model.generate_content(prompt)
+                ai_response = response.text.strip()
+            except Exception as primary_error:
+                logger.warning(f"Primary model gemini-2.5-flash failed: {primary_error}")
+                # Fallback to preview model
+                model = genai.GenerativeModel('gemini-3-flash-preview')
+                response = model.generate_content(prompt)
+                ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")
             logger.info(f"AI response received: {ai_response[:500]}...")
             return ai_response

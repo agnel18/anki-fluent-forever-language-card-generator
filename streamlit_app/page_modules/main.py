@@ -67,16 +67,10 @@ def render_main_page():
 
     # Check for missing API keys and show consolidated warning
     missing_keys = []
-    groq_key = st.session_state.get("groq_api_key") or os.environ.get("GROQ_API_KEY", "")
-    pixabay_key = st.session_state.get("pixabay_api_key") or os.environ.get("PIXABAY_API_KEY", "")
-    azure_key = st.session_state.get("azure_tts_key") or os.environ.get("AZURE_TTS_KEY", "")
+    google_key = st.session_state.get("google_api_key") or os.environ.get("GOOGLE_API_KEY", "")
 
-    if not groq_key:
-        missing_keys.append("Groq")
-    if not pixabay_key:
-        missing_keys.append("Pixabay")
-    if not azure_key:
-        missing_keys.append("Azure TTS")
+    if not google_key:
+        missing_keys.append("Google Cloud")
 
     if missing_keys:
         st.warning(f"⚠️ **API Keys Required**: {', '.join(missing_keys)} API key(s) not configured. You'll be redirected to set them up.")
@@ -103,11 +97,7 @@ def render_main_page():
         st.markdown('<div class="primary-action-button">', unsafe_allow_html=True)
         
         # Define button text and help text
-        has_all_api_keys = bool(
-            st.session_state.get("groq_api_key") and
-            st.session_state.get("pixabay_api_key") and
-            st.session_state.get("azure_tts_key")
-        )
+        has_all_api_keys = bool(st.session_state.get("google_api_key"))
         button_text = "🚀 Start Creating Your Deck" if not has_all_api_keys else "🚀 Continue Creating Your Deck"
         help_text = "Begin the 5-step deck creation process" if not has_all_api_keys else "Continue with your saved API keys"
         

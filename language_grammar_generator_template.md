@@ -39,12 +39,15 @@ if language in romanization_allowed_languages:
 
 **Code Pattern:**
 ```python
-response = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[{"role": "user", "content": prompt}],
-    max_tokens=2000,  # Increased for batch processing
-    temperature=0.1
-)
+# Primary model with fallback
+try:
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+    ai_response = response.text.strip()
+except Exception as primary_error:
+    model = genai.GenerativeModel('gemini-3-flash-preview')
+    response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+    ai_response = response.text.strip()
 ```
 
 ### **Word Explanation Quality**
@@ -94,13 +97,16 @@ Use the following files and implementations as your gold standard:
 
 #### **Token Limits & Response Handling**
 ```python
-# Gold Standard: Increased token limits for complete responses
-response = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[{"role": "user", "content": prompt}],
-    max_tokens=2000,  # Critical: Prevents JSON truncation
-    temperature=0.1
-)
+# Gold Standard: Gemini models with fallback for complete responses
+try:
+    model = genai.GenerativeModel('gemini-2.5-flash')  # Primary model
+    response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+    ai_response = response.text.strip()
+except Exception as primary_error:
+    logger.warning(f"Primary model failed: {primary_error}")
+    model = genai.GenerativeModel('gemini-3-flash-preview')  # Fallback model
+    response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+    ai_response = response.text.strip()
 ```
 
 #### **IPA Romanization Support**
@@ -345,15 +351,16 @@ class [LangCode]Analyzer(IndoEuropeanAnalyzer):  # or BaseGrammarAnalyzer
         # ... etc
 ```
     
-    def _call_ai(self, prompt: str, groq_api_key: str) -> str:
-        # Gold Standard: 2000 max_tokens
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=2000,  # Prevents JSON truncation
-            temperature=0.1
-        )
-        return response.choices[0].message.content.strip()
+    def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
+        # Gold Standard: Gemini with fallback
+        try:
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+            return response.text.strip()
+        except Exception as primary_error:
+            model = genai.GenerativeModel('gemini-3-flash-preview')
+            response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(max_output_tokens=2000))
+            return response.text.strip()
 ```
 
 #### **Phase 4: Testing & Validation**

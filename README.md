@@ -2,7 +2,7 @@
 
 **Generate professional language learning Anki decks in minutes.**
 
-Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 77 languages**. Built with Groq, Azure Cognitive Services TTS, Pixabay, and genanki.
+Create complete decks with AI-written sentences, native audio, beautiful images, and phonetic transcriptions—**for 77 languages**. Built with Google Cloud services (Gemini AI, Google Custom Search, Google Cloud Text-to-Speech) and genanki.
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner—a proven system using spaced repetition, personalized context, and multi-sensory learning.
 
@@ -19,22 +19,18 @@ pip install -r requirements.txt
 ### 2. Get API Keys
 
 #### Required APIs
-- **Groq** (AI sentences): https://console.groq.com/keys
-- **Pixabay** (images): https://pixabay.com/api/docs/
-- **Azure Cognitive Services** (audio): Configure in the app's API Setup page
+- **Google Cloud** (AI sentences, images, audio): https://console.cloud.google.com/
 
-**Note**: Without Azure TTS, the app falls back to Edge TTS (may have reliability issues).
+**Note**: Single Google Cloud API key provides access to all services (Gemini AI, Custom Search, Text-to-Speech).
 
 ### 3. Run & Configure APIs
 ```bash
 streamlit run app.py
 ```
 **In the app:**
-1. Enter your Groq API key (required)
-2. Enter your Pixabay API key (required)  
-3. Enter your Azure TTS key (required for audio)
-4. Test each API key
-5. Save and proceed
+1. Enter your Google Cloud API key (required for all services)
+2. Test the API key
+3. Save and proceed
 
 ### 4. Generate Your First Deck
 1. Pick a language (API keys already configured)
@@ -47,10 +43,10 @@ streamlit run app.py
 ## ✨ Features
 
 ### Core Functionality
-- **AI Sentences** — Groq generates 10 contextual sentences per word
+- **AI Sentences** — Google Gemini generates 10 contextual sentences per word
 - **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
-- **Native Audio** — Azure Cognitive Services TTS with 200+ neural voices, adjustable speed & pitch
-- **Beautiful Images** — Pixabay API with keyword extraction
+- **Native Audio** — Google Cloud Text-to-Speech with 200+ neural voices, adjustable speed & pitch
+- **Beautiful Images** — Google Custom Search API with keyword extraction
 - **IPA Transcriptions** — Official phonetic transcriptions or romanization for learner-friendly languages ([IPA Chart Reference](https://www.ipachart.com/))
 - **3-Card Anki Template** — Listening, Production, Reading cards
 - **Direct Anki Import** — `.apkg` files ready to use
@@ -134,8 +130,8 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 - ✅ Verify you're using the latest version (`app_v3.py`)
 
 ### "Invalid API key"
-- ✅ Check for typos in your Groq/Pixabay keys
-- ✅ Generate new keys if needed
+- ✅ Check for typos in your Google Cloud API key
+- ✅ Generate new key if needed
 
 ### ".apkg file not created"
 - ✅ Check Pixabay API key (images required)
@@ -149,16 +145,10 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 
 ## 📊 API Limits & Best Practices
 
-### Groq (Sentences)
-- **Limit**: 30 requests/minute, ~4M tokens/day (free)
-- **Safe**: 5-10 words per batch
-
-### Pixabay (Images)
-- **Limit**: 5,000 images/day (free)
-- **Safe**: Under 50 words/day
-
-### Edge TTS (Audio)
-- **Limit**: Unlimited (free, no keys needed)
+### Google Cloud Services
+- **Gemini AI**: 1,500 requests/day (free tier), higher limits with billing
+- **Custom Search**: 100 queries/day (free), 10,000/day with billing
+- **Text-to-Speech**: 1 million characters/month (free), 4 million with billing
 
 **Tip**: Generate in batches throughout the day to stay within limits.
 
@@ -189,9 +179,7 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 ## 🙏 Credits
 
 - [Fluent Forever](https://fluent-forever.com/) - Proven language learning method
-- [Groq](https://groq.com/) - Fast AI inference
-- [Pixabay](https://pixabay.com/) - Free images
-- [Edge TTS](https://github.com/rany2/edge-tts) - Neural voices
+- [Google Cloud](https://cloud.google.com/) - AI, search, and text-to-speech services
 - [genanki](https://github.com/kerrickstaley/genanki) - Anki deck creation
 
 ---

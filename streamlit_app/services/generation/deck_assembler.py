@@ -30,7 +30,7 @@ class DeckAssembler:
         word: str,
         language: str,
         num_sentences: int,
-        groq_api_key: str,
+        gemini_api_key: str,
         enriched_meaning: str = "",
         language_code: Optional[str] = None,
         voice: str = None,
@@ -43,7 +43,7 @@ class DeckAssembler:
             word: Target word
             language: Language name
             num_sentences: Number of sentences to generate
-            groq_api_key: API key for AI generation
+            gemini_api_key: Google Gemini API key for AI generation
             enriched_meaning: Pre-enriched meaning data
             language_code: ISO language code
             voice: Voice for audio generation
@@ -60,7 +60,7 @@ class DeckAssembler:
                 word=word,
                 language=language,
                 num_sentences=num_sentences,
-                groq_api_key=groq_api_key,
+                gemini_api_key=gemini_api_key,
                 enriched_meaning=enriched_meaning,
                 **kwargs
             )
@@ -81,7 +81,7 @@ class DeckAssembler:
                 sentences=sentences,
                 target_words=[word] * len(sentences),
                 language=language,
-                groq_api_key=groq_api_key,
+                gemini_api_key=gemini_api_key,
                 language_code=language_code
             )
 

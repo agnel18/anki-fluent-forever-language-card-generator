@@ -8,7 +8,7 @@ from typing import Dict, Optional
 from collections import defaultdict
 
 # Import language registry for consistent language handling
-from language_registry import get_language_registry
+from streamlit_app.language_registry import get_language_registry
 
 logger = logging.getLogger(__name__)
 

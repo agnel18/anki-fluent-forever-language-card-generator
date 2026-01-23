@@ -161,19 +161,16 @@ class APIKeyManager:
             return False, "❌ API key is empty"
 
         try:
-            if service.lower() == 'groq':
-                # Test Groq API key with a simple completion
-                from groq import Groq
-                client = Groq(api_key=api_key)
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": "Hello"}],
-                    max_tokens=10
-                )
-                if response.choices and response.choices[0].message.content:
-                    return True, "✅ Groq API key is valid"
+            if service.lower() == 'gemini':
+                # Test Gemini API key with a simple generation
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content("Hello")
+                if response.text and len(response.text.strip()) > 0:
+                    return True, "✅ Gemini API key is valid"
                 else:
-                    return False, "❌ Groq API returned empty response"
+                    return False, "❌ Gemini API returned empty response"
 
             elif service.lower() == 'pixabay':
                 # Test Pixabay API key with a simple search

@@ -30,7 +30,7 @@ def render_privacy_policy_page():
     - **Log Data**: IP address, access times, error reports
 
     ### Third-Party Service Data
-    - **API Usage**: Information sent to and received from Groq AI, Pixabay, and Azure Cognitive Services
+    - **API Usage**: Information sent to and received from Google Gemini AI, Pixabay, and Google Cloud Text-to-Speech
     - **Generated Content**: Language learning cards and audio files you create
 
     ## 3. How We Use Your Information
@@ -95,9 +95,9 @@ def render_privacy_policy_page():
 
     Our app integrates with several third-party services:
 
-    - **Groq AI**: Processes text for sentence generation (see their [privacy policy](https://groq.com/privacy/))
+    - **Google Gemini AI**: Processes text for sentence generation (see their [privacy policy](https://policies.google.com/privacy))
     - **Pixabay**: Provides images for flashcards (see their [privacy policy](https://pixabay.com/service/privacy/))
-    - **Azure Cognitive Services**: Generates audio pronunciations (Microsoft service)
+    - **Google Cloud Text-to-Speech**: Generates audio pronunciations (Google service)
     - **Firebase**: Cloud storage and authentication (see their [privacy policy](https://firebase.google.com/support/privacy))
 
     ## 10. International Data Transfers

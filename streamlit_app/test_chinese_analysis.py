@@ -15,7 +15,7 @@ def load_api_key():
     try:
         with open('user_secrets.json', 'r') as f:
             secrets = json.load(f)
-            return secrets.get('groq_api_key')
+            return secrets.get('gemini_api_key')
     except Exception as e:
         print(f"Failed to load API key: {e}")
         return None
@@ -28,9 +28,9 @@ def test_chinese_analyzer():
     word = "学习"
     language = "Chinese (Simplified)"
 
-    groq_api_key = load_api_key()
-    if not groq_api_key:
-        print("Could not load GROQ API key")
+    google_api_key = load_api_key()
+    if not google_api_key:
+        print("Could not load GOOGLE API key")
         return
 
     try:
@@ -49,7 +49,7 @@ def test_chinese_analyzer():
             sentence=sentence,
             word=word,
             language=language,
-            groq_api_key=groq_api_key
+            google_api_key=google_api_key
         )
 
         print("✓ Analysis successful!")
