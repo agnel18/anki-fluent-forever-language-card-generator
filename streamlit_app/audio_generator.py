@@ -5,6 +5,8 @@ import os
 import asyncio
 import logging
 import re
+import base64
+import requests
 from typing import Optional, List
 
 # Conditional import for Google Cloud TTS
@@ -14,6 +16,9 @@ try:
 except ImportError:
     GOOGLE_TTS_AVAILABLE = False
     texttospeech = None
+
+# Import error recovery
+from error_recovery import graceful_degradation, resilient_audio_generation
 
 # Import error recovery
 from error_recovery import graceful_degradation, resilient_audio_generation
@@ -81,8 +86,173 @@ def is_google_tts_configured():
     """Check if Google Cloud Text-to-Speech is properly configured."""
     try:
         config = get_google_tts_config()
-        return bool(config["api_key"] and GOOGLE_TTS_AVAILABLE)
+        return bool(config["api_key"])  # Only need API key for REST API
     except Exception:
+        return False
+
+# ============================================================================
+# GOOGLE CLOUD TEXT-TO-SPEECH REST API FUNCTIONS
+# ============================================================================
+
+# Note: TTS now uses REST API with API keys instead of client library
+# This eliminates the need for Google Cloud authentication setup
+
+def get_google_tts_voices_rest(language_code: str = None) -> List[dict]:
+    """
+    Get available Google Cloud Text-to-Speech voices using REST API.
+
+    Args:
+        language_code: Optional BCP-47 language code filter (e.g., "en-US", "zh-CN")
+
+    Returns:
+        List of voice dictionaries with name, language_codes, ssml_gender, and natural_sample_rate_hertz
+    """
+    config = get_google_tts_config()
+    if not config["api_key"]:
+        logger.warning("No API key available for Google TTS")
+        return []
+
+    try:
+        # REST API endpoint for listing voices
+        url = "https://texttospeech.googleapis.com/v1/voices"
+        params = {"key": config["api_key"]}
+
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+        voices = data.get("voices", [])
+
+        if not voices:
+            logger.warning("No voices returned from Google TTS REST API")
+            return []
+
+        # Filter by language code if provided
+        if language_code:
+            filtered_voices = []
+            for voice in voices:
+                if language_code in voice.get("languageCodes", []):
+                    filtered_voices.append({
+                        'name': voice['name'],
+                        'language_codes': voice.get('languageCodes', []),
+                        'ssml_gender': voice.get('ssmlGender', 0),
+                        'natural_sample_rate_hertz': voice.get('naturalSampleRateHertz', 0)
+                    })
+            logger.info(f"Found {len(filtered_voices)} voices for language {language_code}")
+            return filtered_voices
+        else:
+            # Return all voices
+            logger.info(f"Found {len(voices)} total voices")
+            return [{
+                'name': voice['name'],
+                'language_codes': voice.get('languageCodes', []),
+                'ssml_gender': voice.get('ssmlGender', 0),
+                'natural_sample_rate_hertz': voice.get('naturalSampleRateHertz', 0)
+            } for voice in voices]
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Network error getting Google TTS voices: {e}")
+        return []
+    except Exception as exc:
+        logger.error(f"Unexpected error getting Google TTS voices via REST API: {exc}")
+        return []
+
+async def generate_audio_google_rest_async(
+    text: str,
+    voice_name: str,
+    output_path: str,
+    rate: float = 0.8,
+    language_code: str = "en-US",
+) -> bool:
+    """
+    Generate audio using Google Cloud Text-to-Speech REST API.
+
+    Args:
+        text: Text to synthesize
+        voice_name: Google TTS voice name (e.g., "en-US-Neural2-D")
+        output_path: Path to save MP3 file
+        rate: Playback speed (0.5-2.0; 0.8 is learner-friendly)
+        language_code: BCP-47 language code (e.g., "en-US", "zh-CN")
+
+    Returns:
+        True if successful, False otherwise
+    """
+    config = get_google_tts_config()
+    if not config["api_key"]:
+        logger.warning("No API key available for Google TTS")
+        return False
+
+    try:
+        # Validate input text
+        if not text or not text.strip():
+            logger.warning("Empty or whitespace-only text provided for audio generation")
+            return False
+
+        # Parse voice name to extract language code and voice type
+        voice_parts = voice_name.split('-')
+        if len(voice_parts) >= 3:
+            lang_code = f"{voice_parts[0]}-{voice_parts[1]}"
+            voice_type = voice_parts[2] if len(voice_parts) > 2 else "Neural2"
+        else:
+            lang_code = language_code
+            voice_type = "Neural2"
+
+        # Prepare request data for REST API
+        request_data = {
+            "input": {
+                "text": text.strip()
+            },
+            "voice": {
+                "languageCode": lang_code,
+                "name": voice_name
+            },
+            "audioConfig": {
+                "audioEncoding": "MP3",
+                "speakingRate": rate
+            }
+        }
+
+        # Make REST API call
+        url = "https://texttospeech.googleapis.com/v1/text:synthesize"
+        params = {"key": config["api_key"]}
+
+        response = requests.post(url, params=params, json=request_data, timeout=30)
+        response.raise_for_status()
+
+        data = response.json()
+        audio_content_base64 = data.get("audioContent")
+
+        if not audio_content_base64:
+            logger.error("No audio content received from Google TTS REST API")
+            return False
+
+        # Decode base64 audio content and save to file
+        try:
+            audio_content = base64.b64decode(audio_content_base64)
+        except Exception as e:
+            logger.error(f"Failed to decode base64 audio content: {e}")
+            return False
+
+        with open(output_path, "wb") as out:
+            out.write(audio_content)
+
+        logger.info(f"Google TTS REST synthesis completed for voice: {voice_name}")
+        return True
+
+    except requests.exceptions.Timeout:
+        logger.error(f"Timeout error generating audio with voice {voice_name}")
+        return False
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Network error generating audio with voice {voice_name}: {e}")
+        return False
+    except Exception as exc:
+        logger.error(f"Unexpected error in Google TTS REST generation for {voice_name}: {exc}")
+        # Clean up any empty file that might have been created
+        if os.path.exists(output_path) and os.path.getsize(output_path) == 0:
+            try:
+                os.unlink(output_path)
+            except:
+                pass  # Ignore cleanup errors
         return False
 
 # ============================================================================
@@ -96,7 +266,7 @@ async def generate_audio_google_async(
     language_code: str = "en-US",
 ) -> bool:
     """
-    Generate audio asynchronously using Google Cloud Text-to-Speech.
+    Generate audio asynchronously using Google Cloud Text-to-Speech REST API.
 
     Args:
         text: Text to synthesize
@@ -108,65 +278,8 @@ async def generate_audio_google_async(
     Returns:
         True if successful, False otherwise
     """
-    if not GOOGLE_TTS_AVAILABLE:
-        logger.warning("Google Cloud Text-to-Speech SDK not available")
-        return False
-
-    try:
-        # Validate input text
-        if not text or not text.strip():
-            logger.warning("Empty or whitespace-only text provided for audio generation")
-            return False
-
-        # Get Google TTS client
-        client = get_google_tts_client()
-
-        # Parse voice name to extract language code and voice type
-        # Voice name format: "language-voice" (e.g., "en-US-Neural2-D")
-        voice_parts = voice_name.split('-')
-        if len(voice_parts) >= 3:
-            lang_code = f"{voice_parts[0]}-{voice_parts[1]}"
-            voice_type = voice_parts[2] if len(voice_parts) > 2 else "Neural2"
-        else:
-            lang_code = language_code
-            voice_type = "Neural2"
-
-        # Set the text input to be synthesized
-        synthesis_input = texttospeech.SynthesisInput(text=text.strip())
-
-        # Build the voice request
-        voice = texttospeech.VoiceSelectionParams(
-            language_code=lang_code,
-            name=voice_name
-        )
-
-        # Select the type of audio file you want returned
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3,
-            speaking_rate=rate,  # Playback speed
-        )
-
-        # Perform the text-to-speech request
-        response = client.synthesize_speech(
-            input=synthesis_input, voice=voice, audio_config=audio_config
-        )
-
-        # The response's audio_content is binary
-        with open(output_path, "wb") as out:
-            out.write(response.audio_content)
-
-        logger.info(f"Google TTS synthesis completed for voice: {voice_name}")
-        return True
-
-    except Exception as exc:
-        logger.error(f"Google TTS error for {voice_name}: {exc}")
-        # Clean up any empty file that might have been created
-        if os.path.exists(output_path) and os.path.getsize(output_path) == 0:
-            try:
-                os.unlink(output_path)
-            except:
-                pass  # Ignore cleanup errors
-        return False
+    # Use REST API implementation instead of client library
+    return await generate_audio_google_rest_async(text, voice_name, output_path, rate, language_code)
 async def generate_audio_async(
     text: str,
     voice: str,
@@ -433,8 +546,8 @@ def get_google_voices_for_language(language_name: str) -> List[str]:
     if not bcp47_code:
         return ["D (Female, Neural2)"]  # Default fallback
 
-    # Get all voices for this language
-    voices = get_google_available_voices(bcp47_code)
+    # Get all voices for this language using REST API
+    voices = get_google_tts_voices_rest(bcp47_code)
 
     # If no voices found (likely due to auth issues), provide language-specific fallbacks
     if not voices:
