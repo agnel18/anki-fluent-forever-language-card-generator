@@ -9,6 +9,9 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 
+# Import centralized configuration
+from config import get_gemini_model
+
 # Import the new grammar analyzer system
 try:
     from language_analyzers.analyzer_registry import get_analyzer
@@ -82,12 +85,12 @@ class GrammarProcessor:
                 # API usage tracking
                 try:
                     import streamlit as st
-                    if "groq_api_calls" not in st.session_state:
-                        st.session_state.groq_api_calls = 0
-                    if "groq_tokens_used" not in st.session_state:
-                        st.session_state.groq_tokens_used = 0
-                    st.session_state.groq_api_calls += 1
-                    st.session_state.groq_tokens_used += 150
+                    if "gemini_api_calls" not in st.session_state:
+                        st.session_state.gemini_api_calls = 0
+                    if "gemini_tokens_used" not in st.session_state:
+                        st.session_state.gemini_tokens_used = 0
+                    st.session_state.gemini_api_calls += 1
+                    st.session_state.gemini_tokens_used += 150
                 except Exception:
                     pass
 
@@ -260,7 +263,7 @@ IMPORTANT:
 - Each word_explanations entry must have exactly 4 elements: [word, pos, color, explanation]"""
 
         try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel(get_gemini_model())
             response = model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
@@ -281,12 +284,12 @@ IMPORTANT:
                 # API usage tracking
                 try:
                     import streamlit as st
-                    if "groq_api_calls" not in st.session_state:
-                        st.session_state.groq_api_calls = 0
-                    if "groq_tokens_used" not in st.session_state:
-                        st.session_state.groq_tokens_used = 0
-                    st.session_state.groq_api_calls += 1
-                    st.session_state.groq_tokens_used += 100
+                    if "gemini_api_calls" not in st.session_state:
+                        st.session_state.gemini_api_calls = 0
+                    if "gemini_tokens_used" not in st.session_state:
+                        st.session_state.gemini_tokens_used = 0
+                    st.session_state.gemini_api_calls += 1
+                    st.session_state.gemini_tokens_used += 100
                 except Exception:
                     pass
 
@@ -407,12 +410,12 @@ IMPORTANT:
                 num_batches = (len(sentences) + BATCH_SIZE - 1) // BATCH_SIZE
                 try:
                     import streamlit as st
-                    if "groq_api_calls" not in st.session_state:
-                        st.session_state.groq_api_calls = 0
-                    if "groq_tokens_used" not in st.session_state:
-                        st.session_state.groq_tokens_used = 0
-                    st.session_state.groq_api_calls += num_batches
-                    st.session_state.groq_tokens_used += (150 * len(sentences))  # Estimate tokens
+                    if "gemini_api_calls" not in st.session_state:
+                        st.session_state.gemini_api_calls = 0
+                    if "gemini_tokens_used" not in st.session_state:
+                        st.session_state.gemini_tokens_used = 0
+                    st.session_state.gemini_api_calls += num_batches
+                    st.session_state.gemini_tokens_used += (150 * len(sentences))  # Estimate tokens
                 except Exception:
                     pass
 
@@ -431,7 +434,7 @@ IMPORTANT:
                     sentence=sentence,
                     word=target_word,
                     language=language,
-                    groq_api_key=gemini_api_key,
+                    gemini_api_key=gemini_api_key,
                     language_code=language_code
                 )
                 results.append(result)

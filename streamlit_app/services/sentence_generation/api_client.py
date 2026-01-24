@@ -7,6 +7,8 @@ from typing import Optional, Dict, Any
 import google.generativeai as genai
 
 from streamlit_app.error_recovery import retry_with_exponential_backoff
+# Import centralized configuration
+from config import get_gemini_model
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,7 @@ class APIClient:
 
     def __init__(self, api_key: str):
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel(get_gemini_model())
 
     @retry_with_exponential_backoff(max_retries=3)
     def call_completion(self, prompt: str, temperature: float = 0.3,

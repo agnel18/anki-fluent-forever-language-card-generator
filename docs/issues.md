@@ -155,7 +155,7 @@ The system now relies entirely on user input for word meanings, eliminating API-
 
 ##### **Root Cause Analysis:**
 - **Dual IPA Systems**: The codebase has two conflicting IPA generation approaches:
-  1. `generation_utils.py`: Uses Groq API with strict IPA validation via `validate_ipa_output()`
+  1. `generation_utils.py`: Uses Google Gemini API with strict IPA validation via `validate_ipa_output()`
   2. `services/sentence_generation/ipa_service.py`: Uses Epitran/Phonemizer libraries with tiered fallback
 
 - **Language Parameter Mismatch**:
@@ -211,7 +211,7 @@ The system now relies entirely on user input for word meanings, eliminating API-
 ##### **Specific Problem Areas:**
 1. **Inconsistent Language Codes**: `generation_utils.py` uses ISO codes, `ipa_service.py` uses full names
 2. **Missing Language Validation**: No check that the requested language is supported by the IPA generation method
-3. **AI Prompt Confusion**: Groq prompts may generate Pinyin for non-Chinese languages due to poor language specification
+3. **AI Prompt Confusion**: Gemini prompts may generate Pinyin for non-Chinese languages due to poor language specification
 4. **Fallback Logic**: When Epitran fails, the AI fallback doesn't properly constrain to the target language's phonetic system
 
 #### 7. Sentence Processing Variable Scope Bugs

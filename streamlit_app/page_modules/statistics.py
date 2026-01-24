@@ -2,7 +2,7 @@
 
 import streamlit as st
 from constants import (
-    GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, PIXABAY_CALL_LIMIT,
+    GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_LIMIT,
     PAGE_LANGUAGE_SELECT, PAGE_LOGIN
 )
 from utils import fmt_num, usage_bar
@@ -24,7 +24,7 @@ def render_statistics_page():
     if stats:
         gemini_calls = stats.get("gemini_calls", 0)
         gemini_tokens = stats.get("gemini_tokens", 0)
-        pixabay_calls = stats.get("pixabay_calls", 0)
+        google_search_calls = stats.get("google_search_calls", 0)
         decks_exported = stats.get("decks_exported", 0)
         cards_generated = stats.get("cards_generated", 0)
         images_downloaded = stats.get("images_downloaded", 0)
@@ -34,7 +34,7 @@ def render_statistics_page():
     else:
         gemini_calls = st.session_state.get("gemini_api_calls", 0)
         gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
-        pixabay_calls = st.session_state.get("pixabay_api_calls", 0)
+        google_search_calls = st.session_state.get("google_search_api_calls", 0)
         decks_exported = st.session_state.get("decks_exported", 0)
         cards_generated = st.session_state.get("cards_generated", 0)
         images_downloaded = st.session_state.get("images_downloaded", 0)
@@ -50,9 +50,9 @@ def render_statistics_page():
     st.markdown(f"Gemini Tokens: {fmt_num(gemini_tokens)} / {fmt_num(GEMINI_TOKEN_LIMIT)}", unsafe_allow_html=True)
     st.markdown(usage_bar(gemini_tokens, GEMINI_TOKEN_LIMIT), unsafe_allow_html=True)
     st.caption("📊 Text tokens processed by Gemini AI (includes prompts and responses)")
-    st.markdown(f"Pixabay Calls: {fmt_num(pixabay_calls)} / {fmt_num(PIXABAY_CALL_LIMIT)}", unsafe_allow_html=True)
-    st.markdown(usage_bar(pixabay_calls, PIXABAY_CALL_LIMIT), unsafe_allow_html=True)
-    st.caption("🖼️ Image searches on Pixabay for word illustrations")
+    st.markdown(f"Google Search Calls: {fmt_num(google_search_calls)} / {fmt_num(GOOGLE_SEARCH_CALL_LIMIT)}", unsafe_allow_html=True)
+    st.markdown(usage_bar(google_search_calls, GOOGLE_SEARCH_CALL_LIMIT), unsafe_allow_html=True)
+    st.caption("🖼️ Image searches on Google Custom Search for word illustrations")
     st.markdown("---")
 
     st.markdown("#### Generation & Export Stats")

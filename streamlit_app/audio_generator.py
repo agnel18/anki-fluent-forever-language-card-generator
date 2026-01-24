@@ -54,9 +54,9 @@ def get_google_tts_client():
 def is_google_tts_configured():
     """Check if Google Cloud Text-to-Speech is properly configured."""
     try:
-        get_google_tts_client()
-        return True
-    except (ValueError, Exception):
+        config = get_google_tts_config()
+        return bool(config["api_key"] and GOOGLE_TTS_AVAILABLE)
+    except Exception:
         return False
 
 # ============================================================================
@@ -454,6 +454,34 @@ def get_google_voices_for_language(language_name: str) -> List[str]:
     formatted_voices.sort(key=lambda x: quality_order.get(x.split(', ')[1].rstrip(')'), 3))
 
     return formatted_voices if formatted_voices else ["en-US-Neural2-D (Female, Neural2)"]
+
+def _voice_for_language(language: str) -> str:
+    """
+    Get default Google TTS voice for a language.
+
+    Args:
+        language: Language name (e.g., "Spanish", "Chinese (Simplified)")
+
+    Returns:
+        Google TTS voice name (e.g., "es-ES-Neural2-A", "zh-CN-Neural2-C")
+    """
+    voice_map = {
+        "Spanish": "es-ES-Neural2-A",
+        "French": "fr-FR-Neural2-A",
+        "German": "de-DE-Neural2-B",
+        "Italian": "it-IT-Neural2-A",
+        "Portuguese": "pt-BR-Neural2-A",
+        "Russian": "ru-RU-Neural2-A",
+        "Japanese": "ja-JP-Neural2-B",
+        "Korean": "ko-KR-Neural2-A",
+        "Chinese (Simplified)": "zh-CN-Neural2-C",
+        "Chinese (Traditional)": "zh-TW-Neural2-A",
+        "Arabic": "ar-XA-Neural2-B",
+        "Hindi": "hi-IN-Neural2-A",
+        "Mandarin Chinese": "zh-CN-Neural2-C",
+        "English": "en-US-Neural2-D",
+    }
+    return voice_map.get(language, "en-US-Neural2-D")
 
 def _get_bcp47_code(language_name: str) -> str:
     """

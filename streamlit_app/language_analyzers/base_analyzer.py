@@ -7,6 +7,9 @@ import logging
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 
+# Import centralized configuration
+from config import get_gemini_model, get_gemini_fallback_model
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -341,13 +344,13 @@ IMPORTANT:
             genai.configure(api_key=api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel(get_gemini_model())
                 response = model.generate_content(prompt)
                 return response.text.strip()
             except Exception as primary_error:
-                logger.warning(f"Primary model gemini-2.5-flash failed: {primary_error}")
+                logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel('gemini-3-flash-preview')
+                model = genai.GenerativeModel(get_gemini_fallback_model())
                 response = model.generate_content(prompt)
                 return response.text.strip()
 

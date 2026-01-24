@@ -54,7 +54,7 @@ def generate_word_meaning_sentences_and_keywords(
         min_length: Minimum sentence length in words
         max_length: Maximum sentence length in words
         difficulty: "beginner", "intermediate", "advanced"
-        groq_api_key: API key for AI generation
+        gemini_api_key: API key for AI generation
         topics: List of topics to focus sentence generation around (optional)
         enriched_meaning: Pre-reviewed word meaning from user (optional)
 
@@ -124,7 +124,7 @@ def generate_complete_deck(
         word: Target word
         language: Language name
         num_sentences: Number of sentences to generate
-        groq_api_key: API key for AI generation
+        gemini_api_key: API key for AI generation
         enriched_meaning: Pre-enriched meaning data
         language_code: ISO language code
         voice: Voice for audio generation

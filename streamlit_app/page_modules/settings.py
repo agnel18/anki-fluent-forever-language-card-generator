@@ -7,6 +7,9 @@ import os
 from pathlib import Path
 from utils import persist_api_keys
 
+# Import centralized configuration
+from config import get_gemini_model
+
 
 def render_settings_page():
     """Render the settings page with profile, API keys, favorite languages, and per-language settings."""
@@ -310,7 +313,7 @@ def render_settings_page():
                     try:
                         import google.generativeai as genai
                         genai.configure(api_key=test_key)
-                        model = genai.GenerativeModel('gemini-2.5-flash')
+                        model = genai.GenerativeModel(get_gemini_model())
                         response = model.generate_content("Hello")
                         st.success("✅ Google Gemini API connection successful!")
                         st.info("🎉 You can now generate AI content with Gemini!")
@@ -911,7 +914,7 @@ def render_settings_page():
                     st.success(f"Cleared {cleared} Gemini cached entries!")
 
             with ns_col2:
-                if st.button("🖼️ Clear Image Cache", key="clear_image_cache", help="Clear cached Pixabay search results"):
+                if st.button("🖼️ Clear Image Cache", key="clear_image_cache", help="Clear cached Google Custom Search results"):
                     cleared = cache_service.clear_image_cache()
                     st.success(f"Cleared {cleared} image search cached entries!")
 

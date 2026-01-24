@@ -52,6 +52,9 @@ from .domain.hi_prompt_builder import HiPromptBuilder
 from .domain.hi_response_parser import HiResponseParser
 from .domain.hi_validator import HiValidator
 
+# Import centralized configuration
+from config import get_gemini_model, get_gemini_fallback_model
+
 logger = logging.getLogger(__name__)
 
 class HiAnalyzer(IndoEuropeanAnalyzer):
@@ -61,7 +64,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
     GOLD STANDARD FEATURES:
     - Clean Architecture: Separated domain logic from infrastructure
     - Batch Processing: Handles 8 sentences efficiently with fallbacks
-    - AI Integration: Uses Groq API with proper error handling
+    - AI Integration: Uses Google Gemini API with proper error handling
     - HTML Generation: Creates colored sentence displays
     - Confidence Scoring: Validates results with fallback mechanisms
     - Word Ordering: Maintains sentence word order for optimal UX
@@ -263,13 +266,13 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
             genai.configure(api_key=gemini_api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel(get_gemini_model())
                 response = model.generate_content(prompt)
                 ai_response = response.text.strip()
             except Exception as primary_error:
-                logger.warning(f"Primary model gemini-2.5-flash failed: {primary_error}")
+                logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel('gemini-3-flash-preview')
+                model = genai.GenerativeModel(get_gemini_fallback_model())
                 response = model.generate_content(prompt)
                 ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")

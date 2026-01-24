@@ -7,6 +7,9 @@ import streamlit as st
 from typing import Dict, Optional, Tuple
 from utils import persist_api_keys
 
+# Import centralized configuration
+from config import get_gemini_model
+
 
 class APIKeyManager:
     """Manages API key operations and cloud synchronization."""
@@ -20,24 +23,23 @@ class APIKeyManager:
         Get the current status of API keys.
 
         Returns:
-            Dictionary with 'groq' and 'pixabay' status messages
+            Dictionary with 'google' and 'custom_search' status messages
         """
-        groq_key = st.session_state.get("groq_api_key", "")
-        pixabay_key = st.session_state.get("pixabay_api_key", "")
+        google_key = st.session_state.get("google_api_key", "")
+        custom_search_id = st.session_state.get("custom_search_engine_id", "")
 
         status = {}
 
-        if groq_key:
-            masked_groq = groq_key[:8] + "..." + groq_key[-4:] if len(groq_key) > 12 else groq_key
-            status['groq'] = f"✅ Groq Key: {masked_groq}"
+        if google_key:
+            masked_google = google_key[:8] + "..." + google_key[-4:] if len(google_key) > 12 else google_key
+            status['google'] = f"✅ Google API Key: {masked_google}"
         else:
-            status['groq'] = "❌ No Groq API key set"
+            status['google'] = "❌ No Google API key set"
 
-        if pixabay_key:
-            masked_pixabay = pixabay_key[:8] + "..." + pixabay_key[-4:] if len(pixabay_key) > 12 else pixabay_key
-            status['pixabay'] = f"✅ Pixabay Key: {masked_pixabay}"
+        if custom_search_id:
+            status['custom_search'] = f"✅ Custom Search Engine ID: {custom_search_id}"
         else:
-            status['pixabay'] = "❌ No Pixabay API key set"
+            status['custom_search'] = "❌ No Custom Search Engine ID set"
 
         return status
 
@@ -55,11 +57,11 @@ class APIKeyManager:
                 st.error("❌ Firebase unavailable")
                 return False
 
-            groq_key = st.session_state.get("groq_api_key", "")
-            pixabay_key = st.session_state.get("pixabay_api_key", "")
+            google_key = st.session_state.get("google_api_key", "")
+            custom_search_id = st.session_state.get("custom_search_engine_id", "")
 
-            if not groq_key or not pixabay_key:
-                st.error("❌ Missing API keys - both Groq and Pixabay keys are required")
+            if not google_key:
+                st.error("❌ Missing Google API key - required for app functionality")
                 return False
 
             session_id = st.session_state.get("session_id", "")
@@ -68,8 +70,8 @@ class APIKeyManager:
                 return False
 
             api_keys = {
-                "groq_api_key": groq_key,
-                "pixabay_api_key": pixabay_key
+                "google_api_key": google_key,
+                "custom_search_engine_id": custom_search_id
             }
 
             success = save_settings_to_firebase(session_id, api_keys)
@@ -108,9 +110,10 @@ class APIKeyManager:
                 st.warning("No API keys found in cloud")
                 return False
 
-            if 'groq_api_key' in cloud_settings and 'pixabay_api_key' in cloud_settings:
-                st.session_state.groq_api_key = cloud_settings['groq_api_key']
-                st.session_state.pixabay_api_key = cloud_settings['pixabay_api_key']
+            if 'google_api_key' in cloud_settings:
+                st.session_state.google_api_key = cloud_settings['google_api_key']
+                if 'custom_search_engine_id' in cloud_settings:
+                    st.session_state.custom_search_engine_id = cloud_settings['custom_search_engine_id']
                 # Persist to local storage
                 persist_api_keys()
                 st.success("✅ API keys loaded from cloud!")
@@ -123,16 +126,16 @@ class APIKeyManager:
             st.error(f"❌ Failed to load from cloud: {e}")
             return False
 
-    def update_api_keys(self, groq_key: str, pixabay_key: str) -> None:
+    def update_api_keys(self, google_key: str, custom_search_id: str) -> None:
         """
         Update API keys in session state and persist locally.
 
         Args:
-            groq_key: New Groq API key
-            pixabay_key: New Pixabay API key
+            google_key: New Google API key
+            custom_search_id: New Custom Search Engine ID
         """
-        st.session_state.groq_api_key = groq_key
-        st.session_state.pixabay_api_key = pixabay_key
+        st.session_state.google_api_key = google_key
+        st.session_state.custom_search_engine_id = custom_search_id
         persist_api_keys()
 
     def get_api_keys(self) -> Tuple[str, str]:
@@ -140,11 +143,11 @@ class APIKeyManager:
         Get current API keys from session state.
 
         Returns:
-            Tuple of (groq_key, pixabay_key)
+            Tuple of (google_key, custom_search_engine_id)
         """
-        groq_key = st.session_state.get("groq_api_key", "")
-        pixabay_key = st.session_state.get("pixabay_api_key", "")
-        return groq_key, pixabay_key
+        google_key = st.session_state.get("google_api_key", "")
+        custom_search_id = st.session_state.get("custom_search_engine_id", "")
+        return google_key, custom_search_id
 
     def validate_api_key(self, api_key: str, service: str) -> Tuple[bool, str]:
         """
@@ -152,7 +155,7 @@ class APIKeyManager:
 
         Args:
             api_key: The API key to validate
-            service: The service name ('groq' or 'pixabay')
+            service: The service name ('gemini' or 'custom_search')
 
         Returns:
             Tuple of (is_valid, message)
@@ -165,38 +168,35 @@ class APIKeyManager:
                 # Test Gemini API key with a simple generation
                 import google.generativeai as genai
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel(get_gemini_model())
                 response = model.generate_content("Hello")
                 if response.text and len(response.text.strip()) > 0:
                     return True, "✅ Gemini API key is valid"
                 else:
                     return False, "❌ Gemini API returned empty response"
 
-            elif service.lower() == 'pixabay':
-                # Test Pixabay API key with a simple search
+            elif service.lower() == 'custom_search':
+                # Test Google Custom Search API key with a simple search
                 import requests
-                # Use a simple, common search term that should always return results
-                # Note: per_page=1 is invalid, minimum is 3, so we use default (20) or set to 3
-                url = f"https://pixabay.com/api/?key={api_key.strip()}&q=apple&image_type=photo&safesearch=1"
+                # Use a simple search that should always return results
+                url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={st.session_state.get('custom_search_engine_id', '')}&q=test"
                 response = requests.get(url, timeout=10)
                 if response.status_code == 200:
                     try:
                         data = response.json()
                         # Check if we got a valid response structure
-                        if isinstance(data, dict) and 'totalHits' in data:
-                            return True, "✅ Pixabay API key is valid"
+                        if isinstance(data, dict) and 'items' in data:
+                            return True, "✅ Custom Search API key is valid"
                         else:
-                            return False, "❌ Pixabay API returned unexpected format"
+                            return False, "❌ Custom Search API returned unexpected format"
                     except ValueError:
-                        return False, "❌ Pixabay API returned invalid JSON"
+                        return False, "❌ Custom Search API returned invalid JSON"
                 elif response.status_code == 400:
-                    return False, "❌ Invalid Pixabay API key or request format"
-                elif response.status_code == 401:
-                    return False, "❌ Pixabay API key unauthorized"
-                elif response.status_code == 429:
-                    return False, "⚠️ Pixabay API rate limited"
+                    return False, "❌ Invalid Custom Search API key or request format"
+                elif response.status_code == 403:
+                    return False, "❌ Custom Search API key unauthorized or quota exceeded"
                 else:
-                    return False, f"❌ Pixabay API error: {response.status_code}"
+                    return False, f"❌ Custom Search API error: {response.status_code}"
 
             else:
                 return False, f"❌ Unknown service: {service}"

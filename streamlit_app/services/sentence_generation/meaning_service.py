@@ -9,6 +9,8 @@ import google.generativeai as genai
 # Import cache manager and error recovery
 from streamlit_app.cache_manager import cached_api_call
 from streamlit_app.error_recovery import retry_with_exponential_backoff, with_fallback
+# Import centralized configuration
+from config import get_gemini_model
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ class MeaningService:
             raise ValueError("Gemini API key required")
 
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel(get_gemini_model())
 
         prompt = f"""Provide a brief English meaning for the {language} word \"{word}\".
 

@@ -258,8 +258,8 @@ Combine all components into a professional Anki deck.
             st.markdown("---")
 
     # Get generation parameters
-    groq_api_key = st.session_state.get('groq_api_key', get_secret('GROQ_API_KEY', ''))
-    pixabay_api_key = st.session_state.get('pixabay_api_key', get_secret('PIXABAY_API_KEY', ''))
+    google_api_key = st.session_state.get('google_api_key', get_secret('GOOGLE_API_KEY', ''))
+    custom_search_engine_id = st.session_state.get('custom_search_engine_id', '017576662512468239146:omuauf_lfve')  # Default CSE ID
     num_sentences = st.session_state.sentences_per_word
     min_length, max_length = st.session_state.sentence_length_range
     difficulty = st.session_state.difficulty
@@ -466,8 +466,8 @@ Combine all components into a professional Anki deck.
                 result = generate_deck_progressive(
                     word=current_word,
                     language=selected_lang,
-                    groq_api_key=groq_api_key,
-                    pixabay_api_key=pixabay_api_key,
+                    gemini_api_key=google_api_key,
+                    google_custom_search_engine_id=custom_search_engine_id,
                     output_dir=output_dir,
                     num_sentences=num_sentences,
                     min_length=min_length,
@@ -730,7 +730,7 @@ Combine all components into a professional Anki deck.
                     st.markdown("**Quick Fixes:**")
                     
                     # Check for common issues and provide solutions
-                    has_api_errors = any(error.get('component', '').startswith(('API', 'Groq', 'Pixabay')) for error in errors)
+                    has_api_errors = any(error.get('component', '').startswith(('API', 'Google', 'Gemini')) for error in errors)
                     has_audio_errors = any('audio' in error.get('component', '').lower() for error in errors)
                     has_image_errors = any('image' in error.get('component', '').lower() for error in errors)
                     

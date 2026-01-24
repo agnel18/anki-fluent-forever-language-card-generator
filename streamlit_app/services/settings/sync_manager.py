@@ -81,11 +81,11 @@ class SyncManager:
         }
 
         # Only include API keys if they're set
-        groq_key, pixabay_key = api_manager.get_api_keys()
-        if groq_key:
-            settings['groq_api_key'] = groq_key
-        if pixabay_key:
-            settings['pixabay_api_key'] = pixabay_key
+        google_key, custom_search_id = api_manager.get_api_keys()
+        if google_key:
+            settings['google_api_key'] = google_key
+        if custom_search_id:
+            settings['custom_search_engine_id'] = custom_search_id
 
         return settings
 

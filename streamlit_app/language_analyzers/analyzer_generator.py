@@ -7,6 +7,9 @@ import re
 from typing import Dict, Any, Optional
 import google.generativeai as genai
 
+# Import centralized configuration
+from config import get_gemini_model
+
 logger = logging.getLogger(__name__)
 
 class AnalyzerGenerator:
@@ -14,7 +17,7 @@ class AnalyzerGenerator:
 
     def __init__(self, gemini_api_key: str):
         genai.configure(api_key=gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel(get_gemini_model())
 
     def generate_analyzer(self, language_name: str, language_code: str, family: str, script_type: str, complexity: str) -> str:
         """

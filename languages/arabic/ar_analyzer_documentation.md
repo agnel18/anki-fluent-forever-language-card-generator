@@ -229,7 +229,7 @@ def test_reorder_explanations_for_rtl(self, analyzer):
 - **Color Consistency**: Matching colors between colored sentences and grammar explanations
 
 ### Batch Processing Limits
-- **8 sentences** per API call (Groq token optimization)
+- **8 sentences** per API call (Google Gemini token optimization)
 - **Exponential backoff** for rate limiting (1s to 30s)
 - **Partial fallbacks** for failed batches
 
@@ -268,7 +268,7 @@ def test_reorder_explanations_for_rtl(self, analyzer):
 
 ### Technical References
 - **Unicode Standard**: Arabic script encoding (U+0600-U+06FF)
-- **Groq API**: Token optimization for batch processing
+- **Google Gemini API**: Token optimization for batch processing
 - **Anki**: HTML rendering requirements for RTL text
 
 ---

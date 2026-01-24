@@ -134,7 +134,7 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 - ✅ Generate new key if needed
 
 ### ".apkg file not created"
-- ✅ Check Pixabay API key (images required)
+- ✅ Check Google Custom Search API key and Engine ID (images required)
 - ✅ Try with fewer words (1-3 to test)
 
 ### Audio sounds strange

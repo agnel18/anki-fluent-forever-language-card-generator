@@ -257,14 +257,14 @@ Get color coding scheme for grammatical roles.
 
 **Returns:** Dict mapping roles to hex colors
 
-##### `analyze_grammar(sentence, target_word, complexity, groq_api_key)`
+##### `analyze_grammar(sentence, target_word, complexity, google_api_key)`
 Complete grammar analysis with retry logic.
 
 **Parameters:**
 - `sentence` (str): Sentence to analyze
 - `target_word` (str): Target word
 - `complexity` (str): Complexity level
-- `groq_api_key` (str): API key for AI calls
+- `google_api_key` (str): API key for AI calls
 
 **Returns:** GrammarAnalysis object
 

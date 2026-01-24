@@ -6,6 +6,9 @@ from pathlib import Path
 from streamlit_app.utils import get_secret
 from streamlit_app.constants import PAGE_LANGUAGE_SELECT
 
+# Import centralized configuration
+from config import get_gemini_model
+
 
 def render_api_setup_page():
     """Render the API keys setup page."""
@@ -20,10 +23,34 @@ def render_api_setup_page():
         not google_key.startswith("sk-fallback")
     )
 
-    # If API keys are already set and valid, skip to language selection
+    # Show a quick test section even if keys are already configured
     if has_real_api_keys:
-        st.session_state.page = PAGE_LANGUAGE_SELECT
-        st.rerun()
+        st.markdown("# 🌍 Language Anki Deck Generator")
+        st.markdown("Create custom Anki decks in minutes | Free, no data stored")
+        st.success("✅ **API Keys Already Configured** - You can proceed to language selection or re-test your connection below")
+        st.divider()
+
+        # Quick re-test section
+        st.markdown("### 🔄 Re-test API Connection")
+        col_test, col_proceed = st.columns([1, 2])
+        with col_test:
+            if st.button("🧪 Re-test Google Cloud Connection", help="Re-test your Google Cloud API key"):
+                with st.spinner("Testing Google Cloud API connection..."):
+                    try:
+                        import google.generativeai as genai
+                        genai.configure(api_key=google_key)
+                        model = genai.GenerativeModel(get_gemini_model())
+                        response = model.generate_content("Hello")
+                        st.success("✅ Google Cloud API connection successful!")
+                    except Exception as e:
+                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
+
+        with col_proceed:
+            if st.button("🚀 Proceed to Language Selection", use_container_width=True):
+                st.session_state.page = PAGE_LANGUAGE_SELECT
+                st.rerun()
+
+        st.divider()
         return
 
     st.markdown("# 🌍 Language Anki Deck Generator")
@@ -111,7 +138,7 @@ def render_api_setup_page():
                     try:
                         import google.generativeai as genai
                         genai.configure(api_key=test_key)
-                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        model = genai.GenerativeModel(get_gemini_model())
                         response = model.generate_content("Hello")
                         st.success("✅ Google Cloud API connection successful!")
                     except Exception as e:

@@ -18,15 +18,15 @@ def render_help_page():
 
     - Creates custom Anki decks for language learning:
         - Select words from frequency lists
-        - Generate natural sentences (Groq AI)
+        - Generate natural sentences (Google Gemini AI)
         - Create native audio at 0.8x speed (learner-friendly)
-        - Download relevant images (Pixabay)
+        - Download relevant images (Google Custom Search)
         - Export ready-to-import Anki files
 
     ## Cost?
     - 100% FREE for personal use
-        - Groq: Free tier (AI sentences)
-        - Pixabay: Free tier (5,000 images/day)
+        - Google Gemini AI: Free tier (AI sentences)
+        - Google Custom Search: Free tier (100 searches/day)
 
     ## How long does it take?
     - 5 words: 5–10 min

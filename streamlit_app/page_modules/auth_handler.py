@@ -569,7 +569,7 @@ def render_auth_handler_page():
 
             ✅ **Save Progress Across Devices** - Access your learning data from any computer or mobile device
 
-            ✅ **Secure API Key Storage** - Your Groq and Pixabay API keys are encrypted and stored safely in the cloud
+            ✅ **Secure API Key Storage** - Your Google API keys are encrypted and stored safely in the cloud
 
             ✅ **Advanced Statistics** - Track your learning progress over time with detailed analytics
 

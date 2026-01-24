@@ -24,7 +24,7 @@ def update_usage_stats_to_firebase(session_id: str, stats_delta: Dict, language:
     Incrementally update persistent usage stats for a user in Firebase.
     Args:
         session_id: User/session ID
-        stats_delta: Dict of fields to increment (e.g., {"groq_calls": 2, "pixabay_calls": 1})
+        stats_delta: Dict of fields to increment (e.g., {"gemini_calls": 2, "google_search_calls": 1})
         language: If provided, also update per-language stats
     Returns:
         True if successful, False otherwise

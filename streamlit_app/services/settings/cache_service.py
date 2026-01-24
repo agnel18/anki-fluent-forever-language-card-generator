@@ -77,17 +77,17 @@ class CacheService:
             return cache_manager.clear_namespace(namespace)
         return 0
 
-    def clear_groq_cache(self) -> int:
+    def clear_gemini_cache(self) -> int:
         """
-        Clear all Groq-related cache entries.
+        Clear all Gemini-related cache entries.
 
         Returns:
             Number of entries cleared
         """
         total_cleared = 0
-        total_cleared += self.clear_namespace_cache("groq_meaning")
-        total_cleared += self.clear_namespace_cache("groq_sentences_pass1")
-        total_cleared += self.clear_namespace_cache("groq_sentences_pass2")
+        total_cleared += self.clear_namespace_cache("gemini_meaning")
+        total_cleared += self.clear_namespace_cache("gemini_sentences_pass1")
+        total_cleared += self.clear_namespace_cache("gemini_sentences_pass2")
         return total_cleared
 
     def clear_image_cache(self) -> int:
@@ -97,7 +97,7 @@ class CacheService:
         Returns:
             Number of entries cleared
         """
-        return self.clear_namespace_cache("pixabay_search")
+        return self.clear_namespace_cache("google_image_search")
 
     def is_cache_available(self) -> bool:
         """

@@ -52,6 +52,9 @@ from .domain.zh_prompt_builder import ZhPromptBuilder
 from .domain.zh_response_parser import ZhResponseParser
 from .domain.zh_validator import ZhValidator
 
+# Import centralized configuration
+from config import get_gemini_model, get_gemini_fallback_model
+
 logger = logging.getLogger(__name__)
 
 class ZhAnalyzer(BaseGrammarAnalyzer):
@@ -263,13 +266,13 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             genai.configure(api_key=gemini_api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel(get_gemini_model())
                 response = model.generate_content(prompt)
                 ai_response = response.text.strip()
             except Exception as primary_error:
-                logger.warning(f"Primary model gemini-2.5-flash failed: {primary_error}")
+                logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel('gemini-3-flash-preview')
+                model = genai.GenerativeModel(get_gemini_fallback_model())
                 response = model.generate_content(prompt)
                 ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")

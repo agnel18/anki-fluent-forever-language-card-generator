@@ -8,6 +8,9 @@ import time
 from typing import List, Dict
 import google.generativeai as genai
 
+# Import centralized configuration
+from config import get_gemini_model
+
 # Import language registry for consistent language handling
 try:
     from language_registry import get_language_registry
@@ -217,7 +220,7 @@ def generate_ipa_hybrid(sentence: str, language: str, gemini_api_key: str) -> st
 
     try:
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel(get_gemini_model())
 
         # Enhanced prompt for IPA-only output using full language name
         # For some languages, romanization is more useful than strict IPA
@@ -373,7 +376,7 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
 
     try:
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel(get_gemini_model())
         response = model.generate_content(f"Generate exactly 3 diverse and specific keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Make the keywords unique and visual - avoid generic terms like 'language' or 'learning'. Focus on concrete objects, actions, or scenes. Return only a comma-separated list of 3 keywords, no explanations or formatting.")
         raw_response = response.text.strip()
 
@@ -441,7 +444,7 @@ def batch_generate_image_keywords(
 
     try:
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel(get_gemini_model())
 
         # Build a single prompt for all sentences
         prompt_parts = []

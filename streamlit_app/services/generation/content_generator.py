@@ -11,6 +11,9 @@ import time
 from typing import Optional, List, Dict, Any, Tuple, Union
 import google.generativeai as genai
 
+# Import centralized configuration
+from config import get_gemini_model, get_gemini_fallback_model
+
 from streamlit_app.cache_manager import cached_api_call
 from streamlit_app.error_recovery import retry_with_exponential_backoff, with_fallback
 from streamlit_app.services.sentence_generation import LANGUAGE_NAME_TO_CODE
@@ -235,7 +238,7 @@ IMPORTANT:
 
             # Try Gemini models with fallback - using recommended models for Anki generation accuracy
             # Best for Anki generation accuracy
-            models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
+            models_to_try = [get_gemini_model(), get_gemini_fallback_model()]
             
             response = None
             last_error = None

@@ -334,8 +334,8 @@ class AuthService:
         """
         api_keys_ref = self.db.collection('users').document(uid).collection('api_keys').document('keys')
         api_keys_ref.set({
-            'groq': api_keys.get('groq', ''),
-            'pixabay': api_keys.get('pixabay', ''),
+            'google': api_keys.get('google', ''),
+            'custom_search_engine_id': api_keys.get('custom_search_engine_id', ''),
             'lastUpdated': firestore.SERVER_TIMESTAMP
         })
 
