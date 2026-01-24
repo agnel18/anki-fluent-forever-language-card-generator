@@ -1,7 +1,10 @@
 # pages/sentence_settings.py - Sentence settings page for the language learning app
 
 import streamlit as st
+import logging
 from constants import CURATED_TOPICS
+
+logger = logging.getLogger(__name__)
 
 def _get_bcp47_code(language_name: str) -> str:
     """
@@ -15,11 +18,11 @@ def _get_bcp47_code(language_name: str) -> str:
     """
     # Comprehensive mapping from language names to BCP-47 codes
     bcp47_map = {
-        # Chinese variants
-        "Chinese": "zh-CN",
-        "Chinese (Simplified)": "zh-CN",
+        # Chinese variants - use cmn-CN for Neural2 voice names
+        "Chinese": "cmn-CN",
+        "Chinese (Simplified)": "cmn-CN",
         "Chinese (Traditional)": "zh-TW",
-        "Mandarin Chinese": "zh-CN",
+        "Mandarin Chinese": "cmn-CN",
         "Cantonese": "zh-HK",
 
         # Major European languages
@@ -331,13 +334,57 @@ def render_sentence_settings_page():
             lang = st.session_state.selected_language
 
             try:
-                from audio_generator import get_google_voices_for_language, GOOGLE_TTS_AVAILABLE, is_google_tts_configured
-                if not GOOGLE_TTS_AVAILABLE or not is_google_tts_configured():
-                    st.warning("⚠️ Google Cloud Text-to-Speech not configured. Audio generation will be skipped.")
-                    voice_options = ["D (Female, Neural2)"]  # Default fallback
-                    voice_display_map = {"D (Female, Neural2)": "en-US-Neural2-D"}
+                from audio_generator import get_google_voices_for_language, GOOGLE_TTS_AVAILABLE, is_google_tts_configured, _get_bcp47_code
+                if not GOOGLE_TTS_AVAILABLE:
+                    st.warning("⚠️ Google Cloud Text-to-Speech SDK not available. Audio generation will be skipped.")
+                    # Provide language-specific fallback voices even without SDK
+                    bcp47_code = _get_bcp47_code(lang)
+                    lang_prefix = bcp47_code.split('-')[0] if bcp47_code else "en"
+                    fallback_voices = {
+                        "en": ["D (Female, Neural2)", "C (Male, Neural2)"],
+                        "es": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "fr": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
+                    }
+                    voice_options = fallback_voices.get(lang_prefix, ["D (Female, Neural2)"])
+                    voice_display_map = {voice: f"{bcp47_code}-Neural2-{voice.split(' ')[0]}" for voice in voice_options}
+                elif not is_google_tts_configured():
+                    st.warning("⚠️ Google Cloud Text-to-Speech authentication failed. Using fallback voices.")
+                    # Provide language-specific fallback voices when auth fails
+                    bcp47_code = _get_bcp47_code(lang)
+                    lang_prefix = bcp47_code.split('-')[0] if bcp47_code else "en"
+                    fallback_voices = {
+                        "en": ["D (Female, Neural2)", "C (Male, Neural2)"],
+                        "es": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "fr": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
+                        "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
+                    }
+                    voice_options = fallback_voices.get(lang_prefix, ["D (Female, Neural2)"])
+                    voice_display_map = {voice: f"{bcp47_code}-Neural2-{voice.split(' ')[0]}" for voice in voice_options}
                 else:
                     voice_options = get_google_voices_for_language(lang)
+                    
+                    # Ensure we have at least one voice option
+                    if not voice_options:
+                        logger.warning(f"No voices available for {lang}, using fallback")
+                        voice_options = ["D (Female, Neural2)"]
+                    
                     # Create a mapping from display names to actual voice names
                     voice_display_map = {}
                     for display_name in voice_options:

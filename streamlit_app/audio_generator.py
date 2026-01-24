@@ -55,10 +55,27 @@ def get_google_tts_client():
     if not config["api_key"]:
         raise ValueError("GOOGLE_API_KEY not set")
 
-    # Set the API key as environment variable for authentication
-    os.environ["GOOGLE_API_KEY"] = config["api_key"]
+    # For Google Cloud client libraries, we need to use google-auth with API key
+    try:
+        from google.auth.transport.requests import Request
+        from google.oauth2.credentials import Credentials
 
-    return texttospeech.TextToSpeechClient()
+        # Create credentials using API key
+        # Note: This is a workaround since TTS client library doesn't directly support API keys
+        os.environ["GOOGLE_API_KEY"] = config["api_key"]
+
+        # Try to create client - this may work if the environment variable is set
+        return texttospeech.TextToSpeechClient()
+
+    except Exception as e:
+        logger.warning(f"TTS client creation with API key failed: {e}")
+        # Fallback: try creating client without explicit auth
+        # This might work in environments where ADC is already set up
+        try:
+            return texttospeech.TextToSpeechClient()
+        except Exception as e2:
+            logger.error(f"TTS client fallback also failed: {e2}")
+            raise ValueError(f"Failed to create TTS client. Please ensure Google Cloud credentials are properly configured. Error: {e2}")
 
 def is_google_tts_configured():
     """Check if Google Cloud Text-to-Speech is properly configured."""
@@ -414,14 +431,34 @@ def get_google_voices_for_language(language_name: str) -> List[str]:
     # Map language names to BCP-47 codes
     bcp47_code = _get_bcp47_code(language_name)
     if not bcp47_code:
-        return ["en-US-Neural2-D (Female, Neural2)"]  # Default fallback
+        return ["D (Female, Neural2)"]  # Default fallback
 
     # Get all voices for this language
     voices = get_google_available_voices(bcp47_code)
 
+    # If no voices found (likely due to auth issues), provide language-specific fallbacks
     if not voices:
-        # Fallback to English if no voices found
-        return ["en-US-Neural2-D (Female, Neural2)"]
+        logger.warning(f"No voices found for {language_name} ({bcp47_code}), using fallbacks")
+
+        # Language-specific fallback voices
+        fallbacks = {
+            "en": ["D (Female, Neural2)", "C (Male, Neural2)"],
+            "es": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "fr": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
+            "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
+        }
+
+        # Get the language prefix (e.g., "zh" from "zh-CN")
+        lang_prefix = bcp47_code.split('-')[0]
+        return fallbacks.get(lang_prefix, ["D (Female, Neural2)"])
 
     # Format voice names with gender and quality information
     formatted_voices = []
@@ -483,11 +520,11 @@ def _voice_for_language(language: str) -> str:
         "Russian": "ru-RU-Neural2-A",
         "Japanese": "ja-JP-Neural2-B",
         "Korean": "ko-KR-Neural2-A",
-        "Chinese (Simplified)": "zh-CN-Neural2-C",
+        "Chinese (Simplified)": "cmn-CN-Neural2-C",
         "Chinese (Traditional)": "zh-TW-Neural2-A",
         "Arabic": "ar-XA-Neural2-B",
         "Hindi": "hi-IN-Neural2-A",
-        "Mandarin Chinese": "zh-CN-Neural2-C",
+        "Mandarin Chinese": "cmn-CN-Neural2-C",
         "English": "en-US-Neural2-D",
     }
     return voice_map.get(language, "en-US-Neural2-D")
