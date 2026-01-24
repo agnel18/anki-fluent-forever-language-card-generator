@@ -29,9 +29,18 @@ def get_google_tts_config():
     import streamlit as st
     api_key = ""
     try:
-        api_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
+        # Try to get from centralized config first
+        try:
+            from config.api_keys import get_api_key
+            api_key = get_api_key('text_to_speech', st.session_state) or ""
+        except ImportError:
+            pass
+
+        # Fallback to direct environment/session check
+        if not api_key:
+            api_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", "")))
     except:
-        api_key = os.getenv("GOOGLE_API_KEY", "")
+        api_key = os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
 
     return {
         "api_key": api_key,

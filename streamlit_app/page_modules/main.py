@@ -72,6 +72,15 @@ def render_main_page():
     if not google_key:
         missing_keys.append("Google Cloud")
 
+    # Also check for TTS configuration
+    try:
+        from audio_generator import is_google_tts_configured
+        if not is_google_tts_configured():
+            missing_keys.append("Google Text-to-Speech")
+    except:
+        # If we can't check TTS, assume it's missing to be safe
+        missing_keys.append("Google Text-to-Speech")
+
     if missing_keys:
         st.warning(f"⚠️ **API Keys Required**: {', '.join(missing_keys)} API key(s) not configured. You'll be redirected to set them up.")
     else:
@@ -97,7 +106,17 @@ def render_main_page():
         st.markdown('<div class="primary-action-button">', unsafe_allow_html=True)
         
         # Define button text and help text
-        has_all_api_keys = bool(st.session_state.get("google_api_key"))
+        has_basic_api_key = bool(st.session_state.get("google_api_key"))
+        
+        # Check TTS configuration
+        has_tts_configured = False
+        try:
+            from audio_generator import is_google_tts_configured
+            has_tts_configured = is_google_tts_configured()
+        except:
+            has_tts_configured = False
+            
+        has_all_api_keys = has_basic_api_key and has_tts_configured
         button_text = "🚀 Start Creating Your Deck" if not has_all_api_keys else "🚀 Continue Creating Your Deck"
         help_text = "Begin the 5-step deck creation process" if not has_all_api_keys else "Continue with your saved API keys"
         

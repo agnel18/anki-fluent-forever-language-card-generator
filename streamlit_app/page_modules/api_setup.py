@@ -18,9 +18,18 @@ def render_api_setup_page():
     # Check if we have real API keys (not fallback keys)
     google_key = st.session_state.get("google_api_key", "")
 
+    # Also check TTS configuration
+    tts_configured = False
+    try:
+        from audio_generator import is_google_tts_configured
+        tts_configured = is_google_tts_configured()
+    except:
+        tts_configured = False
+
     has_real_api_keys = (
         google_key and
-        not google_key.startswith("sk-fallback")
+        not google_key.startswith("sk-fallback") and
+        tts_configured
     )
 
     # Show a quick test section even if keys are already configured
