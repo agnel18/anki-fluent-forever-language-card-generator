@@ -633,6 +633,7 @@ def _voice_for_language(language: str) -> str:
         "Russian": "ru-RU-Neural2-A",
         "Japanese": "ja-JP-Neural2-B",
         "Korean": "ko-KR-Neural2-A",
+        "Chinese": "cmn-CN-Neural2-C",
         "Chinese (Simplified)": "cmn-CN-Neural2-C",
         "Chinese (Traditional)": "zh-TW-Neural2-A",
         "Arabic": "ar-XA-Neural2-B",
