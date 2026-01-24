@@ -68,9 +68,13 @@ def render_main_page():
     # Check for missing API keys and show consolidated warning
     missing_keys = []
     google_key = st.session_state.get("google_api_key") or os.environ.get("GOOGLE_API_KEY", "")
+    custom_search_id = st.session_state.get("custom_search_engine_id") or os.environ.get("GOOGLE_SEARCH_ENGINE_ID", "")
 
     if not google_key:
         missing_keys.append("Google Cloud")
+
+    if not custom_search_id:
+        missing_keys.append("Google Custom Search")
 
     # Also check for TTS configuration
     try:
@@ -107,6 +111,7 @@ def render_main_page():
         
         # Define button text and help text
         has_basic_api_key = bool(st.session_state.get("google_api_key"))
+        has_custom_search_id = bool(st.session_state.get("custom_search_engine_id"))
         
         # Check TTS configuration
         has_tts_configured = False
@@ -116,7 +121,7 @@ def render_main_page():
         except:
             has_tts_configured = False
             
-        has_all_api_keys = has_basic_api_key and has_tts_configured
+        has_all_api_keys = has_basic_api_key and has_custom_search_id and has_tts_configured
         button_text = "🚀 Start Creating Your Deck" if not has_all_api_keys else "🚀 Continue Creating Your Deck"
         help_text = "Begin the 5-step deck creation process" if not has_all_api_keys else "Continue with your saved API keys"
         

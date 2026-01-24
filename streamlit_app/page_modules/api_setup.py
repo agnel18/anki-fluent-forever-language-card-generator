@@ -17,6 +17,7 @@ def render_api_setup_page():
 
     # Check if we have real API keys (not fallback keys)
     google_key = st.session_state.get("google_api_key", "")
+    custom_search_id = st.session_state.get("custom_search_engine_id", "")
 
     # Also check TTS configuration
     tts_configured = False
@@ -29,6 +30,7 @@ def render_api_setup_page():
     has_real_api_keys = (
         google_key and
         not google_key.startswith("sk-fallback") and
+        custom_search_id and
         tts_configured
     )
 
