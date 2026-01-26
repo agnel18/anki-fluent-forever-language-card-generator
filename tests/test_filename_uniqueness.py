@@ -45,7 +45,6 @@ class TestFilenameUniqueness:
                     word='test',
                     language='English',
                     gemini_api_key='test_key',
-                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=2
                 )
@@ -157,7 +156,6 @@ class TestFilenameUniqueness:
                     word='test',
                     language='English',
                     gemini_api_key='test_key',
-                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=1
                 )
@@ -167,7 +165,6 @@ class TestFilenameUniqueness:
                     word='test',
                     language='English',
                     gemini_api_key='test_key',
-                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=1
                 )

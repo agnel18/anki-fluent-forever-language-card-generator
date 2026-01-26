@@ -155,7 +155,7 @@ class APIKeyManager:
 
         Args:
             api_key: The API key to validate
-            service: The service name ('gemini' or 'custom_search')
+            service: The service name ('gemini')
 
         Returns:
             Tuple of (is_valid, message)
@@ -174,29 +174,6 @@ class APIKeyManager:
                     return True, "✅ Gemini API key is valid"
                 else:
                     return False, "❌ Gemini API returned empty response"
-
-            elif service.lower() == 'custom_search':
-                # Test Google Custom Search API key with a simple search
-                import requests
-                # Use a simple search that should always return results
-                url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={st.session_state.get('custom_search_engine_id', '')}&q=test"
-                response = requests.get(url, timeout=10)
-                if response.status_code == 200:
-                    try:
-                        data = response.json()
-                        # Check if we got a valid response structure
-                        if isinstance(data, dict) and 'items' in data:
-                            return True, "✅ Custom Search API key is valid"
-                        else:
-                            return False, "❌ Custom Search API returned unexpected format"
-                    except ValueError:
-                        return False, "❌ Custom Search API returned invalid JSON"
-                elif response.status_code == 400:
-                    return False, "❌ Invalid Custom Search API key or request format"
-                elif response.status_code == 403:
-                    return False, "❌ Custom Search API key unauthorized or quota exceeded"
-                else:
-                    return False, f"❌ Custom Search API error: {response.status_code}"
 
             else:
                 return False, f"❌ Unknown service: {service}"

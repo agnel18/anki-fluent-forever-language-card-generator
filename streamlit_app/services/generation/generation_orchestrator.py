@@ -30,7 +30,6 @@ class GenerationOrchestrator:
         selected_words: List[str],
         selected_lang: str,
         gemini_api_key: str,
-        custom_search_engine_id: str,
         num_sentences: int,
         min_length: int,
         max_length: int,
@@ -49,7 +48,6 @@ class GenerationOrchestrator:
             selected_words: List of words to generate
             selected_lang: Target language
             gemini_api_key: Google Gemini API key
-            custom_search_engine_id: Google Custom Search Engine ID
             num_sentences: Number of sentences per word
             min_length/max_length: Sentence length constraints
             difficulty: Learning difficulty level

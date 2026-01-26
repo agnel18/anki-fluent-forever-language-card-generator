@@ -31,7 +31,6 @@ class TestWordFieldConsistency:
                     word='कहो',  # Selected word
                     language='Hindi',
                     gemini_api_key='test_key',
-                    google_custom_search_engine_id='test_cx',
                     output_dir=temp_dir,
                     num_sentences=2
                 )

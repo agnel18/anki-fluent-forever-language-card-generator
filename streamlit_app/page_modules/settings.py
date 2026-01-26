@@ -323,112 +323,6 @@ def render_settings_page():
 
     st.markdown("---")
 
-    # === GOOGLE CUSTOM SEARCH API SECTION ===
-    st.markdown("### 🖼️ Google Custom Search API (Image Search)")
-    with st.expander("📖 Setup Instructions", expanded=not google_configured):
-        st.markdown("""
-        **Follow these steps to set up Google Custom Search API:**
-
-        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-        2. **Create or select** a Google Cloud project
-        3. **Enable the Custom Search JSON API:**
-           - Go to "APIs & Services" > "Library"
-           - Search for "Custom Search JSON API"
-           - Click "Enable"
-        4. **Create credentials:**
-           - Go to "APIs & Services" > "Credentials"
-           - Click "Create Credentials" > "API Key"
-           - Copy the generated API key
-        5. **Create a Custom Search Engine:**
-           - Go to [Custom Search Engine](https://cse.google.com/cse/)
-           - Click "Add"
-           - Set search engine name and description
-           - Set "Sites to search" to "www.google.com" (or leave empty for global search)
-           - Click "Create"
-           - Copy the "Search engine ID" from the control panel
-        6. **Save both keys** below
-        """)
-
-    # Google Custom Search API Key Input
-    google_key_input = st.text_input(
-        "Google API Key",
-        value=google_key,
-        type="password",
-        help="Paste your Google Cloud API key here (used for TTS, Gemini, and Custom Search)",
-        key="google_key_input"
-    )
-
-    col_save, col_test = st.columns([1, 1])
-    with col_save:
-        if st.button("💾 Save Google API Key", help="Save the Google API key"):
-            if google_key_input:
-                # Save to session state
-                st.session_state.google_api_key = google_key_input
-
-                # Save to environment variable
-                os.environ["GOOGLE_API_KEY"] = google_key_input
-
-                # Save to .env file
-                env_path = Path(__file__).parent.parent / ".env"
-                try:
-                    env_content = ""
-                    if env_path.exists():
-                        env_content = env_path.read_text()
-
-                    lines = env_content.split('\n')
-                    key_found = False
-                    for i, line in enumerate(lines):
-                        if line.startswith('GOOGLE_API_KEY='):
-                            lines[i] = f'GOOGLE_API_KEY={google_key_input}'
-                            key_found = True
-                            break
-
-                    if not key_found:
-                        lines.append(f'GOOGLE_API_KEY={google_key_input}')
-
-                    env_path.write_text('\n'.join(lines))
-                    st.success("✅ Google API key saved successfully!")
-                    st.info("🔄 Refresh the page to apply changes.")
-                    time.sleep(1)
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Failed to save to .env file: {e}")
-                    st.info("💡 The key is set for this session.")
-            else:
-                st.error("❌ Please enter a valid Google API key")
-
-    with col_test:
-        if google_key_input or google_key:
-            test_key = google_key_input or google_key
-            if st.button("🧪 Test Google Custom Search Connection", help="Test your Google API key"):
-                with st.spinner("Testing Google Custom Search API connection..."):
-                    try:
-                        import requests
-                        response = requests.get(
-                            "https://www.googleapis.com/customsearch/v1",
-                            params={
-                                "key": test_key,
-                                "cx": "017576662512468239146:omuauf_lfve",  # Default CSE ID
-                                "q": "test",
-                                "searchType": "image",
-                                "num": 1
-                            }
-                        )
-                        if response.status_code == 200:
-                            data = response.json()
-                            if "items" in data:
-                                st.success("✅ Google Custom Search API connection successful!")
-                                st.info("🎉 You can now search for images with Google!")
-                            else:
-                                st.error("❌ Google Custom Search API returned unexpected response")
-                        else:
-                            st.error(f"❌ Google Custom Search API test failed: HTTP {response.status_code}")
-                    except Exception as e:
-                        st.error(f"❌ Google Custom Search API test failed: {str(e)}")
-                        st.info("💡 Check your API key and internet connection.")
-
-    st.markdown("---")
-
     # === GOOGLE TTS API SECTION ===
     st.markdown("### 🔊 Google Cloud Text-to-Speech API (Audio Generation)")
     with st.expander("📖 Setup Instructions", expanded=not google_configured):
@@ -1017,12 +911,7 @@ def render_settings_page():
                     st.success(f"Cleared {cleared} Gemini cached entries!")
 
             with ns_col2:
-                if st.button("🖼️ Clear Image Cache", key="clear_image_cache", help="Clear cached Google Custom Search results"):
-                    cleared = cache_service.clear_image_cache()
-                    st.success(f"Cleared {cleared} image search cached entries!")
-
-            with ns_col3:
-                if st.button("📈 View Details", key="view_cache_details", help="Show detailed cache information"):
+                if st.button(" View Details", key="view_cache_details", help="Show detailed cache information"):
                     with st.expander("Cache Details", expanded=True):
                         st.json(stats)
         else:

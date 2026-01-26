@@ -30,7 +30,7 @@ def render_privacy_policy_page():
     - **Log Data**: IP address, access times, error reports
 
     ### Third-Party Service Data
-    - **API Usage**: Information sent to and received from Google Gemini AI, Google Custom Search, and Google Cloud Text-to-Speech
+    - **API Usage**: Information sent to and received from Google Gemini AI and Google Cloud Text-to-Speech
     - **Generated Content**: Language learning cards and audio files you create
 
     ## 3. How We Use Your Information
@@ -47,7 +47,7 @@ def render_privacy_policy_page():
 
     We do not sell, trade, or rent your personal information to third parties. We may share information only in the following circumstances:
 
-    - **Service Providers**: With trusted third-party services (Google Gemini AI, Google Custom Search, Google Cloud Text-to-Speech, Firebase) necessary for app functionality
+    - **Service Providers**: With trusted third-party services (Google Gemini AI, Google Cloud Text-to-Speech, Firebase) necessary for app functionality
     - **Legal Requirements**: When required by law or to protect our rights
     - **Business Transfers**: In case of merger, acquisition, or sale of assets
     - **With Your Consent**: When you explicitly agree to sharing
@@ -96,7 +96,6 @@ def render_privacy_policy_page():
     Our app integrates with several third-party services:
 
     - **Google Gemini AI**: Processes text for sentence generation (see their [privacy policy](https://policies.google.com/privacy))
-    - **Google Custom Search**: Provides images for flashcards (see their [privacy policy](https://policies.google.com/privacy))
     - **Google Cloud Text-to-Speech**: Generates audio pronunciations (Google service)
     - **Firebase**: Cloud storage and authentication (see their [privacy policy](https://firebase.google.com/support/privacy))
 

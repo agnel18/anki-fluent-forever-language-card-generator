@@ -372,7 +372,6 @@ def generate_deck_progressive(
     word: str,
     language: str,
     gemini_api_key: str,
-    google_custom_search_engine_id: str,
     output_dir: str,
     num_sentences: int = 10,
     min_length: int = 5,

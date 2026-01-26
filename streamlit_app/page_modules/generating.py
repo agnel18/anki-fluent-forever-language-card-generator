@@ -471,7 +471,6 @@ Combine all components into a professional Anki deck.
                     word=current_word,
                     language=selected_lang,
                     gemini_api_key=google_api_key,
-                    google_custom_search_engine_id=custom_search_engine_id,
                     output_dir=output_dir,
                     num_sentences=num_sentences,
                     min_length=min_length,

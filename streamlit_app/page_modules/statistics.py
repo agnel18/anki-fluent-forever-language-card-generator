@@ -66,16 +66,15 @@ def render_statistics_page():
     with col_actual1:
         # Calculate actual costs based on usage
         gemini_cost = gemini_tokens * 0.0000001  # $0.10 per 1M tokens
-        search_cost = google_search_calls * 0.005  # $5 per 1000 searches
         tts_cost = audio_generated * 0.0024  # Rough estimate for Standard voice
 
         st.metric("Gemini API Cost", f"${gemini_cost:.4f}")
-        st.metric("Image Search Cost", f"${search_cost:.4f}")
-        st.caption("🤖 Text generation & translation")
+        st.metric("TTS Audio Cost", f"${tts_cost:.4f}")
+        st.caption("🔊 Audio generation (Standard voice)")
 
     with col_actual2:
         st.metric("TTS Audio Cost", f"${tts_cost:.4f}")
-        total_actual = gemini_cost + search_cost + tts_cost
+        total_actual = gemini_cost + tts_cost
         st.metric("**Total Cost**", f"${total_actual:.4f}", delta=f"{fmt_num(cards_generated)} cards generated")
         st.caption("🔊 Audio generation (Standard voice)")
 
@@ -134,16 +133,11 @@ def render_statistics_page():
         est_gemini_tokens = est_cards * 1500  # Rough estimate: 1500 tokens per card
         est_gemini_cost = est_gemini_tokens * 0.0000001
 
-        # Estimate image searches (1-2 per card)
-        est_search_calls = est_cards * 1.5
-        est_search_cost = est_search_calls * 0.005
-
-        total_estimated = est_gemini_cost + est_search_cost + est_tts_cost
+        total_estimated = est_gemini_cost + est_tts_cost
 
         st.markdown("**Estimated Costs:**")
         st.info(f"""
         **Gemini API:** ${est_gemini_cost:.4f} ({fmt_num(est_gemini_tokens)} tokens)  
-        **Image Search:** ${est_search_cost:.4f} ({fmt_num(int(est_search_calls))} calls)  
         **TTS Audio ({selected_voice}):** ${est_tts_cost:.4f}  
         **Total Estimated:** ${total_estimated:.4f}
         """)
@@ -169,7 +163,6 @@ def render_statistics_page():
         **⚠️ Hidden Costs:**
         - Premium voices can 2-3x cost of Standard
         - Complex sentences use more Gemini tokens
-        - High-quality images may cost more in search API
         """)
 
     st.markdown("---")
