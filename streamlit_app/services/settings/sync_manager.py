@@ -81,11 +81,9 @@ class SyncManager:
         }
 
         # Only include API keys if they're set
-        google_key, custom_search_id = api_manager.get_api_keys()
+        google_key = api_manager.get_api_keys()
         if google_key:
             settings['google_api_key'] = google_key
-        if custom_search_id:
-            settings['custom_search_engine_id'] = custom_search_id
 
         return settings
 

@@ -68,7 +68,7 @@ def render_terms_conditions_page():
     - You are responsible for ensuring your content does not violate third-party rights
 
     ### Third-Party Services
-    - Content from Google Cloud services (Gemini AI, Custom Search, Text-to-Speech) is subject to their respective terms
+    - Content from Google Cloud services (Gemini AI, Text-to-Speech) is subject to their respective terms
     - You agree to comply with all third-party service terms
 
     ## 6. Privacy and Data Protection

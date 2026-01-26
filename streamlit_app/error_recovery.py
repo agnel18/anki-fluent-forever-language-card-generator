@@ -213,7 +213,7 @@ def resilient_gemini_call(max_retries: int = 3):
     )(handle_api_errors(func))
 
 def resilient_google_search_call(max_retries: int = 2):
-    """Decorator for Google Custom Search API calls with retry logic and error handling."""
+    """Decorator for Pixabay API calls with retry logic and error handling."""
     return lambda func: retry_with_exponential_backoff(
         max_retries=max_retries,
         retry_on=(NetworkError, APIServerError)

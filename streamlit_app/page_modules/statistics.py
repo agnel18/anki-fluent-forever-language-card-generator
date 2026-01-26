@@ -52,7 +52,7 @@ def render_statistics_page():
     st.caption("📊 Text tokens processed by Gemini AI (includes prompts and responses)")
     st.markdown(f"Google Search Calls: {fmt_num(google_search_calls)} / {fmt_num(GOOGLE_SEARCH_CALL_LIMIT)}", unsafe_allow_html=True)
     st.markdown(usage_bar(google_search_calls, GOOGLE_SEARCH_CALL_LIMIT), unsafe_allow_html=True)
-    st.caption("🖼️ Image searches on Google Custom Search for word illustrations")
+    st.caption("🖼️ Image searches on Pixabay for word illustrations")
     st.markdown("---")
 
     # Enhanced Cost Calculator Section

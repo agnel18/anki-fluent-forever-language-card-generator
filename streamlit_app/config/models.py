@@ -43,10 +43,6 @@ API_ENDPOINTS = {
         'generate_content': '/v1beta/models/{model}:generateContent',
         'list_models': '/v1beta/models',
     },
-    'custom_search': {
-        'base_url': 'https://www.googleapis.com',
-        'search': '/customsearch/v1',
-    },
     'text_to_speech': {
         'base_url': 'https://texttospeech.googleapis.com',
         'synthesize': '/v1/text:synthesize',
@@ -58,12 +54,6 @@ def get_gemini_endpoint(operation: str = 'generate_content') -> str:
     """Get Gemini API endpoint URL."""
     base = API_ENDPOINTS['gemini']['base_url']
     path = API_ENDPOINTS['gemini'][operation]
-    return f"{base}{path}"
-
-def get_custom_search_endpoint() -> str:
-    """Get Google Custom Search API endpoint URL."""
-    base = API_ENDPOINTS['custom_search']['base_url']
-    path = API_ENDPOINTS['custom_search']['search']
     return f"{base}{path}"
 
 def get_tts_endpoint(operation: str = 'synthesize') -> str:
@@ -82,10 +72,6 @@ SERVICE_CONFIG = {
         'temperature': 0.7,
         'top_p': 0.8,
         'top_k': 40,
-    },
-    'custom_search': {
-        'max_results': 10,
-        'safe_search': 'moderate',
     },
     'text_to_speech': {
         'audio_encoding': 'MP3',

@@ -405,7 +405,7 @@ def cached_api_call(namespace: str, ttl_seconds: int = 3600):
             # Extract parameters for cache key (exclude API keys and non-serializable params)
             cache_params = {}
             for key, value in kwargs.items():
-                if key not in ['google_api_key', 'custom_search_engine_id']:  # Don't cache API keys
+                if key not in ['google_api_key']:  # Don't cache API keys
                     try:
                         json.dumps(value)  # Check if serializable
                         cache_params[key] = value
@@ -420,7 +420,7 @@ def cached_api_call(namespace: str, ttl_seconds: int = 3600):
             for i, arg in enumerate(args[1:]):  # Skip 'self' if method
                 if i < len(param_names):
                     param_name = param_names[i]
-                    if param_name not in ['google_api_key', 'custom_search_engine_id']:
+                    if param_name not in ['google_api_key']:
                         try:
                             json.dumps(arg)
                             cache_params[param_name] = arg

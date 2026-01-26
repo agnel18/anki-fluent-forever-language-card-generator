@@ -263,7 +263,7 @@ Combine all components into a professional Anki deck.
 
     # Get generation parameters
     google_api_key = st.session_state.get('google_api_key', get_secret('GOOGLE_API_KEY', ''))
-    custom_search_engine_id = st.session_state.get('custom_search_engine_id', '017576662512468239146:omuauf_lfve')  # Default CSE ID
+
     num_sentences = st.session_state.sentences_per_word
     min_length, max_length = st.session_state.sentence_length_range
     difficulty = st.session_state.difficulty

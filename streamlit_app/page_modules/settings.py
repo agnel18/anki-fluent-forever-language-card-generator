@@ -236,9 +236,7 @@ def render_settings_page():
             st.error("❌ **Gemini API** - Not configured")
     with col2:
         if google_configured:
-            st.success("✅ **Google Custom Search** - Configured")
-        else:
-            st.error("❌ **Google Custom Search** - Not configured")
+
     with col3:
         if google_configured:
             st.success("✅ **Google TTS** - Configured")
@@ -347,7 +345,7 @@ def render_settings_page():
         "Google API Key",
         value=google_key,
         type="password",
-        help="Paste your Google Cloud API key here (used for TTS, Gemini, and Custom Search)",
+        help="Paste your Google Cloud API key here (used for TTS and Gemini)",
         key="google_key_input"
     )
 

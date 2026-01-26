@@ -122,7 +122,8 @@ def render_api_setup_page():
         2. **Create a new project** or select an existing one
         3. **Enable the following APIs:**
            - Gemini AI API
-           - Custom Search JSON API
+           - Google Gemini AI API
+           - Google Text-to-Speech API
            - Cloud Text-to-Speech API
         4. **Create credentials:**
            - Go to "APIs & Services" → "Credentials"
@@ -134,7 +135,7 @@ def render_api_setup_page():
         "Google Cloud API Key",
         value=google_key,
         type="password",
-        help="Paste your Google Cloud API key here (used for Gemini AI, Custom Search, and Text-to-Speech)",
+        help="Paste your Google Cloud API key here (used for Gemini AI and Text-to-Speech)",
         key="google_api_key_input"
     )
 

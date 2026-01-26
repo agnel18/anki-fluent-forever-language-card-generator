@@ -23,10 +23,9 @@ class APIKeyManager:
         Get the current status of API keys.
 
         Returns:
-            Dictionary with 'google' and 'custom_search' status messages
+            Dictionary with 'google' status message
         """
         google_key = st.session_state.get("google_api_key", "")
-        custom_search_id = st.session_state.get("custom_search_engine_id", "")
 
         status = {}
 
@@ -35,11 +34,6 @@ class APIKeyManager:
             status['google'] = f"✅ Google API Key: {masked_google}"
         else:
             status['google'] = "❌ No Google API key set"
-
-        if custom_search_id:
-            status['custom_search'] = f"✅ Custom Search Engine ID: {custom_search_id}"
-        else:
-            status['custom_search'] = "❌ No Custom Search Engine ID set"
 
         return status
 
@@ -58,7 +52,6 @@ class APIKeyManager:
                 return False
 
             google_key = st.session_state.get("google_api_key", "")
-            custom_search_id = st.session_state.get("custom_search_engine_id", "")
 
             if not google_key:
                 st.error("❌ Missing Google API key - required for app functionality")
@@ -70,8 +63,7 @@ class APIKeyManager:
                 return False
 
             api_keys = {
-                "google_api_key": google_key,
-                "custom_search_engine_id": custom_search_id
+                "google_api_key": google_key
             }
 
             success = save_settings_to_firebase(session_id, api_keys)
@@ -112,8 +104,6 @@ class APIKeyManager:
 
             if 'google_api_key' in cloud_settings:
                 st.session_state.google_api_key = cloud_settings['google_api_key']
-                if 'custom_search_engine_id' in cloud_settings:
-                    st.session_state.custom_search_engine_id = cloud_settings['custom_search_engine_id']
                 # Persist to local storage
                 persist_api_keys()
                 st.success("✅ API keys loaded from cloud!")
@@ -126,28 +116,25 @@ class APIKeyManager:
             st.error(f"❌ Failed to load from cloud: {e}")
             return False
 
-    def update_api_keys(self, google_key: str, custom_search_id: str) -> None:
+    def update_api_keys(self, google_key: str) -> None:
         """
         Update API keys in session state and persist locally.
 
         Args:
             google_key: New Google API key
-            custom_search_id: New Custom Search Engine ID
         """
         st.session_state.google_api_key = google_key
-        st.session_state.custom_search_engine_id = custom_search_id
         persist_api_keys()
 
-    def get_api_keys(self) -> Tuple[str, str]:
+    def get_api_keys(self) -> str:
         """
         Get current API keys from session state.
 
         Returns:
-            Tuple of (google_key, custom_search_engine_id)
+            Google API key
         """
         google_key = st.session_state.get("google_api_key", "")
-        custom_search_id = st.session_state.get("custom_search_engine_id", "")
-        return google_key, custom_search_id
+        return google_key
 
     def validate_api_key(self, api_key: str, service: str) -> Tuple[bool, str]:
         """

@@ -29,14 +29,12 @@ def test_generate_complete_deck_success():
         words = ['test']
         language = 'English'
         gemini_api_key = 'test_key'
-        google_custom_search_engine_id = 'test_cx'
         output_dir = 'test_output'
 
         result = generate_complete_deck(
             words=words,
             language=language,
             gemini_api_key=gemini_api_key,
-            google_custom_search_engine_id=google_custom_search_engine_id,
             output_dir=output_dir
         )
 
@@ -53,7 +51,6 @@ def test_generate_complete_deck_sentence_failure():
             words=['test'],
             language='English',
             gemini_api_key='test_key',
-            google_custom_search_engine_id='test_cx',
             output_dir='test_output'
         )
 
@@ -78,7 +75,6 @@ def test_generate_complete_deck_apkg_failure():
             words=['test'],
             language='English',
             gemini_api_key='test_key',
-            google_custom_search_engine_id='test_cx',
             output_dir='test_output'
         )
 

@@ -121,7 +121,6 @@ def resolve_data_conflicts(local_data: Dict, cloud_data: Dict) -> Dict:
     # Define conflict resolution rules
     conflict_rules = {
         'google_api_key': 'cloud',  # Cloud wins for API keys
-        'custom_search_engine_id': 'cloud',  # Cloud wins for API keys
         'theme': 'local',  # Local preference for UI settings
         'audio_speed': 'local',  # Local preference for UI settings
     }
@@ -155,7 +154,6 @@ def export_user_data() -> Optional[Dict]:
     try:
         return {
             'google_api_key': st.session_state.get('google_api_key', ''),
-            'custom_search_engine_id': st.session_state.get('custom_search_engine_id', ''),
             'theme': st.session_state.get('theme', 'dark'),
             'audio_speed': st.session_state.get('audio_speed', 0.8),
             'exported_at': datetime.now().isoformat(),

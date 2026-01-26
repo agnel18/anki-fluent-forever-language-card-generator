@@ -11,7 +11,6 @@ from .models import (
     is_deprecated_model,
     API_ENDPOINTS,
     get_gemini_endpoint,
-    get_custom_search_endpoint,
     get_tts_endpoint,
     get_service_config,
 )
@@ -25,7 +24,6 @@ from .api_keys import (
     get_service_description,
     check_api_key_availability,
     get_gemini_api_key,
-    get_custom_search_api_key,
     get_tts_api_key,
 )
 
@@ -48,13 +46,13 @@ __all__ = [
     # Models
     'GEMINI_MODELS', 'get_gemini_model', 'get_gemini_fallback_model',
     'get_available_gemini_models', 'is_deprecated_model',
-    'API_ENDPOINTS', 'get_gemini_endpoint', 'get_custom_search_endpoint', 'get_tts_endpoint',
+    'API_ENDPOINTS', 'get_gemini_endpoint', 'get_tts_endpoint',
     'get_service_config',
 
     # API Keys
     'get_api_key', 'validate_api_key', 'is_fallback_key',
     'get_required_services', 'get_all_services', 'get_service_description',
-    'check_api_key_availability', 'get_gemini_api_key', 'get_custom_search_api_key', 'get_tts_api_key',
+    'check_api_key_availability', 'get_gemini_api_key', 'get_tts_api_key',
 
     # Defaults
     'DECK_GENERATION_DEFAULTS', 'AUDIO_DEFAULTS', 'IMAGE_DEFAULTS',
