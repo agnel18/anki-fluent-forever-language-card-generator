@@ -31,7 +31,7 @@ def handle_auto_sync():
 
 def render_sidebar():
     """Render the main sidebar content."""
-    from page_modules.auth_handler import is_signed_in, sign_out
+    from streamlit_app.page_modules.auth_handler import is_signed_in, sign_out
     
     # Center the logo vertically in the sidebar using HTML/CSS
     # Center the sidebar logo horizontally using HTML

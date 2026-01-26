@@ -335,9 +335,11 @@ def render_sentence_settings_page():
 
             try:
                 from audio_generator import get_google_voices_for_language, GOOGLE_TTS_AVAILABLE, is_google_tts_configured, _get_bcp47_code
-                if not GOOGLE_TTS_AVAILABLE:
-                    st.warning("⚠️ Google Cloud Text-to-Speech SDK not available. Audio generation will be skipped.")
-                    # Provide language-specific fallback voices even without SDK
+                
+                # Check API configuration instead of SDK availability
+                if not is_google_tts_configured():
+                    st.warning("⚠️ Google Cloud Text-to-Speech API key not configured. Audio generation will be skipped.")
+                    # Provide language-specific fallback voices even without API key
                     bcp47_code = _get_bcp47_code(lang)
                     lang_prefix = bcp47_code.split('-')[0] if bcp47_code else "en"
                     fallback_voices = {
@@ -347,53 +349,268 @@ def render_sentence_settings_page():
                         "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
                         "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
                         "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
+                        "ru": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ja": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ko": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "zh": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ar": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "hi": ["A (Female, Standard)", "B (Male, Standard)"]
                     }
-                    voice_options = fallback_voices.get(lang_prefix, ["D (Female, Neural2)"])
-                    voice_display_map = {voice: f"{bcp47_code}-Neural2-{voice.split(' ')[0]}" for voice in voice_options}
+                    voice_options = fallback_voices.get(lang_prefix, ["D (Female, Standard)"])
+                    voice_display_map = {voice: f"{bcp47_code}-Standard-{voice.split(' ')[0]}" for voice in voice_options}
                 elif not is_google_tts_configured():
                     st.warning("⚠️ Google Cloud Text-to-Speech authentication failed. Using fallback voices.")
                     # Provide language-specific fallback voices when auth fails
                     bcp47_code = _get_bcp47_code(lang)
                     lang_prefix = bcp47_code.split('-')[0] if bcp47_code else "en"
                     fallback_voices = {
-                        "en": ["D (Female, Neural2)", "C (Male, Neural2)"],
-                        "es": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "fr": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
-                        "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
+                        "en": ["Emma (Female, Standard)", "Liam (Male, Standard)"],
+                        "es": ["Maria (Female, Standard)", "Carlos (Male, Standard)"],
+                        "fr": ["Sophie (Female, Standard)", "Pierre (Male, Standard)"],
+                        "de": ["Anna (Female, Standard)", "Max (Male, Standard)"],
+                        "it": ["Giulia (Female, Standard)", "Marco (Male, Standard)"],
+                        "pt": ["Ana (Female, Standard)", "João (Male, Standard)"],
+                        "ru": ["Olga (Female, Standard)", "Dmitri (Male, Standard)"],
+                        "ja": ["Yumi (Female, Standard)", "Hiroshi (Male, Standard)"],
+                        "ko": ["Ji-yeon (Female, Standard)", "Min-jun (Male, Standard)"],
+                        "cmn": ["Li (Female, Standard)", "Wang (Male, Standard)"],
+                        "ar": ["Fatima (Female, Standard)", "Ahmed (Male, Standard)"],
+                        "hi": ["Priya (Female, Standard)", "Raj (Male, Standard)"],
+                        "nl": ["Eva (Female, Standard)", "Jan (Male, Standard)"],
+                        "sv": ["Ingrid (Female, Standard)", "Erik (Male, Standard)"],
+                        "da": ["Freja (Female, Standard)", "Magnus (Male, Standard)"],
+                        "no": ["Astrid (Female, Standard)", "Bjørn (Male, Standard)"],
+                        "fi": ["Aino (Female, Standard)", "Eero (Male, Standard)"],
+                        "pl": ["Zofia (Female, Standard)", "Adam (Male, Standard)"],
+                        "cs": ["Marie (Female, Standard)", "Jan (Male, Standard)"],
+                        "sk": ["Lucia (Female, Standard)", "Peter (Male, Standard)"],
+                        "hu": ["Anna (Female, Standard)", "Béla (Male, Standard)"],
+                        "tr": ["Ayşe (Female, Standard)", "Mehmet (Male, Standard)"],
+                        "el": ["Maria (Female, Standard)", "Dimitris (Male, Standard)"],
+                        "he": ["Rachel (Female, Standard)", "David (Male, Standard)"],
+                        "th": ["Siriporn (Female, Standard)", "Somchai (Male, Standard)"],
+                        "vi": ["Lan (Female, Standard)", "Minh (Male, Standard)"],
+                        "id": ["Siti (Female, Standard)", "Ahmad (Male, Standard)"],
+                        "ms": ["Aisyah (Female, Standard)", "Muhammad (Male, Standard)"],
+                        "fil": ["Maria (Female, Standard)", "Juan (Male, Standard)"],
+                        "uk": ["Oksana (Female, Standard)", "Oleksiy (Male, Standard)"],
+                        "bg": ["Maria (Female, Standard)", "Ivan (Male, Standard)"],
+                        "hr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
+                        "sr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
+                        "sl": ["Ana (Female, Standard)", "Janez (Male, Standard)"],
+                        "et": ["Liisi (Female, Standard)", "Jaan (Male, Standard)"],
+                        "lv": ["Līga (Female, Standard)", "Jānis (Male, Standard)"],
+                        "lt": ["Ona (Female, Standard)", "Jonas (Male, Standard)"],
+                        "ro": ["Maria (Female, Standard)", "Ion (Male, Standard)"],
+                        "mt": ["Maria (Female, Standard)", "Joseph (Male, Standard)"],
+                        "is": ["Guðrún (Female, Standard)", "Jón (Male, Standard)"],
+                        "ga": ["Siobhán (Female, Standard)", "Seán (Male, Standard)"],
+                        "cy": ["Megan (Female, Standard)", "Rhys (Male, Standard)"],
+                        "sq": ["Ana (Female, Standard)", "Arben (Male, Standard)"],
+                        "mk": ["Marija (Female, Standard)", "Aleksandar (Male, Standard)"],
+                        "bs": ["Aida (Female, Standard)", "Adnan (Male, Standard)"],
+                        "az": ["Aygün (Female, Standard)", "Rəsul (Male, Standard)"],
+                        "ka": ["Nino (Female, Standard)", "Giorgi (Male, Standard)"],
+                        "hy": ["Ani (Female, Standard)", "Armen (Male, Standard)"],
+                        "mn": ["Sarangerel (Female, Standard)", "Bat-Erdene (Male, Standard)"],
+                        "kk": ["Aigül (Female, Standard)", "Nurlan (Male, Standard)"],
+                        "uz": ["Gulnora (Female, Standard)", "Rustam (Male, Standard)"],
+                        "ky": ["Aida (Female, Standard)", "Asan (Male, Standard)"],
+                        "tg": ["Zuhra (Female, Standard)", "Rustam (Male, Standard)"],
+                        "tk": ["Aýgül (Female, Standard)", "Myrat (Male, Standard)"],
+                        "tt": ["Aygül (Female, Standard)", "Ildar (Male, Standard)"],
+                        "cv": ["Anna (Female, Standard)", "Ivan (Male, Standard)"],
+                        "ba": ["Aygül (Female, Standard)", "Rustem (Male, Standard)"],
+                        "xh": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"],
+                        "zu": ["Nomusa (Female, Standard)", "Sipho (Male, Standard)"],
+                        "af": ["Anna (Female, Standard)", "Jan (Male, Standard)"],
+                        "st": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "tn": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "ts": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "ss": ["Nomvula (Female, Standard)", "Sibusiso (Male, Standard)"],
+                        "ve": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "nr": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"],
+                        "sw": ["Asha (Female, Standard)", "Jafari (Male, Standard)"],
+                        "am": ["Meseret (Female, Standard)", "Dawit (Male, Standard)"],
+                        "ti": ["Senait (Female, Standard)", "Habtom (Male, Standard)"],
+                        "om": ["Amina (Female, Standard)", "Ahmed (Male, Standard)"],
+                        "so": ["Amina (Female, Standard)", "Ahmed (Male, Standard)"],
+                        "rw": ["Jeanne (Female, Standard)", "Jean (Male, Standard)"],
+                        "lg": ["Nakato (Female, Standard)", "Kato (Male, Standard)"],
+                        "ny": ["Grace (Female, Standard)", "John (Male, Standard)"],
+                        "sn": ["Rumbidzai (Female, Standard)", "Tafadzwa (Male, Standard)"],
+                        "st": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "tn": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "ts": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "ss": ["Nomvula (Female, Standard)", "Sibusiso (Male, Standard)"],
+                        "ve": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
+                        "nr": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"]
                     }
-                    voice_options = fallback_voices.get(lang_prefix, ["D (Female, Neural2)"])
-                    voice_display_map = {voice: f"{bcp47_code}-Neural2-{voice.split(' ')[0]}" for voice in voice_options}
-                else:
-                    voice_options = get_google_voices_for_language(lang)
-                    
-                    # Ensure we have at least one voice option
-                    if not voice_options:
-                        logger.warning(f"No voices available for {lang}, using fallback")
-                        voice_options = ["D (Female, Neural2)"]
-                    
-                    # Create a mapping from display names to actual voice names
+                    # Map descriptive names to voice IDs
+                    voice_name_to_id = {
+                        # English
+                        "Emma (Female, Standard)": "D", "Liam (Male, Standard)": "C",
+                        # Spanish
+                        "Maria (Female, Standard)": "A", "Carlos (Male, Standard)": "B",
+                        # French
+                        "Sophie (Female, Standard)": "A", "Pierre (Male, Standard)": "B",
+                        # German
+                        "Anna (Female, Standard)": "A", "Max (Male, Standard)": "B",
+                        # Italian
+                        "Giulia (Female, Standard)": "A", "Marco (Male, Standard)": "B",
+                        # Portuguese
+                        "Ana (Female, Standard)": "A", "João (Male, Standard)": "B",
+                        # Russian
+                        "Olga (Female, Standard)": "A", "Dmitri (Male, Standard)": "B",
+                        # Japanese
+                        "Yumi (Female, Standard)": "A", "Hiroshi (Male, Standard)": "B",
+                        # Korean
+                        "Ji-yeon (Female, Standard)": "A", "Min-jun (Male, Standard)": "B",
+                        # Chinese
+                        "Li (Female, Standard)": "C", "Wang (Male, Standard)": "B",
+                        # Arabic
+                        "Fatima (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
+                        # Hindi
+                        "Priya (Female, Standard)": "A", "Raj (Male, Standard)": "B",
+                        # Dutch
+                        "Eva (Female, Standard)": "A", "Jan (Male, Standard)": "B",
+                        # Swedish
+                        "Ingrid (Female, Standard)": "A", "Erik (Male, Standard)": "B",
+                        # Danish
+                        "Freja (Female, Standard)": "A", "Magnus (Male, Standard)": "B",
+                        # Norwegian
+                        "Astrid (Female, Standard)": "A", "Bjørn (Male, Standard)": "B",
+                        # Finnish
+                        "Aino (Female, Standard)": "A", "Eero (Male, Standard)": "B",
+                        # Polish
+                        "Zofia (Female, Standard)": "A", "Adam (Male, Standard)": "B",
+                        # Czech
+                        "Marie (Female, Standard)": "A", "Jan (Male, Standard)": "B",
+                        # Slovak
+                        "Lucia (Female, Standard)": "A", "Peter (Male, Standard)": "B",
+                        # Hungarian
+                        "Anna (Female, Standard)": "A", "Béla (Male, Standard)": "B",
+                        # Turkish
+                        "Ayşe (Female, Standard)": "A", "Mehmet (Male, Standard)": "B",
+                        # Greek
+                        "Maria (Female, Standard)": "A", "Dimitris (Male, Standard)": "B",
+                        # Hebrew
+                        "Rachel (Female, Standard)": "A", "David (Male, Standard)": "B",
+                        # Thai
+                        "Siriporn (Female, Standard)": "A", "Somchai (Male, Standard)": "B",
+                        # Vietnamese
+                        "Lan (Female, Standard)": "A", "Minh (Male, Standard)": "B",
+                        # Indonesian
+                        "Siti (Female, Standard)": "A", "Ahmad (Male, Standard)": "B",
+                        # Malay
+                        "Aisyah (Female, Standard)": "A", "Muhammad (Male, Standard)": "B",
+                        # Filipino
+                        "Maria (Female, Standard)": "A", "Juan (Male, Standard)": "B",
+                        # Ukrainian
+                        "Oksana (Female, Standard)": "A", "Oleksiy (Male, Standard)": "B",
+                        # Bulgarian
+                        "Maria (Female, Standard)": "A", "Ivan (Male, Standard)": "B",
+                        # Croatian
+                        "Ana (Female, Standard)": "A", "Marko (Male, Standard)": "B",
+                        # Serbian
+                        "Ana (Female, Standard)": "A", "Marko (Male, Standard)": "B",
+                        # Slovenian
+                        "Ana (Female, Standard)": "A", "Janez (Male, Standard)": "B",
+                        # Estonian
+                        "Liisi (Female, Standard)": "A", "Jaan (Male, Standard)": "B",
+                        # Latvian
+                        "Līga (Female, Standard)": "A", "Jānis (Male, Standard)": "B",
+                        # Lithuanian
+                        "Ona (Female, Standard)": "A", "Jonas (Male, Standard)": "B",
+                        # Romanian
+                        "Maria (Female, Standard)": "A", "Ion (Male, Standard)": "B",
+                        # Maltese
+                        "Maria (Female, Standard)": "A", "Joseph (Male, Standard)": "B",
+                        # Icelandic
+                        "Guðrún (Female, Standard)": "A", "Jón (Male, Standard)": "B",
+                        # Irish
+                        "Siobhán (Female, Standard)": "A", "Seán (Male, Standard)": "B",
+                        # Welsh
+                        "Megan (Female, Standard)": "A", "Rhys (Male, Standard)": "B",
+                        # Albanian
+                        "Ana (Female, Standard)": "A", "Arben (Male, Standard)": "B",
+                        # Macedonian
+                        "Marija (Female, Standard)": "A", "Aleksandar (Male, Standard)": "B",
+                        # Bosnian
+                        "Aida (Female, Standard)": "A", "Adnan (Male, Standard)": "B",
+                        # Azerbaijani
+                        "Aygün (Female, Standard)": "A", "Rəsul (Male, Standard)": "B",
+                        # Georgian
+                        "Nino (Female, Standard)": "A", "Giorgi (Male, Standard)": "B",
+                        # Armenian
+                        "Ani (Female, Standard)": "A", "Armen (Male, Standard)": "B",
+                        # Mongolian
+                        "Sarangerel (Female, Standard)": "A", "Bat-Erdene (Male, Standard)": "B",
+                        # Kazakh
+                        "Aigül (Female, Standard)": "A", "Nurlan (Male, Standard)": "B",
+                        # Uzbek
+                        "Gulnora (Female, Standard)": "A", "Rustam (Male, Standard)": "B",
+                        # Kyrgyz
+                        "Aida (Female, Standard)": "A", "Asan (Male, Standard)": "B",
+                        # Tajik
+                        "Zuhra (Female, Standard)": "A", "Rustam (Male, Standard)": "B",
+                        # Turkmen
+                        "Aýgül (Female, Standard)": "A", "Myrat (Male, Standard)": "B",
+                        # Tatar
+                        "Aygül (Female, Standard)": "A", "Ildar (Male, Standard)": "B",
+                        # Chuvash
+                        "Anna (Female, Standard)": "A", "Ivan (Male, Standard)": "B",
+                        # Bashkir
+                        "Aygül (Female, Standard)": "A", "Rustem (Male, Standard)": "B",
+                        # Xhosa
+                        "Nomhle (Female, Standard)": "A", "Siyabonga (Male, Standard)": "B",
+                        # Zulu
+                        "Nomusa (Female, Standard)": "A", "Sipho (Male, Standard)": "B",
+                        # Afrikaans
+                        "Anna (Female, Standard)": "A", "Jan (Male, Standard)": "B",
+                        # Sesotho
+                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
+                        # Setswana
+                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
+                        # Xitsonga
+                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
+                        # Siswati
+                        "Nomvula (Female, Standard)": "A", "Sibusiso (Male, Standard)": "B",
+                        # Venda
+                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
+                        # Ndebele
+                        "Nomhle (Female, Standard)": "A", "Siyabonga (Male, Standard)": "B",
+                        # Swahili
+                        "Asha (Female, Standard)": "A", "Jafari (Male, Standard)": "B",
+                        # Amharic
+                        "Meseret (Female, Standard)": "A", "Dawit (Male, Standard)": "B",
+                        # Tigrinya
+                        "Senait (Female, Standard)": "A", "Habtom (Male, Standard)": "B",
+                        # Oromo
+                        "Amina (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
+                        # Somali
+                        "Amina (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
+                        # Kinyarwanda
+                        "Jeanne (Female, Standard)": "A", "Jean (Male, Standard)": "B",
+                        # Luganda
+                        "Nakato (Female, Standard)": "A", "Kato (Male, Standard)": "B",
+                        # Chichewa
+                        "Grace (Female, Standard)": "A", "John (Male, Standard)": "B",
+                        # Shona
+                        "Rumbidzai (Female, Standard)": "A", "Tafadzwa (Male, Standard)": "B"
+                    }
+                    voice_options = list(voice_name_to_id.keys())
                     voice_display_map = {}
                     for display_name in voice_options:
-                        # Extract voice identifier (e.g., "D" from "D (Female, Neural2)")
-                        voice_id = display_name.split(' ')[0]
-                        # Construct full voice name (this is a simplified mapping)
+                        voice_id = voice_name_to_id[display_name]
                         bcp47_code = _get_bcp47_code(lang)
-                        voice_name = f"{bcp47_code}-Neural2-{voice_id}"
+                        if bcp47_code.startswith('zh'):
+                            voice_name = f"cmn-CN-Standard-{voice_id}"
+                        else:
+                            voice_name = f"{bcp47_code}-Standard-{voice_id}"
                         voice_display_map[display_name] = voice_name
+                else:
+                    voice_options, is_fallback, voice_display_map = get_google_voices_for_language(lang)
 
                 # Get current selection or default to first option
                 current_display = getattr(st.session_state, 'selected_voice_display', voice_options[0])
@@ -411,12 +628,12 @@ def render_sentence_settings_page():
 
                 # Store both display name and actual voice name
                 st.session_state.selected_voice_display = selected_voice_display
-                st.session_state.selected_voice = voice_display_map.get(selected_voice_display, "en-US-Neural2-D")
+                st.session_state.selected_voice = voice_display_map.get(selected_voice_display, "en-US-Standard-D")
 
             except ImportError as e:
                 st.error(f"Google TTS not configured. Please set up Google API key in API Setup. Error: {e}")
-                st.session_state.selected_voice = "en-US-Neural2-D"
-                st.session_state.selected_voice_display = "D (Female, Neural2)"
+                st.session_state.selected_voice = "en-US-Standard-D"
+                st.session_state.selected_voice_display = "D (Female, Standard)"
         with col_speed:
             st.markdown("**Audio Speed**")
             audio_speed = st.slider(
@@ -429,6 +646,101 @@ def render_sentence_settings_page():
                 label_visibility="collapsed"
             )
             st.session_state.audio_speed = audio_speed
+
+    # Voice Cost Comparison Table - Full Width Below Audio Settings
+    with st.container():
+        st.markdown("---")
+        st.markdown("### 💰 Voice Cost Comparison")
+        st.markdown("*Understand the cost and quality trade-offs for different voice types*")
+
+        # Voice data for expandable cards
+        voice_data = [
+            {
+                "name": "Standard",
+                "cost": "$0.000016",
+                "quality": "Good",
+                "best_for": "Default choice, cost-effective",
+                "recommendation": "✅ DEFAULT FOR ALL LANGUAGES - Balanced quality & cost",
+                "is_default": True
+            },
+            {
+                "name": "Chirp3",
+                "cost": "$0.000004",
+                "quality": "Good",
+                "best_for": "Budget-conscious users",
+                "recommendation": "Good alternative - lowest cost",
+                "is_default": False
+            },
+            {
+                "name": "Chirp3 HD",
+                "cost": "$0.00002",
+                "quality": "Higher",
+                "best_for": "Premium audio, professional content",
+                "recommendation": "Optional - 25% quality improvement at 5x cost",
+                "is_default": False
+            },
+            {
+                "name": "Wavenet",
+                "cost": "$0.000032",
+                "quality": "High",
+                "best_for": "Natural speech, accessibility",
+                "recommendation": "Premium option - 2x cost of Standard",
+                "is_default": False
+            },
+            {
+                "name": "Neural2",
+                "cost": "$0.000024",
+                "quality": "Very High",
+                "best_for": "Most natural, immersive learning",
+                "recommendation": "Luxury option - highest quality",
+                "is_default": False
+            }
+        ]
+
+        # Voice Cost Comparison Table - Full Width
+
+
+        # Voice data for comparison table
+        voice_comparison_data = {
+            "Voice Type": ["Standard", "Chirp3", "Chirp3 HD", "Wavenet", "Neural2"],
+            "Cost per Character": ["$0.000016", "$0.000004", "$0.00002", "$0.000032", "$0.000024"],
+            "Quality Level": ["Good", "Good", "Higher", "High", "Very High"],
+            "Best For": ["Default choice, cost-effective", "Budget-conscious users", "Premium audio, professional", "Natural speech, accessibility", "Most natural, immersive learning"],
+            "Recommendation": ["✅ DEFAULT FOR ALL LANGUAGES", "Good alternative - lowest cost", "Optional - 25% quality improvement", "Premium option - 2x cost", "Luxury option - highest quality"]
+        }
+
+        # Always show comparison table
+        st.markdown("**Voice Comparison Table:**")
+
+        # Create the comparison table
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.markdown("**Voice Type**")
+            for voice in voice_comparison_data["Voice Type"]:
+                if voice == "Standard":
+                    st.markdown(f"🔹 **{voice}**")
+                else:
+                    st.markdown(f"🔸 {voice}")
+
+        with col2:
+            st.markdown("**Cost/Char**")
+            for cost in voice_comparison_data["Cost per Character"]:
+                st.markdown(f"`{cost}`")
+
+        with col3:
+            st.markdown("**Quality**")
+            for quality in voice_comparison_data["Quality Level"]:
+                st.markdown(f"⭐ {quality}")
+
+        with col4:
+            st.markdown("**Best For**")
+            for use_case in voice_comparison_data["Best For"]:
+                st.markdown(f"🎯 {use_case}")
+
+        with col5:
+            st.markdown("**Recommendation**")
+            for rec in voice_comparison_data["Recommendation"]:
+                st.markdown(rec)
 
     with st.container():
         st.markdown("---")

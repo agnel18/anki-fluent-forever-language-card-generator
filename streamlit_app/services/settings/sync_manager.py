@@ -25,7 +25,7 @@ class SyncManager:
             True if sync successful, False otherwise
         """
         try:
-            from ..firebase import save_settings_to_firebase, save_usage_stats_to_firebase, sync_progress_to_firebase
+            from streamlit_app.services.firebase import save_settings_to_firebase, save_usage_stats_to_firebase, sync_progress_to_firebase
 
             session_id = st.session_state.get("session_id", "")
             if not session_id:
@@ -172,7 +172,7 @@ class SyncManager:
             True if Firebase is initialized, False otherwise
         """
         try:
-            from ..firebase import is_firebase_initialized
+            from streamlit_app.services.firebase import is_firebase_initialized
             return is_firebase_initialized()
         except:
             return False
@@ -185,7 +185,7 @@ class SyncManager:
             True if user is signed in, False otherwise
         """
         try:
-            from ..firebase import is_signed_in
+            from streamlit_app.services.firebase import is_signed_in
             return is_signed_in()
         except:
             return False

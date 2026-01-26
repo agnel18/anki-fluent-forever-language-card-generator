@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 
 # Import centralized configuration
-from config import get_gemini_model, get_gemini_fallback_model
+from ..shared_utils import get_gemini_model, get_gemini_fallback_model
 
 logger = logging.getLogger(__name__)
 

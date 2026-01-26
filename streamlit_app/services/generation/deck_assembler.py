@@ -8,11 +8,19 @@ Extracted from sentence_generator.py for better separation of concerns.
 import logging
 from typing import Dict, Any, List, Optional
 
-from services.generation.content_generator import get_content_generator
-from services.generation.grammar_processor import get_grammar_processor
-from services.generation.media_processor import get_media_processor
+from .content_generator import get_content_generator
+from .grammar_processor import get_grammar_processor
+from .media_processor import get_media_processor
 
 logger = logging.getLogger(__name__)
+
+# Import preferences manager for per-language settings
+try:
+    from services.settings.preferences_manager import PreferencesManager
+    _prefs_manager = PreferencesManager()
+except ImportError:
+    _prefs_manager = None
+    logger.warning("PreferencesManager not available, using default settings")
 
 
 class DeckAssembler:

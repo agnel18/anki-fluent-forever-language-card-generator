@@ -8,6 +8,7 @@ Extracted from sentence_generator.py for better separation of concerns.
 import logging
 from typing import Optional, List, Dict, Any
 from pathlib import Path
+import streamlit as st
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +154,9 @@ class MediaProcessor:
 
         return image_files
 
-    def generate_image(self, keywords: str, language: str, index: int = 0, batch_name: str = "batch", unique_id: str = None) -> str:
+    def generate_image(self, keywords: str, language: str, index: int = 0, batch_name: str = "batch", unique_id: str = None, image_quality: str = "free") -> str:
         """
-        Generate image for keywords.
+        Generate image for keywords using Pixabay API.
 
         Args:
             keywords: Comma-separated keywords
@@ -163,40 +164,44 @@ class MediaProcessor:
             index: Index for file naming
             batch_name: Prefix for filenames
             unique_id: Unique identifier for filename uniqueness
+            image_quality: Ignored (always uses Pixabay)
 
         Returns:
             Image file path
         """
         try:
-            from image_generator import generate_images_google
-            import streamlit as st
-
-            # Get API keys from session state
-            google_api_key = getattr(st.session_state, 'google_api_key', None)
-            custom_search_engine_id = getattr(st.session_state, 'custom_search_engine_id', None)
-
-            if not google_api_key or not custom_search_engine_id:
-                logger.warning("Google API keys not available for image generation")
+            # Get Pixabay API key (required)
+            pixabay_api_key = getattr(st.session_state, 'pixabay_api_key', None)
+            if not pixabay_api_key:
+                logger.error("Pixabay API key is required for image generation")
                 return ""
 
-            # Generate image using Google Custom Search
-            image_files, _ = generate_images_google(
+            logger.info(f"Generating Pixabay image for keywords: {keywords}")
+
+            from image_generator import generate_images_pixabay
+
+            image_files, _ = generate_images_pixabay(
                 queries=[keywords],
                 output_dir=self.image_output_dir,
                 batch_name=batch_name,
                 num_images=1,
-                google_api_key=google_api_key,
-                custom_search_engine_id=custom_search_engine_id,
+                pixabay_api_key=pixabay_api_key,
                 unique_id=unique_id,
             )
 
-            return image_files[0] if image_files else ""
+            if image_files and image_files[0]:
+                logger.info(f"Successfully generated image: {image_files[0]}")
+                return image_files[0]
+            else:
+                logger.error(f"No images generated for keywords: {keywords}")
+                return ""
 
-        except ImportError:
-            logger.warning("Image generator not available")
+        except Exception as e:
+            logger.error(f"Image generation failed for keywords '{keywords}': {e}")
+            return ""
             return ""
         except Exception as e:
-            logger.error(f"Error generating image: {e}")
+            logger.error(f"Error in hybrid image generation: {e}")
             return ""
 
     def process_media_for_sentences(

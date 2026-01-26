@@ -6,9 +6,7 @@ import time
 from typing import Optional, Dict, Any
 import google.generativeai as genai
 
-from streamlit_app.error_recovery import retry_with_exponential_backoff
-# Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model
 
 logger = logging.getLogger(__name__)
 

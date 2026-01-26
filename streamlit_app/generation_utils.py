@@ -9,14 +9,14 @@ from typing import List, Dict
 import google.generativeai as genai
 
 # Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model
 
 # Import language registry for consistent language handling
 try:
-    from language_registry import get_language_registry
+    from streamlit_app.language_registry import get_language_registry
 except ImportError:
     # Fallback for testing environments
-    from .language_registry import get_language_registry
+    from streamlit_app.language_registry import get_language_registry
 
 logger = logging.getLogger(__name__)
 

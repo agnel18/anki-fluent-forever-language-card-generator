@@ -55,6 +55,125 @@ def render_statistics_page():
     st.caption("🖼️ Image searches on Google Custom Search for word illustrations")
     st.markdown("---")
 
+    # Enhanced Cost Calculator Section
+    st.markdown("#### 💰 Cost Calculator & Usage Costs")
+    st.markdown("*Track your actual API costs and estimate future expenses*")
+
+    # Actual costs section
+    st.markdown("**📊 Your Actual Costs This Session:**")
+    col_actual1, col_actual2 = st.columns(2)
+
+    with col_actual1:
+        # Calculate actual costs based on usage
+        gemini_cost = gemini_tokens * 0.0000001  # $0.10 per 1M tokens
+        search_cost = google_search_calls * 0.005  # $5 per 1000 searches
+        tts_cost = audio_generated * 0.0024  # Rough estimate for Standard voice
+
+        st.metric("Gemini API Cost", f"${gemini_cost:.4f}")
+        st.metric("Image Search Cost", f"${search_cost:.4f}")
+        st.caption("🤖 Text generation & translation")
+
+    with col_actual2:
+        st.metric("TTS Audio Cost", f"${tts_cost:.4f}")
+        total_actual = gemini_cost + search_cost + tts_cost
+        st.metric("**Total Cost**", f"${total_actual:.4f}", delta=f"{fmt_num(cards_generated)} cards generated")
+        st.caption("🔊 Audio generation (Standard voice)")
+
+    # Free tier impact
+    free_tier_remaining = max(0, 1000 - gemini_tokens)  # Assuming 1000 free tokens
+    if free_tier_remaining > 0:
+        st.info(f"💡 **Free Tier Remaining:** {fmt_num(free_tier_remaining)} Gemini tokens left in free tier")
+    else:
+        st.warning("⚠️ **Free Tier Exceeded:** You're now paying for Gemini API usage")
+
+    st.markdown("---")
+
+    # Enhanced cost estimator
+    st.markdown("**🧮 Cost Estimator - Plan Your Next Deck:**")
+    col_est1, col_est2 = st.columns(2)
+
+    with col_est1:
+        est_sentences = st.number_input(
+            "Sentences per card:",
+            min_value=1,
+            max_value=20,
+            value=10,
+            help="How many sentences will be generated per word"
+        )
+
+        est_cards = st.number_input(
+            "Cards to generate:",
+            min_value=1,
+            max_value=1000,
+            value=50,
+            help="How many Anki cards you plan to generate"
+        )
+
+        voice_options = {
+            "Standard (Default)": 0.000016,
+            "Chirp3 (Budget)": 0.000004,
+            "Chirp3 HD": 0.00002,
+            "Wavenet": 0.000032,
+            "Neural2": 0.000024
+        }
+
+        selected_voice = st.selectbox(
+            "Voice Type:",
+            list(voice_options.keys()),
+            index=0,
+            help="Choose voice type for cost estimation"
+        )
+
+    with col_est2:
+        # Calculate estimated costs
+        total_chars = est_sentences * est_cards * 80  # Rough estimate: 80 chars per sentence
+        voice_cost_per_char = voice_options[selected_voice]
+        est_tts_cost = total_chars * voice_cost_per_char
+
+        # Estimate Gemini usage (rough calculation)
+        est_gemini_tokens = est_cards * 1500  # Rough estimate: 1500 tokens per card
+        est_gemini_cost = est_gemini_tokens * 0.0000001
+
+        # Estimate image searches (1-2 per card)
+        est_search_calls = est_cards * 1.5
+        est_search_cost = est_search_calls * 0.005
+
+        total_estimated = est_gemini_cost + est_search_cost + est_tts_cost
+
+        st.markdown("**Estimated Costs:**")
+        st.info(f"""
+        **Gemini API:** ${est_gemini_cost:.4f} ({fmt_num(est_gemini_tokens)} tokens)  
+        **Image Search:** ${est_search_cost:.4f} ({fmt_num(int(est_search_calls))} calls)  
+        **TTS Audio ({selected_voice}):** ${est_tts_cost:.4f}  
+        **Total Estimated:** ${total_estimated:.4f}
+        """)
+
+        # Cost per card
+        cost_per_card = total_estimated / est_cards if est_cards > 0 else 0
+        st.metric("Cost per Card", f"${cost_per_card:.4f}")
+
+    # Cost optimization tips
+    with st.expander("💡 Cost Optimization Tips", expanded=False):
+        st.markdown("""
+        **🎯 Cost-Saving Strategies:**
+        - **Voice Selection:** Standard voice offers best quality/cost ratio
+        - **Batch Processing:** Generate larger decks less frequently
+        - **Free Tier:** Stay under 1000 Gemini tokens for free usage
+        - **Image Reuse:** App caches images to avoid repeated downloads
+
+        **📈 Scaling Costs:**
+        - 50 cards: ~$0.15-0.30 (depending on voice)
+        - 100 cards: ~$0.30-0.60
+        - 500 cards: ~$1.50-3.00
+
+        **⚠️ Hidden Costs:**
+        - Premium voices can 2-3x cost of Standard
+        - Complex sentences use more Gemini tokens
+        - High-quality images may cost more in search API
+        """)
+
+    st.markdown("---")
+
     st.markdown("#### Generation & Export Stats")
     st.markdown("*Your deck creation and content generation activity*")
     st.metric("Decks Exported", decks_exported)

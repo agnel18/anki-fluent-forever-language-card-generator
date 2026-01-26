@@ -7,6 +7,14 @@ import logging
 import io
 import atexit
 import os
+import sys
+
+# Add the workspace root to sys.path to enable absolute imports from streamlit_app
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -190,21 +198,21 @@ def main():
         """, unsafe_allow_html=True)
         
         # Import all page rendering functions and format_number_compact utility
-        from page_modules.main import render_main_page
-        from page_modules.api_setup import render_api_setup_page
-        from page_modules.language_select import render_language_select_page
-        from page_modules.word_select import render_word_select_page
-        from page_modules.sentence_settings import render_sentence_settings_page
-        from page_modules.generate import render_generate_page
-        from page_modules.generating import render_generating_page
-        from page_modules.complete import render_complete_page
-        from page_modules.settings import render_settings_page
-        from page_modules.statistics import render_statistics_page
-        from page_modules.privacy_policy import render_privacy_policy_page
-        from page_modules.terms_conditions import render_terms_conditions_page
-        from page_modules.refund_policy import render_refund_policy_page
-        from page_modules.shipping_delivery import render_shipping_delivery_page
-        from page_modules.contact_us import render_contact_us_page
+        from streamlit_app.page_modules.main import render_main_page
+        from streamlit_app.page_modules.api_setup import render_api_setup_page
+        from streamlit_app.page_modules.language_select import render_language_select_page
+        from streamlit_app.page_modules.word_select import render_word_select_page
+        from streamlit_app.page_modules.sentence_settings import render_sentence_settings_page
+        from streamlit_app.page_modules.generate import render_generate_page
+        from streamlit_app.page_modules.generating import render_generating_page
+        from streamlit_app.page_modules.complete import render_complete_page
+        from streamlit_app.page_modules.settings import render_settings_page
+        from streamlit_app.page_modules.statistics import render_statistics_page
+        from streamlit_app.page_modules.privacy_policy import render_privacy_policy_page
+        from streamlit_app.page_modules.terms_conditions import render_terms_conditions_page
+        from streamlit_app.page_modules.refund_policy import render_refund_policy_page
+        from streamlit_app.page_modules.shipping_delivery import render_shipping_delivery_page
+        from streamlit_app.page_modules.contact_us import render_contact_us_page
 
         # Handle auto sync
         handle_auto_sync()

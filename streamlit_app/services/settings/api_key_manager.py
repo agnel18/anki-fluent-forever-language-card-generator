@@ -8,7 +8,7 @@ from typing import Dict, Optional, Tuple
 from utils import persist_api_keys
 
 # Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model
 
 
 class APIKeyManager:
@@ -51,7 +51,7 @@ class APIKeyManager:
             True if save successful, False otherwise
         """
         try:
-            from ..firebase import is_firebase_initialized, save_settings_to_firebase
+            from streamlit_app.services.firebase import is_firebase_initialized, save_settings_to_firebase
 
             if not is_firebase_initialized():
                 st.error("❌ Firebase unavailable")
@@ -94,7 +94,7 @@ class APIKeyManager:
             True if load successful, False otherwise
         """
         try:
-            from ..firebase import is_firebase_initialized, load_settings_from_firebase
+            from streamlit_app.services.firebase import is_firebase_initialized, load_settings_from_firebase
 
             if not is_firebase_initialized():
                 st.error("❌ Firebase unavailable")

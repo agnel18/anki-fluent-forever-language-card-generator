@@ -11,8 +11,8 @@ DEFAULT_SENTENCES_PER_WORD = 4
 DEFAULT_AUDIO_SPEED = 0.8
 DEFAULT_SELECTION_MODE = "range"  # range, manual, search
 DEFAULT_DIFFICULTY = "intermediate"  # beginner, intermediate, advanced
-DEFAULT_VOICE_DISPLAY = "en-US-AvaNeural (Female, Ava)"
-DEFAULT_VOICE = "en-US-AvaNeural"
+DEFAULT_VOICE_DISPLAY = "en-US-Standard-D"
+DEFAULT_VOICE = "en-US-Standard-D"
 DEFAULT_ENABLE_TOPICS = False  # Whether to enable topic selection by default
 DEFAULT_SELECTED_TOPICS = []  # Default selected topics
 

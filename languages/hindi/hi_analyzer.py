@@ -53,7 +53,7 @@ from .domain.hi_response_parser import HiResponseParser
 from .domain.hi_validator import HiValidator
 
 # Import centralized configuration
-from config import get_gemini_model, get_gemini_fallback_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model
 
 logger = logging.getLogger(__name__)
 

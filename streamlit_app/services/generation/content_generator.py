@@ -12,11 +12,9 @@ from typing import Optional, List, Dict, Any, Tuple, Union
 import google.generativeai as genai
 
 # Import centralized configuration
-from config import get_gemini_model, get_gemini_fallback_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback
 
-from streamlit_app.cache_manager import cached_api_call
-from streamlit_app.error_recovery import retry_with_exponential_backoff, with_fallback
-from streamlit_app.services.sentence_generation import LANGUAGE_NAME_TO_CODE
+from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE
 from streamlit_app.generation_utils import validate_ipa_output
 
 logger = logging.getLogger(__name__)

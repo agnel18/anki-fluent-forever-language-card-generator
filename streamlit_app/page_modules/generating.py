@@ -7,12 +7,16 @@ import tempfile
 import datetime
 import time
 import re
+import logging
 from utils import get_secret, log_message
 from core_functions import generate_complete_deck
-from services.generation.log_manager import LogManager
-from services.generation.progress_tracker import ProgressTracker
-from services.generation.session_validator import SessionValidator
-from services.generation.file_manager import FileManager
+from streamlit_app.services.generation.log_manager import LogManager
+from streamlit_app.services.generation.progress_tracker import ProgressTracker
+from streamlit_app.services.generation.session_validator import SessionValidator
+from streamlit_app.services.generation.file_manager import FileManager
+
+
+logger = logging.getLogger(__name__)
 
 
 def render_generating_page():

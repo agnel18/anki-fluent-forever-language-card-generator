@@ -8,7 +8,7 @@ from pathlib import Path
 from utils import persist_api_keys
 
 # Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model
 
 
 def render_settings_page():
@@ -514,6 +514,98 @@ def render_settings_page():
                         st.info("💡 Check your API key and internet connection.")
 
     st.markdown("---")
+
+    # === PIXABAY API SECTION ===
+    st.markdown("### 🌐 Pixabay API (Free Image Generation)")
+    with st.expander("📖 Setup Instructions", expanded=not bool(st.session_state.get("pixabay_api_key", ""))):
+        st.markdown("""
+        **Follow these steps to get your free Pixabay API key:**
+
+        1. **Go to** [Pixabay API Documentation](https://pixabay.com/api/docs/)
+        2. **Click "Get Started for Free"** or visit [pixabay.com/api/](https://pixabay.com/api/)
+        3. **Sign up** for a free account (email verification required)
+        4. **Once signed in**, visit [https://pixabay.com/api/docs/](https://pixabay.com/api/docs/)
+        5. **Find your API key** in the "Parameters" section on that page
+        6. **Copy and paste** the key into the field below
+
+        **Free Plan:** 5,000 images/month, then $0.001 per additional image.
+        """)
+
+    # Pixabay API Key Input
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+    pixabay_key_input = st.text_input(
+        "Pixabay API Key",
+        value=pixabay_key,
+        type="password",
+        help="Paste your free Pixabay API key here",
+        key="pixabay_key_input"
+    )
+
+    col_save, col_test = st.columns([1, 1])
+    with col_save:
+        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
+            if pixabay_key_input:
+                # Save to session state
+                st.session_state.pixabay_api_key = pixabay_key_input
+
+                # Save to .env file
+                env_path = Path(__file__).parent.parent / ".env"
+                try:
+                    env_content = ""
+                    if env_path.exists():
+                        env_content = env_path.read_text()
+
+                    lines = env_content.split('\n')
+                    key_found = False
+                    for i, line in enumerate(lines):
+                        if line.startswith('PIXABAY_API_KEY='):
+                            lines[i] = f'PIXABAY_API_KEY={pixabay_key_input}'
+                            key_found = True
+                            break
+
+                    if not key_found:
+                        lines.append(f'PIXABAY_API_KEY={pixabay_key_input}')
+
+                    env_path.write_text('\n'.join(lines))
+                    st.success("✅ Pixabay API key saved successfully!")
+                    st.info("🔄 Refresh the page to apply changes.")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to save to .env file: {e}")
+                    st.info("💡 The key is set for this session.")
+            else:
+                st.error("❌ Please enter a valid Pixabay API key")
+
+    with col_test:
+        if pixabay_key_input or pixabay_key:
+            test_key = pixabay_key_input or pixabay_key
+            if st.button("🧪 Test Pixabay Connection", help="Test your Pixabay API key"):
+                with st.spinner("Testing Pixabay API connection..."):
+                    try:
+                        import requests
+                        response = requests.get(
+                            "https://pixabay.com/api/",
+                            params={
+                                "key": test_key,
+                                "q": "test",
+                                "per_page": 3
+                            }
+                        )
+                        if response.status_code == 200:
+                            data = response.json()
+                            if "hits" in data and len(data["hits"]) > 0:
+                                st.success("✅ Pixabay API connection successful!")
+                                st.info("🎉 You can now generate free images with Pixabay!")
+                            else:
+                                st.error("❌ Pixabay API returned no results")
+                        else:
+                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                    except Exception as e:
+                        st.error(f"❌ Pixabay API test failed: {str(e)}")
+                        st.info("💡 Check your API key and internet connection.")
+
+    st.markdown("---")
     st.markdown("## 🎨 Theme")
     st.info("Choose your preferred theme for the application interface.")
 
@@ -806,6 +898,17 @@ def render_settings_page():
                             if st.button("🗑️", key=f"perlang_remove_custom_{selected_lang}_{i}", help=f"Remove {topic}"):
                                 prefs_manager.remove_custom_topic(topic, selected_lang)
                                 st.rerun()
+
+        st.markdown("---")
+
+        # --- Image Settings ---
+        with st.container():
+            st.markdown("## 🖼️ Image Settings")
+            st.markdown("*Image generation uses Pixabay API for high-quality, free images*")
+
+            st.info("🖼️ **Image Generation**: Uses Pixabay API with 5,000 free images per month. Requires Pixabay API key (set in API Setup).")
+
+        st.markdown("---")
 
         if st.button("Save Settings", key="perlang_save_btn", type="primary"):
             prefs_manager.save_per_language_settings(selected_lang, settings)

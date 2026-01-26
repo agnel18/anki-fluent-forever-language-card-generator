@@ -3,11 +3,11 @@
 import streamlit as st
 import json
 from pathlib import Path
-from streamlit_app.utils import get_secret
-from streamlit_app.constants import PAGE_LANGUAGE_SELECT
+from utils import get_secret
+from constants import PAGE_LANGUAGE_SELECT
 
 # Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model
 
 
 def render_api_setup_page():
@@ -17,7 +17,7 @@ def render_api_setup_page():
 
     # Check if we have real API keys (not fallback keys)
     google_key = st.session_state.get("google_api_key", "")
-    custom_search_id = st.session_state.get("custom_search_engine_id", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     # Also check TTS configuration
     tts_configured = False
@@ -30,7 +30,7 @@ def render_api_setup_page():
     has_real_api_keys = (
         google_key and
         not google_key.startswith("sk-fallback") and
-        custom_search_id and
+        pixabay_key and
         tts_configured
     )
 
@@ -98,11 +98,17 @@ def render_api_setup_page():
 
     # Status overview
     google_key = st.session_state.get("google_api_key", "")
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     if google_key:
         st.success("✅ **Google Cloud API** - Set")
     else:
         st.error("❌ **Google Cloud API** - Required")
+
+    if pixabay_key:
+        st.success("✅ **Pixabay API** - Set")
+    else:
+        st.error("❌ **Pixabay API** - Required")
 
     st.markdown("---")
 
@@ -157,7 +163,59 @@ def render_api_setup_page():
 
     st.markdown("---")
 
-    st.divider()
+    # === PIXABAY API SECTION ===
+    st.markdown("### 🖼️ Pixabay API (Image Generation)")
+    with st.expander("📖 How to Get Your Free Pixabay API Key", expanded=not bool(pixabay_key)):
+        st.markdown("""
+        **Follow these steps to get your free Pixabay API key:**
+
+        1. **Go to** [Pixabay API Documentation](https://pixabay.com/api/docs/)
+        2. **Click "Get Started for Free"** or go to [pixabay.com/api/](https://pixabay.com/api/)
+        3. **Sign up** for a free account (email verification required)
+        4. **Once signed in**, visit [https://pixabay.com/api/docs/](https://pixabay.com/api/docs/)
+        5. **Find your API key** in the "Parameters" section on that page
+        6. **Copy and paste** the key into the field below
+
+        **Free Plan:** 5,000 images/month, then $0.001 per additional image.
+        """)
+
+    pixabay_key_input = st.text_input(
+        "Pixabay API Key",
+        value=pixabay_key,
+        type="password",
+        help="Required: Your free Pixabay API key for image generation",
+        key="pixabay_api_key_input"
+    )
+
+    col_save_pixabay, col_test_pixabay = st.columns([1, 1])
+    with col_save_pixabay:
+        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
+            if pixabay_key_input:
+                st.session_state.pixabay_api_key = pixabay_key_input
+                st.success("✅ Pixabay API key saved!")
+            else:
+                st.error("❌ Please enter a Pixabay API key")
+
+    with col_test_pixabay:
+        if pixabay_key_input or pixabay_key:
+            test_key = pixabay_key_input or pixabay_key
+            if st.button("🧪 Test Pixabay Connection", help="Test your Pixabay API key"):
+                with st.spinner("Testing Pixabay API connection..."):
+                    try:
+                        import requests
+                        response = requests.get(f"https://pixabay.com/api/?key={test_key}&q=test&per_page=1")
+                        if response.status_code == 200:
+                            data = response.json()
+                            if "hits" in data:
+                                st.success("✅ Pixabay API connection successful!")
+                            else:
+                                st.error("❌ Pixabay API test failed: Invalid response format")
+                        else:
+                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                    except Exception as e:
+                        st.error(f"❌ Pixabay API test failed: {str(e)}")
+
+    st.markdown("---")
     google_env = get_secret("GOOGLE_API_KEY", "")
 
     # Only auto-load from environment if it's a real key (not fallback)
@@ -186,33 +244,42 @@ def render_api_setup_page():
     if st.button("🚀 Next: Select Language", use_container_width=True):
         # Use the input values, falling back to session state if input is empty
         final_google_key = google_key_input or google_key
+        final_pixabay_key = pixabay_key_input or pixabay_key
 
         if not final_google_key:
             st.error("❌ Please enter your Google Cloud API key")
-        else:
-            st.session_state.google_api_key = final_google_key
+            st.stop()
 
-            # Save API keys locally
-            secrets_path = Path(__file__).parent.parent / "user_secrets.json"
-            user_secrets = {
-                "google_api_key": final_google_key
-            }
-            with open(secrets_path, "w", encoding="utf-8") as f:
-                json.dump(user_secrets, f, indent=2)
+        if not final_pixabay_key:
+            st.error("❌ Please enter your Pixabay API key")
+            st.stop()
+
+        st.session_state.google_api_key = final_google_key
+        st.session_state.pixabay_api_key = final_pixabay_key
+
+        # Save API keys locally
+        secrets_path = Path(__file__).parent.parent / "user_secrets.json"
+        user_secrets = {
+            "google_api_key": final_google_key,
+            "pixabay_api_key": final_pixabay_key
+        }
+        with open(secrets_path, "w", encoding="utf-8") as f:
+            json.dump(user_secrets, f, indent=2)
 
             # Save to Firebase if requested
             if save_to_cloud:
                 try:
                     from firebase_manager import save_settings_to_firebase
                     cloud_data = {
-                        "google_api_key": final_google_key
+                        "google_api_key": final_google_key,
+                        "pixabay_api_key": final_pixabay_key
                     }
                     save_settings_to_firebase(st.session_state.session_id, cloud_data)
-                    st.success("✅ API key saved locally and to cloud!")
+                    st.success("✅ API keys saved locally and to cloud!")
                 except Exception as e:
                     st.warning(f"Local save successful, but cloud save failed: {e}")
             else:
-                st.success("✅ API key saved locally!")
+                st.success("✅ API keys saved locally!")
 
             st.session_state.page = PAGE_LANGUAGE_SELECT
             st.rerun()

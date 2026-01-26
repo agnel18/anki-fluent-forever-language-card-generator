@@ -53,7 +53,7 @@ from .domain.zh_response_parser import ZhResponseParser
 from .domain.zh_validator import ZhValidator
 
 # Import centralized configuration
-from config import get_gemini_model, get_gemini_fallback_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model
 
 logger = logging.getLogger(__name__)
 

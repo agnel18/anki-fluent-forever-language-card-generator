@@ -8,6 +8,7 @@ Imports functions from specialized modules while maintaining backward compatibil
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Callable
+import streamlit as st
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -18,14 +19,14 @@ logger = logging.getLogger(__name__)
 
 # Import from sentence_generator module
 try:
-    from sentence_generator import generate_sentences, generate_word_meaning
+    from streamlit_app.sentence_generator import generate_sentences, generate_word_meaning
     logger.info("Successfully imported from sentence_generator")
 except ImportError as e:
     logger.warning(f"Failed to import from sentence_generator: {e}. Using fallback implementations.")
 
 # Import from audio_generator module
 try:
-    from audio_generator import generate_audio_google as generate_audio, _voice_for_language, is_google_tts_configured
+    from streamlit_app.audio_generator import generate_audio_google as generate_audio, _voice_for_language, is_google_tts_configured
     logger.info("Successfully imported Google TTS from audio_generator")
 except ImportError as e:
     logger.warning(f"Failed to import Google TTS from audio_generator: {e}. Using fallback implementations.")
@@ -40,28 +41,28 @@ except ImportError as e:
 
 # Import from image_generator module
 try:
-    from image_generator import generate_images_google
-    logger.info("Successfully imported from image_generator")
+    from streamlit_app.image_generator import generate_images_pixabay
+    logger.info("Successfully imported Pixabay image generation from image_generator")
 except ImportError as e:
-    logger.warning(f"Failed to import from image_generator: {e}. Using fallback implementations.")
+    logger.warning(f"Failed to import Pixabay from image_generator: {e}. Using fallback implementations.")
 
 # Import from deck_exporter module
 try:
-    from deck_exporter import create_apkg_export
+    from streamlit_app.deck_exporter import create_apkg_export
     logger.info("Successfully imported from deck_exporter")
 except ImportError as e:
     logger.warning(f"Failed to import from deck_exporter: {e}. Using fallback implementations.")
 
 # Import from generation_utils module
 try:
-    from generation_utils import estimate_api_costs, parse_csv_upload, generate_image_keywords
+    from streamlit_app.generation_utils import estimate_api_costs, parse_csv_upload, generate_image_keywords
     logger.info("Successfully imported from generation_utils")
 except ImportError as e:
     logger.warning(f"Failed to import from generation_utils: {e}. Using fallback implementations.")
 
 # Import grammar processor for sentence coloring
 try:
-    from services.generation.grammar_processor import get_grammar_processor
+    from streamlit_app.services.generation.grammar_processor import get_grammar_processor
     logger.info("Successfully imported grammar processor")
 except ImportError as e:
     logger.warning(f"Failed to import grammar processor: {e}. Grammar analysis will be unavailable.")
@@ -179,13 +180,12 @@ def generate_complete_deck(
                     
                     # Reset used_image_urls for each word to allow image reuse across different words
                     used_image_urls = set()
-                    image_filenames, used_image_urls = generate_images_google(
+                    image_filenames, used_image_urls = generate_images_pixabay(
                         queries,
                         str(media_dir),
                         batch_name=word,
                         num_images=1,
-                        google_api_key=gemini_api_key,
-                        custom_search_engine_id=google_custom_search_engine_id,
+                        pixabay_api_key=st.session_state.get('pixabay_api_key', ''),
                         used_image_urls=used_image_urls,  # Pass the word-specific set
                         unique_id=deck_unique_id,
                     )
@@ -508,19 +508,29 @@ def generate_deck_progressive(
         # PASS 5: Visual Media
         if log_callback:
             log_callback(f"<b>🖼️ PASS 5/6: Visual Media</b>")
-            log_callback(f"Finding and downloading relevant images for memory reinforcement for '{word}'...")
+            log_callback(f"Finding and downloading images from Pixabay for memory reinforcement for '{word}'...")
 
         queries = [s.get('image_keywords', f"{word}, language, learning") for s in sentences]
         used_image_urls = set()
-        image_filenames, used_image_urls = generate_images_google(
-            queries, str(media_dir), batch_name=word,
-            num_images=1, google_api_key=gemini_api_key,
-            custom_search_engine_id=google_custom_search_engine_id,
-            used_image_urls=used_image_urls, unique_id=word_unique_id
-        )
+        
+        # Generate images using Pixabay (always free tier)
+        try:
+            # Get Pixabay API key (required)
+            pixabay_api_key = st.session_state.get('pixabay_api_key', None)
+            if not pixabay_api_key:
+                raise ValueError("Pixabay API key is required for image generation")
 
-        if log_callback:
-            log_callback(f"✅ Downloaded {len(image_filenames)} images for '{word}'")
+            image_filenames, used_image_urls = generate_images_pixabay(
+                queries, str(media_dir), batch_name=word,
+                num_images=1, pixabay_api_key=pixabay_api_key, used_image_urls=used_image_urls, unique_id=word_unique_id
+            )
+            if log_callback:
+                log_callback(f"✅ Downloaded {len(image_filenames)} images from Pixabay for '{word}'")
+        except Exception as e:
+            logger.warning(f"Image generation failed for '{word}': {e}")
+            image_filenames = []
+            if log_callback:
+                log_callback(f"⚠️ Image generation failed for '{word}': {e}")
 
         # PASS 6: Word Assembly
         if log_callback:
@@ -662,7 +672,7 @@ __all__ = [
     # Audio generation
     'generate_audio', '_voice_for_language',
     # Image generation
-    'generate_images_google',
+    'generate_images_pixabay',
     # Deck export
     'create_anki_tsv', 'create_apkg_export',
     # Utilities

@@ -7,10 +7,7 @@ from typing import Optional
 import google.generativeai as genai
 
 # Import cache manager and error recovery
-from streamlit_app.cache_manager import cached_api_call
-from streamlit_app.error_recovery import retry_with_exponential_backoff, with_fallback
-# Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import cached_api_call, retry_with_exponential_backoff, with_fallback, get_gemini_model
 
 logger = logging.getLogger(__name__)
 

@@ -24,7 +24,7 @@ def render_main_page():
         st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
     with col_auth:
-        from page_modules.auth_handler import firebase_auth_component
+        from streamlit_app.page_modules.auth_handler import firebase_auth_component
         firebase_auth_component()
 
     st.markdown("---")

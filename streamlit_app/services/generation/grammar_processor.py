@@ -10,11 +10,11 @@ import logging
 from typing import Dict, Any, List, Optional
 
 # Import centralized configuration
-from config import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model
 
 # Import the new grammar analyzer system
 try:
-    from language_analyzers.analyzer_registry import get_analyzer
+    from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
     logger = logging.getLogger(__name__)
     logger.info("Successfully imported analyzer registry")
 except ImportError as e:

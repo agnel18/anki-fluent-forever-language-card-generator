@@ -27,7 +27,7 @@ class ProfileManager:
             Dict with 'name' and 'email' keys, or None if not signed in
         """
         try:
-            from ..firebase import is_signed_in, get_current_user
+            from streamlit_app.services.firebase import is_signed_in, get_current_user
 
             if not is_signed_in():
                 return None
@@ -58,7 +58,7 @@ class ProfileManager:
             List of deck dictionaries
         """
         try:
-            from ..firebase import is_signed_in, get_current_user, is_firebase_initialized
+            from streamlit_app.services.firebase import is_signed_in, get_current_user, is_firebase_initialized
 
             if not is_signed_in() or not is_firebase_initialized():
                 return []
@@ -102,7 +102,7 @@ class ProfileManager:
             True if sign out successful, False otherwise
         """
         try:
-            from ..firebase import sign_out
+            from streamlit_app.services.firebase import sign_out
             return sign_out()
         except Exception as e:
             st.error(f"Error signing out: {e}")
@@ -116,7 +116,7 @@ class ProfileManager:
             Dictionary containing all user data, or None if failed
         """
         try:
-            from ..firebase import load_settings_from_firebase, get_usage_stats, sync_progress_from_firebase
+            from streamlit_app.services.firebase import load_settings_from_firebase, get_usage_stats, sync_progress_from_firebase
 
             session_id = st.session_state.get("session_id", "")
             if not session_id:

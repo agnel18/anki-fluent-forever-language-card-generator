@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 import google.generativeai as genai
 
 # Import centralized configuration
-from config import get_gemini_model
+from ..shared_utils import get_gemini_model
 
 logger = logging.getLogger(__name__)
 

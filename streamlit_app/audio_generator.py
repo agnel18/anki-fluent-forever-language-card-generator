@@ -9,13 +9,27 @@ import base64
 import requests
 from typing import Optional, List
 
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    # Load .env file from the project root (parent directory of streamlit_app)
+    dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    load_dotenv(dotenv_path)
+    # Also try loading from current directory (streamlit_app/.env)
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+except ImportError:
+    pass  # dotenv not available, continue without it
+
 # Conditional import for Google Cloud TTS
 try:
     from google.cloud import texttospeech
-    GOOGLE_TTS_AVAILABLE = True
+    GOOGLE_TTS_SDK_AVAILABLE = True
 except ImportError:
-    GOOGLE_TTS_AVAILABLE = False
+    GOOGLE_TTS_SDK_AVAILABLE = False
     texttospeech = None
+
+# TTS availability now depends on API key, not SDK
+GOOGLE_TTS_AVAILABLE = True  # Always available via REST API
 
 # Import error recovery
 from error_recovery import graceful_degradation, resilient_audio_generation
@@ -31,20 +45,28 @@ logger = logging.getLogger(__name__)
 
 def get_google_tts_config():
     """Get Google Cloud Text-to-Speech configuration."""
-    import streamlit as st
     api_key = ""
     try:
         # Try to get from centralized config first
         try:
             from config.api_keys import get_api_key
+            # This will fail if streamlit is not available
+            import streamlit as st
             api_key = get_api_key('text_to_speech', st.session_state) or ""
         except ImportError:
             pass
 
         # Fallback to direct environment/session check
         if not api_key:
-            api_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", "")))
-    except:
+            try:
+                import streamlit as st
+                api_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", "")))
+            except ImportError:
+                # Streamlit not available, use environment variables only
+                api_key = os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
+    except Exception as e:
+        logger.warning(f"Error getting TTS config: {e}")
+        # Final fallback to environment variables
         api_key = os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
 
     return {
@@ -87,8 +109,11 @@ def is_google_tts_configured():
     try:
         config = get_google_tts_config()
         return bool(config["api_key"])  # Only need API key for REST API
-    except Exception:
-        return False
+    except Exception as e:
+        logger.warning(f"Failed to check TTS configuration: {e}")
+        # Fallback: check environment variables directly
+        import os
+        return bool(os.getenv("GOOGLE_TTS_API_KEY") or os.getenv("GOOGLE_API_KEY"))
 
 # ============================================================================
 # GOOGLE CLOUD TEXT-TO-SPEECH REST API FUNCTIONS
@@ -333,7 +358,7 @@ def generate_audio(
     unique_id: str = None,
 ) -> List[str]:
     """
-    Batch generate audio files synchronously using Google Cloud Text-to-Speech.
+    Batch generate audio files synchronously using Google Cloud Text-to-Speech REST API.
 
     Args:
         sentences: List of sentences to synthesize
@@ -347,8 +372,9 @@ def generate_audio(
     Returns:
         List of generated file paths
     """
-    if not GOOGLE_TTS_AVAILABLE:
-        logger.warning("Google Cloud Text-to-Speech SDK not available")
+    # Check if TTS is configured (has API key)
+    if not is_google_tts_configured():
+        logger.warning("Google Cloud Text-to-Speech not configured - no API key available")
         return []
 
     os.makedirs(output_dir, exist_ok=True)
@@ -368,8 +394,8 @@ def generate_audio(
                 filename = f"{batch_name}_{i+1:02d}{unique_suffix}.mp3"
             output_path = Path(output_dir) / filename
 
-            # Use Google TTS
-            tasks.append(generate_audio_google_async(sentence, voice, str(output_path), rate, language_code))
+            # Use Google TTS REST API
+            tasks.append(generate_audio_google_rest_async(sentence, voice, str(output_path), rate, language_code))
 
         results = await asyncio.gather(*tasks)
         return results
@@ -531,7 +557,7 @@ def get_google_available_voices(language_code: str = None) -> List[dict]:
         logger.error(f"Error getting Google TTS voices: {exc}")
         return []
 
-def get_google_voices_for_language(language_name: str) -> List[str]:
+def get_google_voices_for_language(language_name: str) -> tuple[List[str], bool, dict]:
     """
     Get all available Google TTS voices for a specific language with descriptive names.
 
@@ -539,12 +565,15 @@ def get_google_voices_for_language(language_name: str) -> List[str]:
         language_name: Language name (e.g., "Chinese", "Spanish", "English")
 
     Returns:
-        List of descriptive voice names (e.g., "Xiaoxiao (Female, Neural2)", "Yunxi (Male, Neural2)")
+        Tuple of (voice_options, is_fallback, display_to_voice_map) where:
+        - voice_options: List of descriptive voice names for display
+        - is_fallback: True if using fallback voices due to API failure
+        - display_to_voice_map: Dict mapping display names to actual Google TTS voice names
     """
     # Map language names to BCP-47 codes
     bcp47_code = _get_bcp47_code(language_name)
     if not bcp47_code:
-        return ["D (Female, Neural2)"]  # Default fallback
+        return ["D (Female, Neural2)"], True  # Default fallback
 
     # Get all voices for this language using REST API
     voices = get_google_tts_voices_rest(bcp47_code)
@@ -553,66 +582,162 @@ def get_google_voices_for_language(language_name: str) -> List[str]:
     if not voices:
         logger.warning(f"No voices found for {language_name} ({bcp47_code}), using fallbacks")
 
-        # Language-specific fallback voices
+        # Language-specific fallback voices for all 77 supported languages
+        # These return display names that the UI expects
         fallbacks = {
-            "en": ["D (Female, Neural2)", "C (Male, Neural2)"],
-            "es": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "fr": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "de": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "it": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "pt": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "ru": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "ja": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "ko": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "zh": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "ar": ["A (Female, Neural2)", "B (Male, Neural2)"],
-            "hi": ["A (Female, Neural2)", "B (Male, Neural2)"]
-        }
+            # European Languages
+            "af": ["A (Female, Standard)", "B (Male, Standard)"],  # Afrikaans
+            "sq": ["A (Female, Standard)", "B (Male, Standard)"],  # Albanian
+            "hy": ["A (Female, Standard)", "B (Male, Standard)"],  # Armenian
+            "az": ["A (Female, Standard)", "B (Male, Standard)"],  # Azerbaijani
+            "eu": ["A (Female, Standard)", "B (Male, Standard)"],  # Basque
+            "be": ["A (Female, Standard)", "B (Male, Standard)"],  # Belarusian
+            "bs": ["A (Female, Standard)", "B (Male, Standard)"],  # Bosnian
+            "bg": ["A (Female, Standard)", "B (Male, Standard)"],  # Bulgarian
+            "ca": ["A (Female, Standard)", "B (Male, Standard)"],  # Catalan
+            "hr": ["A (Female, Standard)", "B (Male, Standard)"],  # Croatian
+            "cs": ["A (Female, Standard)", "B (Male, Standard)"],  # Czech
+            "da": ["A (Female, Standard)", "B (Male, Standard)"],  # Danish
+            "nl": ["A (Female, Standard)", "B (Male, Standard)"],  # Dutch
+            "en": ["Emma (Female, Standard)", "Liam (Male, Standard)"],  # English
+            "et": ["A (Female, Standard)", "B (Male, Standard)"],  # Estonian
+            "fi": ["A (Female, Standard)", "B (Male, Standard)"],  # Finnish
+            "fr": ["Sophie (Female, Standard)", "Pierre (Male, Standard)"],  # French
+            "gl": ["A (Female, Standard)", "B (Male, Standard)"],  # Galician
+            "ka": ["A (Female, Standard)", "B (Male, Standard)"],  # Georgian
+            "de": ["Anna (Female, Standard)", "Max (Male, Standard)"],  # German
+            "el": ["A (Female, Standard)", "B (Male, Standard)"],  # Greek
+            "hu": ["A (Female, Standard)", "B (Male, Standard)"],  # Hungarian
+            "is": ["A (Female, Standard)", "B (Male, Standard)"],  # Icelandic
+            "ga": ["A (Female, Standard)", "B (Male, Standard)"],  # Irish
+            "it": ["Giulia (Female, Standard)", "Marco (Male, Standard)"],  # Italian
+            "lv": ["A (Female, Standard)", "B (Male, Standard)"],  # Latvian
+            "lt": ["A (Female, Standard)", "B (Male, Standard)"],  # Lithuanian
+            "mk": ["A (Female, Standard)", "B (Male, Standard)"],  # Macedonian
+            "mt": ["A (Female, Standard)", "B (Male, Standard)"],  # Maltese
+            "no": ["A (Female, Standard)", "B (Male, Standard)"],  # Norwegian
+            "pl": ["A (Female, Standard)", "B (Male, Standard)"],  # Polish
+            "pt": ["Ana (Female, Standard)", "João (Male, Standard)"],  # Portuguese
+            "ro": ["A (Female, Standard)", "B (Male, Standard)"],  # Romanian
+            "ru": ["Olga (Female, Standard)", "Dmitri (Male, Standard)"],  # Russian
+            "sr": ["A (Female, Standard)", "B (Male, Standard)"],  # Serbian
+            "sk": ["A (Female, Standard)", "B (Male, Standard)"],  # Slovak
+            "sl": ["A (Female, Standard)", "B (Male, Standard)"],  # Slovenian
+            "es": ["Maria (Female, Standard)", "Carlos (Male, Standard)"],  # Spanish
+            "sv": ["A (Female, Standard)", "B (Male, Standard)"],  # Swedish
+            "tr": ["A (Female, Standard)", "B (Male, Standard)"],  # Turkish
+            "uk": ["A (Female, Standard)", "B (Male, Standard)"],  # Ukrainian
+            "cy": ["A (Female, Standard)", "B (Male, Standard)"],  # Welsh
 
-        # Get the language prefix (e.g., "zh" from "zh-CN")
+            # Asian Languages
+            "am": ["A (Female, Standard)", "B (Male, Standard)"],  # Amharic
+            "ar": ["Fatima (Female, Standard)", "Ahmed (Male, Standard)"],  # Arabic
+            "bn": ["A (Female, Standard)", "B (Male, Standard)"],  # Bengali
+            "my": ["A (Female, Standard)", "B (Male, Standard)"],  # Burmese
+            "zh": ["Li (Female, Standard)", "Wang (Male, Standard)"],  # Chinese
+            "gu": ["A (Female, Standard)", "B (Male, Standard)"],  # Gujarati
+            "iw": ["A (Female, Standard)", "B (Male, Standard)"],  # Hebrew
+            "hi": ["Priya (Female, Standard)", "Raj (Male, Standard)"],  # Hindi
+            "id": ["A (Female, Standard)", "B (Male, Standard)"],  # Indonesian
+            "ja": ["Yumi (Female, Standard)", "Hiroshi (Male, Standard)"],  # Japanese
+            "jw": ["A (Female, Standard)", "B (Male, Standard)"],  # Javanese
+            "kn": ["A (Female, Standard)", "B (Male, Standard)"],  # Kannada
+            "kk": ["A (Female, Standard)", "B (Male, Standard)"],  # Kazakh
+            "km": ["A (Female, Standard)", "B (Male, Standard)"],  # Khmer
+            "ko": ["Ji-yeon (Female, Standard)", "Min-jun (Male, Standard)"],  # Korean
+            "lo": ["A (Female, Standard)", "B (Male, Standard)"],  # Lao
+            "ml": ["A (Female, Standard)", "B (Male, Standard)"],  # Malayalam
+            "ms": ["A (Female, Standard)", "B (Male, Standard)"],  # Malay
+            "mr": ["A (Female, Standard)", "B (Male, Standard)"],  # Marathi
+            "mn": ["A (Female, Standard)", "B (Male, Standard)"],  # Mongolian
+            "ne": ["A (Female, Standard)", "B (Male, Standard)"],  # Nepali
+            "fa": ["A (Female, Standard)", "B (Male, Standard)"],  # Persian
+            "ps": ["A (Female, Standard)", "B (Male, Standard)"],  # Pashto
+            "si": ["A (Female, Standard)", "B (Male, Standard)"],  # Sinhala
+            "su": ["A (Female, Standard)", "B (Male, Standard)"],  # Sundanese
+            "ta": ["A (Female, Standard)", "B (Male, Standard)"],  # Tamil
+            "te": ["A (Female, Standard)", "B (Male, Standard)"],  # Telugu
+            "th": ["A (Female, Standard)", "B (Male, Standard)"],  # Thai
+            "ur": ["A (Female, Standard)", "B (Male, Standard)"],  # Urdu
+            "uz": ["A (Female, Standard)", "B (Male, Standard)"],  # Uzbek
+            "vi": ["A (Female, Standard)", "B (Male, Standard)"],  # Vietnamese
+
+            # African Languages
+            "so": ["A (Female, Standard)", "B (Male, Standard)"],  # Somali
+            "sw": ["A (Female, Standard)", "B (Male, Standard)"],  # Swahili
+            "zu": ["A (Female, Standard)", "B (Male, Standard)"]   # Zulu
+        }
         lang_prefix = bcp47_code.split('-')[0]
-        return fallbacks.get(lang_prefix, ["D (Female, Neural2)"])
+        fallback_voices = fallbacks.get(lang_prefix, ["D (Female, Neural2)"])
+        return fallback_voices, True, {}
 
     # Format voice names with gender and quality information
     formatted_voices = []
+    
+    # Create a mapping for more user-friendly voice names
+    friendly_names = {
+        # English voices - map some to recognizable names
+        "Achernar": "Emma",
+        "Achird": "James", 
+        "Algenib": "Michael",
+        "Algieba": "David",
+        "Alnilam": "Christopher",
+        "Aoede": "Sarah",
+        "Autonoe": "Jessica",
+        "Callirrhoe": "Jennifer",
+        "Charon": "Matthew",
+        "Despina": "Amanda",
+        # Add more mappings as needed
+    }
+    
     for voice in voices:
         voice_name = voice['name']
 
-        # Extract voice type (Neural2, WaveNet, Standard)
-        if 'Neural2' in voice_name:
-            voice_type = 'Neural2'
-        elif 'Wavenet' in voice_name or 'WaveNet' in voice_name:
-            voice_type = 'WaveNet'
-        elif 'Standard' in voice_name:
-            voice_type = 'Standard'
-        else:
-            voice_type = 'Unknown'
-
         # Get gender
         gender = voice['ssml_gender']
-        if gender == 1:  # SSML_VOICE_GENDER_MALE
+        if gender == 1 or gender == 'MALE' or gender == 'MALE':  # SSML_VOICE_GENDER_MALE
             gender_str = 'Male'
-        elif gender == 2:  # SSML_VOICE_GENDER_FEMALE
+        elif gender == 2 or gender == 'FEMALE' or gender == 'FEMALE':  # SSML_VOICE_GENDER_FEMALE
             gender_str = 'Female'
         else:
             gender_str = 'Unknown'
 
-        # Create descriptive name
-        # Extract the voice identifier (last part after the last dash)
-        name_parts = voice_name.split('-')
-        if len(name_parts) >= 3:
-            voice_id = name_parts[-1]  # e.g., "D", "A", "C"
-            descriptive_name = f"{voice_id} ({gender_str}, {voice_type})"
-        else:
-            descriptive_name = f"{voice_name} ({gender_str}, {voice_type})"
+        # Use friendly name if available, otherwise use the constellation name
+        display_name = friendly_names.get(voice_name, voice_name)
+        
+        # For the new constellation-named voices, use a simpler format
+        # These appear to be high-quality neural voices
+        descriptive_name = f"{display_name} ({gender_str})"
 
         formatted_voices.append(descriptive_name)
 
-    # Sort by quality (Neural2 first, then WaveNet, then Standard)
-    quality_order = {'Neural2': 0, 'WaveNet': 1, 'Standard': 2}
-    formatted_voices.sort(key=lambda x: quality_order.get(x.split(', ')[1].rstrip(')'), 3))
+    # Sort voices to prioritize Standard voices first, then alphabetically
+    def sort_key(voice_name):
+        # Check if this is a Standard voice (prioritize them)
+        if "Standard" in voice_name:
+            return (0, voice_name)  # Standard voices first
+        else:
+            return (1, voice_name)  # Other voices second
+    
+    formatted_voices.sort(key=sort_key)
 
-    return formatted_voices if formatted_voices else ["en-US-Neural2-D (Female, Neural2)"]
+    # Create mapping from display names back to actual voice names
+    display_to_voice_map = {}
+    for voice in voices:
+        voice_name = voice['name']
+        gender = voice['ssml_gender']
+        if gender == 1 or gender == 'MALE' or gender == 'MALE':
+            gender_str = 'Male'
+        elif gender == 2 or gender == 'FEMALE' or gender == 'FEMALE':
+            gender_str = 'Female'
+        else:
+            gender_str = 'Unknown'
+        
+        display_name = friendly_names.get(voice_name, voice_name)
+        descriptive_name = f"{display_name} ({gender_str})"
+        display_to_voice_map[descriptive_name] = voice_name
+
+    return formatted_voices if formatted_voices else ["Emma (Female)"], False, display_to_voice_map
 
 def _voice_for_language(language: str) -> str:
     """
@@ -622,26 +747,26 @@ def _voice_for_language(language: str) -> str:
         language: Language name (e.g., "Spanish", "Chinese (Simplified)")
 
     Returns:
-        Google TTS voice name (e.g., "es-ES-Neural2-A", "zh-CN-Neural2-C")
+        Google TTS voice name (e.g., "es-ES-Standard-A", "zh-CN-Standard-C")
     """
     voice_map = {
-        "Spanish": "es-ES-Neural2-A",
-        "French": "fr-FR-Neural2-A",
-        "German": "de-DE-Neural2-B",
-        "Italian": "it-IT-Neural2-A",
-        "Portuguese": "pt-BR-Neural2-A",
-        "Russian": "ru-RU-Neural2-A",
-        "Japanese": "ja-JP-Neural2-B",
-        "Korean": "ko-KR-Neural2-A",
-        "Chinese": "cmn-CN-Neural2-C",
-        "Chinese (Simplified)": "cmn-CN-Neural2-C",
-        "Chinese (Traditional)": "zh-TW-Neural2-A",
-        "Arabic": "ar-XA-Neural2-B",
-        "Hindi": "hi-IN-Neural2-A",
-        "Mandarin Chinese": "cmn-CN-Neural2-C",
-        "English": "en-US-Neural2-D",
+        "Spanish": "es-ES-Standard-A",
+        "French": "fr-FR-Standard-A",
+        "German": "de-DE-Standard-B",
+        "Italian": "it-IT-Standard-A",
+        "Portuguese": "pt-BR-Standard-A",
+        "Russian": "ru-RU-Standard-A",
+        "Japanese": "ja-JP-Standard-B",
+        "Korean": "ko-KR-Standard-A",
+        "Chinese": "cmn-CN-Standard-C",
+        "Chinese (Simplified)": "cmn-CN-Standard-C",
+        "Chinese (Traditional)": "zh-TW-Standard-A",
+        "Arabic": "ar-XA-Standard-B",
+        "Hindi": "hi-IN-Standard-A",
+        "Mandarin Chinese": "cmn-CN-Standard-C",
+        "English": "en-US-Standard-D",
     }
-    return voice_map.get(language, "en-US-Neural2-D")
+    return voice_map.get(language, "en-US-Standard-D")
 
 def _get_bcp47_code(language_name: str) -> str:
     """
@@ -655,11 +780,11 @@ def _get_bcp47_code(language_name: str) -> str:
     """
     # Comprehensive mapping from language names to BCP-47 codes
     bcp47_map = {
-        # Chinese variants
-        "Chinese": "zh-CN",
-        "Chinese (Simplified)": "zh-CN",
+        # Chinese variants - use cmn-CN for Neural2 voice names
+        "Chinese": "cmn-CN",
+        "Chinese (Simplified)": "cmn-CN",
         "Chinese (Traditional)": "zh-TW",
-        "Mandarin Chinese": "zh-CN",
+        "Mandarin Chinese": "cmn-CN",
         "Cantonese": "zh-HK",
 
         # Major European languages
