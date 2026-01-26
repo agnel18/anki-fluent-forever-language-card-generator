@@ -81,6 +81,11 @@ def render_main_page():
         # If we can't check TTS, assume it's missing to be safe
         missing_keys.append("Google Text-to-Speech")
 
+    # Check for Pixabay API key (required for image generation)
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
+    if not pixabay_key:
+        missing_keys.append("Pixabay Images")
+
     if missing_keys:
         st.warning(f"⚠️ **API Keys Required**: {', '.join(missing_keys)} API key(s) not configured. You'll be redirected to set them up.")
     else:
@@ -116,7 +121,10 @@ def render_main_page():
         except:
             has_tts_configured = False
             
-        has_all_api_keys = has_basic_api_key and has_tts_configured
+        # Check Pixabay API key
+        has_pixabay_key = bool(st.session_state.get("pixabay_api_key", ""))
+            
+        has_all_api_keys = has_basic_api_key and has_tts_configured and has_pixabay_key
         button_text = "🚀 Start Creating Your Deck" if not has_all_api_keys else "🚀 Continue Creating Your Deck"
         help_text = "Begin the 5-step deck creation process" if not has_all_api_keys else "Continue with your saved API keys"
         
