@@ -236,6 +236,9 @@ def render_settings_page():
             st.error("❌ **Gemini API** - Not configured")
     with col2:
         if google_configured:
+            st.success("✅ **Google TTS** - Configured")
+        else:
+            st.error("❌ **Google TTS** - Not configured")
 
     with col3:
         if google_configured:
@@ -339,6 +342,34 @@ def render_settings_page():
            - Copy the generated API key
         5. **Enable billing** (required for TTS API usage)
         """)
+
+        # Google Cloud Budget Setup Instructions
+        with st.expander("💰 Set Up Budget Alerts (Recommended)", expanded=False):
+            st.markdown("""
+            **Prevent unexpected charges by setting up budget alerts in Google Cloud:**
+
+            1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
+            2. **Select your billing account** (if you have multiple)
+            3. **Click "Budgets & alerts"** in the left sidebar
+            4. **Click "CREATE BUDGET"**
+            5. **Configure your budget:**
+               - **Name:** "Language Learning App Budget"
+               - **Budget type:** "Specified amount"
+               - **Target amount:** Start with $10-50 for testing
+               - **Budget scope:** Select your project
+            6. **Set up alerts:**
+               - **Alert threshold 1:** 50% of budget → Email notification
+               - **Alert threshold 2:** 90% of budget → Email notification
+               - **Alert threshold 3:** 100% of budget → Email notification
+            7. **Save the budget**
+
+            **💡 Budget Tips:**
+            - **TTS Costs:** ~$0.000016 per character (very cheap for small usage)
+            - **Gemini AI Costs:** ~$0.0000025 per input character, ~$0.000005 per output character
+            - **Start small:** $10 budget is plenty for testing and light usage
+            - **Monitor usage:** Check the billing dashboard regularly
+            - **Set alerts:** Get notified before you reach your limit
+            """)
 
     # Google TTS API Key Input
     google_key_input = st.text_input(

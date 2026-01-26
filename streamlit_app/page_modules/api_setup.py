@@ -129,6 +129,23 @@ def render_api_setup_page():
            - Go to "APIs & Services" → "Credentials"
            - Click "Create Credentials" → "API key"
         5. **Copy and paste** the key into the field below
+
+        **💰 Optional: Set up Budget Alerts (Recommended)**
+        To avoid unexpected costs, set up billing budgets and alerts:
+
+        1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
+        2. **Select your billing account**
+        3. **Create a budget:**
+           - Click "Budgets & alerts" → "Create budget"
+           - Set monthly limit: **$10-25** (covers 1,000+ cards)
+           - Enable email alerts at **50%**, **80%**, and **100%**
+        4. **Monitor usage** in the Billing dashboard
+
+        **💡 Budget Tips:**
+        - **Free Tier:** ~50 cards/day, 1,000 cards/month
+        - **Standard Voice:** ~$0.29 per card (stays in free tier)
+        - **Premium Voices:** 2-5x more expensive
+        - **Start Small:** Generate 1-2 words first to test
         """)
 
     google_key_input = st.text_input(

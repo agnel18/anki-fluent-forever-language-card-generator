@@ -208,6 +208,12 @@ Created .apkg file with 0 notes
 - ✅ **API Key Validation:** Health checks and quota monitoring
 - ✅ **Educational Approach:** Teach users about cost vs quality trade-offs
 
+**CLARIFIED REQUIREMENTS:**
+- ✅ **WARNINGS ONLY:** No blocking of generation - only show warnings
+- ✅ **INLINE WARNINGS:** Display warnings inline with generation process, not as page banners
+- ✅ **NO GENERATION BLOCKING:** Allow users to continue generating even when limits are reached
+- ✅ **NO PREMIUM PROMPTS:** Do not show "Upgrade to Premium" prompts when limits are hit
+
 **Free Tier Limits (Conservative):**
 - **Daily:** 50 cards (free)
 - **Monthly:** 1,000 cards ($287 - $333 if paid, depending on voice choice)

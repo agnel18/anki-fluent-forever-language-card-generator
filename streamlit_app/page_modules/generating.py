@@ -19,6 +19,79 @@ from streamlit_app.services.generation.file_manager import FileManager
 logger = logging.getLogger(__name__)
 
 
+def check_budget_limits(selected_words, num_sentences, voice):
+    """
+    Check if generation would exceed recommended free tier limits and show warnings.
+
+    Args:
+        selected_words: List of words to generate
+        num_sentences: Number of sentences per word
+        voice: Selected voice type
+
+    Returns:
+        dict: Warning information with messages and severity levels
+    """
+    warnings = []
+
+    # Calculate estimated cards
+    num_words = len(selected_words)
+    total_cards = num_words * num_sentences
+
+    # Free tier limits (conservative)
+    DAILY_LIMIT = 50  # cards per day
+    MONTHLY_LIMIT = 1000  # cards per month
+
+    # Voice cost multipliers (relative to Standard = 1.0)
+    voice_costs = {
+        'Standard': 1.0,
+        'Chirp3': 1.0,  # Same as Standard
+        'Chirp3 HD': 5.0,
+        'Wavenet': 2.0,
+        'Neural2': 1.5
+    }
+
+    voice_multiplier = voice_costs.get(voice, 1.0)
+
+    # Check daily limit
+    if total_cards > DAILY_LIMIT:
+        warnings.append({
+            'type': 'daily_limit',
+            'severity': 'high',
+            'message': f"⚠️ **Daily Limit Warning:** You're generating {total_cards} cards, exceeding the recommended daily limit of {DAILY_LIMIT} cards.",
+            'details': f"This may incur costs of ~${total_cards * 0.2874 * voice_multiplier:.2f} if using paid APIs."
+        })
+
+    # Check 80% of daily limit
+    elif total_cards > DAILY_LIMIT * 0.8:
+        warnings.append({
+            'type': 'daily_limit_approaching',
+            'severity': 'medium',
+            'message': f"⚠️ **Approaching Daily Limit:** {total_cards}/{DAILY_LIMIT} cards ({total_cards/DAILY_LIMIT*100:.0f}%)",
+            'details': "Consider reducing sentences per word or splitting generation across multiple days."
+        })
+
+    # Check monthly limit
+    if total_cards > MONTHLY_LIMIT:
+        warnings.append({
+            'type': 'monthly_limit',
+            'severity': 'high',
+            'message': f"🚨 **Monthly Limit Exceeded:** {total_cards} cards exceeds the {MONTHLY_LIMIT} card monthly recommendation.",
+            'details': f"Estimated cost: ~${total_cards * 0.2874 * voice_multiplier:.2f}/month"
+        })
+
+    # Voice cost warning for premium voices
+    if voice_multiplier > 1.0:
+        cost_increase = (voice_multiplier - 1.0) * 100
+        warnings.append({
+            'type': 'voice_cost',
+            'severity': 'medium',
+            'message': f"💰 **Premium Voice Cost:** '{voice}' increases costs by ~{cost_increase:.0f}% compared to Standard voice.",
+            'details': f"Consider using Standard voice to stay within free tier limits."
+        })
+
+    return warnings
+
+
 def render_generating_page():
     """Render the deck generation page with comprehensive error recovery."""
     
@@ -331,6 +404,27 @@ Combine all components into a professional Anki deck.
         # Perform progressive generation - process one word at a time for real-time UI updates
         current_status.markdown("⚙️ **Generating your complete deck...**")
         step_indicator.markdown("🔄 **Processing**")
+
+        # Check budget limits and show warnings (inline, no blocking)
+        budget_warnings = check_budget_limits(selected_words, num_sentences, voice)
+        if budget_warnings:
+            st.markdown("---")
+            st.markdown("### ⚠️ **Budget & Usage Warnings**")
+
+            for warning in budget_warnings:
+                severity_colors = {
+                    'high': '🔴',
+                    'medium': '🟡',
+                    'low': '🟢'
+                }
+                color = severity_colors.get(warning['severity'], '🟢')
+
+                with st.expander(f"{color} {warning['message']}", expanded=warning['severity'] == 'high'):
+                    st.markdown(f"**Details:** {warning['details']}")
+                    if warning['severity'] == 'high':
+                        st.markdown("**💡 Recommendation:** Consider reducing the number of sentences per word or using Standard voice to stay within free limits.")
+
+            st.markdown("---")
 
         # Initialize progressive generation state
         if 'generation_substep' not in st.session_state:
