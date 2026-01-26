@@ -222,10 +222,12 @@ def render_settings_page():
     # Load current API keys
     gemini_key = st.session_state.get("gemini_api_key", "")
     google_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
+    pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     # Check current API status
     google_configured = bool(google_key)
     gemini_configured = bool(gemini_key)
+    pixabay_configured = bool(pixabay_key)
 
     # Status overview
     col1, col2, col3 = st.columns(3)
@@ -241,12 +243,12 @@ def render_settings_page():
             st.error("❌ **Google TTS** - Not configured")
 
     with col3:
-        if google_configured:
-            st.success("✅ **Google TTS** - Configured")
+        if pixabay_configured:
+            st.success("✅ **Pixabay API** - Configured")
         else:
-            st.error("❌ **Google TTS** - Not configured")
+            st.error("❌ **Pixabay API** - Not configured")
 
-    if not all([gemini_configured, google_configured]):
+    if not all([gemini_configured, google_configured, pixabay_configured]):
         st.warning("⚠️ Some APIs are not configured. Please set up all required APIs below for full functionality.")
 
     # === GEMINI API SECTION ===
