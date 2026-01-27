@@ -68,7 +68,7 @@ def render_api_setup_page():
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     st.markdown("## 🔐 API Keys Setup")
-    st.markdown("*Configure Google Cloud API for AI generation and audio*")
+    st.markdown("*Configure Gemini AI API for AI generation and Google Cloud Text-to-Speech for audio*")
 
     # Firebase sync status and loading
     try:
@@ -113,7 +113,7 @@ def render_api_setup_page():
     st.markdown("---")
 
     # === GOOGLE CLOUD API SECTION ===
-    st.markdown("### ☁️ Google Cloud API (AI Generation & Audio)")
+    st.markdown("### 🤖 Gemini AI API (AI Generation & Audio)")
     with st.expander("📖 Setup Instructions", expanded=not bool(google_key)):
         st.markdown("""
         **Follow these steps to get your Google Cloud API key:**
