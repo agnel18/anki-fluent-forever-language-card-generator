@@ -1,418 +1,608 @@
 # Chinese Traditional Grammar Analyzer
-# Auto-generated analyzer for Chinese Traditional (繁體中文)
+# Modular analyzer for Chinese Traditional (繁體中文) using domain-driven design
 # Language Family: Sino-Tibetan
 # Script Type: logographic
 # Complexity Rating: high
 
-import re
-import json
 import logging
-from typing import Dict, List, Any, Tuple
+import json
+from typing import Dict, List, Any, Optional
 
 from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
 
+# Import modular components
+from .domain.zh_tw_config import ZhTwConfig
+from .domain.zh_tw_prompt_builder import ZhTwPromptBuilder
+from .domain.zh_tw_response_parser import ZhTwResponseParser
+from .domain.zh_tw_validator import ZhTwValidator
+from .infrastructure.zh_tw_fallbacks import ZhTwFallbacks
+
 logger = logging.getLogger(__name__)
+
 
 class ZhTwAnalyzer(BaseGrammarAnalyzer):
     """
-    Grammar analyzer for Chinese Traditional (繁體中文).
+    Grammar analyzer for Chinese Traditional (繁體中文) using modular architecture.
 
     Key Features: ['word_segmentation', 'compounds_first', 'chinese_categories', 'aspect_system', 'topic_comment']
     Complexity Levels: ['beginner', 'intermediate', 'advanced']
+
+    Architecture:
+    - Domain: Config, PromptBuilder, ResponseParser, Validator
+    - Infrastructure: Fallbacks for error recovery
     """
 
-    VERSION = "3.0"
+    VERSION = "4.0"  # Updated for modular architecture
     LANGUAGE_CODE = "zh-tw"
     LANGUAGE_NAME = "Chinese Traditional"
 
-    # Grammatical Role Mapping (16 categories based on Chinese linguistics)
-    GRAMMATICAL_ROLES = {
-        # Content Words (實詞 / Shící) - Independent Meaning
-        "noun": "#FFAA00",                    # Orange - People/places/things/concepts
-        "verb": "#44FF44",                    # Green - Actions/states/changes
-        "adjective": "#FF44FF",               # Magenta - Qualities/descriptions
-        "numeral": "#FFFF44",                 # Yellow - Numbers/quantities
-        "measure_word": "#FFD700",            # Gold - Classifiers (個, 本, 杯)
-        "pronoun": "#FF4444",                 # Red - Replacements for nouns
-        "time_word": "#FFA500",               # Orange-red - Time expressions
-        "locative_word": "#FF8C00",           # Dark orange - Location/direction
-
-        # Function Words (虛詞 / Xūcí) - Structural/Grammatical
-        "aspect_particle": "#8A2BE2",         # Purple - Aspect markers (了, 著, 過)
-        "modal_particle": "#DA70D6",          # Plum - Tone/mood particles (嗎, 呢, 吧)
-        "structural_particle": "#9013FE",     # Violet - Structural particles (的, 地, 得)
-        "preposition": "#4444FF",             # Blue - Prepositions/coverbs
-        "conjunction": "#888888",             # Gray - Connectors
-        "adverb": "#44FFFF",                  # Cyan - Modifies verbs/adjectives
-        "interjection": "#FFD700",            # Gold - Emotions/exclamations
-        "onomatopoeia": "#FFD700"             # Gold - Sound imitation
-    }
-
     def __init__(self):
-        config = LanguageConfig(
-            code="zh-tw",
-            name="Chinese Traditional",
-            native_name="繁體中文",
-            family="Sino-Tibetan",
-            script_type="logographic",
-            complexity_rating="high",
-            key_features=['word_segmentation', 'compounds_first', 'chinese_categories', 'aspect_system', 'topic_comment'],
-            supported_complexity_levels=['beginner', 'intermediate', 'advanced']
+        # Initialize modular components
+        self.zh_tw_config = ZhTwConfig()
+        self.prompt_builder = ZhTwPromptBuilder(self.zh_tw_config)
+        self.response_parser = ZhTwResponseParser(self.zh_tw_config)
+        self.validator = ZhTwValidator(self.zh_tw_config)
+        self.fallbacks = ZhTwFallbacks(self.zh_tw_config)
+
+        # Initialize base analyzer with language config
+        base_config = LanguageConfig(
+            code=self.zh_tw_config.language_code,
+            name=self.zh_tw_config.language_name,
+            native_name=self.zh_tw_config.native_name,
+            family=self.zh_tw_config.family,
+            script_type=self.zh_tw_config.script_type,
+            complexity_rating=self.zh_tw_config.complexity_rating,
+            key_features=self.zh_tw_config.key_features,
+            supported_complexity_levels=self.zh_tw_config.supported_complexity_levels
         )
-        super().__init__(config)
+        super().__init__(base_config)
 
-        # Initialize language-specific patterns (5-12 most frequent markers)
-        self._initialize_patterns()
+        logger.info(f"Initialized {self.LANGUAGE_NAME} analyzer v{self.VERSION} with modular architecture")
 
-    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
-        """Generate Chinese Traditional-specific AI prompt for batch grammar analysis (word-level, not character-level)"""
-        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+    def analyze_grammar(self, sentence: str, target_word: str, complexity: str, gemini_api_key: str) -> GrammarAnalysis:
+        """
+        Analyze grammar for a single sentence - RICH EXPLANATIONS LIKE CHINESE SIMPLIFIED.
 
-        return f"""Analyze the grammar of these Chinese Traditional sentences at the WORD level (not character-by-character).
+        CHINESE TRADITIONAL WORKFLOW:
+        1. Build AI prompt using prompt_builder (Traditional-specific templates)
+        2. Call AI API with proper error handling
+        3. Parse response using response_parser (with Traditional fallbacks)
+        4. Validate results using validator (aspect particles, classifiers)
+        5. Generate HTML output for colored sentence display
+        6. Return GrammarAnalysis object with RICH explanations
 
-Target word: "{target_word}"
-Language: Chinese Traditional
-Complexity level: {complexity}
-Analysis should be in {native_language}
-
-Sentences to analyze:
-{sentences_text}
-
-For EACH word in EVERY sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (left to right), provide:
-- word: the exact word as it appears in the sentence
-- individual_meaning: English translation/meaning of this specific word (MANDATORY)
-- grammatical_role: EXACTLY ONE category from this list: noun, verb, adjective, numeral, measure_word, pronoun, time_word, locative_word, aspect_particle, modal_particle, structural_particle, preposition, conjunction, adverb, interjection, onomatopoeia
-
-Additionally, identify 1-2 key compound words/phrases per sentence:
-- word_combinations: array of compounds with text, combined_meaning, grammatical_role
-
-CRITICAL REQUIREMENTS:
-- Analyze at WORD level, not character level (Chinese words are compounds of characters)
-- individual_meaning MUST be provided for EVERY word
-- grammatical_role MUST be EXACTLY from the allowed list (one word only)
-- Focus on Chinese grammatical categories (實詞/虛詞 distinction)
-- Include 量詞 (measure words), 體詞 (aspect particles), and 語氣詞 (modal particles) appropriately
-- word_combinations are OPTIONAL but enhance learning when present
-- WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE (left to right, no grouping by category)
-
-Return JSON in this exact format:
-{{
-  "batch_results": [
-    {{
-      "sentence_index": 1,
-      "sentence": "{sentences[0] if sentences else ''}",
-      "words": [
-        {{
-          "word": "學生",
-          "individual_meaning": "student",
-          "grammatical_role": "noun"
-        }}
-      ],
-      "word_combinations": [
-        {{
-          "text": "學習中文",
-          "combined_meaning": "study Chinese",
-          "grammatical_role": "verb_phrase"
-        }}
-      ],
-      "explanations": {{
-        "sentence_structure": "Brief grammatical summary of the sentence",
-        "complexity_notes": "Notes about grammatical structures used at {{complexity}} level"
-      }}
-    }}
-  ]
-}}
-
-IMPORTANT:
-- Analyze ALL {len(sentences)} sentences
-- EVERY word MUST have individual_meaning (English translation)
-- grammatical_role MUST be EXACTLY from the allowed list (one word only)
-- Return ONLY the JSON object, no additional text
-"""
-
-    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
-        """Parse batch AI response into standardized format for Chinese Traditional word-level analysis"""
+        OUTPUT FORMAT:
+        - word_explanations: [[word, role, color, meaning], ...] - RICH MEANINGS
+        - Maintains sentence word order (LTR) for optimal user experience
+        - Colors based on grammatical roles and complexity level
+        """
         try:
-            # Extract JSON from response
-            if "```json" in ai_response:
-                ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-            elif "```" in ai_response:
-                ai_response = ai_response.split("```")[1].split("```")[0].strip()
+            prompt = self.get_grammar_prompt(complexity, sentence, target_word)
+            ai_response = self._call_ai_model(prompt, gemini_api_key)
+            parsed_data = self.parse_grammar_response(ai_response, complexity, sentence)
+            validation = self.validator.validate_analysis(parsed_data)
+            
+            # Apply validation results to parsed data
+            parsed_data['validation'] = validation
+            parsed_data['confidence'] = validation.get('quality_score', 50) / 100.0
 
-            batch_data = json.loads(ai_response)
-            if "batch_results" not in batch_data:
-                raise ValueError("Missing batch_results in response")
+            # Generate HTML output with RICH explanations
+            html_output = self._generate_html_output(parsed_data, sentence, complexity)
 
-            results = []
-            for item in batch_data["batch_results"]:
-                sentence_index = item.get("sentence_index", 0) - 1  # Convert to 0-based
-                if 0 <= sentence_index < len(sentences):
-                    sentence = sentences[sentence_index]
-
-                    # Convert batch format to standardized format
-                    elements = {}
-                    word_explanations = []
-                    colors = self.get_color_scheme(complexity)
-
-                    # Process words into elements by grammatical role
-                    for word_data in item.get("words", []):
-                        role = word_data.get("grammatical_role", "other")
-                        if role not in elements:
-                            elements[role] = []
-
-                        elements[role].append({
-                            "word": word_data.get("word", ""),
-                            "individual_meaning": word_data.get("individual_meaning", ""),
-                            "grammatical_role": role
-                        })
-
-                        # Add to word explanations as [word, pos, color, explanation]
-                        word = word_data.get("word", "")
-                        individual_meaning = word_data.get("individual_meaning", "")
-                        category = self._map_grammatical_role_to_category(role)
-                        color = colors.get(category, '#888888')
-                        explanation = f"{individual_meaning} ({role})"
-
-                        word_explanations.append([word, role, color, explanation])
-
-                    # Reorder word_explanations to match sentence word order
-                    word_explanations = self._reorder_explanations_by_sentence_position(sentence, word_explanations)
-
-                    # Process word combinations
-                    word_combinations = []
-                    for combo in item.get("word_combinations", []):
-                        word_combinations.append({
-                            "text": combo.get("text", ""),
-                            "combined_meaning": combo.get("combined_meaning", ""),
-                            "grammatical_role": combo.get("grammatical_role", "compound")
-                        })
-
-                    # Add combinations to elements for HTML generation
-                    if word_combinations:
-                        elements["word_combinations"] = word_combinations
-
-                    explanations = item.get("explanations", {})
-
-                    results.append({
-                        "sentence": sentence,
-                        "elements": elements,
-                        "word_explanations": word_explanations,
-                        "explanations": explanations
-                    })
-                else:
-                    # Fallback for invalid index
-                    results.append({
-                        "sentence": sentences[len(results)] if len(results) < len(sentences) else "",
-                        "elements": {},
-                        "word_explanations": [],
-                        "explanations": {"sentence_structure": "Parsing failed", "complexity_notes": ""}
-                    })
-
-            return results
-
+            # Return GrammarAnalysis object with rich explanations
+            return GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word or "",
+                language_code=self.language_code,
+                complexity_level=complexity,
+                grammatical_elements=parsed_data.get('elements', {}),
+                explanations=parsed_data.get('explanations', {}),
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=parsed_data.get('confidence', 0.0),
+                word_explanations=parsed_data.get('word_explanations', [])
+            )
         except Exception as e:
-            logger.error(f"Chinese Traditional batch parsing failed: {e}")
-            # Fallback to basic parsing
-            return [{
-                "sentence": sentence,
-                "elements": {},
-                "word_explanations": [],
-                "explanations": {"sentence_structure": f"Analysis failed: {e}", "complexity_notes": ""}
-            } for sentence in sentences]
+            logger.error(f"Analysis failed for '{sentence}': {e}")
+            # Create fallback analysis
+            fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
+            legacy_fallback = self._convert_modular_to_legacy(fallback_result, sentence)
+            html_output = self._generate_html_output(legacy_fallback, sentence, complexity)
+            return GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word or "",
+                language_code=self.language_code,
+                complexity_level=complexity,
+                grammatical_elements=legacy_fallback.get('elements', {}),
+                explanations=legacy_fallback.get('explanations', {}),
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=legacy_fallback.get('confidence', 0.3),
+                word_explanations=legacy_fallback.get('word_explanations', [])
+            )
 
-    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Return color scheme for Chinese Traditional grammatical elements"""
-        # Use the same color scheme for all complexity levels (Chinese categories are fundamental)
-        return self.GRAMMATICAL_ROLES.copy()
+    def get_batch_grammar_prompt(
+        self,
+        complexity: str,
+        sentences: List[str],
+        target_word: str,
+        native_language: str = "English"
+    ) -> str:
+        """
+        Generate Chinese Traditional-specific AI prompt for batch grammar analysis.
 
-    def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
-        """Validate Chinese Traditional analysis quality with 3-6 simple checks (85% threshold)"""
-        # Handle empty or invalid inputs
-        if not parsed_data or not original_sentence or not parsed_data.get('elements'):
-            return 0.5  # Neutral fallback for empty inputs
+        Delegates to the prompt builder component.
 
-        score = 0.0
-        checks_passed = 0
-        total_checks = 6
+        Args:
+            complexity: Complexity level (beginner/intermediate/advanced)
+            sentences: List of sentences to analyze
+            target_word: Target word being learned
+            native_language: Language for explanations
+
+        Returns:
+            Formatted prompt string for AI analysis
+        """
+        return self.prompt_builder.build_batch_grammar_prompt(
+            complexity, sentences, target_word, native_language
+        )
+
+    def analyze_batch_response(
+        self,
+        ai_response: str,
+        sentences: List[str],
+        target_word: str = "",
+        complexity: str = "intermediate"
+    ) -> Dict[str, Any]:
+        """
+        Analyze AI response for batch grammar analysis.
+
+        Uses the modular pipeline: parse → validate → fallback if needed.
+
+        Args:
+            ai_response: Raw AI response string
+            sentences: Original sentences being analyzed
+            target_word: Target word being learned
+            complexity: Complexity level
+
+        Returns:
+            Analyzed and validated results
+        """
 
         try:
-            elements = parsed_data.get('elements', {})
+            # Step 1: Parse the AI response
+            parsed_result = self.response_parser.parse_batch_response(ai_response, sentences)
 
-            # Check 1: Required particles present in appropriate contexts
-            has_particles = any(role in ['aspect_particle', 'modal_particle', 'structural_particle']
-                              for role in elements.keys())
-            if has_particles:
-                checks_passed += 1
-                score += 0.15
+            if not parsed_result.get('success', False):
+                logger.warning("AI response parsing failed, using fallback analysis")
+                return self._use_fallback_analysis(sentences, target_word)
 
-            # Check 2: Script validation - all characters are valid Traditional Han characters
-            sentence_chars = re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf]', original_sentence)
-            all_words = []
-            for role_elements in elements.values():
-                if isinstance(role_elements, list):
-                    all_words.extend([item.get('word', '') for item in role_elements])
+            results = parsed_result.get('results', [])
 
-            word_chars = ''.join(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf]', ' '.join(all_words)))
-            char_coverage = len(set(word_chars)) / len(set(sentence_chars)) if sentence_chars else 0
-            if char_coverage >= 0.8:  # 80% character coverage
-                checks_passed += 1
-                score += 0.15
+            # Step 2: Validate each result
+            validated_results = []
+            for result in results:
+                validation = self.validator.validate_analysis(result)
+                result['validation'] = validation
+                validated_results.append(result)
 
-            # Check 3: Measure word agreement - nouns have appropriate classifiers
-            nouns = elements.get('noun', [])
-            measure_words = elements.get('measure_word', [])
-            if nouns and measure_words:  # If both exist, likely proper agreement
-                checks_passed += 1
-                score += 0.15
+            # Step 3: Check overall quality
+            overall_quality = self._assess_overall_quality(validated_results)
 
-            # Check 4: Tone markers in Pinyin (if present)
-            has_tones = bool(self.pinyin_tone_pattern.search(original_sentence))
-            if not has_tones or any('āáǎà' in word.get('individual_meaning', '') for role_elements in elements.values()
-                                   for word in (role_elements if isinstance(role_elements, list) else [])):
-                checks_passed += 1
-                score += 0.15
-
-            # Check 5: Word order patterns (basic SVO check)
-            verbs = elements.get('verb', [])
-            if verbs:  # Has verbs, basic structure present
-                checks_passed += 1
-                score += 0.15
-
-            # Check 6: Compound word recognition
-            combinations = elements.get('word_combinations', [])
-            if combinations:  # Has compound recognition
-                checks_passed += 1
-                score += 0.25  # Higher weight for compounds
-
-            # Calculate final score with minimum threshold
-            if checks_passed >= 4:  # Need at least 4 checks for high quality
-                final_score = max(score, 0.85)
-            elif checks_passed >= 3:
-                final_score = max(score, 0.7)
-            else:
-                final_score = score * 0.5
-
-            logger.info(f"Chinese Traditional validation: {checks_passed}/{total_checks} checks passed, score: {final_score}")
-            return min(final_score, 1.0)  # Cap at 1.0
+            return {
+                'success': True,
+                'results': validated_results,
+                'metadata': {
+                    'analyzer_version': self.VERSION,
+                    'language': self.LANGUAGE_CODE,
+                    'complexity': complexity,
+                    'overall_quality': overall_quality,
+                    'parsing_method': 'ai_response'
+                }
+            }
 
         except Exception as e:
-            logger.error(f"Chinese Traditional validation failed: {e}")
-            return 0.5  # Neutral fallback score
+            logger.error(f"Batch analysis failed: {e}")
+            return self._use_fallback_analysis(sentences, target_word)
 
-    # Legacy methods for backward compatibility (redirect to new batch methods)
+    def _use_fallback_analysis(self, sentences: List[str], target_word: str = "") -> Dict[str, Any]:
+        """
+        Use fallback analysis when AI analysis fails.
+
+        Args:
+            sentences: Sentences to analyze
+            target_word: Target word
+
+        Returns:
+            Fallback analysis results
+        """
+
+        logger.info("Using fallback analysis for Chinese Traditional")
+
+        fallback_results = []
+        for sentence in sentences:
+            result = self.fallbacks.generate_fallback_analysis(sentence, target_word)
+            fallback_results.append(result)
+
+        return {
+            'success': True,
+            'results': fallback_results,
+            'metadata': {
+                'analyzer_version': self.VERSION,
+                'language': self.LANGUAGE_CODE,
+                'parsing_method': 'fallback_rule_based',
+                'note': 'AI analysis failed, using rule-based fallback'
+            }
+        }
+
+    def _assess_overall_quality(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Assess overall quality of analysis results.
+
+        Args:
+            results: Validated results
+
+        Returns:
+            Quality assessment
+        """
+
+        if not results:
+            return {'score': 0, 'level': 'failed'}
+
+        total_score = 0
+        total_validations = 0
+
+        for result in results:
+            validation = result.get('validation', {})
+            score = validation.get('quality_score', 50)  # Default medium score
+            total_score += score
+            total_validations += 1
+
+        average_score = total_score / total_validations if total_validations > 0 else 0
+
+        # Determine quality level
+        if average_score >= 80:
+            level = 'excellent'
+        elif average_score >= 60:
+            level = 'good'
+        elif average_score >= 40:
+            level = 'acceptable'
+        else:
+            level = 'poor'
+
+        return {
+            'score': round(average_score, 1),
+            'level': level,
+            'total_results': len(results)
+        }
+
+    def get_supported_complexity_levels(self) -> List[str]:
+        """Get supported complexity levels."""
+        return self.zh_tw_config.supported_complexity_levels
+
+    def get_grammatical_roles(self) -> Dict[str, str]:
+        """Get grammatical roles with colors."""
+        return self.zh_tw_config.grammatical_roles
+
+    def validate_sentence(self, sentence: str) -> Dict[str, Any]:
+        """
+        Validate a Chinese Traditional sentence.
+
+        Args:
+            sentence: Sentence to validate
+
+        Returns:
+            Validation results
+        """
+
+        validation_result = {
+            'is_valid': True,
+            'issues': [],
+            'checks': []
+        }
+
+        # Check Traditional characters
+        if not self._has_traditional_characters(sentence):
+            validation_result['issues'].append("Sentence should use Traditional Chinese characters")
+            validation_result['is_valid'] = False
+
+        validation_result['checks'].append('traditional_characters')
+
+        # Check basic structure
+        if len(sentence.strip()) == 0:
+            validation_result['issues'].append("Sentence is empty")
+            validation_result['is_valid'] = False
+
+        validation_result['checks'].append('basic_structure')
+
+        return validation_result
+
+    def _has_traditional_characters(self, sentence: str) -> bool:
+        """
+        Check if sentence contains Traditional Chinese characters.
+
+        Args:
+            sentence: Sentence to check
+
+        Returns:
+            True if Traditional characters are present
+        """
+
+        # Simple check for common Traditional characters
+        traditional_chars = {'臺', '體', '學', '說', '點', '們', '還', '時', '間', '電', '國', '對', '來', '東'}
+
+        for char in sentence:
+            if char in traditional_chars:
+                return True
+
+        # If no definitive Traditional chars, assume valid (could be neutral text)
+        return True
+
+    def get_language_info(self) -> Dict[str, Any]:
+        """Get comprehensive language information."""
+        return {
+            'code': self.zh_tw_config.language_code,
+            'name': self.zh_tw_config.language_name,
+            'native_name': self.zh_tw_config.native_name,
+            'family': self.zh_tw_config.family,
+            'script_type': self.zh_tw_config.script_type,
+            'complexity_rating': self.zh_tw_config.complexity_rating,
+            'key_features': self.zh_tw_config.key_features,
+            'supported_levels': self.zh_tw_config.supported_complexity_levels,
+            'grammatical_categories': len(self.zh_tw_config.grammatical_roles),
+            'analyzer_version': self.VERSION
+        }
+
+    # Abstract method implementations for BaseGrammarAnalyzer
+
     def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
         """Legacy method - redirect to batch prompt for single sentence"""
         return self.get_batch_grammar_prompt(complexity, [sentence], target_word)
 
+    def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
+        """
+        Validate Chinese Traditional analysis quality and return confidence score.
+
+        Args:
+            parsed_data: Parsed analysis data from parse_grammar_response
+            original_sentence: Original sentence for validation
+
+        Returns:
+            Confidence score between 0.0 and 1.0
+        """
+
+        try:
+            # For modular results, check if validation data is already present
+            if 'validation' in parsed_data:
+                validation = parsed_data['validation']
+                quality_score = validation.get('quality_score', 50)
+                # Convert quality score (0-100) to confidence (0.0-1.0)
+                confidence = quality_score / 100.0
+                return confidence
+
+            # For legacy format with 'elements' or 'word_explanations', perform basic validation
+            elements = parsed_data.get('elements', {})
+            word_explanations = parsed_data.get('word_explanations', [])
+
+            if not elements and not word_explanations:
+                return 0.0
+
+            # Basic validation checks
+            base_score = 0.7  # Start with reasonable base score
+
+            # Check word count vs sentence length
+            sentence_length = len(original_sentence)
+            total_words = 0
+
+            if word_explanations:
+                total_words = len(word_explanations)
+            else:
+                # Count words from elements
+                for element_list in elements.values():
+                    if isinstance(element_list, list):
+                        total_words += len(element_list)
+
+            if total_words > 0:
+                # Reasonable word density (roughly 1 word per 2-3 characters for Chinese)
+                expected_words = max(1, sentence_length // 3)
+                if abs(total_words - expected_words) <= 2:
+                    base_score += 0.1
+
+            # Check for grammatical role diversity
+            if word_explanations:
+                roles = [exp[1] for exp in word_explanations if len(exp) > 1]
+            else:
+                roles = list(elements.keys())
+
+            unique_roles = set(roles)
+
+            if len(unique_roles) >= 2:  # At least subject and verb/predicate
+                base_score += 0.1
+
+            if 'verb' in unique_roles or 'predicate' in unique_roles:
+                base_score += 0.05
+
+            # Check meaning completeness
+            if word_explanations:
+                meanings_present = sum(1 for exp in word_explanations if len(exp) > 3 and exp[3].strip())
+                if meanings_present == len(word_explanations):
+                    base_score += 0.05
+            else:
+                # Check if elements have meanings
+                total_elements = sum(len(element_list) for element_list in elements.values() if isinstance(element_list, list))
+                elements_with_meanings = 0
+                for element_list in elements.values():
+                    if isinstance(element_list, list):
+                        elements_with_meanings += sum(1 for item in element_list if isinstance(item, dict) and item.get('individual_meaning', '').strip())
+
+                if elements_with_meanings == total_elements and total_elements > 0:
+                    base_score += 0.05
+
+            return min(base_score, 1.0)
+
+        except Exception as e:
+            logger.error(f"Validation failed for Chinese Traditional: {e}")
+            return 0.0
+
+    def get_color_scheme(self, complexity: str = "intermediate") -> Dict[str, str]:
+        """Return color scheme for Chinese Traditional grammatical elements"""
+        return self.zh_tw_config.get_color_scheme(complexity)
+
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
-        """Legacy method - redirect to batch parsing for single sentence"""
-        results = self.parse_batch_grammar_response(ai_response, [sentence], complexity)
-        return results[0] if results else {
-            "sentence": sentence,
-            "elements": {},
-            "word_explanations": [],
-            "explanations": {"sentence_structure": "Parsing failed", "complexity_notes": ""}
-        }
-
-    def _initialize_patterns(self):
-        """Initialize language-specific patterns and rules"""
-        # Call the Chinese Traditional-specific pattern initialization
-        self._initialize_chinese_traditional_patterns()
-
-    def _initialize_chinese_traditional_patterns(self):
-        """Initialize Chinese Traditional-specific linguistic patterns (5-12 most frequent markers only)"""
-        # Aspect particles (most common grammatical markers) - Traditional characters
-        self.aspect_patterns = {
-            'perfective_le': re.compile(r'了(?=\s|$|[^了著過])'),  # 了 (le) - perfective aspect
-            'durative_zhe': re.compile(r'著(?=\s|$|[^了著過])'),   # 著 (zhe/zhú) - durative aspect
-            'experiential_guo': re.compile(r'過(?=\s|$|[^了著過])') # 過 (guo) - experiential aspect
-        }
-
-        # Modal particles (sentence-final) - Same as Simplified
-        self.modal_patterns = {
-            'question_ma': re.compile(r'嗎(?=\s*$)'),     # 嗎 (ma) - yes-no questions
-            'continuation_ne': re.compile(r'呢(?=\s*$)'),  # 呢 (ne) - topic continuation
-            'suggestion_ba': re.compile(r'吧(?=\s*$)'),    # 吧 (ba) - suggestion/assumption
-            'exclamation_a': re.compile(r'啊(?=\s*$)')     # 啊 (a) - exclamation/realization
-        }
-
-        # Structural particles - Same as Simplified
-        self.structural_patterns = {
-            'attribution_de': re.compile(r'的(?=\s|$)'),   # 的 (de) - attribution/possession
-            'adverbial_de': re.compile(r'地(?=\s|$)'),     # 地 (de) - adverbial modification
-            'complement_de': re.compile(r'得(?=\s|$)')     # 得 (de) - resultative complement
-        }
-
-        # Top 10 measure words (classifiers) - Traditional characters
-        self.measure_word_patterns = {
-            'general_ge': re.compile(r'個(?=\s|$)'),       # 個 (gè) - general classifier
-            'books_ben': re.compile(r'本(?=\s|$)'),        # 本 (běn) - books, notebooks
-            'cups_bei': re.compile(r'杯(?=\s|$)'),         # 杯 (bēi) - cups, glasses
-            'flat_zhang': re.compile(r'張(?=\s|$)'),       # 張 (zhāng) - flat objects
-            'animals_zhi': re.compile(r'隻(?=\s|$)'),      # 隻 (zhī) - animals, one of pair
-            'vehicles_liang': re.compile(r'輛(?=\s|$)'),   # 輛 (liàng) - vehicles
-            'businesses_jia': re.compile(r'家(?=\s|$)'),   # 家 (jiā) - businesses, families
-            'people_wei': re.compile(r'位(?=\s|$)'),       # 位 (wèi) - people (polite)
-            'long_tiao': re.compile(r'條(?=\s|$)'),        # 條 (tiáo) - long thin objects
-            'matters_jian': re.compile(r'件(?=\s|$)')      # 件 (jiàn) - items, matters
-        }
-
-        # Common prepositions/coverbs - Same as Simplified
-        self.preposition_patterns = {
-            'location_zai': re.compile(r'^在|\s在(?=\s)'),  # 在 (zài) - location, progressive
-            'towards_dui': re.compile(r'對(?=\s|$)'),       # 對 (duì) - towards, regarding
-            'benefactive_gei': re.compile(r'給(?=\s|$)'),   # 給 (gěi) - to, for (benefactive)
-            'from_cong': re.compile(r'從(?=\s|$)'),         # 從 (cóng) - from
-            'to_dao': re.compile(r'到(?=\s|$)')             # 到 (dào) - to, until
-        }
-
-        # Traditional Han character validation (extended Unicode ranges for Traditional characters)
-        self.traditional_han_character_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf]')
-
-        # Pinyin validation (basic tone marks) - Same as Simplified
-        self.pinyin_tone_pattern = re.compile(r'[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]')
-
-    def _map_grammatical_role_to_category(self, role: str) -> str:
-        """Map grammatical role to color category"""
-        # Simplified mapping for color assignment
-        role_mapping = {
-            'noun': 'noun',
-            'pronoun': 'pronoun',
-            'verb': 'verb',
-            'adjective': 'adjective',
-            'numeral': 'numeral',
-            'measure_word': 'measure_word',
-            'time_word': 'time_word',
-            'locative_word': 'locative_word',
-            'aspect_particle': 'aspect_particle',
-            'modal_particle': 'modal_particle',
-            'structural_particle': 'structural_particle',
-            'preposition': 'preposition',
-            'conjunction': 'conjunction',
-            'adverb': 'adverb',
-            'interjection': 'interjection',
-            'onomatopoeia': 'onomatopoeia'
-        }
-        return role_mapping.get(role, 'other')
-
-    def _reorder_explanations_by_sentence_position(self, sentence: str, word_explanations: List[List]) -> List[List]:
         """
-        Reorder word explanations to match the order they appear in the sentence.
-        This ensures grammar explanations are displayed in sentence word order for better user experience.
+        Parse single sentence AI response.
+
+        This method handles individual sentence parsing, not batch parsing.
+        For batch processing, use parse_batch_grammar_response directly.
         """
-        if not word_explanations or not sentence:
-            return word_explanations or []
+        try:
+            # Try to parse as JSON first (for batch item format)
+            try:
+                response_data = json.loads(ai_response)
+                if isinstance(response_data, dict) and 'words' in response_data:
+                    # This is already parsed modular data
+                    return self._convert_modular_to_legacy(response_data, sentence)
+            except json.JSONDecodeError:
+                pass
 
-        # For Chinese Traditional, we need to handle word positioning more carefully
-        # Create a list to track word positions
-        positioned_explanations = []
+            # Use the modular pipeline for single sentence
+            batch_result = self.analyze_batch_response(ai_response, [sentence], complexity=complexity)
 
-        for explanation in word_explanations:
-            word = explanation[0]  # word is at index 0 in [word, pos, color, explanation]
+            if batch_result.get('success') and batch_result.get('results'):
+                result = batch_result['results'][0]
+                return self._convert_modular_to_legacy(result, sentence)
+            else:
+                # Fallback analysis
+                fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
+                return self._convert_modular_to_legacy(fallback_result, sentence)
+        except Exception as e:
+            # Fallback on any error
+            fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
+            return self._convert_modular_to_legacy(fallback_result, sentence)
+
+    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
+        """
+        Generate HTML output for Chinese Traditional text with inline color styling for Anki compatibility.
+        RICH EXPLANATIONS LIKE CHINESE SIMPLIFIED - shows individual meanings for each word.
+        """
+        explanations = parsed_data.get('word_explanations', [])
+
+        print(f"DEBUG Chinese Traditional HTML Gen - Input explanations count: {len(explanations)}")
+        print("DEBUG Chinese Traditional HTML Gen - Input sentence: '" + str(sentence) + "'")
+
+        # For Chinese (logographic script without spaces), use position-based replacement
+        color_scheme = self.get_color_scheme(complexity)
+
+        # Sort explanations by position in sentence to avoid conflicts
+        sorted_explanations = sorted(explanations, key=lambda x: sentence.find(x[0]) if len(x) >= 4 else len(sentence))
+
+        # Build HTML by processing the sentence character by character
+        html_parts = []
+        i = 0
+        sentence_len = len(sentence)
+
+        while i < sentence_len:
+            # Check if current position matches any word explanation
+            matched = False
+            for exp in sorted_explanations:
+                if len(exp) >= 4:  # [word, role, color, meaning]
+                    word = exp[0]
+                    word_len = len(word)
+
+                    # Check if word matches at current position
+                    if i + word_len <= sentence_len and sentence[i:i + word_len] == word:
+                        role = exp[1]
+                        color = exp[2] if len(exp) > 2 else color_scheme.get(role, '#888888')
+
+                        # Escape curly braces in word to prevent f-string issues
+                        safe_word_display = word.replace('{', '{{').replace('}', '}}')
+                        colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
+                        html_parts.append(colored_word)
+
+                        print(f"DEBUG Chinese Traditional HTML Gen - Replaced '{word}' with role '{role}' and color '{color}'")
+
+                        i += word_len
+                        matched = True
+                        break
+
+            if not matched:
+                # No match, add character as-is
+                html_parts.append(sentence[i])
+                i += 1
+
+        html = ''.join(html_parts)
+        print("DEBUG Chinese Traditional HTML Gen - Final HTML result: " + html)
+        return html
+
+    def _convert_modular_to_legacy(self, modular_result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        """
+        Convert modular analysis result to legacy format expected by base analyzer.
+
+        Args:
+            modular_result: Result from modular pipeline
+            sentence: Original sentence
+
+        Returns:
+            Legacy format with elements, word_explanations, and explanations dict
+        """
+        # Convert words to word_explanations format
+        word_explanations = []
+        elements = {}
+        explanations = {}
+
+        for word_data in modular_result.get('words', []):
+            word = word_data.get('word', '')
+            role = word_data.get('grammatical_role', 'noun')
+            color = self.zh_tw_config.grammatical_roles.get(role, '#000000')
+            meaning = word_data.get('individual_meaning', '')
+            word_explanations.append([word, role, color, meaning])
+
+            # Also populate elements for compatibility
+            if role not in elements:
+                elements[role] = []
+            elements[role].append({
+                'word': word,
+                'individual_meaning': meaning
+            })
+
+            # Create explanations dictionary for grammar processor compatibility
+            # Group meanings by role for rich explanations
+            if role not in explanations:
+                explanations[role] = []
+            if meaning and meaning != 'Translation not available (fallback analysis)':
+                explanations[role].append(f"{word}: {meaning}")
+
+        # Convert explanations lists to formatted strings
+        formatted_explanations = {}
+        for role, meanings in explanations.items():
+            if meanings:
+                formatted_explanations[role] = '; '.join(meanings)
+            else:
+                formatted_explanations[role] = f"{role} in zh-tw grammar"
+
+        return {
+            "sentence": modular_result.get('original_sentence', sentence),
+            "elements": elements,
+            "word_explanations": word_explanations,
+            "explanations": formatted_explanations
+        }
+
+    def _reorder_explanations_by_sentence_position(self, word_explanations: List[List], sentence: str) -> List[List]:
+        """
+        Reorder word explanations by their position in the sentence.
+
+        Legacy method for compatibility with base analyzer expectations.
+        """
+        if not word_explanations:
+            return word_explanations
+
+        # Create mapping of words to their positions in sentence
+        word_positions = {}
+        for i, word_info in enumerate(word_explanations):
+            word = word_info[0] if len(word_info) > 0 else ""
             if word:
                 # Find all occurrences of this word in the sentence
-                positions = []
                 start = 0
+                positions = []
                 while True:
                     pos = sentence.find(word, start)
                     if pos == -1:
@@ -420,81 +610,33 @@ IMPORTANT:
                     positions.append(pos)
                     start = pos + 1
 
-                # Use the first occurrence position, or a high number if not found
-                position = positions[0] if positions else float('inf')
-                positioned_explanations.append((position, explanation))
+                if positions:
+                    word_positions[i] = min(positions)  # Use first occurrence
 
-        # Sort by position in sentence
-        positioned_explanations.sort(key=lambda x: x[0])
+        # Sort by position
+        sorted_indices = sorted(word_positions.keys(), key=lambda i: word_positions[i])
 
-        # Extract just the explanations
-        sorted_explanations = [exp for _, exp in positioned_explanations]
+        # Reorder explanations
+        reordered = []
+        used_indices = set()
+        for idx in sorted_indices:
+            reordered.append(word_explanations[idx])
+            used_indices.add(idx)
 
-        logger.debug(f"Reordered {len(sorted_explanations)} Chinese Traditional explanations by sentence position")
-        return sorted_explanations
+        # Add any remaining explanations that weren't positioned
+        for i, explanation in enumerate(word_explanations):
+            if i not in used_indices:
+                reordered.append(explanation)
 
-    def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
-        """Create fallback parsing when main parsing fails"""
-        return {
-            'sentence': sentence,
-            'elements': {},
-            'explanations': {
-                'parsing_error': 'Unable to parse AI response, using fallback analysis'
-            }
-        }
+        return reordered
 
-    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Chinese Traditional text with CSS classes for Anki compatibility"""
-        explanations = parsed_data.get('word_explanations', [])
+    def _create_fallback_parse(self, sentence: str, complexity: str = "intermediate") -> Dict[str, Any]:
+        """
+        Create fallback parse when AI analysis fails.
 
-        logger.info(f"DEBUG Chinese Traditional HTML Gen - Input explanations count: {len(explanations)}")
-        logger.info("DEBUG Chinese Traditional HTML Gen - Input sentence: '" + str(sentence) + "'")
+        Legacy method for compatibility.
+        """
+        fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
 
-        # For Chinese Traditional (logographic script without spaces), use sequential replacement instead of space splitting
-        html = sentence
-
-        for exp in explanations:
-            if len(exp) >= 3:
-                word = exp[0]
-                pos = exp[1]
-                category = self._map_grammatical_role_to_category(pos)
-
-                # Replace the word with CSS class version (first occurrence only, in order)
-                safe_word = re.escape(word)
-                css_class = f'grammar-{category}'
-                colored_word = f'<span class="{css_class}">{word}</span>'
-                html = re.sub(safe_word, colored_word, html, count=1)
-
-                logger.info("DEBUG Chinese Traditional HTML Gen - Replaced '" + str(word) + "' with class '" + str(css_class) + "'")
-
-        logger.info("DEBUG Chinese Traditional HTML Gen - Final HTML result: " + html)
-        return html
-
-    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map Chinese Traditional grammatical roles to color scheme categories"""
-        role_mapping = {
-            'noun': 'noun',
-            'verb': 'verb',
-            'adjective': 'adjective',
-            'numeral': 'numeral',
-            'measure_word': 'measure_word',
-            'pronoun': 'pronoun',
-            'time_word': 'time_word',
-            'locative_word': 'locative_word',
-            'aspect_particle': 'aspect_particle',
-            'modal_particle': 'modal_particle',
-            'structural_particle': 'structural_particle',
-            'preposition': 'preposition',
-            'conjunction': 'conjunction',
-            'adverb': 'adverb',
-            'interjection': 'interjection',
-            'onomatopoeia': 'onomatopoeia',
-            'other': 'other'
-        }
-        return role_mapping.get(grammatical_role, 'other')
-
-
-# Register analyzer
-def create_analyzer():
-    """Factory function to create Chinese Traditional analyzer"""
-    return ZhTwAnalyzer()
+        # Convert to legacy format
+        return self._convert_modular_to_legacy(fallback_result, sentence)

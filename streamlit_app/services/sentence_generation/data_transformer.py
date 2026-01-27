@@ -159,7 +159,8 @@ class DataTransformer:
     def get_color_for_category(category: str, language: str) -> str:
         """Get color for grammatical category based on language"""
         # Use the analyzer's color scheme if available
-        analyzer = get_analyzer(DataTransformer.LANGUAGE_NAME_TO_CODE.get(language))
+        normalized_language = language.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('（', '').replace('）', '')
+        analyzer = get_analyzer(DataTransformer.LANGUAGE_NAME_TO_CODE.get(normalized_language))
         if analyzer:
             color_scheme = analyzer.get_color_scheme('beginner')  # Default to beginner
             return color_scheme.get(category, '#CCCCCC')

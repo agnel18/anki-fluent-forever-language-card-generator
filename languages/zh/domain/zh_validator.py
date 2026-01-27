@@ -131,3 +131,86 @@ class ZhValidator:
 
         # Basic validity: has content words and possibly function words
         return has_noun and (has_verb or has_particles)
+
+    def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate the quality and comprehensiveness of explanations in the analysis result."""
+        quality_score = 1.0
+        issues = []
+
+        # Check word explanations for comprehensiveness
+        word_explanations = result.get('word_explanations', [])
+        for i, explanation in enumerate(word_explanations):
+            if len(explanation) < 4:
+                quality_score *= 0.8
+                issues.append(f"Word explanation {i} missing meaning component")
+                continue
+
+            word, role, color, meaning = explanation[:4]
+
+            # Check if meaning is detailed enough (not just brief)
+            if len(meaning.strip()) < 10:
+                quality_score *= 0.9
+                issues.append(f"Word '{word}' has too brief explanation: '{meaning}'")
+
+            # Check for relationship explanations
+            relationship_keywords = ['relates to', 'connects to', 'with', 'and', 'relationship', 'function']
+            has_relationship = any(keyword in meaning.lower() for keyword in relationship_keywords)
+            if not has_relationship and len(word_explanations) > 1:
+                quality_score *= 0.95
+                issues.append(f"Word '{word}' explanation lacks relationship context")
+
+        # Check overall explanations section
+        explanations = result.get('explanations', {})
+        if not explanations:
+            quality_score *= 0.7
+            issues.append("Missing overall explanations section")
+        else:
+            # Check for comprehensive structural analysis
+            overall_structure = explanations.get('overall_structure', '')
+            if len(overall_structure.strip()) < 20:
+                quality_score *= 0.9
+                issues.append("Overall structure explanation too brief")
+
+            # Check for key features explanation
+            key_features = explanations.get('key_features', '')
+            if len(key_features.strip()) < 15:
+                quality_score *= 0.9
+                issues.append("Key features explanation too brief")
+
+            # Check for Chinese-specific content
+            chinese_features = ['aspect', 'classifier', 'particle', 'topic-comment', 'measure word']
+            has_chinese_specific = any(feature in (overall_structure + key_features).lower()
+                                     for feature in chinese_features)
+            if not has_chinese_specific:
+                quality_score *= 0.9
+                issues.append("Explanations lack Chinese-specific grammatical features")
+
+        # Ensure quality score is within bounds
+        quality_score = min(max(quality_score, 0.0), 1.0)
+
+        return {
+            'quality_score': quality_score,
+            'issues': issues,
+            'recommendations': self._generate_quality_recommendations(issues)
+        }
+
+    def _generate_quality_recommendations(self, issues: List[str]) -> List[str]:
+        """Generate recommendations based on identified quality issues."""
+        recommendations = []
+
+        if any('brief' in issue.lower() for issue in issues):
+            recommendations.append("Expand explanations to provide more detailed analysis of word functions and relationships")
+
+        if any('relationship' in issue.lower() for issue in issues):
+            recommendations.append("Include how each word relates to adjacent words and contributes to sentence meaning")
+
+        if any('chinese-specific' in issue.lower() for issue in issues):
+            recommendations.append("Emphasize Chinese grammatical features like aspect markers, classifiers, and particles")
+
+        if any('missing' in issue.lower() for issue in issues):
+            recommendations.append("Ensure all words have complete grammatical analysis including role, color, and detailed meaning")
+
+        if not recommendations:
+            recommendations.append("Analysis quality is good - consider adding more advanced linguistic details")
+
+        return recommendations

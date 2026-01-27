@@ -131,10 +131,24 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         - Colors based on grammatical roles and complexity level
         """
         try:
-            prompt = self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
+            prompt = self.get_grammar_prompt(complexity, sentence, target_word)
             ai_response = self._call_ai(prompt, gemini_api_key)
             result = self.response_parser.parse_response(ai_response, complexity, sentence, target_word)
             validated_result = self.validator.validate_result(result, sentence)
+
+            # Additional explanation quality validation
+            quality_validation = self.validator.validate_explanation_quality(validated_result)
+            validated_result['explanation_quality'] = quality_validation
+
+            # Adjust confidence score based on explanation quality
+            base_confidence = validated_result.get('confidence', 0.5)
+            quality_score = quality_validation.get('quality_score', 1.0)
+            adjusted_confidence = min(base_confidence * quality_score, 1.0)
+            validated_result['confidence'] = adjusted_confidence
+
+            # Log quality issues if any
+            if quality_validation.get('issues'):
+                logger.info(f"Explanation quality issues for '{sentence}': {quality_validation['issues']}")
 
             # Generate HTML output
             html_output = self._generate_html_output(validated_result, sentence, complexity)
@@ -350,8 +364,118 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
     # Abstract method implementations required by BaseGrammarAnalyzer
 
     def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
-        """Generate Chinese-specific AI prompt for grammar analysis."""
-        return self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
+        """Generate Chinese-specific AI prompt for grammar analysis with complexity-aware logic."""
+        if complexity == "beginner":
+            return self._get_beginner_prompt(sentence, target_word)
+        elif complexity == "intermediate":
+            return self._get_intermediate_prompt(sentence, target_word)
+        elif complexity == "advanced":
+            return self._get_advanced_prompt(sentence, target_word)
+        else:
+            return self._get_beginner_prompt(sentence, target_word)
+
+    def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
+        """Generate beginner-level grammar analysis prompt for Chinese."""
+        return f"""Analyze this ENTIRE Chinese sentence WORD BY WORD: {sentence}
+
+For EACH AND EVERY INDIVIDUAL WORD/CHARACTER in the sentence, provide:
+- Its individual meaning and pronunciation (if applicable)
+- Its basic grammatical role (noun, verb, adjective, particle, etc.)
+- How it functions in this simple sentence
+- Basic relationships with other words
+
+Pay special attention to the target word: {target_word}
+
+Focus on basic Chinese features:
+- Basic particles (的, 了, 吗, etc.)
+- Simple subject-verb-object structure
+- Basic classifiers and measure words
+
+Return a JSON object with detailed word analysis for ALL words in the sentence:
+{{
+  "words": [
+    {{
+      "word": "example_word",
+      "individual_meaning": "translation/meaning",
+      "grammatical_role": "noun/verb/adjective/particle/etc",
+      "basic_function": "subject/object/modifier",
+      "importance": "learning significance"
+    }}
+  ],
+  "explanations": {{
+    "overall_structure": "Basic sentence structure explanation",
+    "key_features": "Simple Chinese grammatical features"
+  }}
+}}
+
+CRITICAL: Analyze EVERY word in the sentence, not just the target word! Provide COMPREHENSIVE explanations for basic Chinese grammar."""
+
+    def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
+        """Generate intermediate-level grammar analysis prompt for Chinese."""
+        return f"""Analyze this Chinese sentence with INTERMEDIATE grammar focus: {sentence}
+
+Provide detailed analysis including:
+- Aspect markers (了, 着, 过) and their functions
+- Classifier usage and selection
+- Pronoun systems and reference
+- Complex particle functions (把, 被, 给, etc.)
+- Topic-comment structure
+
+Pay special attention to the target word: {target_word}
+
+Return a JSON object with comprehensive analysis:
+{{
+  "words": [
+    {{
+      "word": "example",
+      "grammatical_role": "role",
+      "aspect_info": "aspect marking if applicable",
+      "classifier_info": "classifier usage",
+      "syntactic_role": "function in sentence"
+    }}
+  ],
+  "explanations": {{
+    "aspect_system": "aspect marker usage in sentence",
+    "classifier_usage": "classifier selection and function",
+    "complex_structures": "intermediate Chinese syntax"
+  }}
+}}
+
+CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for Chinese-specific features."""
+
+    def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
+        """Generate advanced-level grammar analysis prompt for Chinese."""
+        return f"""Perform advanced grammatical analysis of this Chinese sentence: {sentence}
+
+Analyze complex linguistic phenomena:
+- Multiple aspect markers and their interactions
+- Complex classifier systems and quantification
+- Discourse particles and pragmatic functions (呢, 吧, 啊, etc.)
+- Topic chains and information structure
+- Serial verb constructions
+- Resultative compounds and directional complements
+
+Pay special attention to the target word: {target_word}
+
+Return detailed JSON analysis with advanced Chinese linguistic features:
+{{
+  "words": [
+    {{
+      "word": "example",
+      "grammatical_role": "detailed_role",
+      "aspect_complexity": "multiple aspect interactions",
+      "discourse_function": "pragmatic particle usage",
+      "syntactic_complexity": "advanced structure analysis"
+    }}
+  ],
+  "explanations": {{
+    "aspect_interactions": "complex aspect marker combinations",
+    "discourse_structure": "information packaging and topic-comment",
+    "advanced_syntax": "serial verbs, compounds, complements"
+  }}
+}}
+
+CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for advanced Chinese grammar phenomena."""
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into standardized Chinese grammar analysis format."""

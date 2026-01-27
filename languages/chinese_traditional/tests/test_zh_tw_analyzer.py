@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Comprehensive Test Suite for ZhTwAnalyzer (Chinese Traditional Grammar Analyzer)
-Phase 4: Tests + Documentation
+Updated for Modular Architecture v4.0
 
 Tests cover:
-- Core functionality (patterns, validation, batch processing)
+- Modular component integration (config, prompt builder, parser, validator, fallbacks)
 - Chinese Traditional-specific linguistic features
 - Error handling and edge cases
-- HTML generation and color coding
-- Integration with batch processor
+- Quality validation and fallback mechanisms
 """
 
 import pytest
@@ -17,11 +16,12 @@ import os
 import json
 from unittest.mock import Mock, patch
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'streamlit_app'))
+# Add project root to path for imports
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, 'streamlit_app'))
 
-from language_analyzers.analyzers.zh_tw_analyzer import ZhTwAnalyzer
+from languages.chinese_traditional.zh_tw_analyzer import ZhTwAnalyzer
 
 
 class TestZhTwAnalyzer:
@@ -89,12 +89,175 @@ class TestZhTwAnalyzer:
 
     def test_initialization(self, analyzer):
         """Test analyzer initialization and basic properties"""
-        assert analyzer.VERSION == "3.0"
+        assert analyzer.VERSION == "4.0"  # Updated for modular architecture
         assert analyzer.LANGUAGE_CODE == "zh-tw"
         assert analyzer.LANGUAGE_NAME == "Chinese Traditional"
-        assert hasattr(analyzer, 'aspect_patterns')
-        assert hasattr(analyzer, 'modal_patterns')
-        assert hasattr(analyzer, 'measure_word_patterns')
+
+        # Test modular components are initialized
+        assert hasattr(analyzer, 'config')
+        assert hasattr(analyzer, 'prompt_builder')
+        assert hasattr(analyzer, 'response_parser')
+        assert hasattr(analyzer, 'validator')
+        assert hasattr(analyzer, 'fallbacks')
+
+        # Test config properties
+        assert analyzer.config.language_code == "zh-tw"
+        assert analyzer.config.language_name == "Chinese Traditional"
+        assert len(analyzer.config.grammatical_roles) == 16  # 16 Chinese categories
+
+    def test_config_initialization(self, analyzer):
+        """Test configuration component initialization"""
+        config = analyzer.config
+
+        # Test basic properties
+        assert config.language_code == "zh-tw"
+        assert config.language_name == "Chinese Traditional"
+        assert config.native_name == "繁體中文"
+        assert config.family == "Sino-Tibetan"
+        assert config.complexity_rating == "high"
+
+        # Test grammatical roles
+        assert 'noun' in config.grammatical_roles
+        assert 'verb' in config.grammatical_roles
+        assert 'aspect_particle' in config.grammatical_roles
+        assert 'measure_word' in config.grammatical_roles
+
+        # Test word patterns
+        assert 'measure_words' in config.word_patterns
+        assert 'aspect_particles' in config.word_patterns
+        assert 'modal_particles' in config.word_patterns
+
+    def test_prompt_builder(self, analyzer):
+        """Test prompt builder component"""
+        prompt_builder = analyzer.prompt_builder
+
+        # Test prompt generation
+        sentences = ["我吃飯。", "你學習。"]
+        prompt = prompt_builder.build_batch_grammar_prompt(
+            complexity="intermediate",
+            sentences=sentences,
+            target_word="吃",
+            native_language="English"
+        )
+
+        assert "Chinese Traditional" in prompt
+        assert "intermediate" in prompt
+        assert "我吃飯。" in prompt
+        assert "你學習。" in prompt
+        assert "target word: \"吃\"" in prompt
+
+    def test_response_parser(self, analyzer):
+        """Test response parser component"""
+        parser = analyzer.response_parser
+
+        # Test JSON extraction
+        json_response = '{"batch_results": [{"sentence_index": 1, "words": []}]}'
+        parsed = parser._extract_json_from_response(json_response)
+        assert parsed is not None
+        assert 'batch_results' in parsed
+
+        # Test invalid response handling
+        invalid_response = "This is not JSON"
+        parsed = parser._extract_json_from_response(invalid_response)
+        assert parsed is None
+
+    def test_validator(self, analyzer):
+        """Test validator component"""
+        validator = analyzer.validator
+
+        # Test validation of good result
+        good_result = {
+            'words': [
+                {'word': '我', 'individual_meaning': 'I', 'grammatical_role': 'pronoun'},
+                {'word': '吃', 'individual_meaning': 'eat', 'grammatical_role': 'verb'},
+                {'word': '飯', 'individual_meaning': 'rice/meal', 'grammatical_role': 'noun'}
+            ],
+            'word_combinations': [],
+            'original_sentence': '我吃飯。'
+        }
+
+        validation = validator.validate_analysis(good_result)
+        assert validation['is_valid'] is True
+        assert validation['quality_score'] > 0
+
+        # Test validation of bad result
+        bad_result = {
+            'words': [],
+            'word_combinations': [],
+            'original_sentence': ''
+        }
+
+        validation = validator.validate_analysis(bad_result)
+        assert validation['is_valid'] is False
+        assert validation['quality_score'] < 50
+
+    def test_fallbacks(self, analyzer):
+        """Test fallbacks component"""
+        fallbacks = analyzer.fallbacks
+
+        # Test fallback analysis
+        sentence = "我吃飯。"
+        result = fallbacks.generate_fallback_analysis(sentence)
+
+        assert result['analysis_method'] == 'fallback_rule_based'
+        assert 'words' in result
+        assert len(result['words']) > 0
+
+    def test_modular_integration(self, analyzer, sample_sentences):
+        """Test integration of all modular components"""
+        # Test full pipeline with mocked AI response
+        mock_response = json.dumps({
+            "batch_results": [{
+                "sentence_index": 1,
+                "words": [
+                    {"word": "我", "individual_meaning": "I", "grammatical_role": "pronoun"},
+                    {"word": "吃", "individual_meaning": "eat", "grammatical_role": "verb"},
+                    {"word": "飯", "individual_meaning": "rice/meal", "grammatical_role": "noun"}
+                ],
+                "word_combinations": []
+            }]
+        })
+
+        # This would normally call AI, but we'll test the parsing pipeline
+        parsed = analyzer.response_parser.parse_batch_response(mock_response, sample_sentences[:1])
+        assert parsed['success'] is True
+        assert len(parsed['results']) == 1
+
+    def test_language_info(self, analyzer):
+        """Test language information retrieval"""
+        info = analyzer.get_language_info()
+
+        assert info['code'] == 'zh-tw'
+        assert info['name'] == 'Chinese Traditional'
+        assert info['native_name'] == '繁體中文'
+        assert info['family'] == 'Sino-Tibetan'
+        assert info['complexity_rating'] == 'high'
+        assert info['analyzer_version'] == '4.0'
+
+    def test_supported_levels(self, analyzer):
+        """Test supported complexity levels"""
+        levels = analyzer.get_supported_complexity_levels()
+        assert 'beginner' in levels
+        assert 'intermediate' in levels
+        assert 'advanced' in levels
+
+    def test_grammatical_roles(self, analyzer):
+        """Test grammatical roles access"""
+        roles = analyzer.get_grammatical_roles()
+        assert isinstance(roles, dict)
+        assert len(roles) == 16  # Chinese has 16 categories
+        assert 'noun' in roles
+        assert 'aspect_particle' in roles
+
+    def test_sentence_validation(self, analyzer):
+        """Test sentence validation"""
+        # Valid sentence
+        valid_result = analyzer.validate_sentence("我吃飯。")
+        assert valid_result['is_valid'] is True
+
+        # Invalid sentence
+        invalid_result = analyzer.validate_sentence("")
+        assert invalid_result['is_valid'] is False
 
     def test_patterns_initialization(self, analyzer):
         """Test Chinese Traditional-specific pattern initialization"""

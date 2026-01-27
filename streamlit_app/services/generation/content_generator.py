@@ -346,7 +346,9 @@ IMPORTANT:
                     ipa = line.split(".", 1)[1].strip() if "." in line else line
                     if ipa:
                         # Validate IPA/Pinyin output
-                        language_code = LANGUAGE_NAME_TO_CODE.get(language, "en")
+                        # Normalize language name for lookup (convert to lowercase, replace spaces with underscores)
+                        normalized_language = language.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('（', '').replace('）', '')
+                        language_code = LANGUAGE_NAME_TO_CODE.get(normalized_language, "en")
                         is_valid, validated_ipa = validate_ipa_output(ipa, language_code)
                         if is_valid:
                             ipa_list.append(validated_ipa)

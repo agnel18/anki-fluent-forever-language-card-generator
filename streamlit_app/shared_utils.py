@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION UTILITIES
 # ============================================================================
 
-# Gemini model configuration
+# Gemini model configuration - STRICTLY LIMITED TO APPROVED MODELS ONLY
 GEMINI_MODELS = {
-    'current': 'gemini-2.0-flash-exp',
-    'fallback': 'gemini-1.5-flash',
-    'deprecated': ['gemini-pro', 'gemini-pro-vision']
+    'current': 'gemini-2.5-flash',        # Primary model for complex analysis
+    'fallback': 'gemini-3-flash-preview', # Fallback model for simpler tasks
+    'deprecated': ['gemini-pro', 'gemini-pro-vision', 'gemini-1.5-flash', 'gemini-2.0-flash-exp']
 }
 
 def get_gemini_model() -> str:

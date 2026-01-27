@@ -115,39 +115,35 @@ class ZhConfig:
         # For simplicity, define templates inline or load from file
         self.prompt_templates = {
             "single": """
-Analyze this Chinese sentence and provide a detailed grammatical breakdown.
+Analyze this Chinese sentence and provide DETAILED grammatical breakdown.
 
 Sentence: {{sentence}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
+
+For EACH word/character in the sentence, provide:
+- Its specific grammatical function and role
+- How it contributes to the sentence meaning
+- Relationships with adjacent words
+- Chinese-specific features (aspect, classifiers, particles)
 
 Return a JSON object with exactly this structure:
 {
   "sentence": "{{sentence}}",
   "words": [
     {
-      "word": "first_word",
-      "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
-      "individual_meaning": "brief explanation of this word's role in the sentence"
-    },
-    {
-      "word": "second_word",
-      "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
-      "individual_meaning": "brief explanation of this word's role in the sentence"
+      "word": "character/word",
+      "grammatical_role": "noun|verb|aspect_marker|classifier|particle|...",
+      "individual_meaning": "Detailed explanation of this element's function, relationships, and contribution to sentence meaning"
     }
   ],
   "explanations": {
-    "overall_structure": "brief explanation of sentence structure",
-    "key_features": "any notable grammatical features like aspect markers or classifiers"
+    "overall_structure": "Detailed explanation of sentence structure and word relationships",
+    "key_features": "Notable Chinese grammatical features like aspect usage, classifier selection, particle functions"
   }
 }
 
-Important:
-- Break down the sentence into individual words/characters as appropriate
-- Assign appropriate grammatical roles from the list above
-- Pay special attention to aspect markers (了, 着, 过), classifiers (个, 本, 杯), and particles (的, 地, 得)
-- Provide meaningful explanations for each word
-- Use only valid JSON format
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY element, explaining relationships and functions in detail.
 """,
             "batch": """
 Analyze these Chinese sentences and provide detailed grammatical breakdowns for each.
@@ -156,6 +152,12 @@ Sentences: {{sentences}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
 
+For EACH sentence, provide comprehensive analysis including:
+- Word-by-word grammatical breakdown
+- Chinese-specific features (aspect markers, classifiers, particles)
+- Relationships between sentence elements
+- Overall sentence structure and function
+
 Return a JSON object with exactly this structure:
 {
   "batch_results": [
@@ -163,31 +165,20 @@ Return a JSON object with exactly this structure:
       "sentence": "first sentence",
       "words": [
         {
-          "word": "first_word",
-          "grammatical_role": "noun|verb|pronoun|adjective|adverb|numeral|classifier|particle|preposition|conjunction|interjection|aspect_marker|modal_particle|structural_particle|other",
-          "individual_meaning": "brief explanation of this word's role"
+          "word": "character/word",
+          "grammatical_role": "noun|verb|aspect_marker|classifier|particle|...",
+          "individual_meaning": "Detailed explanation of function and relationships"
         }
       ],
       "explanations": {
-        "overall_structure": "brief explanation",
-        "key_features": "notable features like aspect usage or classifier selection"
+        "overall_structure": "Detailed structural analysis",
+        "key_features": "Chinese grammatical features and their functions"
       }
-    },
-    {
-      "sentence": "second sentence",
-      "words": [...],
-      "explanations": {...}
     }
   ]
 }
 
-Important:
-- Analyze each sentence separately
-- Break down each sentence into individual words/characters
-- Assign appropriate grammatical roles
-- Pay special attention to Chinese-specific features (aspect, classifiers, particles)
-- Provide meaningful explanations
-- Use only valid JSON format
+CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
 """
         }
         self.patterns = self._load_yaml(config_dir / "zh_patterns.yaml")

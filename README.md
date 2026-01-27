@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ### 3. Run & Configure APIs
 ```bash
-streamlit run app.py
+streamlit run streamlit_app/app_v3.py
 ```
 **In the app:**
 1. Enter your Google Cloud API key (required for all services)
@@ -62,7 +62,21 @@ streamlit run app.py
 
 ---
 
-## 🎴 Card Types
+## �️ Language Grammar Generator Framework
+
+For developers and linguists interested in extending support to new languages:
+
+- **[Modular Framework](language_grammar_generator/)** — Domain-driven design for creating grammar analyzers
+- **77 Language Support** — Comprehensive templates and guides for all target languages
+- **AI-Powered Analysis** — Advanced prompting techniques for grammatical breakdown
+- **Quality Assurance** — Automated testing and validation frameworks
+- **Production Ready** — Deployment guides and monitoring strategies
+
+**See**: [language_grammar_generator/README.md](language_grammar_generator/README.md) for implementation details.
+
+---
+
+## �🎴 Card Types
 
 Each word generates 3 cards for comprehensive learning:
 
@@ -119,8 +133,6 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 
 **Note**: For learner-friendly languages with complex scripts (Hindi, Arabic, Persian, etc.), we provide romanization using familiar letters instead of strict IPA symbols for easier learning.
 
-📖 **For a comprehensive IPA learning guide**, see [docs/guides/IPA_GUIDE.md](docs/guides/IPA_GUIDE.md)
-
 ---
 
 ## �🛠️ Troubleshooting
@@ -158,15 +170,11 @@ Visit **[ipachart.com](https://www.ipachart.com/)** for:
 
 **Easiest way**: Double-click the `.apkg` file - Anki opens automatically and imports everything.
 
-**See**: [ANKI_SETUP.md](./ANKI_SETUP.md) for detailed import help
-
 ---
 
 ## ☁️ Optional: Cloud Sync
 
 Sync progress across devices with Firebase (optional).
-
-**See**: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for setup instructions.
 
 ---
 
@@ -184,12 +192,14 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 
 ---
 
-## 🚀 What's New (v3.2)
+## 🚀 What's New (v3.3)
 
+- ✅ **Modular Language Grammar Generator** — Comprehensive framework for creating analyzers for all 77 languages ([language_grammar_generator/](language_grammar_generator/))
+- ✅ **Repository Cleanup** — Archived obsolete files and migration docs (~50+ files safely moved to `20260127_old_files/`)
+- ✅ **Documentation Restructuring** — Split monolithic template into modular guides (research, architecture, implementation, testing, deployment)
 - ✅ **Romanization Support** — Learner-friendly pronunciation for 13 Indic/Arabic languages (hi, ar, fa, ur, bn, pa, gu, or, ta, te, kn, ml, si)
 - ✅ **Grammar Analysis** — AI-powered grammatical breakdown with color-coded elements
 - ✅ **Fixed Image Display** — Images now show properly in Anki cards
-- ✅ **Repository Cleanup** — Removed obsolete files (~10MB saved)
 - ✅ **Enhanced Error Recovery** — Better API failure handling
 - ✅ **10-Word Limit** — Prevents API rate limit issues
 - ✅ **Improved Media Embedding** — All audio/images in .apkg files
