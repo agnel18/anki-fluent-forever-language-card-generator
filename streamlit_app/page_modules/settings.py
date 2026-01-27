@@ -455,7 +455,7 @@ def render_settings_page():
                             "https://pixabay.com/api/",
                             params={
                                 "key": test_key,
-                                "q": "test",
+                                "q": "cat",
                                 "per_page": 3
                             }
                         )

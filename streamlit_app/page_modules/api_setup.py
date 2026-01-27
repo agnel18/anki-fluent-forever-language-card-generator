@@ -145,7 +145,7 @@ def render_api_setup_page():
         # Step 2: Enable Billing & Set Up Budget Alerts
         st.markdown("#### 💰 Step 2: Enable Billing & Set Up Budget Alerts")
         st.markdown("""
-        **Google requires billing to be enabled for API access, even for free usage.** Your card is only charged if you exceed free limits.
+        **Google requires billing to be enabled for API access, even for FREE usage.** Your card is only charged if you EXCEED free limits.
 
         ### Quick Billing Setup:
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
@@ -155,7 +155,7 @@ def render_api_setup_page():
 
         ### Set Up Budget Alerts (Recommended):
         1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
-        2. **Create a budget:**
+        2. **Create a budget:** (Acts as a Safety Net to avoid unexpected charges.)
            - **Amount**: $5-10 (catches any mistakes early)
            - **Email alerts**: Enable at 50%, 80%, 100%
 
@@ -175,7 +175,7 @@ def render_api_setup_page():
         4. **Under "API restrictions":**
            - Select **"Restrict key"**
            - Check ONLY these two APIs:
-             - ✅ **Gemini API**
+             - ✅ **Generative Language API**
              - ✅ **Cloud Text-to-Speech API**
         5. **Click "Save"**
 
@@ -262,7 +262,8 @@ def render_api_setup_page():
                 with st.spinner("Testing Pixabay API connection..."):
                     try:
                         import requests
-                        response = requests.get(f"https://pixabay.com/api/?key={test_key}&q=test&per_page=1")
+                        # Use a simple search term that should always work
+                        response = requests.get(f"https://pixabay.com/api/?key={test_key}&q=cat&per_page=1")
                         if response.status_code == 200:
                             data = response.json()
                             if "hits" in data:
