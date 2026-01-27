@@ -120,23 +120,8 @@ def render_api_setup_page():
 
     # Consolidated Setup Instructions Expander
     with st.expander("📖 Setup Instructions", expanded=not bool(google_key)):
-        # Step 1: Setup Progress Checkboxes
-        st.markdown("#### 📋 Step 1: Setup Progress")
-        st.markdown("Track your progress through the setup process:")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.checkbox("✅ Created Google Cloud project", key="step1_complete")
-            st.checkbox("✅ Enabled Gemini API", key="step2_gemini")
-            st.checkbox("✅ Enabled Text-to-Speech API", key="step2_tts")
-        with col2:
-            st.checkbox("✅ Created API credentials", key="step3_credentials")
-            st.checkbox("✅ Restricted API key", key="step4_restricted")
-            st.checkbox("✅ Tested connection", key="step5_tested")
-
-        st.markdown("---")
-
-        # Step 2: Setup Instructions
-        st.markdown("#### 📖 Step 2: Get Your API Key")
+        # Step 1: Setup Instructions
+        st.markdown("#### 📖 Step 1: Get Your API Key")
         st.markdown("""
         **Follow these steps to get your Google Cloud API key:**
 
@@ -157,30 +142,30 @@ def render_api_setup_page():
 
         st.markdown("---")
 
-        # Step 3: Budget & Cost Management
-        st.markdown("#### 💰 Step 3: Budget & Cost Management")
+        # Step 2: Enable Billing & Set Up Budget Alerts
+        st.markdown("#### 💰 Step 2: Enable Billing & Set Up Budget Alerts")
         st.markdown("""
-        **To avoid unexpected costs, set up billing budgets and alerts:**
+        **Google requires billing to be enabled for API access, even for free usage.** Your card is only charged if you exceed free limits.
 
+        ### Quick Billing Setup:
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Click "Billing"** → **"Create Billing Account"**
+        3. **Add your credit/debit card** (won't be charged automatically)
+        4. **Complete verification**
+
+        ### Set Up Budget Alerts (Recommended):
         1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
-        2. **Select your billing account**
-        3. **Create a budget:**
-           - Click "Budgets & alerts" → "Create budget"
-           - Set monthly limit: **$10-25** (covers 1,000+ cards)
-           - Enable email alerts at **50%**, **80%**, and **100%**
-        4. **Monitor usage** in the Billing dashboard
+        2. **Create a budget:**
+           - **Amount**: $5-10 (catches any mistakes early)
+           - **Email alerts**: Enable at 50%, 80%, 100%
 
-        **💡 Budget Tips:**
-        - **Free Tier:** ~50 cards/day, 1,000 cards/month
-        - **Standard Voice:** ~$0.29 per card (stays in free tier)
-        - **Premium Voices:** 2-5x more expensive
-        - **Start Small:** Generate 1-2 words first to test
+        **Free Tier Limits:** ~50 cards/day, 1,000 cards/month - stay well below these!
         """)
 
         st.markdown("---")
 
-        # Step 4: API Key Security (CRITICAL)
-        st.markdown("#### 🔒 Step 4: API Key Security (CRITICAL)")
+        # Step 3: API Key Security (CRITICAL)
+        st.markdown("#### 🔒 Step 3: API Key Security (CRITICAL)")
         st.markdown("""
         **Restrict your API key to prevent unauthorized usage and reduce security risks:**
 
@@ -198,34 +183,42 @@ def render_api_setup_page():
         > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
         """)
 
-        st.markdown("---")
+    google_key_input = st.text_input(
+        "Google Cloud API Key",
+        value=google_key,
+        type="password",
+        help="Paste your Google Cloud API key here (used for Gemini AI and Text-to-Speech)",
+        key="google_api_key_input"
+    )
 
-        # Step 5: Troubleshooting
-        st.markdown("#### 🔧 Step 5: Troubleshooting")
-        st.markdown("""
-        **Common Issues & Solutions:**
+    # API Key Validation
+    if google_key_input and not google_key_input.startswith('AIza'):
+        st.warning("⚠️ Google API keys typically start with 'AIza'. Please verify your key.")
 
-        **❌ "API has not been used"**
-        - Enable the Gemini API and Text-to-Speech API in Google Cloud Console
+    col_save, col_test = st.columns([1, 1])
+    with col_save:
+        if st.button("💾 Save Google Cloud Key", help="Save the Google Cloud API key"):
+            if google_key_input:
+                if not google_key_input.startswith('AIza'):
+                    st.warning("⚠️ This doesn't look like a valid Google API key format. Please verify.")
+                st.session_state.google_api_key = google_key_input
+                st.success("✅ Google Cloud API key saved!")
+            else:
+                st.error("❌ Please enter a Google Cloud API key")
 
-        **❌ "API_KEY_INVALID"**
-        - Check that your API key is copied correctly
-        - Verify the key starts with 'AIza'
-
-        **❌ "PERMISSION_DENIED"**
-        - Restrict your API key to only Gemini API and Text-to-Speech API
-        - Make sure billing is enabled on your project
-
-        **❌ Quota exceeded**
-        - Check your usage in Google Cloud Console
-        - Consider upgrading your billing plan
-
-        **❌ Network errors**
-        - Check your internet connection
-        - Try again in a few minutes
-
-        **Need Help?** Check the [Google Cloud Status Dashboard](https://status.cloud.google.com/)
-        """)
+    with col_test:
+        if google_key_input or google_key:
+            test_key = google_key_input or google_key
+            if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
+                with st.spinner("Testing Google Cloud API connection..."):
+                    try:
+                        import google.generativeai as genai
+                        genai.configure(api_key=test_key)
+                        model = genai.GenerativeModel(get_gemini_model())
+                        response = model.generate_content("Hello")
+                        st.success("✅ Google Cloud API connection successful!")
+                    except Exception as e:
+                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
 
     st.markdown("---")
 
