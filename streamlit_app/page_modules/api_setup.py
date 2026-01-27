@@ -68,7 +68,7 @@ def render_api_setup_page():
     st.markdown("Create custom Anki decks in minutes | Free, no data stored")
     st.divider()
     st.markdown("## 🔐 API Keys Setup")
-    st.markdown("*Configure Gemini AI API for AI generation and Google Cloud Text-to-Speech for audio*")
+    st.markdown("*Configure a single Google Cloud API key with access to Gemini API and Cloud Text-to-Speech API*")
 
     # Firebase sync status and loading
     try:
@@ -113,18 +113,19 @@ def render_api_setup_page():
     st.markdown("---")
 
     # === GOOGLE CLOUD API SECTION ===
-    st.markdown("### 🤖 Gemini AI API (AI Generation & Audio)")
+    st.markdown("### ☁️ Google Cloud APIs (AI Generation & Audio)")
     with st.expander("📖 Setup Instructions", expanded=not bool(google_key)):
         st.markdown("""
         **Follow these steps to get your Google Cloud API key:**
 
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
         2. **Create a new project** or select an existing one
-        3. **Enable the following APIs:**
-           - Gemini AI API
-           - Google Gemini AI API
-           - Google Text-to-Speech API
-           - Cloud Text-to-Speech API
+        3. **Enable exactly these two APIs:**
+           - **Gemini API** - For AI text generation and translations
+           - **Cloud Text-to-Speech API** - For audio generation
+
+        > [!IMPORTANT]
+        > Do NOT enable other Google Cloud APIs unless you specifically need them for other projects.
         4. **Create credentials:**
            - Go to "APIs & Services" → "Credentials"
            - Click "Create Credentials" → "API key"
@@ -147,6 +148,25 @@ def render_api_setup_page():
         - **Premium Voices:** 2-5x more expensive
         - **Start Small:** Generate 1-2 words first to test
         """)
+
+        # API Key Restriction Instructions
+        with st.expander("🔒 API Key Security (CRITICAL)", expanded=False):
+            st.markdown("""
+            **Restrict your API key to prevent unauthorized usage and reduce security risks:**
+
+            1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+            2. **Navigate to** "APIs & Services" → "Credentials"
+            3. **Click on your API key** to edit it
+            4. **Under "API restrictions":**
+               - Select **"Restrict key"**
+               - Check ONLY these two APIs:
+                 - ✅ **Gemini API**
+                 - ✅ **Cloud Text-to-Speech API**
+            5. **Click "Save"**
+
+            > [!WARNING]
+            > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
+            """)
 
     google_key_input = st.text_input(
         "Google Cloud API Key",

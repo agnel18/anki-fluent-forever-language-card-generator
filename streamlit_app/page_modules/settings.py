@@ -220,27 +220,22 @@ def render_settings_page():
     st.markdown("Configure the required APIs for AI generation, images, and audio. All three are needed for full functionality.")
 
     # Load current API keys
-    gemini_key = st.session_state.get("gemini_api_key", "")
     google_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
     pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     # Check current API status
     google_configured = bool(google_key)
-    gemini_configured = bool(gemini_key)
     pixabay_configured = bool(pixabay_key)
 
     # Status overview
     col1, col2, col3 = st.columns(3)
     with col1:
-        if gemini_configured:
-            st.success("✅ **Gemini API** - Configured")
-        else:
-            st.error("❌ **Gemini API** - Not configured")
-    with col2:
         if google_configured:
-            st.success("✅ **Google TTS** - Configured")
+            st.success("✅ **Google Cloud APIs** - Configured")
         else:
-            st.error("❌ **Google TTS** - Not configured")
+            st.error("❌ **Google Cloud APIs** - Not configured")
+    with col2:
+        st.info("ℹ️ **Status:** Gemini + Text-to-Speech")
 
     with col3:
         if pixabay_configured:
@@ -248,101 +243,29 @@ def render_settings_page():
         else:
             st.error("❌ **Pixabay API** - Not configured")
 
-    if not all([gemini_configured, google_configured, pixabay_configured]):
+    if not all([google_configured, pixabay_configured]):
         st.warning("⚠️ Some APIs are not configured. Please set up all required APIs below for full functionality.")
 
-    # === GEMINI API SECTION ===
-    st.markdown("### 🔗 Google Gemini API (AI Generation)")
-    with st.expander("📖 Setup Instructions", expanded=not gemini_configured):
-        st.markdown("""
-        **Follow these steps to get your Google Gemini API key:**
-
-        1. **Go to** https://makersuite.google.com/app/apikey
-        2. **Sign in** with your Google account
-        3. **Create a new API key**
-        4. **Copy and paste** the key into the field below
-        """)
-
-    # Gemini API Key Input
-    gemini_key_input = st.text_input(
-        "Google Gemini API Key",
-        value=gemini_key,
-        type="password",
-        help="Paste your Google Gemini API key here",
-        key="gemini_key_input"
-    )
-
-    col_save, col_test = st.columns([1, 1])
-    with col_save:
-        if st.button("💾 Save Gemini Key", help="Save the Google Gemini API key"):
-            if gemini_key_input:
-                # Save to environment variable
-                os.environ["GOOGLE_API_KEY"] = gemini_key_input
-
-                # Save to .env file
-                env_path = Path(__file__).parent.parent / ".env"
-                try:
-                    env_content = ""
-                    if env_path.exists():
-                        env_content = env_path.read_text()
-
-                    lines = env_content.split('\n')
-                    key_found = False
-                    for i, line in enumerate(lines):
-                        if line.startswith('GOOGLE_API_KEY='):
-                            lines[i] = f'GOOGLE_API_KEY={gemini_key_input}'
-                            key_found = True
-                            break
-
-                    if not key_found:
-                        lines.append(f'GOOGLE_API_KEY={gemini_key_input}')
-
-                    env_path.write_text('\n'.join(lines))
-                    st.success("✅ Google Gemini API key saved successfully!")
-                    st.info("🔄 Refresh the page to apply changes.")
-                    time.sleep(1)
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Failed to save to .env file: {e}")
-                    st.info("💡 The key is set for this session.")
-            else:
-                st.error("❌ Please enter a valid Google Gemini API key")
-
-    with col_test:
-        if gemini_key_input or gemini_key:
-            test_key = gemini_key_input or gemini_key
-            if st.button("🧪 Test Gemini Connection", help="Test your Google Gemini API key"):
-                with st.spinner("Testing Google Gemini API connection..."):
-                    try:
-                        import google.generativeai as genai
-                        genai.configure(api_key=test_key)
-                        model = genai.GenerativeModel(get_gemini_model())
-                        response = model.generate_content("Hello")
-                        st.success("✅ Google Gemini API connection successful!")
-                        st.info("🎉 You can now generate AI content with Gemini!")
-                    except Exception as e:
-                        st.error(f"❌ Google Gemini API test failed: {str(e)}")
-                        st.info("💡 Check your API key and internet connection.")
-
-    st.markdown("---")
-
-    # === GOOGLE TTS API SECTION ===
-    st.markdown("### 🔊 Google Cloud Text-to-Speech API (Audio Generation)")
+    # === GOOGLE CLOUD APIs SECTION ===
+    st.markdown("### ☁️ Google Cloud APIs (Gemini + Text-to-Speech)")
     with st.expander("📖 Setup Instructions", expanded=not google_configured):
         st.markdown("""
-        **Follow these steps to get your Google TTS API key:**
+        **Follow these steps to get your Google Cloud API key:**
 
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
         2. **Create or select** a Google Cloud project
-        3. **Enable the Text-to-Speech API:**
-           - Go to "APIs & Services" > "Library"
-           - Search for "Text-to-Speech API"
-           - Click "Enable"
+        3. **Enable exactly these two APIs:**
+           - **Gemini API** - For AI text generation and translations
+           - **Cloud Text-to-Speech API** - For audio generation
+
+        > [!IMPORTANT]
+        > Do NOT enable other Google Cloud APIs unless you specifically need them for other projects.
+
         4. **Create credentials:**
            - Go to "APIs & Services" > "Credentials"
            - Click "Create Credentials" > "API Key"
            - Copy the generated API key
-        5. **Enable billing** (required for TTS API usage)
+        5. **Enable billing** (required for API usage)
         """)
 
         # Google Cloud Budget Setup Instructions
@@ -366,25 +289,44 @@ def render_settings_page():
             7. **Save the budget**
 
             **💡 Budget Tips:**
-            - **TTS Costs:** ~$0.000016 per character (very cheap for small usage)
             - **Gemini AI Costs:** ~$0.0000025 per input character, ~$0.000005 per output character
+            - **TTS Costs:** ~$0.000016 per character (very cheap for small usage)
             - **Start small:** $10 budget is plenty for testing and light usage
             - **Monitor usage:** Check the billing dashboard regularly
             - **Set alerts:** Get notified before you reach your limit
             """)
 
-    # Google TTS API Key Input
+        # API Key Restriction Instructions
+        with st.expander("🔒 API Key Security (CRITICAL)", expanded=False):
+            st.markdown("""
+            **Restrict your API key to prevent unauthorized usage and reduce security risks:**
+
+            1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+            2. **Navigate to** "APIs & Services" → "Credentials"
+            3. **Click on your API key** to edit it
+            4. **Under "API restrictions":**
+               - Select **"Restrict key"**
+               - Check ONLY these two APIs:
+                 - ✅ **Gemini API**
+                 - ✅ **Cloud Text-to-Speech API**
+            5. **Click "Save"**
+
+            > [!WARNING]
+            > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
+            """)
+
+    # Google Cloud API Key Input
     google_key_input = st.text_input(
-        "Google API Key",
+        "Google Cloud API Key",
         value=google_key,
         type="password",
-        help="Paste your Google Cloud API key here (used for TTS and Gemini)",
+        help="Paste your Google Cloud API key here (used for Gemini AI and Text-to-Speech)",
         key="google_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Google API Key", help="Save the Google API key"):
+        if st.button("💾 Save Google Cloud Key", help="Save the Google Cloud API key"):
             if google_key_input:
                 # Save to session state
                 st.session_state.google_api_key = google_key_input
@@ -411,7 +353,7 @@ def render_settings_page():
                         lines.append(f'GOOGLE_API_KEY={google_key_input}')
 
                     env_path.write_text('\n'.join(lines))
-                    st.success("✅ Google API key saved successfully!")
+                    st.success("✅ Google Cloud API key saved successfully!")
                     st.info("🔄 Refresh the page to apply changes.")
                     time.sleep(1)
                     st.rerun()
@@ -419,25 +361,25 @@ def render_settings_page():
                     st.error(f"❌ Failed to save to .env file: {e}")
                     st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Google API key")
+                st.error("❌ Please enter a valid Google Cloud API key")
 
     with col_test:
         if google_key_input or google_key:
             test_key = google_key_input or google_key
-            if st.button("🧪 Test Google TTS Connection", help="Test your Google API key"):
-                with st.spinner("Testing Google TTS connection..."):
+            if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
+                with st.spinner("Testing Google Cloud API connection..."):
                     try:
-                        from audio_generator import is_google_tts_configured
-                        if is_google_tts_configured():
-                            st.success("✅ Google TTS connection successful!")
-                            st.info("🎉 You can now generate high-quality audio with Google TTS!")
-                        else:
-                            st.error("❌ Google TTS test failed: API key not configured properly")
-                            st.info("💡 Check your API key and ensure Google Cloud Text-to-Speech API is enabled.")
+                        import google.generativeai as genai
+                        genai.configure(api_key=test_key)
+                        model = genai.GenerativeModel(get_gemini_model())
+                        response = model.generate_content("Hello")
+                        st.success("✅ Google Cloud API connection successful!")
+                        st.info("🎉 You can now generate AI content with Gemini and audio with Text-to-Speech!")
                     except Exception as e:
-                        st.error(f"❌ Google TTS test failed: {str(e)}")
-                        st.info("💡 Check your API key and internet connection.")
+                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
+                        st.info("💡 Check your API key and ensure both Gemini API and Cloud Text-to-Speech API are enabled.")
 
+    st.markdown("---")
     st.markdown("---")
 
     # === PIXABAY API SECTION ===
