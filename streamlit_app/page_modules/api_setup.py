@@ -114,6 +114,19 @@ def render_api_setup_page():
 
     # === GOOGLE CLOUD API SECTION ===
     st.markdown("### ☁️ Google Cloud APIs (AI Generation & Audio)")
+
+    # Quick Start Summary
+    st.info("**🚀 Quick Start:** Get API key → Enable 2 APIs → Restrict key → Test connection")
+
+    # Setup Progress Checkboxes
+    with st.expander("📋 Setup Progress", expanded=False):
+        st.checkbox("✅ Created Google Cloud project", key="step1_complete")
+        st.checkbox("✅ Enabled Gemini API", key="step2_gemini")
+        st.checkbox("✅ Enabled Text-to-Speech API", key="step2_tts")
+        st.checkbox("✅ Created API credentials", key="step3_credentials")
+        st.checkbox("✅ Restricted API key", key="step4_restricted")
+        st.checkbox("✅ Tested connection", key="step5_tested")
+
     with st.expander("📖 Setup Instructions", expanded=not bool(google_key)):
         st.markdown("""
         **Follow these steps to get your Google Cloud API key:**
@@ -126,13 +139,17 @@ def render_api_setup_page():
 
         > [!IMPORTANT]
         > Do NOT enable other Google Cloud APIs unless you specifically need them for other projects.
+
         4. **Create credentials:**
            - Go to "APIs & Services" → "Credentials"
            - Click "Create Credentials" → "API key"
         5. **Copy and paste** the key into the field below
+        """)
 
-        **💰 Optional: Set up Budget Alerts (Recommended)**
-        To avoid unexpected costs, set up billing budgets and alerts:
+    # Separate Budget Section
+    with st.expander("💰 Budget & Cost Management", expanded=False):
+        st.markdown("""
+        **To avoid unexpected costs, set up billing budgets and alerts:**
 
         1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
         2. **Select your billing account**
@@ -149,24 +166,24 @@ def render_api_setup_page():
         - **Start Small:** Generate 1-2 words first to test
         """)
 
-        # API Key Restriction Instructions
-        with st.expander("🔒 API Key Security (CRITICAL)", expanded=False):
-            st.markdown("""
-            **Restrict your API key to prevent unauthorized usage and reduce security risks:**
+    # Separate Security Section (no longer nested)
+    with st.expander("🔒 API Key Security (CRITICAL)", expanded=True):
+        st.markdown("""
+        **Restrict your API key to prevent unauthorized usage and reduce security risks:**
 
-            1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-            2. **Navigate to** "APIs & Services" → "Credentials"
-            3. **Click on your API key** to edit it
-            4. **Under "API restrictions":**
-               - Select **"Restrict key"**
-               - Check ONLY these two APIs:
-                 - ✅ **Gemini API**
-                 - ✅ **Cloud Text-to-Speech API**
-            5. **Click "Save"**
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Navigate to** "APIs & Services" → "Credentials"
+        3. **Click on your API key** to edit it
+        4. **Under "API restrictions":**
+           - Select **"Restrict key"**
+           - Check ONLY these two APIs:
+             - ✅ **Gemini API**
+             - ✅ **Cloud Text-to-Speech API**
+        5. **Click "Save"**
 
-            > [!WARNING]
-            > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
-            """)
+        > [!WARNING]
+        > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
+        """)
 
     google_key_input = st.text_input(
         "Google Cloud API Key",
@@ -176,10 +193,16 @@ def render_api_setup_page():
         key="google_api_key_input"
     )
 
+    # API Key Validation
+    if google_key_input and not google_key_input.startswith('AIza'):
+        st.warning("⚠️ Google API keys typically start with 'AIza'. Please verify your key.")
+
     col_save, col_test = st.columns([1, 1])
     with col_save:
         if st.button("💾 Save Google Cloud Key", help="Save the Google Cloud API key"):
             if google_key_input:
+                if not google_key_input.startswith('AIza'):
+                    st.warning("⚠️ This doesn't look like a valid Google API key format. Please verify.")
                 st.session_state.google_api_key = google_key_input
                 st.success("✅ Google Cloud API key saved!")
             else:
@@ -198,6 +221,33 @@ def render_api_setup_page():
                         st.success("✅ Google Cloud API connection successful!")
                     except Exception as e:
                         st.error(f"❌ Google Cloud API test failed: {str(e)}")
+
+    # Troubleshooting Section
+    with st.expander("🔧 Troubleshooting", expanded=False):
+        st.markdown("""
+        **Common Issues & Solutions:**
+
+        **❌ "API has not been used"**
+        - Enable the Gemini API and Text-to-Speech API in Google Cloud Console
+
+        **❌ "API_KEY_INVALID"**
+        - Check that your API key is copied correctly
+        - Verify the key starts with 'AIza'
+
+        **❌ "PERMISSION_DENIED"**
+        - Restrict your API key to only Gemini API and Text-to-Speech API
+        - Make sure billing is enabled on your project
+
+        **❌ Quota exceeded**
+        - Check your usage in Google Cloud Console
+        - Consider upgrading your billing plan
+
+        **❌ Network errors**
+        - Check your internet connection
+        - Try again in a few minutes
+
+        **Need Help?** Check the [Google Cloud Status Dashboard](https://status.cloud.google.com/)
+        """)
 
     st.markdown("---")
 
