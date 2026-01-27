@@ -249,11 +249,13 @@ def render_settings_page():
     # === GOOGLE CLOUD APIs SECTION ===
     st.markdown("### ☁️ Google Cloud APIs (Gemini + Text-to-Speech)")
     with st.expander("📖 Setup Instructions", expanded=not google_configured):
+        # Step 1: Setup Instructions
+        st.markdown("#### 📖 Step 1: Get Your API Key")
         st.markdown("""
         **Follow these steps to get your Google Cloud API key:**
 
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-        2. **Create or select** a Google Cloud project
+        2. **Create a new project** or select an existing one
         3. **Enable exactly these two APIs:**
            - **Gemini API** - For AI text generation and translations
            - **Cloud Text-to-Speech API** - For audio generation
@@ -262,58 +264,53 @@ def render_settings_page():
         > Do NOT enable other Google Cloud APIs unless you specifically need them for other projects.
 
         4. **Create credentials:**
-           - Go to "APIs & Services" > "Credentials"
-           - Click "Create Credentials" > "API Key"
-           - Copy the generated API key
-        5. **Enable billing** (required for API usage)
+           - Go to "APIs & Services" → "Credentials"
+           - Click "Create Credentials" → "API key"
+        5. **Copy and paste** the key into the field below
         """)
 
-        # Google Cloud Budget Setup Instructions
-        with st.expander("💰 Set Up Budget Alerts (Recommended)", expanded=False):
-            st.markdown("""
-            **Prevent unexpected charges by setting up budget alerts in Google Cloud:**
+        st.markdown("---")
 
-            1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
-            2. **Select your billing account** (if you have multiple)
-            3. **Click "Budgets & alerts"** in the left sidebar
-            4. **Click "CREATE BUDGET"**
-            5. **Configure your budget:**
-               - **Name:** "Language Learning App Budget"
-               - **Budget type:** "Specified amount"
-               - **Target amount:** Start with $10-50 for testing
-               - **Budget scope:** Select your project
-            6. **Set up alerts:**
-               - **Alert threshold 1:** 50% of budget → Email notification
-               - **Alert threshold 2:** 90% of budget → Email notification
-               - **Alert threshold 3:** 100% of budget → Email notification
-            7. **Save the budget**
+        # Step 2: Enable Billing & Set Up Budget Alerts
+        st.markdown("#### 💰 Step 2: Enable Billing & Set Up Budget Alerts")
+        st.markdown("""
+        **Google Cloud requires billing to be enabled for API access, even for free usage.** Your card is only charged if you exceed free limits.
 
-            **💡 Budget Tips:**
-            - **Gemini AI Costs:** ~$0.0000025 per input character, ~$0.000005 per output character
-            - **TTS Costs:** ~$0.000016 per character (very cheap for small usage)
-            - **Start small:** $10 budget is plenty for testing and light usage
-            - **Monitor usage:** Check the billing dashboard regularly
-            - **Set alerts:** Get notified before you reach your limit
-            """)
+        ### Quick Billing Setup:
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Click "Billing"** → **"Create Billing Account"**
+        3. **Add your credit/debit card** (won't be charged automatically)
+        4. **Complete verification**
 
-        # API Key Restriction Instructions
-        with st.expander("🔒 API Key Security (CRITICAL)", expanded=False):
-            st.markdown("""
-            **Restrict your API key to prevent unauthorized usage and reduce security risks:**
+        ### Set Up Budget Alerts (Recommended):
+        1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
+        2. **Create a budget:**
+           - **Amount**: $5-10 (catches any mistakes early)
+           - **Email alerts**: Enable at 50%, 80%, 100%
 
-            1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-            2. **Navigate to** "APIs & Services" → "Credentials"
-            3. **Click on your API key** to edit it
-            4. **Under "API restrictions":**
-               - Select **"Restrict key"**
-               - Check ONLY these two APIs:
-                 - ✅ **Gemini API**
-                 - ✅ **Cloud Text-to-Speech API**
-            5. **Click "Save"**
+        **Free Tier Limits:** ~50 cards/day, 1,000 cards/month - stay well below these!
+        """)
 
-            > [!WARNING]
-            > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
-            """)
+        st.markdown("---")
+
+        # Step 3: API Key Security (CRITICAL)
+        st.markdown("#### 🔒 Step 3: API Key Security (CRITICAL)")
+        st.markdown("""
+        **Restrict your API key to prevent unauthorized usage and reduce security risks:**
+
+        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
+        2. **Navigate to** "APIs & Services" → "Credentials"
+        3. **Click on your API key** to edit it
+        4. **Under "API restrictions":**
+           - Select **"Restrict key"**
+           - Check ONLY these two APIs:
+             - ✅ **Gemini API**
+             - ✅ **Cloud Text-to-Speech API**
+        5. **Click "Save"**
+
+        > [!WARNING]
+        > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
+        """)
 
     # Google Cloud API Key Input
     google_key_input = st.text_input(
