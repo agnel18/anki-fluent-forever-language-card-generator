@@ -274,7 +274,7 @@ def render_settings_page():
         # Step 2: Enable Billing & Set Up Budget Alerts
         st.markdown("#### 💰 Step 2: Enable Billing & Set Up Budget Alerts")
         st.markdown("""
-        **Google Cloud requires billing to be enabled for API access, even for free usage.** Your card is only charged if you exceed free limits.
+        **Google Cloud requires billing to be enabled for API access, even for FREE USAGE.** Your card is only charged if you exceed free limits.
 
         ### Quick Billing Setup:
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
@@ -304,7 +304,7 @@ def render_settings_page():
         4. **Under "API restrictions":**
            - Select **"Restrict key"**
            - Check ONLY these two APIs:
-             - ✅ **Gemini API**
+             - ✅ **Generative Language API**
              - ✅ **Cloud Text-to-Speech API**
         5. **Click "Save"**
 

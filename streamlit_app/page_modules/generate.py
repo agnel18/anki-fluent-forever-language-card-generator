@@ -76,7 +76,7 @@ def render_generate_page():
     # Separate section for viewing and editing selected words with enrichment data
     st.markdown("---")
     st.markdown("### 📚 Word Enrichment and Review (Optional)")
-    st.markdown("Provide Word Meanings, Variations, Examples, or cultural notes (max 300 characters).")
+    st.markdown("Provide Word Meanings, Variations, Examples, or cultural notes (LESS THAN 300 CHARACTERS).")
     st.markdown("Your input helps create more personalized and accurate sentences.")
     st.markdown("*Leave blank to skip - the AI will generate content based on the word itself.*")
     
