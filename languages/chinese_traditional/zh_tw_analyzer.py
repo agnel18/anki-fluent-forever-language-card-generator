@@ -77,9 +77,9 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
         - Colors based on grammatical roles and complexity level
         """
         try:
-            prompt = self.get_grammar_prompt(complexity, sentence, target_word)
+            prompt = self.prompt_builder.build_single_sentence_prompt(sentence, target_word, complexity)
             ai_response = self._call_ai_model(prompt, gemini_api_key)
-            parsed_data = self.parse_grammar_response(ai_response, complexity, sentence)
+            parsed_data = self.response_parser.parse_response(ai_response, sentence, complexity)
             validation = self.validator.validate_analysis(parsed_data)
             
             # Apply validation results to parsed data
@@ -479,6 +479,61 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
             fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
             return self._convert_modular_to_legacy(fallback_result, sentence)
 
+    def _convert_modular_to_legacy(self, modular_data: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        print(f"DEBUG: _convert_modular_to_legacy called with modular_data keys: {list(modular_data.keys())}")
+        words = modular_data.get('words', [])
+        elements = {}
+        word_explanations = []
+        colors = self.get_color_scheme('intermediate')  # Use intermediate as default
+
+        for word_data in words:
+            word = word_data.get('word', '')
+            role = word_data.get('grammatical_role', 'other')
+            # Map role using config
+            standard_role = role  # Keep the role name
+            color = colors.get(standard_role, '#AAAAAA')
+            explanation = word_data.get('individual_meaning', standard_role)
+            word_explanations.append([word, standard_role, color, explanation])
+
+            if standard_role not in elements:
+                elements[standard_role] = []
+            elements[standard_role].append(word_data)
+
+        # Get explanations from modular data, or generate from word explanations
+        explanations = modular_data.get('explanations', {})
+        if not explanations:
+            # Generate explanations from word explanations if no explanations field exists
+            explanations = {}
+            for word_exp in word_explanations:
+                if len(word_exp) >= 4:
+                    word, role, color, meaning = word_exp
+                    if role not in explanations:
+                        explanations[role] = []
+                    explanations[role].append(f"{word}: {meaning}")
+
+            # Convert lists to strings for display
+            for role in explanations:
+                if isinstance(explanations[role], list):
+                    explanations[role] = "; ".join(explanations[role])
+
+        # ALWAYS generate rich overall_structure and key_features for sentence-level analysis
+        if 'overall_structure' not in explanations:
+            roles = [exp[1] for exp in word_explanations if len(exp) > 1]
+            role_counts = {}
+            for role in roles:
+                role_counts[role] = role_counts.get(role, 0) + 1
+            overall = f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for role, count in role_counts.items()])}"
+            explanations['overall_structure'] = overall
+            explanations['key_features'] = f"Demonstrates {len(set(roles))} grammatical categories in Chinese Traditional sentence structure"
+            print(f"DEBUG: Generated rich explanations - overall_structure: {overall}")
+
+        return {
+            'sentence': modular_data.get('sentence', sentence),
+            'elements': elements,
+            'explanations': explanations,
+            'word_explanations': word_explanations
+        }
+
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
         """
         Generate HTML output for Chinese Traditional text with inline color styling for Anki compatibility.
@@ -579,6 +634,16 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
             else:
                 formatted_explanations[role] = f"{role} in zh-tw grammar"
 
+        # ALWAYS generate rich overall_structure and key_features for sentence-level analysis
+        if 'overall_structure' not in formatted_explanations:
+            roles = [exp[1] for exp in word_explanations if len(exp) > 1]
+            role_counts = {}
+            for role in roles:
+                role_counts[role] = role_counts.get(role, 0) + 1
+            overall = f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for role, count in role_counts.items()])}"
+            formatted_explanations['overall_structure'] = overall
+            formatted_explanations['key_features'] = f"Demonstrates {len(set(roles))} grammatical categories in Chinese Traditional sentence structure"
+
         return {
             "sentence": modular_result.get('original_sentence', sentence),
             "elements": elements,
@@ -640,3 +705,109 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 
         # Convert to legacy format
         return self._convert_modular_to_legacy(fallback_result, sentence)
+
+    def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
+        """
+        Analyze grammar for multiple sentences with RICH EXPLANATIONS.
+
+        CHINESE TRADITIONAL BATCH PROCESSING:
+        - Handles 8 sentences efficiently (prevents token overflow)
+        - Uses single AI call for all sentences (cost-effective)
+        - Applies per-result validation and fallbacks
+        - Maintains sentence order in output
+        - Provides RICH explanations with overall_structure and key_features
+        - Prevents generic "Grammar analysis for ZH-TW" summaries
+
+        CHINESE TRADITIONAL BATCH SIZE CONSIDERATIONS:
+        - 8 sentences: Optimal balance of efficiency and response quality
+        - Prevents JSON truncation with 2000 max_tokens
+        - Allows meaningful error recovery per sentence
+        - Accounts for Traditional character analysis complexity
+
+        ERROR HANDLING:
+        - If entire batch fails: Return fallbacks for all sentences
+        - If individual sentences fail: Use fallbacks only for failed ones
+        - Maintains RICH explanations even in fallback cases
+        """
+        logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
+        try:
+            prompt = self.prompt_builder.build_batch_grammar_prompt(complexity, sentences, target_word)
+            ai_response = self._call_ai_model(prompt, gemini_api_key)
+            batch_result = self.response_parser.parse_batch_response(ai_response, sentences)
+
+            if not batch_result.get('success', False):
+                logger.warning("Batch parsing failed, using fallback analysis")
+                return self._create_fallback_batch_analyses(sentences, target_word, complexity)
+
+            validated_results = batch_result.get('results', [])
+
+            grammar_analyses = []
+            for result, sentence in zip(validated_results, sentences):
+                # Transform batch result to standard format with rich explanations
+                standard_result = self.response_parser._transform_to_standard_format(result, complexity, target_word)
+                validation = self.validator.validate_analysis(standard_result)
+
+                # Apply validation results
+                standard_result['validation'] = validation
+                standard_result['confidence'] = validation.get('quality_score', 50) / 100.0
+
+                # Generate HTML output with rich explanations
+                html_output = self._generate_html_output(standard_result, sentence, complexity)
+
+                grammar_analyses.append(GrammarAnalysis(
+                    sentence=sentence,
+                    target_word=target_word or "",
+                    language_code=self.language_code,
+                    complexity_level=complexity,
+                    grammatical_elements=standard_result.get('elements', {}),
+                    explanations=standard_result.get('explanations', {}),  # RICH explanations!
+                    color_scheme=self.get_color_scheme(complexity),
+                    html_output=html_output,
+                    confidence_score=standard_result.get('confidence', 0.0),
+                    word_explanations=standard_result.get('word_explanations', [])
+                ))
+
+            return grammar_analyses
+
+        except Exception as e:
+            logger.error(f"Batch analysis failed: {e}")
+            return self._create_fallback_batch_analyses(sentences, target_word, complexity)
+
+    def _create_fallback_batch_analyses(self, sentences: List[str], target_word: str, complexity: str) -> List[GrammarAnalysis]:
+        """
+        Create fallback GrammarAnalysis objects when batch processing fails.
+
+        Ensures RICH explanations even in fallback cases.
+
+        Args:
+            sentences: Sentences to analyze
+            target_word: Target word being learned
+            complexity: Complexity level
+
+        Returns:
+            List of GrammarAnalysis objects with rich fallback explanations
+        """
+        fallback_analyses = []
+        for sentence in sentences:
+            # Use modular fallbacks for rich explanations
+            fallback_result = self.fallbacks.generate_fallback_analysis(sentence, target_word)
+
+            # Convert to standard format with rich explanations
+            standard_result = self.response_parser._transform_to_standard_format(fallback_result, complexity, target_word)
+
+            html_output = self._generate_html_output(standard_result, sentence, complexity)
+
+            fallback_analyses.append(GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word or "",
+                language_code=self.language_code,
+                complexity_level=complexity,
+                grammatical_elements=standard_result.get('elements', {}),
+                explanations=standard_result.get('explanations', {}),  # RICH fallback explanations!
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=standard_result.get('confidence', 0.3),
+                word_explanations=standard_result.get('word_explanations', [])
+            ))
+
+        return fallback_analyses

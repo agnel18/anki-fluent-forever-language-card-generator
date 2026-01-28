@@ -137,6 +137,14 @@ def get_google_tts_voices_rest(language_code: str = None) -> List[dict]:
         logger.warning("No API key available for Google TTS")
         return []
 
+    # Map language codes for TTS compatibility
+    tts_language_map = {
+        "zh-TW": "cmn-CN",  # Chinese Traditional uses same voices as Simplified
+        "zh-tw": "cmn-CN",
+    }
+    if language_code and language_code in tts_language_map:
+        language_code = tts_language_map[language_code]
+
     try:
         # REST API endpoint for listing voices
         url = "https://texttospeech.googleapis.com/v1/voices"

@@ -177,7 +177,7 @@ class GrammarProcessor:
             elif key_features:
                 return key_features
 
-        # Try to build summary from word explanations
+        # Try to build summary from word explanations (always try this if available)
         if hasattr(analysis_result, 'word_explanations') and analysis_result.word_explanations:
             categories = {}
             for exp in analysis_result.word_explanations:

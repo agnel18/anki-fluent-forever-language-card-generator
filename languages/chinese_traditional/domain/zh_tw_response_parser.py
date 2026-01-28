@@ -30,7 +30,96 @@ class ZhTwResponseParser:
         self.config = config
         self.allowed_roles = set(self.config.grammatical_roles.keys())
 
-    def parse_batch_response(self, ai_response: str, sentences: List[str]) -> Dict[str, Any]:
+    def parse_response(self, ai_response: str, sentence: str, complexity: str) -> Dict[str, Any]:
+        """
+        Parse single sentence analysis response from AI.
+
+        Args:
+            ai_response: Raw AI response string
+            sentence: Original sentence being analyzed
+            complexity: Complexity level
+
+        Returns:
+            Parsed and validated analysis results
+        """
+        try:
+            # Extract JSON from response
+            json_data = self._extract_json_from_response(ai_response)
+
+            if not json_data:
+                logger.warning("Invalid response format, using fallback")
+                return self._create_fallback(sentence, complexity)
+
+            # Transform to standard format
+            result = self._transform_to_standard_format(json_data, complexity)
+
+            # Add metadata
+            result['metadata'] = {
+                'parser_version': '1.0',
+                'language': 'zh-tw',
+                'complexity': complexity
+            }
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to parse response: {e}")
+            return self._create_fallback(sentence, complexity)
+
+    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
+        """Parse batch response with per-result fallbacks."""
+        logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
+        try:
+            json_data = self._extract_json_from_response(ai_response)
+
+            # Check if this looks like an error response
+            if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
+                raise ValueError("AI returned error response")
+
+            if isinstance(json_data, list):
+                batch_results = json_data
+            else:
+                batch_results = json_data.get('batch_results', [])
+
+            # If no valid batch results, treat as error
+            if not batch_results:
+                raise ValueError("No valid batch results in AI response")
+
+            results = []
+            for i, item in enumerate(batch_results):
+                if i < len(sentences):
+                    try:
+                        parsed = self._transform_to_standard_format(item, complexity, target_word)
+                        results.append(parsed)
+                    except Exception as e:
+                        logger.warning(f"Batch item {i} failed: {e}")
+                        results.append(self._create_fallback(sentences[i], complexity))
+                else:
+                    results.append(self._create_fallback(sentences[i], complexity))
+
+            # If we don't have results for all sentences, add fallbacks
+            while len(results) < len(sentences):
+                results.append(self._create_fallback(sentences[len(results)], complexity))
+
+            return results
+        except Exception as e:
+            logger.error(f"Batch parsing failed: {e}")
+            return [self._create_fallback(s, complexity) for s in sentences]
+        """Parse single response with fallbacks and explanations extraction."""
+        logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
+        try:
+            json_data = self._extract_json_from_response(ai_response)
+
+            # Check if this looks like an error response
+            if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
+                raise ValueError("AI returned error response")
+
+            return self._transform_to_standard_format(json_data, complexity, target_word)
+        except Exception as e:
+            logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
+            # Create fallback result with explanations
+            fallback_result = self._create_fallback(sentence, complexity)
+            return self._transform_to_standard_format(fallback_result, complexity, target_word)
         """
         Parse batch analysis response from AI.
 
@@ -163,6 +252,7 @@ class ZhTwResponseParser:
             'original_sentence': sentence,
             'words': [],
             'word_combinations': result.get('word_combinations', []),
+            'explanations': result.get('explanations', {}),  # Extract explanations field
             'validation_issues': []
         }
 
@@ -298,7 +388,86 @@ class ZhTwResponseParser:
 
         return fallback_results
 
-    def parse_validation_response(self, ai_response: str) -> Dict[str, Any]:
+    def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
+        """Transform parsed data to standard format with explanations extraction."""
+        words = data.get('words', [])
+        elements = {}
+        word_explanations = []
+        colors = self._get_color_scheme(complexity)
+
+        for word_data in words:
+            word = word_data.get('word', '')
+            role = word_data.get('grammatical_role', 'other')
+            if target_word and word == target_word:
+                role = 'target_word'
+            # Map role using config
+            standard_role = role  # Keep the role name
+            color = self.config.grammatical_roles.get(standard_role, '#AAAAAA')
+            explanation = word_data.get('individual_meaning', standard_role)
+            
+            # Use word meanings dictionary if explanation is generic
+            if self._is_generic_explanation(explanation):
+                dict_meaning = self.config.word_meanings.get(word, '')
+                if dict_meaning:
+                    explanation = dict_meaning
+                else:
+                    # Fallback to role-based explanation
+                    explanation = f"{word} ({standard_role})"
+            
+            word_explanations.append([word, standard_role, color, explanation])
+
+            if standard_role not in elements:
+                elements[standard_role] = []
+            elements[standard_role].append(word_data)
+
+        explanations = data.get('explanations', {})
+        
+        # Generate overall_structure and key_features if missing
+        if not explanations.get('overall_structure'):
+            roles = [exp[1] for exp in word_explanations if len(exp) > 1]
+            role_counts = {}
+            for role in roles:
+                role_counts[role] = role_counts.get(role, 0) + 1
+            overall = f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for role, count in role_counts.items()])}"
+            explanations['overall_structure'] = overall
+            explanations['key_features'] = f"Demonstrates {len(set(roles))} grammatical categories"
+
+        return {
+            'sentence': data.get('sentence', ''),
+            'elements': elements,
+            'explanations': explanations,  # Extract explanations field
+            'word_explanations': word_explanations
+        }
+
+    def _is_generic_explanation(self, explanation: str) -> bool:
+        """Check if an explanation is generic and should be replaced with dictionary meaning."""
+        generic_patterns = [
+            "a word that describes a noun",
+            "a word that describes a verb", 
+            "a word that describes an adjective",
+            "a particle",
+            "an interjection",
+            "other",
+            "noun in zh-tw grammar",
+            "verb in zh-tw grammar",
+            "adjective in zh-tw grammar"
+        ]
+        return any(pattern in explanation.lower() for pattern in generic_patterns)
+
+    def _create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
+        """Create fallback analysis result."""
+        return {
+            'sentence': sentence,
+            'words': [{
+                'word': sentence,
+                'individual_meaning': 'Fallback analysis - sentence parsing failed',
+                'grammatical_role': 'noun'
+            }],
+            'explanations': {
+                'overall_structure': 'Fallback analysis due to parsing error',
+                'key_features': 'Unable to analyze sentence structure'
+            }
+        }
         """
         Parse validation response from AI.
 

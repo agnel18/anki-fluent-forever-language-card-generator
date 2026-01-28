@@ -67,7 +67,7 @@ Sentences to analyze:
 
 For EACH word in EVERY sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (left to right), provide:
 - word: the exact word as it appears in the sentence
-- individual_meaning: {native_language} translation/meaning of this specific word (MANDATORY)
+- individual_meaning: SPECIFIC {native_language} translation/meaning of this EXACT word (MANDATORY - UNIQUE for each word, not generic category descriptions)
 - grammatical_role: EXACTLY ONE category from this list: {', '.join(allowed_roles)}
 
 Additionally, identify 1-2 key compound words/phrases per sentence:
@@ -75,12 +75,16 @@ Additionally, identify 1-2 key compound words/phrases per sentence:
 
 CRITICAL REQUIREMENTS:
 - Analyze at WORD level, not character level (Chinese words are compounds of characters)
-- individual_meaning MUST be provided for EVERY word
+- individual_meaning MUST be SPECIFIC and UNIQUE for EACH word - provide the actual meaning/translation, NOT generic descriptions like "a word that describes a noun"
 - grammatical_role MUST be EXACTLY from the allowed list (one word only)
 - Focus on Chinese grammatical categories (實詞/虛詞 distinction)
 - Include 量詞 (measure words), 體詞 (aspect particles), and 語氣詞 (modal particles) appropriately
 - word_combinations are OPTIONAL but enhance learning when present
 - WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE (left to right, no grouping by category)
+
+MANDATORY: For EACH sentence, include an "explanations" field with rich, specific analysis:
+- overall_structure: Detailed sentence structure analysis (e.g., "Subject-Verb-Object structure with time adverbial '昨天' modifying the verb phrase")
+- key_features: Important grammatical concepts demonstrated (e.g., "Use of aspect particle '了' indicating completed action, topic-comment structure")
 
 Return JSON in this exact format:
 {{
@@ -105,12 +109,33 @@ Return JSON in this exact format:
           "combined_meaning": "compound meaning",
           "grammatical_role": "noun"
         }}
-      ]
+      ],
+      "explanations": {{
+        "overall_structure": "Detailed analysis of sentence structure and grammatical relationships",
+        "key_features": "Key grammatical concepts and linguistic features demonstrated"
+      }}
     }}
   ]
 }}
 
-IMPORTANT: Ensure all words are listed in sentence order, and meanings are accurate for Chinese Traditional characters."""
+Example for sentence "我昨天去了學校。":
+{{
+  "sentence_index": 1,
+  "words": [
+    {{"word": "我", "individual_meaning": "I, me (first person singular pronoun)", "grammatical_role": "pronoun"}},
+    {{"word": "昨天", "individual_meaning": "yesterday (time adverbial)", "grammatical_role": "time_word"}},
+    {{"word": "去", "individual_meaning": "to go (verb of motion)", "grammatical_role": "verb"}},
+    {{"word": "了", "individual_meaning": "particle indicating completed action (aspect marker)", "grammatical_role": "aspect_particle"}},
+    {{"word": "學校", "individual_meaning": "school (educational institution, noun)", "grammatical_role": "noun"}},
+    {{"word": "。", "individual_meaning": "period (sentence ending punctuation)", "grammatical_role": "punctuation"}}
+  ],
+  "explanations": {{
+    "overall_structure": "Subject-Verb-Object structure with time adverbial '昨天' modifying the verb phrase '去了' and aspect particle '了' indicating completed action",
+    "key_features": "Demonstrates perfective aspect marking with '了', time adverbial placement, and basic SVO word order in Chinese"
+  }}
+}}
+
+IMPORTANT: Ensure all words are listed in sentence order, meanings are accurate for Chinese Traditional characters, and explanations provide rich grammatical analysis."""
 
         return prompt
 
@@ -191,14 +216,60 @@ Complexity: {complexity}
 
 {complexity_instructions}
 
+CRITICAL: Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words. Each word must have its own specific meaning.
+
 Provide word-by-word analysis in {native_language}:
 
 For each word in order:
 - word: exact word from sentence
-- meaning: {native_language} translation
-- role: one from [{', '.join(allowed_roles)}]
+- individual_meaning: UNIQUE {native_language} translation/meaning SPECIFIC to this exact word only (MANDATORY - do not reuse meanings from other words)
+- grammatical_role: one from [{', '.join(allowed_roles)}]
 
-Return as JSON array of word objects."""
+CRITICAL REQUIREMENTS:
+- individual_meaning MUST be UNIQUE for each word - no repeating meanings
+- individual_meaning MUST describe only this specific word's meaning/function
+- grammatical_role MUST be EXACTLY from the allowed list
+- WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE
+- MANDATORY: Include the "explanations" field with overall_structure and key_features
+
+Return JSON in this exact format:
+{{
+  "words": [
+    {{
+      "word": "word1",
+      "individual_meaning": "unique_meaning_specific_to_word1",
+      "grammatical_role": "noun"
+    }},
+    {{
+      "word": "word2", 
+      "individual_meaning": "unique_meaning_specific_to_word2",
+      "grammatical_role": "verb"
+    }}
+  ],
+  "explanations": {{
+    "overall_structure": "comprehensive sentence analysis",
+    "key_features": "important grammatical concepts demonstrated"
+  }}
+}}
+
+Example for "我喜歡吃蘋果。":
+{{
+  "words": [
+    {{"word": "我", "individual_meaning": "I, me (first person singular pronoun)", "grammatical_role": "pronoun"}},
+    {{"word": "喜歡", "individual_meaning": "to like, to be fond of (verb expressing preference)", "grammatical_role": "verb"}},
+    {{"word": "吃", "individual_meaning": "to eat, to consume (verb of consumption)", "grammatical_role": "verb"}},
+    {{"word": "蘋果", "individual_meaning": "apple (fruit, noun)", "grammatical_role": "noun"}},
+    {{"word": "。", "individual_meaning": "period (sentence ending punctuation)", "grammatical_role": "punctuation"}}
+  ],
+  "explanations": {{
+    "overall_structure": "Subject-verb-object sentence structure",
+    "key_features": "Use of personal pronoun subject and noun object"
+  }}
+}}
+
+IMPORTANT: Each individual_meaning must be unique and specific to that word only. Do not group meanings or repeat the same meaning for different words.
+
+Analyze now:"""
 
     def build_validation_prompt(
         self,

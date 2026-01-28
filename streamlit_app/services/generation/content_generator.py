@@ -129,7 +129,7 @@ class ContentGenerator:
             # Check if language is Chinese for Pinyin instead of IPA
             is_chinese = language in ["Chinese Simplified", "Chinese Traditional", "Chinese (Simplified)", "Chinese (Traditional)"]
             pronunciation_label = "PINYIN" if is_chinese else "IPA"
-            pronunciation_instruction = "Pinyin romanization (with tone marks)" if is_chinese else "official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)"
+            pronunciation_instruction = "MANDATORY Pinyin romanization (with tone marks) for EVERY word in the sentence - including particles, function words, grammatical markers, and single characters. DO NOT skip any words." if is_chinese else "official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)"
 
             prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
 
@@ -217,9 +217,9 @@ TRANSLATIONS:
 3. [natural English translation for sentence 3]
 
 {pronunciation_label}:
-1. [{pronunciation_instruction} for sentence 1]
-2. [{pronunciation_instruction} for sentence 2]
-3. [{pronunciation_instruction} for sentence 3]
+1. [{pronunciation_instruction} for sentence 1 - REQUIRED: provide Pinyin even for particles and function words like '的', '了', '嗎']
+2. [{pronunciation_instruction} for sentence 2 - REQUIRED: provide Pinyin even for particles and function words like '的', '了', '嗎']
+3. [{pronunciation_instruction} for sentence 3 - REQUIRED: provide Pinyin even for particles and function words like '的', '了', '嗎']
 
 KEYWORDS:
 1. [keyword1, keyword2, keyword3]

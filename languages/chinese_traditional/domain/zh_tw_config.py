@@ -115,6 +115,12 @@ class ZhTwConfig:
         but may adjust opacity or add additional categories for advanced learners.
         """
         base_scheme = self.grammatical_roles.copy()
+        
+        # Add special categories
+        base_scheme.update({
+            "target_word": "#FFFF00",  # Yellow - Target word being learned
+            "other": "#888888"         # Gray - Fallback for unrecognized roles
+        })
 
         if complexity == "advanced":
             # Add advanced categories for expert learners
