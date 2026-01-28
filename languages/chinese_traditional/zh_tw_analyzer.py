@@ -479,6 +479,40 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
             fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
             return self._convert_modular_to_legacy(fallback_result, sentence)
 
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = "") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response for grammar analysis.
+
+        This method is called by the batch processor to get parsed results.
+        Returns list of dicts with word_explanations, explanations, etc.
+        """
+        try:
+            results = self.batch_analyze_grammar(ai_response, sentences, target_word, complexity)
+            # Convert GrammarAnalysis objects to dicts expected by batch processor
+            parsed_results = []
+            for result in results:
+                parsed_result = {
+                    'sentence': result.sentence,
+                    'word_explanations': result.word_explanations,
+                    'explanations': {
+                        'sentence_structure': result.explanations.get('overall_structure', ''),
+                        'key_features': result.explanations.get('key_features', '')
+                    },
+                    'elements': result.grammatical_elements,
+                    'confidence': result.confidence_score
+                }
+                parsed_results.append(parsed_result)
+            return parsed_results
+        except Exception as e:
+            logger.error(f"Batch parsing failed: {e}")
+            # Return fallbacks
+            fallback_results = []
+            for sentence in sentences:
+                fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
+                parsed_fallback = self._convert_modular_to_legacy(fallback_result, sentence)
+                fallback_results.append(parsed_fallback)
+            return fallback_results
+
     def _convert_modular_to_legacy(self, modular_data: Dict[str, Any], sentence: str) -> Dict[str, Any]:
         print(f"DEBUG: _convert_modular_to_legacy called with modular_data keys: {list(modular_data.keys())}")
         words = modular_data.get('words', [])

@@ -2080,13 +2080,80 @@ parsed_result = self.response_parser.parse_batch_response(ai_response, sentences
 batch_result = self.response_parser.parse_batch_response(ai_response, [sentence], complexity, target_word)
 ```
 
+### Issue AA: Missing parse_batch_grammar_response Method in Analyzer
+
+**Symptoms:**
+- Batch processing works (AI response parsed correctly)
+- But "Generated 0 word explanations" and "Input explanations count: 0"
+- Colored sentence shows plain text without colors
+- Word explanations list is empty in HTML generation
+
+**Root Cause:**
+- Batch processor calls `analyzer.parse_batch_grammar_response()` method
+- Chinese Traditional analyzer had `batch_analyze_grammar()` but not the expected method name
+- Method signature mismatch between analyzer and batch processor expectations
+
+**Diagnostic Steps:**
+```python
+def check_batch_method_availability():
+    """Verify analyzer has the method expected by batch processor"""
+    analyzer = ZhTwAnalyzer()
+    checks = {
+        "has_parse_batch_grammar_response": hasattr(analyzer, 'parse_batch_grammar_response'),
+        "has_batch_analyze_grammar": hasattr(analyzer, 'batch_analyze_grammar'),
+        "method_returns_correct_type": True  # Check return type matches expectations
+    }
+    return checks
+```
+
+**Solution - Add Missing Method:**
+```python
+# Add to ZhTwAnalyzer class
+def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = "") -> List[Dict[str, Any]]:
+    """
+    Parse batch AI response for grammar analysis.
+
+    This method is called by the batch processor to get parsed results.
+    Returns list of dicts with word_explanations, explanations, etc.
+    """
+    try:
+        results = self.batch_analyze_grammar(ai_response, sentences, target_word, complexity)
+        # Convert GrammarAnalysis objects to dicts expected by batch processor
+        parsed_results = []
+        for result in results:
+            parsed_result = {
+                'sentence': result.sentence,
+                'word_explanations': result.word_explanations,
+                'explanations': {
+                    'sentence_structure': result.explanations.get('overall_structure', ''),
+                    'key_features': result.explanations.get('key_features', '')
+                },
+                'elements': result.grammatical_elements,
+                'confidence': result.confidence_score
+            }
+            parsed_results.append(parsed_result)
+        return parsed_results
+    except Exception as e:
+        logger.error(f"Batch parsing failed: {e}")
+        # Return fallbacks
+        fallback_results = []
+        for sentence in sentences:
+            fallback_result = self.fallbacks.generate_fallback_analysis(sentence)
+            parsed_fallback = self._convert_modular_to_legacy(fallback_result, sentence)
+            fallback_results.append(parsed_fallback)
+        return fallback_results
+```
+
 **Before vs After:**
 ```python
-# ❌ BEFORE - Missing parameters
-parsed_result = self.response_parser.parse_batch_response(ai_response, sentences)
+# ❌ BEFORE - Method missing, batch processor falls back to generic parsing
+"DEBUG Chinese Traditional HTML Gen - Input explanations count: 0"
+"Generated 0 word explanations"
 
-# ✅ AFTER - All required parameters
-parsed_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
+# ✅ AFTER - Method present, proper parsing and coloring
+"DEBUG Chinese Traditional HTML Gen - Input explanations count: 6"
+"Generated 6 word explanations"
+<span style="color: #FF4444">的</span> (structural particle - possessive, attributive, modifying)
 ```
 
 ---
