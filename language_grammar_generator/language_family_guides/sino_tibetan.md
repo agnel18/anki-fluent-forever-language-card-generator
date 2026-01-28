@@ -3,7 +3,7 @@
 
 **Gold Standards:** [Chinese Simplified](languages/zh/zh_analyzer.py) and [Chinese Traditional](languages/chinese_traditional/zh_tw_analyzer.py)  
 **Key Characteristics:** Analytic languages, logographic scripts, rich character-based analysis  
-**Critical Pattern:** Rich explanations with individual word meanings (not just grammatical roles)
+**Critical Pattern:** Rich explanations with individual word meanings (not just grammatical roles) - **Word Meanings Dictionary Required**
 
 ## 🎯 Sino-Tibetan Language Characteristics
 
@@ -18,6 +18,94 @@
 - **Meaning Extraction**: Individual meanings for each character/word
 - **Color Coding**: Position-based coloring for logographic text
 - **Rich Explanations**: Detailed explanations beyond basic grammatical roles
+- **Word Meanings Dictionary**: External JSON file with specific meanings for common words (CRITICAL for quality fallbacks)
+
+## 📚 Word Meanings Dictionary Pattern (Critical Learning)
+
+### Why Word Meanings Dictionary is Required
+
+**Problem:** Without a word meanings dictionary, Sino-Tibetan analyzers fall back to generic explanations that don't help learners understand specific word meanings.
+
+**❌ Before (Generic Fallback):**
+```json
+"numeral in zh-tw grammar"
+"conjunction in zh-tw grammar"
+"verb in zh-tw grammar"
+```
+
+**✅ After (Rich Word Meanings):**
+```json
+"three (numeral)"
+"if (conjunction)"
+"equals, equal to (verb/mathematical term)"
+```
+
+### Dictionary Structure Requirements
+
+**File:** `infrastructure/data/{language}_word_meanings.json`
+```json
+{
+  "一": "one (numeral)",
+  "二": "two (numeral)",
+  "三": "three (numeral)",
+  "如果": "if (conjunction)",
+  "因為": "because (conjunction)",
+  "所以": "so, therefore (conjunction)",
+  "我": "I, me (first person singular pronoun)",
+  "你": "you (second person singular pronoun)",
+  "是": "is, am, are (verb)",
+  "有": "have, there is (verb)",
+  "等於": "equals, equal to (verb/mathematical term)",
+  "答案": "answer, solution (noun)"
+}
+```
+
+### Config Integration Pattern
+
+**File:** `domain/{language}_config.py`
+```python
+class LanguageConfig:
+    def __init__(self):
+        # Load word meanings from external file
+        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
+        self.word_meanings = self._load_json(config_dir / "{language}_word_meanings.json")
+    
+    def _load_json(self, path: Path) -> Dict[str, Any]:
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load word meanings: {e}")
+            return {}
+```
+
+### Fallback Integration Pattern
+
+**File:** `infrastructure/{language}_fallbacks.py`
+```python
+class LanguageFallbacks:
+    def _analyze_word(self, word: str) -> Dict[str, Any]:
+        # Check config word meanings first (provides rich explanations)
+        if word in self.config.word_meanings:
+            meaning = self.config.word_meanings[word]
+            role = self._guess_grammatical_role(word)
+            return {
+                'word': word,
+                'individual_meaning': meaning,  # Rich meaning from dictionary
+                'grammatical_role': role,
+                'confidence': 'high'
+            }
+        
+        # Fallback to rule-based analysis only if no dictionary entry
+        role = self._guess_grammatical_role(word)
+        meaning = self._generate_fallback_explanation(word, role)  # Generic fallback
+        return {
+            'word': word,
+            'individual_meaning': meaning,
+            'grammatical_role': role,
+            'confidence': 'low'
+        }
+```
 
 ## 🏗️ Gold Standard Architecture
 
@@ -118,23 +206,31 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 - [ ] **Add rich explanation methods**: `analyze_grammar` and `_generate_html_output`
 - [ ] **Import GrammarAnalysis** for structured return values
 
-### Phase 2: Rich Explanation Implementation
+### Phase 2: Word Meanings Dictionary (CRITICAL - Learned from Chinese Traditional)
+- [ ] **Create word meanings JSON**: `infrastructure/data/{language}_word_meanings.json` with specific meanings
+- [ ] **Include essential vocabulary**: numerals, pronouns, conjunctions, common verbs/nouns
+- [ ] **Use language-specific characters**: Traditional/Simplified characters as appropriate
+- [ ] **Test dictionary loading**: Verify config loads JSON file correctly
+- [ ] **Validate rich explanations**: Ensure fallbacks use dictionary meanings over generic roles
+
+### Phase 3: Rich Explanation Implementation
 - [ ] **analyze_grammar method**: AI workflow → parsing → HTML generation
 - [ ] **_generate_html_output method**: Position-based character coloring with meanings
 - [ ] **Word explanations format**: `[word, role, color, meaning]` tuples
 - [ ] **Individual meanings**: Extract `individual_meaning` from AI responses
 
-### Phase 3: Language-Specific Configuration
+### Phase 4: Language-Specific Configuration
 - [ ] **Character set handling**: Support for both simplified and traditional characters
 - [ ] **Color schemes**: Grammatical role to color mapping
 - [ ] **Prompt templates**: Language-specific AI prompting strategies
 - [ ] **Validation rules**: Quality assessment for logographic analysis
 
-### Phase 4: Testing and Validation
+### Phase 5: Testing and Validation
 - [ ] **Rich explanation testing**: Verify individual meanings are extracted
 - [ ] **HTML output testing**: Confirm proper coloring and positioning
 - [ ] **Character boundary testing**: Ensure correct word segmentation
-- [ ] **Cross-validation**: Compare with Chinese Simplified gold standard
+- [ ] **Word meanings testing**: Validate dictionary provides rich explanations
+- [ ] **Cross-validation**: Compare with Chinese Simplified/Traditional gold standards
 
 ## 🔧 Key Patterns Learned
 
@@ -152,7 +248,28 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 "吃 (to eat, to consume - verb of consumption)"
 ```
 
-### 2. Modular Architecture Benefits
+### 2. Word Meanings Dictionary (Critical Pattern)
+**Problem:** Sino-Tibetan analyzers need specific word meanings, not just grammatical roles.
+
+**Solution:** External JSON dictionary with rich explanations for common words.
+
+**Pattern:**
+```json
+{
+  "三": "three (numeral)",
+  "如果": "if (conjunction)",
+  "答案": "answer, solution (noun)",
+  "等於": "equals, equal to (verb/mathematical term)"
+}
+```
+
+**Benefits:**
+- Provides specific meanings instead of generic roles
+- Enables compound word recognition
+- Improves fallback quality significantly
+- Required for all Sino-Tibetan language analyzers
+
+### 3. Modular Architecture Benefits
 - **Separation of Concerns**: Config, prompts, parsing, validation in separate components
 - **Testability**: Each component can be tested independently
 - **Maintainability**: Changes to one aspect don't affect others

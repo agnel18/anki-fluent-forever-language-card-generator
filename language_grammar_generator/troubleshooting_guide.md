@@ -1631,6 +1631,114 @@ groups:
    - Verify API key validity
    - Switch to alternative model if available
 
+### Issue X: Generic Word Explanations in Sino-Tibetan Languages (Word Meanings Dictionary Missing)
+
+**Symptoms:**
+- Sino-Tibetan analyzers provide generic explanations like "numeral in zh-tw grammar"
+- Missing specific word meanings like "three (numeral)" or "if (conjunction)"
+- Fallback quality is poor compared to Chinese Simplified/Traditional gold standards
+- Users see grammatical roles instead of helpful word meanings
+
+**Root Cause:**
+- Missing external word meanings dictionary JSON file
+- Fallbacks not checking word_meanings before generic explanations
+- Config not loading word meanings from external file
+
+**Diagnostic Steps:**
+```python
+def diagnose_word_meanings():
+    """Check if Sino-Tibetan analyzer has word meanings dictionary"""
+    checks = {
+        "has_word_meanings_file": Path("infrastructure/data/{language}_word_meanings.json").exists(),
+        "config_loads_meanings": hasattr(config, 'word_meanings') and isinstance(config.word_meanings, dict),
+        "fallbacks_check_meanings": fallbacks_prioritize_word_meanings(),
+        "rich_explanations": test_fallback_provides_rich_meanings(),
+    }
+    return checks
+
+def test_fallback_provides_rich_meanings():
+    """Test that fallbacks provide specific meanings, not generic roles"""
+    test_words = ["三", "如果", "答案"]  # Chinese numerals and compound words
+    for word in test_words:
+        result = fallbacks._analyze_word(word)
+        if "in grammar" in result['individual_meaning']:  # Generic fallback
+            return False
+    return True  # All words have specific meanings
+```
+
+**Solution - Implement Word Meanings Dictionary Pattern:**
+```python
+# 1. Create word meanings JSON file
+# File: infrastructure/data/{language}_word_meanings.json
+{
+  "一": "one (numeral)",
+  "二": "two (numeral)",
+  "三": "three (numeral)",
+  "如果": "if (conjunction)",
+  "因為": "because (conjunction)",
+  "答案": "answer, solution (noun)",
+  "等於": "equals, equal to (verb/mathematical term)"
+}
+
+# 2. Load in config (like Chinese Traditional)
+class LanguageConfig:
+    def __init__(self):
+        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
+        self.word_meanings = self._load_json(config_dir / "{language}_word_meanings.json")
+    
+    def _load_json(self, path: Path) -> Dict[str, Any]:
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load word meanings: {e}")
+            return {}
+
+# 3. Use in fallbacks (prioritize dictionary)
+class LanguageFallbacks:
+    def _analyze_word(self, word: str) -> Dict[str, Any]:
+        # Check word meanings first (provides rich explanations)
+        if word in self.config.word_meanings:
+            meaning = self.config.word_meanings[word]  # "three (numeral)"
+            role = self._guess_grammatical_role(word)
+            return {
+                'word': word,
+                'individual_meaning': meaning,  # Rich meaning!
+                'grammatical_role': role,
+                'confidence': 'high'
+            }
+        
+        # Generic fallback only if no dictionary entry
+        role = self._guess_grammatical_role(word)
+        meaning = self._generate_fallback_explanation(word, role)  # "numeral in grammar"
+        return {
+            'word': word,
+            'individual_meaning': meaning,
+            'grammatical_role': role,
+            'confidence': 'low'
+        }
+```
+
+**Before vs After:**
+```python
+# ❌ BEFORE - Generic grammatical roles
+"三": "numeral in zh-tw grammar"
+"如果": "conjunction in zh-tw grammar"
+"答案": "noun in zh-tw grammar"
+
+# ✅ AFTER - Rich word meanings
+"三": "three (numeral)"
+"如果": "if (conjunction)"
+"答案": "answer, solution (noun)"
+```
+
+**Solution Steps:**
+1. **Create Word Meanings JSON**: Essential vocabulary with specific English meanings
+2. **Update Config Class**: Load JSON file in initialization
+3. **Update Fallbacks**: Check word_meanings before generic explanations
+4. **Test Rich Quality**: Verify dictionary provides specific meanings over generic roles
+5. **Compare with Gold Standards**: Match Chinese Simplified/Traditional fallback quality
+
 ---
 
 **Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.

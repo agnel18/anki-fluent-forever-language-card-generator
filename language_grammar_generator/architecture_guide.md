@@ -15,10 +15,13 @@
 ```
 Domain Layer (Core Business Logic) - LIKE GOLD STANDARDS
 ├── Config: Language-specific settings and rules (hi_config.py, zh_config.py)
+│   ├── Word Meanings: External JSON dictionary with specific word meanings (CRITICAL for Sino-Tibetan)
+│   ├── Grammatical Roles: Color schemes and role definitions
+│   └── Language Patterns: Scripts, character sets, segmentation rules
 ├── Prompt Builder: AI prompt generation strategies (hi_prompt_builder.py, zh_prompt_builder.py)
 ├── Response Parser: AI output processing and normalization (hi_response_parser.py, zh_response_parser.py)
 ├── Validator: Quality assessment and NATURAL confidence scoring (NO artificial boosting)
-└── Fallbacks: Error recovery mechanisms (gold standard fallback patterns)
+└── Fallbacks: Error recovery with rich word meanings (gold standard fallback patterns)
 ```
 
 #### 2. Clean Architecture - Gold Standard Implementation
@@ -98,6 +101,44 @@ class LanguageAnalyzer(BaseGrammarAnalyzer):  # OR IndoEuropeanAnalyzer
 
 **Chinese Traditional Implementation Example:**
 ```python
+# Word Meanings Dictionary Integration (CRITICAL for Sino-Tibetan)
+class ZhTwConfig:
+    def __init__(self):
+        # Load word meanings from external JSON (provides rich explanations)
+        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
+        self.word_meanings = self._load_json(config_dir / "zh_tw_word_meanings.json")
+    
+    def _load_json(self, path: Path) -> Dict[str, Any]:
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load word meanings: {e}")
+            return {}
+
+class ZhTwFallbacks:
+    def _analyze_word(self, word: str) -> Dict[str, Any]:
+        # Check word meanings first (provides rich explanations)
+        if word in self.config.word_meanings:
+            meaning = self.config.word_meanings[word]  # "three (numeral)"
+            role = self._guess_grammatical_role(word)
+            return {
+                'word': word,
+                'individual_meaning': meaning,
+                'grammatical_role': role,
+                'confidence': 'high'
+            }
+        
+        # Generic fallback only if no dictionary entry
+        role = self._guess_grammatical_role(word)
+        meaning = self._generate_fallback_explanation(word, role)  # "numeral in zh-tw grammar"
+        return {
+            'word': word,
+            'individual_meaning': meaning,
+            'grammatical_role': role,
+            'confidence': 'low'
+        }
+```
 def analyze_grammar(self, sentence: str, target_word: str, complexity: str, api_key: str) -> GrammarAnalysis:
     """Rich explanation workflow - Chinese gold standard pattern"""
     # 1. AI call for detailed analysis

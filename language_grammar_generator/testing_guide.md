@@ -15,6 +15,7 @@
 - **Component Isolation:** Test components separately like gold standards
 - **Facade Pattern Testing:** Test complete orchestration like gold standards
 - **External Config Testing:** Test configuration loading from files
+- **Word Meanings Testing:** For Sino-Tibetan languages, test rich explanations from dictionary
 
 ### Testing Pyramid - Gold Standard Validation
 ```
@@ -1346,6 +1347,99 @@ if __name__ == "__main__":
 ### 5. Poor Test Data
 **Problem:** Tests don't reflect real usage
 **Prevention:** Use realistic, diverse test data
+
+## 🧪 Word Meanings Dictionary Testing (Sino-Tibetan Languages)
+
+### Word Meanings Quality Tests
+
+**File:** `tests/test_{language}_word_meanings.py`
+```python
+import pytest
+import json
+from pathlib import Path
+
+class TestWordMeanings:
+    """Test word meanings dictionary for rich explanations"""
+
+    def test_word_meanings_file_exists(self):
+        """Test that word meanings JSON file exists"""
+        meanings_file = Path("infrastructure/data/{language}_word_meanings.json")
+        assert meanings_file.exists(), "Word meanings dictionary file must exist"
+
+    def test_word_meanings_is_valid_json(self):
+        """Test that word meanings file contains valid JSON"""
+        meanings_file = Path("infrastructure/data/{language}_word_meanings.json")
+        with open(meanings_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        assert isinstance(data, dict), "Word meanings must be a dictionary"
+        assert len(data) > 0, "Word meanings dictionary must not be empty"
+
+    def test_word_meanings_have_rich_explanations(self):
+        """Test that word meanings provide specific explanations, not generic roles"""
+        meanings_file = Path("infrastructure/data/{language}_word_meanings.json")
+        with open(meanings_file, 'r', encoding='utf-8') as f:
+            word_meanings = json.load(f)
+        
+        # Test essential vocabulary has rich meanings
+        essential_words = ["一", "二", "三", "如果", "因為", "答案"]  # Adapt for language
+        
+        for word in essential_words:
+            if word in word_meanings:
+                meaning = word_meanings[word]
+                # Should not contain generic patterns
+                assert "in grammar" not in meaning, f"'{word}' has generic explanation: {meaning}"
+                assert "in {language}" not in meaning, f"'{word}' has generic explanation: {meaning}"
+                # Should have specific meaning
+                assert len(meaning) > 10, f"'{word}' meaning too short: {meaning}"
+
+    def test_config_loads_word_meanings(self, config):
+        """Test that config loads word meanings from JSON file"""
+        assert hasattr(config, 'word_meanings'), "Config must have word_meanings attribute"
+        assert isinstance(config.word_meanings, dict), "word_meanings must be a dictionary"
+        assert len(config.word_meanings) > 0, "word_meanings must not be empty"
+
+    def test_fallbacks_use_word_meanings(self, fallbacks):
+        """Test that fallbacks prioritize word meanings over generic explanations"""
+        # Test with words that should have rich meanings
+        test_cases = [
+            ("三", "three (numeral)"),  # Numeral
+            ("如果", "if (conjunction)"),  # Conjunction
+            ("答案", "answer, solution (noun)"),  # Compound noun
+        ]
+        
+        for word, expected_meaning in test_cases:
+            result = fallbacks._analyze_word(word)
+            actual_meaning = result['individual_meaning']
+            
+            # Should use rich meaning from dictionary, not generic fallback
+            assert actual_meaning == expected_meaning, f"'{word}' should have meaning '{expected_meaning}', got '{actual_meaning}'"
+            assert result['confidence'] == 'high', f"'{word}' should have high confidence from dictionary"
+
+    def test_fallback_generic_only_when_no_dictionary(self, fallbacks):
+        """Test that generic explanations are used only when word not in dictionary"""
+        # Test with a word that shouldn't be in dictionary
+        fake_word = "xyz_nonexistent_word_123"
+        
+        result = fallbacks._analyze_word(fake_word)
+        meaning = result['individual_meaning']
+        
+        # Should use generic fallback explanation
+        assert "in grammar" in meaning or "in {language}" in meaning, f"'{fake_word}' should use generic fallback, got: {meaning}"
+        assert result['confidence'] == 'low', f"'{fake_word}' should have low confidence for generic fallback"
+
+    @pytest.mark.parametrize("word,expected_contains", [
+        ("三", "numeral"),  # Should identify as numeral
+        ("如果", "conjunction"),  # Should identify as conjunction
+        ("答案", "noun"),  # Should identify as noun
+    ])
+    def test_word_meanings_grammatical_roles(self, fallbacks, word, expected_contains):
+        """Test that word meanings provide correct grammatical role identification"""
+        result = fallbacks._analyze_word(word)
+        role = result['grammatical_role']
+        
+        assert expected_contains in role, f"'{word}' role '{role}' should contain '{expected_contains}'"
+```
 
 ---
 

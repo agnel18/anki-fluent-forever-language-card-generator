@@ -60,6 +60,74 @@
 - [ ] **_generate_html_output method**: Position-based coloring with meanings
 - [ ] **GrammarAnalysis return**: Structured word_explanations with [word, role, color, meaning]
 - [ ] **Individual meaning extraction**: Parse `individual_meaning` from AI responses
+- [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
+
+#### 1.4 Critical: Word Meanings Dictionary Pattern (Sino-Tibetan Requirement)
+
+**Key Learning:** Sino-Tibetan languages require external word meanings dictionaries to provide rich explanations instead of generic grammatical roles.
+
+**Why Required:**
+- Sino-Tibetan languages use logographic scripts where characters have specific semantic meanings
+- Generic fallback explanations like "numeral in zh-tw grammar" don't help learners
+- Specific meanings like "three (numeral)" provide actual learning value
+
+**Implementation Pattern:**
+```python
+# 1. Create word meanings JSON file
+# File: infrastructure/data/{language}_word_meanings.json
+{
+  "一": "one (numeral)",
+  "二": "two (numeral)", 
+  "三": "three (numeral)",
+  "如果": "if (conjunction)",
+  "答案": "answer, solution (noun)"
+}
+
+# 2. Load in config
+class LanguageConfig:
+    def __init__(self):
+        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
+        self.word_meanings = self._load_json(config_dir / "{language}_word_meanings.json")
+    
+    def _load_json(self, path: Path) -> Dict[str, Any]:
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load word meanings: {e}")
+            return {}
+
+# 3. Use in fallbacks
+class LanguageFallbacks:
+    def _analyze_word(self, word: str) -> Dict[str, Any]:
+        # Check word meanings first
+        if word in self.config.word_meanings:
+            meaning = self.config.word_meanings[word]
+            role = self._guess_grammatical_role(word)
+            return {
+                'word': word,
+                'individual_meaning': meaning,  # Rich meaning
+                'grammatical_role': role,
+                'confidence': 'high'
+            }
+        
+        # Generic fallback only if no dictionary entry
+        role = self._guess_grammatical_role(word)
+        meaning = self._generate_fallback_explanation(word, role)
+        return {
+            'word': word,
+            'individual_meaning': meaning,  # Generic fallback
+            'grammatical_role': role,
+            'confidence': 'low'
+        }
+```
+
+**Critical Checklist:**
+- [ ] **Create word meanings JSON**: Essential vocabulary with specific meanings
+- [ ] **Load in config**: Config class loads JSON file on initialization  
+- [ ] **Prioritize dictionary**: Fallbacks check word_meanings before generic explanations
+- [ ] **Test rich explanations**: Verify dictionary provides specific meanings over generic roles
+- [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
 
 ### Phase 2: Directory Structure Setup (2-4 hours)
 
