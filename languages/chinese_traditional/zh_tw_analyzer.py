@@ -170,7 +170,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 
         try:
             # Step 1: Parse the AI response
-            parsed_result = self.response_parser.parse_batch_response(ai_response, sentences)
+            parsed_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
 
             if not parsed_result.get('success', False):
                 logger.warning("AI response parsing failed, using fallback analysis")
@@ -733,7 +733,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
         try:
             prompt = self.prompt_builder.build_batch_grammar_prompt(complexity, sentences, target_word)
             ai_response = self._call_ai_model(prompt, gemini_api_key)
-            batch_result = self.response_parser.parse_batch_response(ai_response, sentences)
+            batch_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
 
             if not batch_result.get('success', False):
                 logger.warning("Batch parsing failed, using fallback analysis")

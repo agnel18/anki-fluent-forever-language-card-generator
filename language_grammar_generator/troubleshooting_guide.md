@@ -2000,6 +2000,95 @@ CRITICAL REQUIREMENTS:
 5. **Test Rich Quality**: Verify dictionary provides specific meanings over generic roles
 6. **Compare with Gold Standards**: Match Chinese Simplified fallback quality
 
+### Issue Y: Missing Method Implementations in Response Parser
+
+**Symptoms:**
+- "'ZhTwResponseParser' object has no attribute '_get_color_scheme'"
+- Batch processing fails with attribute errors
+- Individual parsing fails with missing methods
+
+**Root Cause:**
+- Incomplete implementation compared to gold standards
+- Missing _get_color_scheme method for color mapping
+- Inconsistent method signatures between analyzers
+
+**Diagnostic Steps:**
+```python
+def check_parser_completeness():
+    """Verify parser has all required methods"""
+    parser = ZhTwResponseParser(config)
+    required_methods = ['_get_color_scheme', '_transform_to_standard_format', '_create_fallback']
+    checks = {}
+    for method in required_methods:
+        checks[method] = hasattr(parser, method)
+    return checks
+```
+
+**Solution - Add Missing Methods:**
+```python
+# Add to ZhTwResponseParser
+def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
+    """Get color scheme based on complexity."""
+    return self.config.get_color_scheme(complexity)
+
+# Fix _create_fallback to use _transform_to_standard_format
+def _create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
+    """Create fallback analysis result."""
+    fallback_data = {
+        'sentence': sentence,
+        'words': [{
+            'word': sentence,
+            'individual_meaning': 'Fallback analysis - sentence parsing failed',
+            'grammatical_role': 'noun'
+        }],
+        'explanations': {
+            'overall_structure': 'Fallback analysis due to parsing error',
+            'key_features': 'Unable to analyze sentence structure'
+        }
+    }
+    return self._transform_to_standard_format(fallback_data, complexity)
+```
+
+### Issue Z: Incorrect Method Calls in Analyzer
+
+**Symptoms:**
+- "missing 1 required positional argument: 'complexity'"
+- Batch processing fails due to wrong parameter count
+- parse_batch_response called without required parameters
+
+**Root Cause:**
+- Method calls not updated to match new signatures
+- Inconsistent parameter passing between analyzers
+
+**Diagnostic Steps:**
+```python
+def check_method_signatures():
+    """Verify method calls match signatures"""
+    analyzer = ZhTwAnalyzer()
+    # Check if calls include all required params
+    import inspect
+    sig = inspect.signature(analyzer.response_parser.parse_batch_response)
+    return len(sig.parameters)  # Should be 4: self, ai_response, sentences, complexity, target_word
+```
+
+**Solution - Fix Method Calls:**
+```python
+# In ZhTwAnalyzer.batch_analyze_grammar
+parsed_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
+
+# In ZhTwAnalyzer._use_fallback_analysis  
+batch_result = self.response_parser.parse_batch_response(ai_response, [sentence], complexity, target_word)
+```
+
+**Before vs After:**
+```python
+# ❌ BEFORE - Missing parameters
+parsed_result = self.response_parser.parse_batch_response(ai_response, sentences)
+
+# ✅ AFTER - All required parameters
+parsed_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
+```
+
 ---
 
 **Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.

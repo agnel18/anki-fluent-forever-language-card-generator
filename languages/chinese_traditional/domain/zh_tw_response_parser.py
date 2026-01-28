@@ -101,10 +101,10 @@ class ZhTwResponseParser:
             while len(results) < len(sentences):
                 results.append(self._create_fallback(sentences[len(results)], complexity))
 
-            return results
+            return {'success': True, 'results': results}
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
-            return [self._create_fallback(s, complexity) for s in sentences]
+            return {'success': False, 'results': [self._create_fallback(s, complexity) for s in sentences]}
         """Parse single response with fallbacks and explanations extraction."""
         logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
         try:
@@ -454,9 +454,13 @@ class ZhTwResponseParser:
         ]
         return any(pattern in explanation.lower() for pattern in generic_patterns)
 
+    def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
+        """Get color scheme based on complexity."""
+        return self.config.get_color_scheme(complexity)
+
     def _create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
         """Create fallback analysis result."""
-        return {
+        fallback_data = {
             'sentence': sentence,
             'words': [{
                 'word': sentence,
@@ -468,6 +472,9 @@ class ZhTwResponseParser:
                 'key_features': 'Unable to analyze sentence structure'
             }
         }
+        return self._transform_to_standard_format(fallback_data, complexity)
+
+    def parse_validation_response(self, ai_response: str) -> Dict[str, Any]:
         """
         Parse validation response from AI.
 
