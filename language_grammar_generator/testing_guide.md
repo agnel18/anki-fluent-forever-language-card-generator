@@ -1,11 +1,11 @@
 # Testing Guide
-## Testing Strategy Following Gold Standard Patterns
+## Comprehensive Testing Strategy Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark  
-**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
-**Critical:** Test against Chinese Simplified gold standard - external configuration, integrated fallbacks, natural validation  
-**Prerequisites:** Study Chinese Simplified Clean Architecture before testing  
-**Architecture:** Follow [Architecture Guide](architecture_guide.md) with Chinese Simplified compliance  
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)
+**Critical:** Test against Chinese Simplified gold standard - external configuration, integrated fallbacks, natural validation
+**Prerequisites:** Study Chinese Simplified Clean Architecture before testing
+**Architecture:** Follow [Architecture Guide](architecture_guide.md) with Chinese Simplified compliance
 **Time Estimate:** 1-2 weeks for gold standard compliant test suite
 
 ## 🎯 Testing Philosophy - Chinese Simplified Gold Standard Compliance
@@ -31,6 +31,35 @@
 │ Unit Tests      │  Individual domain components
 │                 │  (Many tests, fast)
 └─────────────────┘
+```
+
+## 🚀 Automated Testing Framework
+
+### Pre-Implementation Validation
+```bash
+# Validate implementation before testing
+python language_grammar_generator/validate_implementation.py --language {language_code}
+```
+
+### Comprehensive Test Execution
+```bash
+# Run all tests with coverage
+python language_grammar_generator/run_all_tests.py --language {language_code} --coverage
+
+# Run tests in parallel for speed
+python language_grammar_generator/run_all_tests.py --language {language_code} --parallel
+
+# Test all languages
+python language_grammar_generator/run_all_tests.py --all-languages
+```
+
+### Gold Standard Comparison
+```bash
+# Compare with Chinese Simplified and Hindi
+python language_grammar_generator/compare_with_gold_standard.py --language {language_code}
+
+# Detailed comparison with export
+python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
 ```
 
 ## 🧪 Testing Framework Setup - Chinese Simplified Structure

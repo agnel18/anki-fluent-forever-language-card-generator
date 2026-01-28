@@ -1,6 +1,6 @@
 # tests/test_{language}_analyzer.py
 """
-Unit tests for {Language} analyzer components.
+Comprehensive unit tests for {Language} analyzer components.
 
 GOLD STANDARD TESTING PATTERN:
 This template follows the testing approach used by Hindi and Chinese Simplified analyzers.
@@ -18,22 +18,33 @@ COMPONENTS TESTED:
 - Integration scenarios
 - Error handling and fallbacks
 
-INTEGRATION WITH GOLD STANDARDS:
-- Hindi analyzer: Indo-European family reference
-- Chinese Simplified analyzer: Sino-Tibetan family reference
-- Both avoid artificial confidence boosting
-- Both use simple, reliable validation patterns
+INTEGRATION WITH AUTOMATED TESTING:
+- Use validate_implementation.py for pre-deployment checks
+- Use run_all_tests.py for comprehensive test execution
+- Use compare_with_gold_standard.py for quality validation
+- Auto-generated test files provide additional coverage
+
+USAGE:
+    # Run specific component tests
+    python -m pytest tests/test_{language}_analyzer.py::Test{Language}Analyzer::test_initialization -v
+
+    # Run all tests for this language
+    python language_grammar_generator/run_all_tests.py --language {lang_code}
+
+    # Validate before deployment
+    python language_grammar_generator/validate_implementation.py --language {lang_code}
 """
 
 import pytest
 from unittest.mock import Mock, patch
+import json
 # from languages.{language}.{language}_analyzer import {Language}Analyzer
 # from languages.{language}.{language}_config import {Language}Config
 
 
 # class Test{Language}Analyzer:
 class TestLanguageAnalyzer:
-    """Test {Language} analyzer functionality - follows gold standard pattern"""
+    """Comprehensive tests for {Language} analyzer - follows gold standard pattern"""
 
     @pytest.fixture
     def analyzer(self):
