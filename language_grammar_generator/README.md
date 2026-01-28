@@ -91,6 +91,61 @@ python language_grammar_generator/run_all_tests.py --language {language_code} --
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code}
 ```
 
+### Post-Implementation Testing Procedures (All Languages)
+
+After implementing any new language analyzer, follow these standardized testing procedures:
+
+#### 1. Structural Validation
+```bash
+# Validate all required files exist and methods are implemented
+python language_grammar_generator/validate_implementation.py --language {language_code}
+```
+
+#### 2. Component Testing
+```bash
+# Test individual components (config, prompt builder, response parser, validator)
+python -m pytest languages/{language_code}/tests/test_{language_code}_config.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_prompt_builder.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_response_parser.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_validator.py -v
+```
+
+#### 3. Integration Testing
+```bash
+# Test component interactions and facade orchestration
+python -m pytest languages/{language_code}/tests/test_{language_code}_integration.py -v
+```
+
+#### 4. System Testing
+```bash
+# Test complete end-to-end workflows with real API calls
+python -m pytest languages/{language_code}/tests/test_{language_code}_system.py -v
+```
+
+#### 5. Performance Testing
+```bash
+# Validate speed and resource requirements
+python -m pytest languages/{language_code}/tests/test_{language_code}_performance.py -v
+```
+
+#### 6. Gold Standard Comparison
+```bash
+# Compare quality with Chinese Simplified and Hindi analyzers
+python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
+```
+
+#### 7. Linguistic Accuracy Testing
+```bash
+# Validate grammatical role assignments and explanations
+python -m pytest languages/{language_code}/tests/test_{language_code}_linguistic_accuracy.py -v
+```
+
+#### 8. Regression Testing
+```bash
+# Ensure no bugs reintroduced
+python -m pytest languages/{language_code}/tests/test_{language_code}_regression.py -v
+```
+
 ### Quality Assurance Features
 - ✅ **Structural Validation** - All required files and methods present
 - ✅ **Component Testing** - Individual domain components validated
@@ -100,7 +155,66 @@ python language_grammar_generator/compare_with_gold_standard.py --language {lang
 - ✅ **Gold Standard Compliance** - Matches Chinese Simplified quality
 - ✅ **Regression Prevention** - No reintroduced bugs
 
-**[Complete Testing Framework Guide](COMPREHENSIVE_TESTING_FRAMEWORK.md)** - Zero iterative failures guaranteed.
+**[Complete Testing Framework Guide](testing_guide.md)** - Zero iterative failures guaranteed.
+
+## 📋 Standardized Testing Procedures for All Languages
+
+After implementing any new language analyzer, follow these mandatory testing procedures to ensure quality and consistency:
+
+### Phase 1: Structural Validation
+```bash
+# Validate all required files and methods exist
+python language_grammar_generator/validate_implementation.py --language {language_code}
+```
+
+### Phase 2: Component Testing
+```bash
+# Test individual components in isolation
+python -m pytest languages/{language_code}/tests/test_{language_code}_config.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_prompt_builder.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_response_parser.py -v
+python -m pytest languages/{language_code}/tests/test_{language_code}_validator.py -v
+```
+
+### Phase 3: Integration Testing
+```bash
+# Test component interactions
+python -m pytest languages/{language_code}/tests/test_{language_code}_integration.py -v
+```
+
+### Phase 4: System Testing
+```bash
+# Test complete end-to-end workflows
+python -m pytest languages/{language_code}/tests/test_{language_code}_system.py -v
+```
+
+### Phase 5: Quality Assurance
+```bash
+# Performance validation
+python -m pytest languages/{language_code}/tests/test_{language_code}_performance.py -v
+
+# Gold standard comparison
+python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed
+
+# Linguistic accuracy validation
+python -m pytest languages/{language_code}/tests/test_{language_code}_linguistic_accuracy.py -v
+
+# Regression prevention
+python -m pytest languages/{language_code}/tests/test_{language_code}_regression.py -v
+```
+
+### Phase 6: Final Validation
+- [ ] All component tests pass
+- [ ] Integration tests pass
+- [ ] System tests pass with real API calls
+- [ ] Performance requirements met (< 30s response time)
+- [ ] Gold standard comparison successful
+- [ ] Linguistic accuracy validated
+- [ ] No regressions detected
+- [ ] Memory usage stable
+- [ ] Concurrent requests handled properly
+
+**All language analyzers must pass these procedures before deployment.**
 
 ## 🔧 Key Features
 
