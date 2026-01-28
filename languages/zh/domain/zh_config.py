@@ -229,7 +229,7 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
                 "adverb": "#44FFFF",        # Cyan - manner
                 "pronoun": "#FF4444",       # Red - replacements
                 "particle": "#AA44FF",      # Purple - grammatical particles
-                "aspect_marker": "#9370DB", # Medium purple - aspect particles (了, 着, 过)
+                "aspect_marker": "#8A2BE2", # Purple - aspect particles (了, 着, 过)
                 "numeral": "#FFD700",       # Gold - numbers
                 "classifier": "#FF8C00",    # Dark orange - measure words
                 "preposition": "#4444FF",   # Blue - relationships
@@ -240,15 +240,15 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
             "intermediate": {
                 "noun": "#FFAA00",
                 "adjective": "#FF44FF",
-                "verb": "#4ECDC4",          # Teal - main verbs
+                "verb": "#44FF44",          # Bright green - main verbs
                 "adverb": "#44FFFF",
-                "pronoun": "#FFEAA7",       # Light orange - general pronouns
-                "personal_pronoun": "#FFEAA7",
-                "demonstrative_pronoun": "#FFEAA7",
+                "pronoun": "#FF4444",       # Bright red - general pronouns
+                "personal_pronoun": "#FF4444",
+                "demonstrative_pronoun": "#FF4444",
                 "particle": "#AA44FF",
-                "aspect_marker": "#9370DB", # Medium purple - aspect particles
+                "aspect_marker": "#8A2BE2", # Purple - aspect particles
                 "modal_particle": "#DA70D6", # Plum - modal particles
-                "structural_particle": "#AA44FF", # Purple - structural particles
+                "structural_particle": "#9013FE", # Violet - structural particles
                 "numeral": "#FFD700",
                 "classifier": "#FF8C00",
                 "preposition": "#4444FF",
@@ -260,14 +260,14 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
                 "adjective": "#FF44FF",
                 "verb": "#44FF44",
                 "adverb": "#44FFFF",
-                "pronoun": "#FF4444",       # Dark red - general pronouns
+                "pronoun": "#FF4444",       # Bright red - general pronouns
                 "personal_pronoun": "#FF4444",
                 "demonstrative_pronoun": "#FF4444",
                 "interrogative_pronoun": "#FF4444",
                 "particle": "#AA44FF",
-                "aspect_marker": "#9370DB", # Medium purple - 了, 着, 过
+                "aspect_marker": "#8A2BE2", # Purple - 了, 着, 过
                 "modal_particle": "#DA70D6", # Plum - 吗, 呢, 吧, 啊
-                "structural_particle": "#AA44FF", # Purple - 的, 地, 得
+                "structural_particle": "#9013FE", # Violet - 的, 地, 得
                 "numeral": "#FFD700",
                 "classifier": "#FF8C00",
                 "preposition": "#4444FF",
