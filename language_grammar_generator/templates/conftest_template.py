@@ -24,6 +24,13 @@ import json
 import os
 from pathlib import Path
 from unittest.mock import Mock
+
+# Optional coverage import
+try:
+    import coverage  # type: ignore
+except ImportError:
+    coverage = None
+
 # from languages.{language}.{language}_analyzer import {Language}Analyzer
 # from languages.{language}.{language}_config import {Language}Config
 
@@ -186,8 +193,7 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session", autouse=True)
 def configure_coverage():
     """Configure coverage settings."""
-    if "COVERAGE_PROCESS_START" in os.environ:
-        import coverage
+    if "COVERAGE_PROCESS_START" in os.environ and coverage is not None:
         coverage.process_startup()
 
 

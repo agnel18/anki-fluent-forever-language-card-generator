@@ -383,8 +383,7 @@ def main():
         if args.export_results:
             with open("gold_standard_comparison_results.json", "w") as f:
                 json.dump(results, f, indent=2)
-            print("
-📄 Results exported to gold_standard_comparison_results.json"
+            print("📄 Results exported to gold_standard_comparison_results.json")
     else:
         comparator = GoldStandardComparator(args.language, args.detailed)
         success = comparator.compare_all()
