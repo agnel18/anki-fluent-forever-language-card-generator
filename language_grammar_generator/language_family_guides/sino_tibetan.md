@@ -1,9 +1,10 @@
 # Sino-Tibetan Language Family Guide
 ## Chinese, Tibetan, Burmese Language Analyzers
 
-**Gold Standards:** [Chinese Simplified](languages/zh/zh_analyzer.py) and [Chinese Traditional](languages/chinese_traditional/zh_tw_analyzer.py)  
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture with external configuration  
+**Secondary Reference:** [Chinese Traditional](languages/chinese_traditional/zh_tw_analyzer.py) - Should follow Chinese Simplified patterns  
 **Key Characteristics:** Analytic languages, logographic scripts, rich character-based analysis  
-**Critical Pattern:** Rich explanations with individual word meanings (not just grammatical roles) - **Word Meanings Dictionary Required**
+**Critical Pattern:** External word meanings dictionary and Clean Architecture (Chinese Simplified model)
 
 ## 🎯 Sino-Tibetan Language Characteristics
 
@@ -15,34 +16,42 @@
 
 ### Implementation Challenges
 - **Character Segmentation**: Proper word/character boundary identification
-- **Meaning Extraction**: Individual meanings for each character/word
+- **Meaning Extraction**: Individual meanings for each character/word from external dictionary
 - **Color Coding**: Position-based coloring for logographic text
 - **Rich Explanations**: Detailed explanations beyond basic grammatical roles
-- **Word Meanings Dictionary**: External JSON file with specific meanings for common words (CRITICAL for quality fallbacks)
+- **External Configuration**: Word meanings and grammatical roles in YAML/JSON files (Chinese Simplified pattern)
 
-## 📚 Word Meanings Dictionary Pattern (Critical Learning)
+## 📚 Word Meanings Dictionary Pattern (Chinese Simplified Gold Standard)
 
-### Why Word Meanings Dictionary is Required
+### Why External Word Meanings Dictionary is Required
 
-**Problem:** Without a word meanings dictionary, Sino-Tibetan analyzers fall back to generic explanations that don't help learners understand specific word meanings.
+**Problem:** Without an external word meanings dictionary, Sino-Tibetan analyzers fall back to generic explanations that don't help learners understand specific word meanings.
 
-**❌ Before (Generic Fallback):**
+**❌ Anti-Pattern (Hardcoded or Generic Fallbacks):**
 ```json
 "numeral in zh-tw grammar"
 "conjunction in zh-tw grammar"
 "verb in zh-tw grammar"
 ```
 
-**✅ After (Rich Word Meanings):**
+**✅ Gold Standard Pattern (Chinese Simplified - External Dictionary):**
 ```json
-"three (numeral)"
-"if (conjunction)"
-"equals, equal to (verb/mathematical term)"
+// infrastructure/data/zh_word_meanings.json
+{
+  "一": "one (numeral)",
+  "二": "two (numeral)",
+  "三": "three (numeral)",
+  "是": "to be, is, are (verb of existence)",
+  "和": "and (conjunction), harmony (noun)",
+  "在": "at, in, on (preposition), to be (verb)"
+}
 ```
 
-### Dictionary Structure Requirements
+### Dictionary Structure Requirements (Chinese Simplified Pattern)
 
 **File:** `infrastructure/data/{language}_word_meanings.json`
+**Loaded by:** `{language}_config.py` (domain component)
+**Used by:** Response parser and fallback systems
 ```json
 {
   "一": "one (numeral)",

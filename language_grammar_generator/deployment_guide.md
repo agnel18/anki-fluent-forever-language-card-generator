@@ -1,8 +1,9 @@
 # Deployment Guide
 ## Production Deployment Following Gold Standard Patterns
 
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
-**Critical:** Deploy only implementations matching gold standards  
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
+**Critical:** Deploy only implementations matching Chinese Simplified Clean Architecture patterns  
 **Prerequisites:** Study gold standards, complete implementation following their patterns  
 **Architecture:** Follow [Architecture Guide](architecture_guide.md) with gold standard compliance  
 **Time Estimate:** 2-4 weeks for full production deployment

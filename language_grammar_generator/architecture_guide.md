@@ -2,52 +2,235 @@
 ## Domain-Driven Design for Language Analyzers
 
 **Principles:** Clean Architecture, Domain-Driven Design, Separation of Concerns  
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
-**Pattern:** Facade Pattern with Component Orchestration  
-**Critical:** Follow gold standard patterns - no artificial confidence boosting
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture with external configuration  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
+**Pattern:** Clean Architecture with integrated domain components  
+**Critical:** Follow Chinese Simplified patterns - external configuration, integrated fallbacks, no artificial confidence boosting
 
 ## 🏗️ Architectural Overview
 
 ### Core Principles
 
-#### 1. Domain-Driven Design (DDD) - Gold Standard Pattern
+#### 1. Clean Architecture - PRIMARY GOLD STANDARD (Chinese Simplified)
+**Dependency Inversion** - Domain layer contains all business logic, external layers adapt to domain
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Frameworks & Drivers (External APIs, File Systems, etc.)   │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│  Interface Adapters (Infrastructure Layer)                  │
+│  - File I/O, API calls, external service integrations       │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│  Application Layer (Use Cases)                             │
+│  - Application-specific business rules                     │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│  Domain Layer (Entities & Core Business Logic) ◄── GOLD    │
+│  - Language-specific grammar rules & patterns              │
+│  - External configuration files (YAML/JSON)                │
+│  - Integrated fallback systems                             │
+│  - Natural validation without artificial boosting          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 2. Domain-Driven Design (DDD) - Chinese Simplified Pattern
 **Business Logic First** - Domain components contain all linguistic knowledge and rules
 ```
-Domain Layer (Core Business Logic) - LIKE GOLD STANDARDS
-├── Config: Language-specific settings and rules (hi_config.py, zh_config.py)
-│   ├── Word Meanings: External JSON dictionary with specific word meanings (CRITICAL for Sino-Tibetan)
-│   ├── Grammatical Roles: Color schemes and role definitions
-│   └── Language Patterns: Scripts, character sets, segmentation rules
-├── Prompt Builder: AI prompt generation strategies (hi_prompt_builder.py, zh_prompt_builder.py)
-├── Response Parser: AI output processing and normalization (hi_response_parser.py, zh_response_parser.py)
-├── Validator: Quality assessment and NATURAL confidence scoring (NO artificial boosting)
-└── Fallbacks: Error recovery with rich word meanings (gold standard fallback patterns)
+Domain Layer (Core Business Logic) - CHINESE SIMPLIFIED GOLD STANDARD
+├── Config: External YAML/JSON configuration files (zh_config.py loads external files)
+│   ├── Word Meanings: External JSON dictionary with specific meanings
+│   ├── Grammatical Roles: Color schemes and role definitions from YAML
+│   └── Language Patterns: Scripts, character sets, segmentation rules from config
+├── Prompt Builder: Jinja2 template-based AI prompt generation (zh_prompt_builder.py)
+├── Response Parser: AI output processing with integrated fallbacks (zh_response_parser.py)
+├── Validator: Quality assessment with natural confidence scoring (zh_validator.py)
+├── Fallbacks: Error recovery integrated within response parser (zh_fallbacks.py)
+└── Patterns: Linguistic pattern recognition (zh_patterns.py)
 ```
 
-#### 2. Clean Architecture - Gold Standard Implementation
-**Dependency Inversion** - Outer layers depend on inner layers, never vice versa
-```
-Entities (Domain) ← Use Cases (Application) ← Interface Adapters (Infrastructure) ← Frameworks (External)
-```
+#### 3. Separation of Concerns - Chinese Simplified Implementation
+**Single Responsibility** - Each component has one clear purpose, following Clean Architecture
+- **Config:** Loads external files, never processes text (like zh_config.py)
+- **Prompt Builder:** Creates Jinja2 templates, never calls APIs (like zh_prompt_builder.py)
+- **Response Parser:** Parses responses with integrated fallbacks, never validates quality (like zh_response_parser.py)
+- **Validator:** Assesses quality with natural scoring, never generates output (NO artificial boosting)
+- **Fallbacks:** Provides error recovery within domain layer, never does primary processing
 
-#### 3. Separation of Concerns - Gold Standard Separation
-**Single Responsibility** - Each component has one clear purpose
-- **Config:** Knows language rules, never processes text (like hi_config/zh_config)
-- **Prompt Builder:** Creates prompts, never calls APIs (like gold standard builders)
-- **Response Parser:** Parses responses, never validates quality (like gold standard parsers)
-- **Validator:** Assesses quality with NATURAL scoring, never generates output (NO artificial boosting)
-- **Fallbacks:** Provides error recovery, never does primary processing
+### Component Architecture - Chinese Simplified Gold Standard Pattern
 
-### Component Architecture - Gold Standard Pattern
-
-#### Main Analyzer (Facade Pattern) - COPY THIS FROM GOLD STANDARDS
+#### Main Analyzer (Clean Architecture Facade) - COPY FROM CHINESE SIMPLIFIED
 ```python
-class LanguageAnalyzer(BaseGrammarAnalyzer):  # OR IndoEuropeanAnalyzer
+class ZhAnalyzer(BaseGrammarAnalyzer):  # Gold standard Clean Architecture
     """
-    Facade that orchestrates domain components - LIKE HINDI/CHINESE ANALYZERS.
-    Single entry point for all analysis operations.
-    FOLLOWS GOLD STANDARD: No artificial confidence boosting, natural validation.
+    Clean Architecture facade orchestrating domain components.
+    FOLLOWS CHINESE SIMPLIFIED: External config, integrated fallbacks, natural validation.
     """
+    
+    def __init__(self):
+        # Initialize domain components first (Clean Architecture)
+        self.zh_config = ZhConfig()           # Loads external YAML/JSON
+        self.prompt_builder = ZhPromptBuilder(self.zh_config)
+        self.response_parser = ZhResponseParser(self.zh_config)
+        self.validator = ZhValidator(self.zh_config)
+        self.fallbacks = ZhFallbacks(self.zh_config)  # Integrated in domain
+        
+        # Create language config and call parent
+        config = LanguageConfig(...)
+        super().__init__(config)
+```
+
+#### Domain Components - Chinese Simplified Structure
+```python
+# 1. Config Component (External Files) - CHINESE SIMPLIFIED PATTERN
+@dataclass
+class ZhConfig:
+    """Configuration loaded from external YAML/JSON files"""
+    grammatical_roles: Dict[str, str]     # From zh_grammatical_roles.yaml
+    common_classifiers: List[str]          # From zh_common_classifiers.yaml
+    aspect_markers: Dict[str, str]         # From zh_aspect_markers.yaml
+    structural_particles: Dict[str, str]   # From zh_structural_particles.yaml
+    word_meanings: Dict[str, str]          # From zh_word_meanings.json
+    prompt_templates: Dict[str, str]       # From zh_prompt_templates.yaml
+    patterns: Dict[str, Any]              # From zh_patterns.yaml
+
+# 2. Prompt Builder (Jinja2 Templates) - CHINESE SIMPLIFIED PATTERN
+class ZhPromptBuilder:
+    """Jinja2 template-based prompt generation"""
+    def __init__(self, config: ZhConfig):
+        self.config = config
+        self.templates = {}  # Load Jinja2 templates
+        
+    def build_single_sentence_prompt(self, sentence, target_word, complexity):
+        template = self.templates.get('single_sentence')
+        return template.render(sentence=sentence, target_word=target_word, complexity=complexity)
+
+# 3. Response Parser (Integrated Fallbacks) - CHINESE SIMPLIFIED PATTERN
+class ZhResponseParser:
+    """AI response parsing with integrated fallback hierarchy"""
+    def __init__(self, config: ZhConfig):
+        self.config = config
+        self.fallbacks = ZhFallbacks(config)  # Integrated in domain layer
+        
+    def parse_response(self, ai_response, complexity, sentence, target_word):
+        # Try primary parsing, then fallbacks
+        try:
+            return self._parse_json_response(ai_response)
+        except:
+            return self.fallbacks.create_fallback(sentence, complexity)
+
+# 4. Validator (Natural Scoring) - CHINESE SIMPLIFIED PATTERN
+class ZhValidator:
+    """Quality validation with natural confidence scoring"""
+    def validate_result(self, result, sentence):
+        # Natural validation without artificial boosting
+        # Return quality_score between 0.0 and 1.0
+        return self._calculate_natural_confidence(result, sentence)
+```
+
+### Infrastructure Layer - Chinese Simplified Minimal Approach
+
+#### External Configuration Files - CHINESE SIMPLIFIED PATTERN
+```
+infrastructure/data/                    # Minimal infrastructure
+├── zh_grammatical_roles.yaml         # Grammatical role definitions
+├── zh_common_classifiers.yaml        # Classifier lists
+├── zh_aspect_markers.yaml           # Aspect particle patterns
+├── zh_structural_particles.yaml     # Particle system rules
+├── zh_modal_particles.yaml          # Modal particle patterns
+├── zh_word_meanings.json            # Pre-defined word meanings
+└── zh_patterns.yaml                 # Regex patterns and validation rules
+```
+
+**❌ Anti-Pattern (Separate Infrastructure Layer):**
+```
+infrastructure/                       # AVOID THIS COMPLEXITY
+├── zh_tw_fallbacks.py              # Separate component (breaks Clean Architecture)
+└── data/
+```
+
+### Implementation Guidelines - Follow Chinese Simplified
+
+#### 1. Configuration Management - EXTERNAL FILES (Chinese Simplified Pattern)
+```python
+# ✅ CORRECT: External configuration files
+class ZhConfig:
+    def __init__(self):
+        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
+        self.grammatical_roles = self._load_yaml(config_dir / "zh_grammatical_roles.yaml")
+        self.word_meanings = self._load_json(config_dir / "zh_word_meanings.json")
+
+# ❌ AVOID: Hardcoded configurations
+class LanguageConfig:
+    def __init__(self):
+        self.grammatical_roles = {
+            "noun": "#FFAA00",
+            "verb": "#44FF44",
+            # ... hardcoded values
+        }
+```
+
+#### 2. Fallback Integration - WITHIN DOMAIN (Chinese Simplified Pattern)
+```python
+# ✅ CORRECT: Integrated fallbacks in response parser
+class ZhResponseParser:
+    def __init__(self, config: ZhConfig):
+        self.config = config
+        self.fallbacks = ZhFallbacks(config)  # Domain component
+        
+    def parse_response(self, ai_response, sentence, complexity):
+        try:
+            return self._parse_primary(ai_response)
+        except:
+            return self.fallbacks.create_fallback(sentence, complexity)
+
+# ❌ AVOID: Separate infrastructure fallbacks
+class LanguageAnalyzer:
+    def __init__(self):
+        self.fallbacks = LanguageFallbacks()  # Infrastructure component
+```
+
+#### 3. Prompt Engineering - JINJA2 TEMPLATES (Chinese Simplified Pattern)
+```python
+# ✅ CORRECT: Template-based prompts
+class ZhPromptBuilder:
+    def __init__(self, config: ZhConfig):
+        self.config = config
+        self.template = Template("""
+        You are a linguist specializing in {{ language }}...
+        Analyze: {{ sentence }}
+        """)
+        
+    def build_prompt(self, sentence, complexity):
+        return self.template.render(
+            language=self.config.language_name,
+            sentence=sentence,
+            complexity=complexity
+        )
+
+# ❌ AVOID: Hardcoded string prompts
+class LanguagePromptBuilder:
+    def build_prompt(self, sentence, complexity):
+        return f"You are a linguist... Analyze: {sentence}"  # Hardcoded
+```
+
+### Migration Path - From Complex to Clean Architecture
+
+#### Current Issues to Address:
+1. **Chinese Traditional** uses separate infrastructure layer - should integrate fallbacks into domain
+2. **Chinese Traditional** has hardcoded configurations - should use external files like Chinese Simplified
+3. **Chinese Traditional** uses string-based prompts - should use Jinja2 templates
+4. **Complex modular architecture** should be simplified to Clean Architecture
+
+#### Migration Steps:
+1. **Extract hardcoded configs** to external YAML/JSON files
+2. **Move fallback logic** from infrastructure to domain response parser
+3. **Implement Jinja2 templates** for prompt generation
+4. **Simplify architecture** by removing unnecessary infrastructure separation
+5. **Follow Chinese Simplified patterns** for all new implementations
 
     def __init__(self):
         # Initialize domain components FIRST (like gold standards)

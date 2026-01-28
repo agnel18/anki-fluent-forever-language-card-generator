@@ -1,0 +1,22 @@
+# Chinese Traditional Grammatical Roles Configuration
+# Maps role names to standardized categories (following Chinese Simplified gold standard)
+
+noun: "noun"
+verb: "verb"
+pronoun: "pronoun"
+adjective: "adjective"
+adverb: "adverb"
+numeral: "numeral"
+measure_word: "measure_word"
+particle: "particle"
+preposition: "preposition"
+conjunction: "conjunction"
+interjection: "interjection"
+aspect_particle: "aspect_particle"
+modal_particle: "modal_particle"
+structural_particle: "structural_particle"
+time_word: "time_word"
+locative_word: "locative_word"
+onomatopoeia: "onomatopoeia"
+interrogative: "interrogative"
+other: "other"

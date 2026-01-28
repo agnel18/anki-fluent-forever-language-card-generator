@@ -299,6 +299,12 @@ LANGUAGE_NAME_TO_CODE = {
 
 LANGUAGE_CODE_TO_NAME = {v: k for k, v in LANGUAGE_NAME_TO_CODE.items()}
 
+# Content generation language name mapping for AI compatibility
+CONTENT_LANGUAGE_MAP = {
+    "Chinese (Traditional)": "Traditional Chinese",
+    "Chinese (Simplified)": "Simplified Chinese",
+}
+
 # ============================================================================
 # CONSTANTS
 # ============================================================================

@@ -1,52 +1,53 @@
 # AI Prompting Guide
 ## AI Integration Following Gold Standard Patterns
 
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
-**Critical:** Use only gold standard AI patterns - no artificial confidence boosting  
-**Prerequisites:** Study gold standards before AI integration  
-**Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like gold standards)  
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Jinja2 templates, external configuration  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
+**Critical:** Use Chinese Simplified Clean Architecture patterns - Jinja2 templates, external config, no artificial confidence boosting  
+**Prerequisites:** Study Chinese Simplified template system before AI integration  
+**Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like Chinese Simplified)  
 **Time Estimate:** 2-3 weeks for gold standard compliant optimization
 
-## 🎯 AI Integration Philosophy - Gold Standard Compliance
+## 🎯 AI Integration Philosophy - Chinese Simplified Gold Standard Compliance
 
-### Model Selection Strategy - Match Gold Standards
-- **gemini-2.5-flash:** Complex linguistic analysis (like Hindi/Chinese analyzers)
+### Model Selection Strategy - Match Chinese Simplified
+- **gemini-2.5-flash:** Complex linguistic analysis (like Chinese Simplified analyzer)
 - **gemini-3-flash-preview:** Simple analysis, high-volume processing
-- **No other models allowed** - strict enforcement like gold standards
-- **Circuit Breaker:** Implement like gold standards for reliability
+- **No other models allowed** - strict enforcement like Chinese Simplified
+- **Circuit Breaker:** Implement like Chinese Simplified for reliability
 
-### Prompt Engineering Principles - Gold Standard Patterns
+### Prompt Engineering Principles - Chinese Simplified Patterns
+- **Jinja2 Templates:** Template-based prompt generation (Chinese Simplified pattern)
+- **External Configuration:** Load prompt templates from YAML files (Chinese Simplified pattern)
 - **Natural Confidence:** No artificial boosting - use natural AI confidence scores
-- **Facade Integration:** AI calls orchestrated through facade pattern like gold standards
-- **External Config:** Load prompt templates from files like gold standards
-- **Component Isolation:** AI service separate from domain logic like gold standards
-- **Error Recovery:** Fallback mechanisms matching gold standard patterns
+- **Clean Architecture:** AI calls orchestrated through domain components
+- **Integrated Fallbacks:** Fallback mechanisms within domain layer (Chinese Simplified pattern)
 
 ### Quality Assurance - Natural Validation Only
 - **Natural Confidence Scoring:** Use AI-provided confidence without manipulation
-- **Fallback Mechanisms:** Graceful degradation like gold standards
+- **Fallback Mechanisms:** Graceful degradation like Chinese Simplified
 - **Validation Loops:** Cross-check with linguistic rules (no artificial boosting)
 - **Performance Monitoring:** Track natural confidence distributions
 
-## 📝 Prompt Template Architecture - Gold Standard Structure
+## 📝 Prompt Template Architecture - Chinese Simplified Gold Standard Structure
 
-### 1. Base Prompt Structure - Like Gold Standards
+### 1. Base Prompt Structure - Like Chinese Simplified
 
-**File:** `languages/{language}/{language}_prompt_builder.py` (like hi_prompt_builder.py/zh_prompt_builder.py)
+**File:** `languages/{language}/{language}_prompt_builder.py` (like zh_prompt_builder.py)
 ```python
 from typing import Dict, Any
 from jinja2 import Template
 
 class {Language}PromptBuilder:
-    """Prompt builder following gold standard patterns - LIKE HINDI/CHINESE BUILDERS"""
+    """Prompt builder following Chinese Simplified Clean Architecture patterns"""
 
     def __init__(self, config: {Language}Config):
         self.config = config
-        self.templates = self._load_templates_from_config()  # Like gold standards
+        self.templates = self._load_templates_from_config()  # Like Chinese Simplified
 
     def _load_templates_from_config(self) -> Dict[str, Template]:
-        """Load templates from external config - LIKE GOLD STANDARDS"""
-        # Load from YAML files like Hindi/Chinese configs
+        """Load templates from external config - LIKE CHINESE SIMPLIFIED"""
+        # Load from YAML files like Chinese Simplified config
         config_templates = self.config.prompt_templates
 
         return {

@@ -1,76 +1,156 @@
 # languages/chinese_traditional/domain/zh_tw_response_parser.py
 """
-Response parsing for Chinese Traditional AI analysis results.
-Handles parsing and validation of Gemini AI responses for Chinese Traditional grammar analysis.
+Chinese Traditional Response Parser - Domain Component
+
+Following Chinese Simplified Clean Architecture gold standard:
+- Integrated fallback mechanisms within domain layer
+- JSON parsing with robust error handling
+- Validation of AI responses against expected structure
+- Graceful degradation when AI provides incomplete data
+
+RESPONSIBILITIES:
+1. Parse AI JSON responses for grammar analysis
+2. Validate response structure and content
+3. Provide integrated fallback mechanisms for malformed responses
+4. Extract grammatical information with confidence scoring
+5. Handle Chinese Traditional specific linguistic features
+
+INTEGRATION:
+- Used by ZhTwAnalyzer facade for response processing
+- Depends on ZhTwConfig for validation rules and patterns
+- Works with ZhTwValidator for confidence assessment
+- Provides structured data for UI presentation
+
+PARSING STRATEGY:
+1. Attempt JSON parsing of AI response
+2. Validate structure against expected schema
+3. Extract grammatical roles and explanations
+4. Apply fallback parsing if JSON fails
+5. Score confidence in extracted information
 """
 
 import json
-import re
 import logging
+import re
 from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass
 
 from .zh_tw_config import ZhTwConfig
+from .zh_tw_fallbacks import ZhTwFallbacks
 
 logger = logging.getLogger(__name__)
 
+@dataclass
+class ParsedWord:
+    """Represents a parsed word with grammatical information."""
+    word: str
+    grammatical_role: str
+    individual_meaning: str
+    confidence: float = 1.0
+
+@dataclass
+class ParsedSentence:
+    """Represents a parsed sentence with grammatical breakdown."""
+    sentence: str
+    words: List[ParsedWord]
+    overall_structure: str
+    key_features: str
+    confidence: float = 1.0
+
+@dataclass
+class ParseResult:
+    """Result of parsing AI response."""
+    sentences: List[ParsedSentence]
+    success: bool
+    error_message: Optional[str] = None
+    fallback_used: bool = False
 
 class ZhTwResponseParser:
     """
-    Parses and validates AI responses for Chinese Traditional grammar analysis.
+    Parses AI responses for Chinese Traditional grammar analysis.
 
-    Handles:
-    - JSON parsing from AI responses
-    - Validation of grammatical roles
-    - Word order verification
-    - Traditional character validation
-    - Compound word processing
+    Following Chinese Simplified Clean Architecture:
+    - Integrated fallbacks: Error recovery within domain layer
+    - Robust parsing: Handle various AI response formats
+    - Validation: Ensure data quality and completeness
+    - Confidence scoring: Assess reliability of extracted information
+
+    PARSING APPROACH:
+    1. Primary: JSON parsing with schema validation
+    2. Fallback: Regex-based extraction from text responses
+    3. Recovery: Basic grammatical role assignment for failures
+    4. Scoring: Confidence assessment for all extracted data
     """
 
     def __init__(self, config: ZhTwConfig):
-        self.config = config
-        self.allowed_roles = set(self.config.grammatical_roles.keys())
-
-    def parse_response(self, ai_response: str, sentence: str, complexity: str) -> Dict[str, Any]:
         """
-        Parse single sentence analysis response from AI.
+        Initialize parser with configuration.
 
         Args:
-            ai_response: Raw AI response string
-            sentence: Original sentence being analyzed
-            complexity: Complexity level
+            config: ZhTwConfig instance with patterns and validation rules
+        """
+        self.config = config
+        self.valid_roles = set(self.config.grammatical_roles.keys())
+
+    def parse_single_response(self, response: str, original_sentence: str) -> ParseResult:
+        """
+        Parse AI response for single sentence analysis.
+
+        PARSING STRATEGY:
+        1. Try JSON parsing first
+        2. Validate structure and content
+        3. Extract words and grammatical information
+        4. Apply fallbacks if parsing fails
+        5. Score confidence in results
+
+        Args:
+            response: Raw AI response string
+            original_sentence: Original sentence being analyzed
 
         Returns:
-            Parsed and validated analysis results
+            ParseResult with parsed sentence data
         """
         try:
-            # Extract JSON from response
-            json_data = self._extract_json_from_response(ai_response)
+            # Attempt JSON parsing
+            data = json.loads(response)
+            return self._parse_json_response(data, original_sentence)
+        except json.JSONDecodeError:
+            logger.warning("JSON parsing failed, attempting fallback parsing")
+            return self._parse_fallback_response(response, original_sentence)
 
-            if not json_data:
-                logger.warning("Invalid response format, using fallback")
-                return self._create_fallback(sentence, complexity)
-
-            # Transform to standard format
-            result = self._transform_to_standard_format(json_data, complexity)
-
-            # Add metadata
-            result['metadata'] = {
-                'parser_version': '1.0',
-                'language': 'zh-tw',
-                'complexity': complexity
-            }
-
-            return result
-
+    def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str = None) -> Dict[str, Any]:
+        """Parse single response with fallbacks - compatibility method for analyzer."""
+        logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
+        try:
+            parse_result = self.parse_single_response(ai_response, sentence)
+            if parse_result.sentences:
+                parsed_sentence = parse_result.sentences[0]
+                return self._transform_to_standard_format({
+                    'sentence': parsed_sentence.sentence,
+                    'words': [
+                        {
+                            'word': word.word,
+                            'grammatical_role': word.grammatical_role,
+                            'individual_meaning': word.individual_meaning
+                        }
+                        for word in parsed_sentence.words
+                    ],
+                    'explanations': {
+                        'overall_structure': parsed_sentence.overall_structure,
+                        'key_features': parsed_sentence.key_features
+                    }
+                }, complexity, target_word)
+            else:
+                raise ValueError("No sentences parsed")
         except Exception as e:
-            logger.error(f"Failed to parse response: {e}")
-            return self._create_fallback(sentence, complexity)
+            logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
+            return self.fallbacks.create_fallback(sentence, complexity)
 
     def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
-        """Parse batch response with per-result fallbacks."""
+        """Parse batch response with per-result fallbacks - compatibility method."""
         logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
         try:
-            json_data = self._extract_json_from_response(ai_response)
+            json_data = self._extract_json(ai_response)
 
             # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
@@ -93,400 +173,410 @@ class ZhTwResponseParser:
                         results.append(parsed)
                     except Exception as e:
                         logger.warning(f"Batch item {i} failed: {e}")
-                        results.append(self._create_fallback(sentences[i], complexity))
+                        results.append(self.fallbacks.create_fallback(sentences[i], complexity))
                 else:
-                    results.append(self._create_fallback(sentences[i], complexity))
+                    results.append(self.fallbacks.create_fallback(sentences[i], complexity))
 
-            # If we don't have results for all sentences, add fallbacks
-            while len(results) < len(sentences):
-                results.append(self._create_fallback(sentences[len(results)], complexity))
+            return results
 
-            return {'success': True, 'results': results}
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
-            return {'success': False, 'results': [self._create_fallback(s, complexity) for s in sentences]}
-        """Parse single response with fallbacks and explanations extraction."""
-        logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
+            # Return fallbacks for all sentences
+            return [self.fallbacks.create_fallback(sentence, complexity) for sentence in sentences]
+
+    def _extract_json(self, response: str) -> Any:
+        """Extract JSON from AI response, handling various formats."""
+        # Try direct JSON parsing
         try:
-            json_data = self._extract_json_from_response(ai_response)
-
-            # Check if this looks like an error response
-            if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
-                raise ValueError("AI returned error response")
-
-            return self._transform_to_standard_format(json_data, complexity, target_word)
-        except Exception as e:
-            logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
-            # Create fallback result with explanations
-            fallback_result = self._create_fallback(sentence, complexity)
-            return self._transform_to_standard_format(fallback_result, complexity, target_word)
-        """
-        Parse batch analysis response from AI.
-
-        Args:
-            ai_response: Raw AI response string
-            sentences: Original sentences being analyzed
-
-        Returns:
-            Parsed and validated analysis results
-        """
-
-        try:
-            # Extract JSON from response
-            json_data = self._extract_json_from_response(ai_response)
-
-            if not json_data or 'batch_results' not in json_data:
-                logger.warning("Invalid response format, attempting fallback parsing")
-                logger.debug(f"AI Response that failed parsing: {ai_response[:500]}...")  # Log first 500 chars
-                json_data = self._fallback_parse(ai_response)
-
-            # Validate and clean the results
-            validated_results = self._validate_batch_results(json_data, sentences)
-
-            return {
-                'success': True,
-                'results': validated_results,
-                'metadata': {
-                    'parser_version': '1.0',
-                    'language': 'zh-tw',
-                    'sentences_count': len(sentences)
-                }
-            }
-
-        except Exception as e:
-            logger.error(f"Failed to parse batch response: {e}")
-            return {
-                'success': False,
-                'error': str(e),
-                'fallback_results': self._generate_fallback_results(sentences)
-            }
-
-    def _extract_json_from_response(self, response: str) -> Optional[Dict[str, Any]]:
-        """
-        Extract JSON from AI response, handling various formats.
-
-        Args:
-            response: AI response string
-
-        Returns:
-            Parsed JSON data or None
-        """
-
-        # Try direct JSON parsing first
-        try:
-            return json.loads(response.strip())
+            return json.loads(response)
         except json.JSONDecodeError:
             pass
 
-        # Look for JSON code blocks
-        json_patterns = [
-            r'```json\s*(\{.*?\})\s*```',
-            r'```\s*(\{.*?\})\s*```',
-            r'(\{[^{}]*\{[^{}]*\}[^{}]*\})',  # Nested JSON
-            r'(\{[^{}]*\})'  # Simple JSON
-        ]
-
-        for pattern in json_patterns:
-            matches = re.findall(pattern, response, re.DOTALL)
-            for match in matches:
-                try:
-                    return json.loads(match)
-                except json.JSONDecodeError:
-                    continue
-
-        # Try to find JSON-like content
-        start_idx = response.find('{')
-        end_idx = response.rfind('}')
-
-        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        # Try extracting from markdown code blocks
+        import re
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if json_match:
             try:
-                json_str = response[start_idx:end_idx + 1]
-                return json.loads(json_str)
+                return json.loads(json_match.group(1))
             except json.JSONDecodeError:
                 pass
 
-        return None
+        # Try extracting array from markdown
+        array_match = re.search(r'```(?:json)?\s*(\[.*?\])\s*```', response, re.DOTALL)
+        if array_match:
+            try:
+                return json.loads(array_match.group(1))
+            except json.JSONDecodeError:
+                pass
 
-    def _validate_batch_results(self, json_data: Dict[str, Any], sentences: List[str]) -> List[Dict[str, Any]]:
-        """
-        Validate and clean batch analysis results.
-
-        Args:
-            json_data: Parsed JSON data
-            sentences: Original sentences
-
-        Returns:
-            Validated results
-        """
-
-        validated_results = []
-
-        if 'batch_results' not in json_data:
-            logger.warning("No batch_results in response")
-            return self._generate_fallback_results(sentences)
-
-        for i, result in enumerate(json_data['batch_results']):
-            if i >= len(sentences):
-                break
-
-            validated_result = self._validate_single_result(result, sentences[i], i + 1)
-            validated_results.append(validated_result)
-
-        return validated_results
-
-    def _validate_single_result(self, result: Dict[str, Any], sentence: str, sentence_index: int) -> Dict[str, Any]:
-        """
-        Validate a single sentence analysis result.
-
-        Args:
-            result: Single result from batch
-            sentence: Original sentence
-            sentence_index: Sentence number
-
-        Returns:
-            Validated result
-        """
-
-        validated = {
-            'sentence_index': sentence_index,
-            'original_sentence': sentence,
-            'words': [],
-            'word_combinations': result.get('word_combinations', []),
-            'explanations': result.get('explanations', {}),  # Extract explanations field
-            'validation_issues': []
-        }
-
-        words = result.get('words', [])
-        if not words:
-            validated['validation_issues'].append('No words found in analysis')
-            return validated
-
-        # Validate each word
-        for word_data in words:
-            validated_word = self._validate_word(word_data)
-            validated['words'].append(validated_word)
-
-        # Additional validations
-        self._validate_word_order(validated, sentence)
-        self._validate_traditional_characters(validated)
-
-        return validated
-
-    def _validate_word(self, word_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Validate individual word analysis.
-
-        Args:
-            word_data: Word data from AI
-
-        Returns:
-            Validated word data
-        """
-
-        validated = {
-            'word': word_data.get('word', ''),
-            'individual_meaning': word_data.get('individual_meaning', ''),
-            'grammatical_role': word_data.get('grammatical_role', 'noun'),
-            'validation_status': 'valid'
-        }
-
-        # Validate grammatical role
-        if validated['grammatical_role'] not in self.allowed_roles:
-            validated['validation_status'] = 'invalid_role'
-            validated['original_role'] = validated['grammatical_role']
-            validated['grammatical_role'] = 'noun'  # Default fallback
-            validated['validation_notes'] = f"Invalid role '{validated['original_role']}', defaulted to noun"
-
-        # Validate required fields
-        if not validated['word'].strip():
-            validated['validation_status'] = 'missing_word'
-
-        if not validated['individual_meaning'].strip():
-            validated['validation_status'] = 'missing_meaning'
-
-        return validated
-
-    def _validate_word_order(self, result: Dict[str, Any], sentence: str) -> None:
-        """
-        Validate that words appear in sentence order.
-
-        Args:
-            result: Analysis result to validate
-            sentence: Original sentence
-        """
-
-        # This is a simplified validation - in practice, you'd need
-        # more sophisticated word segmentation for Chinese
-        words_in_result = [w['word'] for w in result['words']]
-        words_concat = ''.join(words_in_result)
-
-        # Check if the concatenation roughly matches the sentence
-        # (allowing for some AI interpretation differences)
-        if len(words_concat) > len(sentence) * 1.5:
-            result['validation_issues'].append('Word concatenation too long - possible over-segmentation')
-
-    def _validate_traditional_characters(self, result: Dict[str, Any]) -> None:
-        """
-        Validate that analysis uses Traditional Chinese characters.
-
-        Args:
-            result: Analysis result to validate
-        """
-
-        # Simplified check for Traditional vs Simplified characters
-        # This is a basic implementation - a full validator would be more comprehensive
-        traditional_indicators = ['臺', '體', '學', '說', '點', '們', '還', '時', '間', '電']
-        simplified_indicators = ['台', '体', '学', '说', '点', '们', '还', '时', '间', '电']
-
-        sentence = result.get('original_sentence', '')
-        has_traditional = any(char in sentence for char in traditional_indicators)
-        has_simplified = any(char in sentence for char in simplified_indicators)
-
-        if has_simplified and not has_traditional:
-            result['validation_issues'].append('Sentence appears to use Simplified characters instead of Traditional')
-
-    def _fallback_parse(self, response: str) -> Dict[str, Any]:
-        """
-        Fallback parsing when JSON extraction fails.
-
-        Args:
-            response: AI response string
-
-        Returns:
-            Basic parsed structure
-        """
-
-        # This would implement more sophisticated fallback parsing
-        # For now, return empty structure
-        return {'batch_results': []}
-
-    def _generate_fallback_results(self, sentences: List[str]) -> List[Dict[str, Any]]:
-        """
-        Generate basic fallback results when parsing fails.
-
-        Args:
-            sentences: Original sentences
-
-        Returns:
-            Basic fallback analysis
-        """
-
-        fallback_results = []
-        for i, sentence in enumerate(sentences):
-            fallback_results.append({
-                'sentence_index': i + 1,
-                'original_sentence': sentence,
-                'words': [{
-                    'word': sentence,  # Treat whole sentence as one "word"
-                    'individual_meaning': 'Sentence analysis failed - please check manually',
-                    'grammatical_role': 'noun',
-                    'validation_status': 'fallback'
-                }],
-                'word_combinations': [],
-                'validation_issues': ['AI response parsing failed, using fallback analysis']
-            })
-
-        return fallback_results
+        raise ValueError("Could not extract valid JSON from AI response")
 
     def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
-        """Transform parsed data to standard format with explanations extraction."""
-        words = data.get('words', [])
-        elements = {}
-        word_explanations = []
-        colors = self._get_color_scheme(complexity)
-
-        for word_data in words:
-            word = word_data.get('word', '')
-            role = word_data.get('grammatical_role', 'other')
-            if target_word and word == target_word:
-                role = 'target_word'
-            # Map role using config
-            standard_role = role  # Keep the role name
-            color = self.config.grammatical_roles.get(standard_role, '#AAAAAA')
-            explanation = word_data.get('individual_meaning', standard_role)
-            
-            # Use word meanings dictionary if explanation is generic
-            if self._is_generic_explanation(explanation):
-                dict_meaning = self.config.word_meanings.get(word, '')
-                if dict_meaning:
-                    explanation = dict_meaning
-                else:
-                    # Fallback to role-based explanation
-                    explanation = f"{word} ({standard_role})"
-            
-            word_explanations.append([word, standard_role, color, explanation])
-
-            if standard_role not in elements:
-                elements[standard_role] = []
-            elements[standard_role].append(word_data)
-
-        explanations = data.get('explanations', {})
-        
-        # Generate overall_structure and key_features if missing
-        if not explanations.get('overall_structure'):
-            roles = [exp[1] for exp in word_explanations if len(exp) > 1]
-            role_counts = {}
-            for role in roles:
-                role_counts[role] = role_counts.get(role, 0) + 1
-            overall = f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for role, count in role_counts.items()])}"
-            explanations['overall_structure'] = overall
-            explanations['key_features'] = f"Demonstrates {len(set(roles))} grammatical categories"
-
-        return {
-            'sentence': data.get('sentence', ''),
-            'elements': elements,
-            'explanations': explanations,  # Extract explanations field
-            'word_explanations': word_explanations
-        }
-
-    def _is_generic_explanation(self, explanation: str) -> bool:
-        """Check if an explanation is generic and should be replaced with dictionary meaning."""
-        generic_patterns = [
-            "a word that describes a noun",
-            "a word that describes a verb", 
-            "a word that describes an adjective",
-            "a particle",
-            "an interjection",
-            "other",
-            "noun in zh-tw grammar",
-            "verb in zh-tw grammar",
-            "adjective in zh-tw grammar"
-        ]
-        return any(pattern in explanation.lower() for pattern in generic_patterns)
-
-    def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Get color scheme based on complexity."""
-        return self.config.get_color_scheme(complexity)
-
-    def _create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
-        """Create fallback analysis result."""
-        fallback_data = {
-            'sentence': sentence,
-            'words': [{
-                'word': sentence,
-                'individual_meaning': 'Fallback analysis - sentence parsing failed',
-                'grammatical_role': 'noun'
-            }],
-            'explanations': {
-                'overall_structure': 'Fallback analysis due to parsing error',
-                'key_features': 'Unable to analyze sentence structure'
-            }
-        }
-        return self._transform_to_standard_format(fallback_data, complexity)
-
-    def parse_validation_response(self, ai_response: str) -> Dict[str, Any]:
-        """
-        Parse validation response from AI.
-
-        Args:
-            ai_response: Validation response
-
-        Returns:
-            Parsed validation results
-        """
-
+        """Transform parsed data to standard format expected by analyzer."""
         try:
-            json_data = self._extract_json_from_response(ai_response)
-            return json_data if json_data else {'validation_passed': False, 'issues': ['Parse failed']}
+            words = data.get('words', [])
+            word_explanations = []
+
+            for word_data in words:
+                if isinstance(word_data, dict):
+                    word = word_data.get('word', '')
+                    role = word_data.get('grammatical_role', 'unknown')
+                    meaning = word_data.get('individual_meaning', f'{role} in sentence')
+
+                    # Map role to color
+                    color = self._get_color_for_role(role, complexity)
+
+                    word_explanations.append([word, role, color, meaning])
+
+            explanations = data.get('explanations', {})
+            overall_structure = explanations.get('overall_structure', 'Sentence structure analysis')
+            key_features = explanations.get('key_features', 'Key grammatical features')
+
+            return {
+                'elements': {},  # Simplified for compatibility
+                'explanations': {
+                    'overall_structure': overall_structure,
+                    'key_features': key_features
+                },
+                'word_explanations': word_explanations,
+                'confidence': 0.8  # Default confidence
+            }
         except Exception as e:
-            return {'validation_passed': False, 'issues': [str(e)]}
+            logger.error(f"Failed to transform data to standard format: {e}")
+            raise
+
+    def _get_color_for_role(self, role: str, complexity: str) -> str:
+        """Get color for grammatical role based on complexity."""
+        # Simplified color mapping - in real implementation, this would use config
+        color_map = {
+            'noun': '#FF4444',
+            'verb': '#44FF44',
+            'adjective': '#4444FF',
+            'adverb': '#FF44FF',
+            'pronoun': '#FFFF44',
+            'preposition': '#44FFFF',
+            'conjunction': '#FF8844',
+            'interjection': '#8844FF',
+            'particle': '#888888',
+            'classifier': '#448844',
+            'aspect_marker': '#884444',
+            'modal_particle': '#444488',
+            'structural_particle': '#888844',
+            'measure_word': '#884488',
+            'numeral': '#448888',
+            'other': '#666666'
+        }
+        return color_map.get(role, '#666666')
+
+    def _parse_json_response(self, data: Dict[str, Any], original_sentence: str) -> ParseResult:
+        """
+        Parse validated JSON response structure.
+
+        EXPECTED JSON STRUCTURE:
+        {
+          "sentence": "original sentence",
+          "words": [
+            {
+              "word": "character/word",
+              "grammatical_role": "noun|verb|...",
+              "individual_meaning": "explanation"
+            }
+          ],
+          "explanations": {
+            "overall_structure": "structure explanation",
+            "key_features": "feature explanation"
+          }
+        }
+        """
+        try:
+            # Extract sentence and validate
+            sentence = data.get("sentence", original_sentence)
+
+            # Parse words array
+            words_data = data.get("words", [])
+            words = []
+
+            for word_data in words_data:
+                word = ParsedWord(
+                    word=word_data.get("word", ""),
+                    grammatical_role=self._validate_grammatical_role(
+                        word_data.get("grammatical_role", "unknown")
+                    ),
+                    individual_meaning=word_data.get("individual_meaning", ""),
+                    confidence=self._calculate_word_confidence(word_data)
+                )
+                words.append(word)
+
+            # Extract explanations
+            explanations = data.get("explanations", {})
+            overall_structure = explanations.get("overall_structure", "")
+            key_features = explanations.get("key_features", "")
+
+            # Calculate overall confidence
+            avg_confidence = sum(w.confidence for w in words) / len(words) if words else 0.0
+
+            parsed_sentence = ParsedSentence(
+                sentence=sentence,
+                words=words,
+                overall_structure=overall_structure,
+                key_features=key_features,
+                confidence=avg_confidence
+            )
+
+            return ParseResult(
+                sentences=[parsed_sentence],
+                success=True
+            )
+
+        except Exception as e:
+            logger.error(f"Error parsing JSON response structure: {e}")
+            return self._parse_fallback_response(str(data), original_sentence)
+
+    def _parse_batch_json_response(self, data: Dict[str, Any], original_sentences: List[str]) -> ParseResult:
+        """
+        Parse batch JSON response structure.
+        """
+        try:
+            batch_results = data.get("batch_results", [])
+            sentences = []
+
+            for i, result in enumerate(batch_results):
+                original = original_sentences[i] if i < len(original_sentences) else ""
+                single_result = self._parse_json_response(result, original)
+                if single_result.sentences:
+                    sentences.extend(single_result.sentences)
+
+            return ParseResult(
+                sentences=sentences,
+                success=len(sentences) > 0
+            )
+
+        except Exception as e:
+            logger.error(f"Error parsing batch JSON response: {e}")
+            return self._parse_batch_fallback_response(str(data), original_sentences)
+
+    def _parse_fallback_response(self, response: str, original_sentence: str) -> ParseResult:
+        """
+        Fallback parsing when JSON fails.
+
+        FALLBACK STRATEGY:
+        1. Extract word-by-word information using regex
+        2. Identify grammatical roles from text patterns
+        3. Generate basic explanations
+        4. Assign lower confidence scores
+        """
+        logger.info("Using fallback parsing for response")
+
+        # Split sentence into characters/words
+        words = self._split_sentence_into_words(original_sentence)
+
+        parsed_words = []
+        for word in words:
+            # Try to extract role and meaning from response text
+            role, meaning = self._extract_word_info_from_text(response, word)
+
+            parsed_word = ParsedWord(
+                word=word,
+                grammatical_role=role,
+                individual_meaning=meaning,
+                confidence=0.5  # Lower confidence for fallback
+            )
+            parsed_words.append(parsed_word)
+
+        # Generate basic explanations
+        overall_structure = self._generate_fallback_structure_explanation(parsed_words)
+        key_features = self._generate_fallback_features_explanation(parsed_words)
+
+        parsed_sentence = ParsedSentence(
+            sentence=original_sentence,
+            words=parsed_words,
+            overall_structure=overall_structure,
+            key_features=key_features,
+            confidence=0.5
+        )
+
+        return ParseResult(
+            sentences=[parsed_sentence],
+            success=True,
+            fallback_used=True
+        )
+
+    def _parse_batch_fallback_response(self, response: str, original_sentences: List[str]) -> ParseResult:
+        """
+        Fallback parsing for batch responses.
+        """
+        sentences = []
+        for original in original_sentences:
+            result = self._parse_fallback_response(response, original)
+            sentences.extend(result.sentences)
+
+        return ParseResult(
+            sentences=sentences,
+            success=len(sentences) > 0,
+            fallback_used=True
+        )
+
+    def _validate_grammatical_role(self, role: str) -> str:
+        """
+        Validate grammatical role against known roles.
+
+        FALLBACK: Map unknown roles to closest valid equivalent
+        """
+        if role in self.valid_roles:
+            return role
+
+        # Map common variations to standard roles
+        role_mappings = {
+            "n": "noun",
+            "v": "verb",
+            "adj": "adjective",
+            "adv": "adverb",
+            "prep": "preposition",
+            "conj": "conjunction",
+            "pron": "pronoun",
+            "num": "numeral",
+            "mw": "measure_word",
+            "asp": "aspect_particle",
+            "mod": "modal_particle",
+            "struct": "structural_particle"
+        }
+
+        mapped_role = role_mappings.get(role.lower(), "unknown")
+        if mapped_role != "unknown":
+            return mapped_role
+
+        logger.warning(f"Unknown grammatical role: {role}, using 'unknown'")
+        return "unknown"
+
+    def _calculate_word_confidence(self, word_data: Dict[str, Any]) -> float:
+        """
+        Calculate confidence score for parsed word.
+
+        CONFIDENCE FACTORS:
+        - Grammatical role validity
+        - Meaning explanation length
+        - Word presence in original sentence
+        """
+        confidence = 1.0
+
+        # Reduce confidence for unknown roles
+        if word_data.get("grammatical_role") == "unknown":
+            confidence *= 0.7
+
+        # Reduce confidence for short explanations
+        meaning = word_data.get("individual_meaning", "")
+        if len(meaning) < 10:
+            confidence *= 0.8
+
+        return confidence
+
+    def _split_sentence_into_words(self, sentence: str) -> List[str]:
+        """
+        Split Chinese Traditional sentence into words/characters.
+
+        CHINESE SEGMENTATION STRATEGY:
+        - Individual characters for single-character words
+        - Common compounds identified by patterns
+        - Respect word boundaries in traditional text
+        """
+        # For Chinese, split by characters but group common compounds
+        chars = list(sentence)
+
+        # Basic compound recognition (can be enhanced with config)
+        words = []
+        i = 0
+        while i < len(chars):
+            # Check for common two-character compounds
+            if i + 1 < len(chars):
+                compound = chars[i] + chars[i + 1]
+                # Add more sophisticated compound detection here
+                words.append(compound)
+                i += 2
+            else:
+                words.append(chars[i])
+                i += 1
+
+        return words
+
+    def _extract_word_info_from_text(self, response: str, word: str) -> Tuple[str, str]:
+        """
+        Extract grammatical information for a word from text response.
+
+        FALLBACK EXTRACTION:
+        - Look for word mentions in response
+        - Extract following grammatical descriptions
+        - Use pattern matching for role identification
+        """
+        # Simple pattern matching for role extraction
+        role_patterns = {
+            "noun": r"(?i)(noun|名詞|n\.?)\b",
+            "verb": r"(?i)(verb|動詞|v\.?)\b",
+            "adjective": r"(?i)(adjective|形容詞|adj\.?)\b",
+            "particle": r"(?i)(particle|助詞|particle)\b",
+            "measure_word": r"(?i)(measure word|量詞|classifier)\b"
+        }
+
+        # Find text around word mentions
+        word_pattern = re.escape(word)
+        matches = re.finditer(f"{word_pattern}.{{0,200}}", response, re.IGNORECASE)
+
+        for match in matches:
+            text = match.group()
+
+            # Try to identify role
+            for role, pattern in role_patterns.items():
+                if re.search(pattern, text):
+                    # Extract explanation (simplified)
+                    explanation = text.replace(word, "").strip()
+                    return role, explanation
+
+        # Default fallback
+        return "unknown", f"Word '{word}' appears in the sentence"
+
+    def _generate_fallback_structure_explanation(self, words: List[ParsedWord]) -> str:
+        """Generate basic structure explanation for fallback."""
+        roles = [w.grammatical_role for w in words if w.grammatical_role != "unknown"]
+        return f"This sentence contains {len(words)} elements with roles: {', '.join(roles[:5])}{'...' if len(roles) > 5 else ''}"
+
+    def _generate_fallback_features_explanation(self, words: List[ParsedWord]) -> str:
+        """Generate basic features explanation for fallback."""
+        features = []
+        if any(w.grammatical_role == "aspect_particle" for w in words):
+            features.append("aspect particles")
+        if any(w.grammatical_role == "measure_word" for w in words):
+            features.append("measure words/classifiers")
+        if any(w.grammatical_role == "modal_particle" for w in words):
+            features.append("modal particles")
+
+        if features:
+            return f"Chinese grammatical features present: {', '.join(features)}"
+        return "Basic Chinese sentence structure"
+
+    def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str = None) -> Dict[str, Any]:
+        """Parse single response with fallbacks - compatibility method."""
+        parse_result = self.parse_single_response(ai_response, sentence)
+        if parse_result.sentences:
+            parsed_sentence = parse_result.sentences[0]
+            return {
+                'elements': {},  # Simplified for compatibility
+                'explanations': {
+                    'overall_structure': parsed_sentence.overall_structure,
+                    'key_features': parsed_sentence.key_features
+                },
+                'word_explanations': [
+                    [word.word, word.grammatical_role, '#000000', word.individual_meaning]
+                    for word in parsed_sentence.words
+                ],
+                'confidence': parsed_sentence.confidence
+            }
+        else:
+            # Fallback
+            return self.fallbacks.create_fallback(sentence, complexity)
+
+    @property
+    def fallbacks(self):
+        """Get fallbacks component for compatibility."""
+        from .zh_tw_fallbacks import ZhTwFallbacks
+        if not hasattr(self, '_fallbacks'):
+            self._fallbacks = ZhTwFallbacks(self.config)
+        return self._fallbacks

@@ -1,283 +1,418 @@
 # languages/chinese_traditional/domain/zh_tw_validator.py
 """
-Validation logic for Chinese Traditional grammar analysis results.
-Ensures analysis quality and linguistic accuracy for Chinese Traditional.
+Chinese Traditional Validator - Domain Component
+
+Following Chinese Simplified Clean Architecture gold standard:
+- Natural confidence scoring based on linguistic patterns
+- Validation of grammatical role assignments
+- Assessment of explanation quality and completeness
+- Integration with configuration for validation rules
+
+RESPONSIBILITIES:
+1. Validate grammatical role assignments against linguistic rules
+2. Assess explanation quality and completeness
+3. Calculate natural confidence scores based on Chinese patterns
+4. Provide validation feedback for response quality
+5. Support different complexity levels in validation
+
+INTEGRATION:
+- Used by ZhTwResponseParser for confidence scoring
+- Depends on ZhTwConfig for validation patterns and rules
+- Works with ZhTwAnalyzer facade for final validation
+- Provides quality metrics for UI presentation
+
+VALIDATION STRATEGY:
+1. Linguistic rule validation (Chinese-specific patterns)
+2. Explanation completeness assessment
+3. Confidence score calculation based on multiple factors
+4. Complexity-level appropriate validation
 """
 
-import re
 import logging
+import re
 from typing import Dict, List, Any, Optional
+from dataclasses import dataclass
 
-from .zh_tw_config import ZhTwConfig
+from .zh_tw_config import ZhTwConfig, ComplexityLevel
+from .zh_tw_response_parser import ParsedWord, ParsedSentence
 
 logger = logging.getLogger(__name__)
 
+@dataclass
+class ValidationResult:
+    """Result of validation with confidence scores."""
+    is_valid: bool
+    confidence_score: float
+    issues: List[str]
+    suggestions: List[str]
 
 class ZhTwValidator:
     """
-    Validates Chinese Traditional grammar analysis results.
+    Validates Chinese Traditional grammatical analysis results.
 
-    Performs quality checks on:
-    - Grammatical role assignments
-    - Word segmentation accuracy
-    - Traditional character usage
-    - Sentence structure coherence
-    - Measure word correctness
-    - Aspect particle usage
+    Following Chinese Simplified Clean Architecture:
+    - Natural validation: Linguistic rule-based assessment
+    - Confidence scoring: Multi-factor confidence calculation
+    - Quality metrics: Explanation completeness and accuracy
+    - Complexity awareness: Different standards for different levels
+
+    VALIDATION DIMENSIONS:
+    1. Grammatical role validity (Chinese linguistic rules)
+    2. Explanation quality (completeness, clarity, accuracy)
+    3. Structural coherence (sentence-level relationships)
+    4. Chinese-specific features (aspect, particles, classifiers)
     """
 
     def __init__(self, config: ZhTwConfig):
-        self.config = config
-        self.validation_rules = config.get_validation_rules()
-
-    def validate_analysis(self, analysis_result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Perform comprehensive validation on analysis result.
+        Initialize validator with configuration.
 
         Args:
-            analysis_result: The analysis result to validate
+            config: ZhTwConfig instance with validation patterns
+        """
+        self.config = config
+        self._init_validation_patterns()
+
+    def _init_validation_patterns(self):
+        """Initialize validation patterns from configuration."""
+        # Chinese Traditional specific validation patterns
+        self.aspect_markers = set(self.config.aspect_markers.keys())
+        self.modal_particles = set(self.config.modal_particles.keys())
+        self.structural_particles = set(self.config.structural_particles.keys())
+        self.common_classifiers = set(self.config.common_classifiers)
+
+        # Role compatibility patterns (what roles can co-occur)
+        self.role_patterns = {
+            "verb": ["aspect_particle", "modal_particle", "adverb", "object"],
+            "noun": ["measure_word", "structural_particle", "preposition"],
+            "adjective": ["adverb", "structural_particle"],
+            "numeral": ["measure_word", "noun"]
+        }
+
+    def validate_parsed_sentence(self, sentence: ParsedSentence, complexity: str = "intermediate") -> ValidationResult:
+        """
+        Validate a parsed sentence with comprehensive analysis.
+
+        VALIDATION PROCESS:
+        1. Individual word validation
+        2. Structural coherence check
+        3. Chinese-specific feature validation
+        4. Explanation quality assessment
+        5. Confidence score calculation
+
+        Args:
+            sentence: ParsedSentence to validate
+            complexity: Learning complexity level
 
         Returns:
-            Validation report with issues and recommendations
+            ValidationResult with confidence and feedback
         """
+        issues = []
+        suggestions = []
+        confidence_factors = []
 
-        validation_report = {
-            'is_valid': True,
-            'issues': [],
-            'warnings': [],
-            'recommendations': [],
-            'quality_score': 100
+        # Validate individual words
+        word_validations = []
+        for word in sentence.words:
+            word_validation = self._validate_word(word, sentence, complexity)
+            word_validations.append(word_validation)
+            issues.extend(word_validation.issues)
+            suggestions.extend(word_validation.suggestions)
+            confidence_factors.append(word_validation.confidence_score)
+
+        # Validate sentence structure
+        structure_validation = self._validate_sentence_structure(sentence)
+        issues.extend(structure_validation.issues)
+        suggestions.extend(structure_validation.suggestions)
+        confidence_factors.append(structure_validation.confidence_score)
+
+        # Validate Chinese-specific features
+        chinese_validation = self._validate_chinese_features(sentence)
+        issues.extend(chinese_validation.issues)
+        suggestions.extend(chinese_validation.suggestions)
+        confidence_factors.append(chinese_validation.confidence_score)
+
+        # Calculate overall confidence
+        overall_confidence = self._calculate_overall_confidence(confidence_factors)
+
+        # Adjust for complexity level
+        overall_confidence = self._adjust_confidence_for_complexity(overall_confidence, complexity)
+
+        return ValidationResult(
+            is_valid=len(issues) == 0,
+            confidence_score=overall_confidence,
+            issues=issues,
+            suggestions=suggestions
+        )
+
+    def _validate_word(self, word: ParsedWord, sentence: ParsedSentence, complexity: str) -> ValidationResult:
+        """
+        Validate individual word analysis.
+
+        WORD VALIDATION CRITERIA:
+        - Grammatical role validity
+        - Explanation completeness
+        - Role-word compatibility
+        - Chinese character appropriateness
+        """
+        issues = []
+        suggestions = []
+        confidence = 1.0
+
+        # Validate grammatical role
+        if word.grammatical_role == "unknown":
+            issues.append(f"Unknown grammatical role for word '{word.word}'")
+            confidence *= 0.6
+            suggestions.append(f"Consider classifying '{word.word}' as noun, verb, or particle")
+
+        # Validate role-word compatibility
+        role_confidence = self._validate_role_word_compatibility(word)
+        confidence *= role_confidence
+
+        if role_confidence < 0.8:
+            suggestions.append(f"Review grammatical role assignment for '{word.word}'")
+
+        # Validate explanation quality
+        explanation_confidence = self._validate_explanation_quality(word.individual_meaning, complexity)
+        confidence *= explanation_confidence
+
+        if explanation_confidence < 0.7:
+            issues.append(f"Explanation for '{word.word}' lacks detail")
+            suggestions.append(f"Provide more specific explanation of '{word.word}'s grammatical function")
+
+        # Validate Chinese character appropriateness
+        if not self._is_chinese_character(word.word):
+            issues.append(f"Word '{word.word}' may not be valid Chinese Traditional character")
+            confidence *= 0.8
+
+        return ValidationResult(
+            is_valid=len(issues) == 0,
+            confidence_score=confidence,
+            issues=issues,
+            suggestions=suggestions
+        )
+
+    def _validate_sentence_structure(self, sentence: ParsedSentence) -> ValidationResult:
+        """
+        Validate sentence-level structural coherence.
+
+        STRUCTURAL VALIDATION:
+        - Role distribution balance
+        - Required element presence
+        - Relationship coherence
+        - Overall structure explanation
+        """
+        issues = []
+        suggestions = []
+        confidence = 1.0
+
+        roles = [w.grammatical_role for w in sentence.words]
+
+        # Check for basic sentence elements
+        has_subject = any(role in ["noun", "pronoun"] for role in roles)
+        has_predicate = any(role in ["verb", "adjective"] for role in roles)
+
+        if not has_subject:
+            issues.append("Sentence appears to lack a subject (noun or pronoun)")
+            confidence *= 0.8
+            suggestions.append("Identify the subject of the sentence")
+
+        if not has_predicate:
+            issues.append("Sentence appears to lack a predicate (verb or adjective)")
+            confidence *= 0.7
+            suggestions.append("Identify the main verb or adjective in the sentence")
+
+        # Check role distribution
+        unknown_count = roles.count("unknown")
+        if unknown_count > len(roles) * 0.3:
+            issues.append(f"Too many unknown roles ({unknown_count}/{len(roles)})")
+            confidence *= 0.7
+
+        # Validate structure explanation
+        if len(sentence.overall_structure) < 20:
+            issues.append("Overall structure explanation is too brief")
+            confidence *= 0.8
+            suggestions.append("Provide more detailed explanation of sentence structure")
+
+        return ValidationResult(
+            is_valid=len(issues) == 0,
+            confidence_score=confidence,
+            issues=issues,
+            suggestions=suggestions
+        )
+
+    def _validate_chinese_features(self, sentence: ParsedSentence) -> ValidationResult:
+        """
+        Validate Chinese-specific grammatical features.
+
+        CHINESE FEATURE VALIDATION:
+        - Aspect particle usage
+        - Measure word/classifier presence
+        - Modal particle appropriateness
+        - Traditional character usage
+        """
+        issues = []
+        suggestions = []
+        confidence = 1.0
+
+        words = [w.word for w in sentence.words]
+        roles = [w.grammatical_role for w in sentence.words]
+
+        # Check aspect particle usage
+        aspect_indices = [i for i, role in enumerate(roles) if role == "aspect_particle"]
+        for idx in aspect_indices:
+            if idx == 0 or roles[idx - 1] != "verb":
+                issues.append(f"Aspect particle '{words[idx]}' should follow a verb")
+                confidence *= 0.9
+                suggestions.append(f"Ensure aspect particle '{words[idx]}' is correctly positioned after its verb")
+
+        # Check measure word usage
+        measure_indices = [i for i, role in enumerate(roles) if role == "measure_word"]
+        for idx in measure_indices:
+            # Measure words should precede nouns and follow numerals
+            if idx > 0 and roles[idx - 1] not in ["numeral", "noun"]:
+                suggestions.append(f"Review positioning of measure word '{words[idx]}'")
+            if idx < len(roles) - 1 and roles[idx + 1] != "noun":
+                issues.append(f"Measure word '{words[idx]}' should precede a noun")
+                confidence *= 0.9
+
+        # Check modal particle positioning
+        modal_indices = [i for i, role in enumerate(roles) if role == "modal_particle"]
+        for idx in modal_indices:
+            if idx != len(roles) - 1:
+                suggestions.append(f"Modal particle '{words[idx]}' typically appears at sentence end")
+
+        return ValidationResult(
+            is_valid=len(issues) == 0,
+            confidence_score=confidence,
+            issues=issues,
+            suggestions=suggestions
+        )
+
+    def _validate_role_word_compatibility(self, word: ParsedWord) -> float:
+        """
+        Validate compatibility between word and assigned grammatical role.
+
+        ROLE-WORD COMPATIBILITY:
+        - Check against known patterns
+        - Consider Chinese character types
+        - Assess contextual appropriateness
+        """
+        confidence = 1.0
+
+        # Check against known incompatible patterns
+        if word.grammatical_role == "verb" and word.word in self.aspect_markers:
+            confidence *= 0.3  # Aspect markers shouldn't be classified as verbs
+
+        if word.grammatical_role == "noun" and word.word in self.modal_particles:
+            confidence *= 0.3  # Modal particles aren't nouns
+
+        # Check for common misclassifications
+        if word.word in ["的", "地", "得"] and word.grammatical_role != "structural_particle":
+            confidence *= 0.5
+            logger.warning(f"Structural particle '{word.word}' incorrectly classified as {word.grammatical_role}")
+
+        return confidence
+
+    def _validate_explanation_quality(self, explanation: str, complexity: str) -> float:
+        """
+        Assess quality of grammatical explanation.
+
+        EXPLANATION QUALITY CRITERIA:
+        - Length appropriateness for complexity
+        - Presence of key terms
+        - Clarity and specificity
+        - Linguistic accuracy
+        """
+        if not explanation:
+            return 0.0
+
+        confidence = 1.0
+        length = len(explanation)
+
+        # Length expectations by complexity
+        min_lengths = {
+            "beginner": 20,
+            "intermediate": 30,
+            "advanced": 40
         }
 
-        # Run all validation checks
-        checks = [
-            self._validate_basic_structure,
-            self._validate_grammatical_roles,
-            self._validate_word_segmentation,
-            self._validate_traditional_characters,
-            self._validate_measure_words,
-            self._validate_aspect_particles,
-            self._validate_sentence_coherence,
-            self._validate_meanings_completeness
-        ]
+        min_length = min_lengths.get(complexity, 30)
+        if length < min_length:
+            confidence *= 0.7
 
-        for check in checks:
-            try:
-                check_result = check(analysis_result)
-                if check_result:
-                    validation_report['issues'].extend(check_result.get('issues', []))
-                    validation_report['warnings'].extend(check_result.get('warnings', []))
-                    validation_report['recommendations'].extend(check_result.get('recommendations', []))
-                    validation_report['quality_score'] -= check_result.get('penalty', 0)
-            except Exception as e:
-                logger.error(f"Validation check failed: {e}")
-                validation_report['issues'].append(f"Validation error: {str(e)}")
+        # Check for key linguistic terms
+        key_terms = ["function", "role", "relationship", "meaning", "structure"]
+        term_count = sum(1 for term in key_terms if term.lower() in explanation.lower())
+        if term_count < 2:
+            confidence *= 0.8
 
-        # Final quality assessment
-        validation_report['is_valid'] = len(validation_report['issues']) == 0
-        validation_report['quality_score'] = max(0, validation_report['quality_score'])
+        # Check for Chinese-specific terms
+        chinese_terms = ["aspect", "particle", "classifier", "measure word", "modal"]
+        chinese_term_count = sum(1 for term in chinese_terms if term.lower() in explanation.lower())
+        if chinese_term_count == 0:
+            confidence *= 0.9
 
-        return validation_report
+        return confidence
 
-    def _validate_basic_structure(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate basic result structure."""
-        issues = []
+    def _is_chinese_character(self, word: str) -> bool:
+        """
+        Check if word contains valid Chinese Traditional characters.
 
-        if 'words' not in result:
-            issues.append("Missing 'words' field in analysis result")
+        CHINESE CHARACTER VALIDATION:
+        - Traditional character range
+        - Common punctuation
+        - Basic sanity check
+        """
+        if not word:
+            return False
 
-        if 'word_combinations' not in result:
-            issues.append("Missing 'word_combinations' field")
+        # Check if all characters are Chinese or common punctuation
+        for char in word:
+            code = ord(char)
+            # Traditional Chinese range + common punctuation
+            if not (0x4E00 <= code <= 0x9FFF or  # CJK Unified Ideographs
+                    char in "，。！？；：""''（）【】《》"):
+                return False
 
-        if 'original_sentence' not in result:
-            issues.append("Missing 'original_sentence' field")
+        return True
 
-        words = result.get('words', [])
-        if len(words) < self.validation_rules['min_words_per_sentence']:
-            issues.append(f"Too few words analyzed: {len(words)} (minimum {self.validation_rules['min_words_per_sentence']})")
+    def _calculate_overall_confidence(self, confidence_factors: List[float]) -> float:
+        """
+        Calculate overall confidence from multiple factors.
 
-        if len(words) > self.validation_rules['max_words_per_sentence']:
-            issues.append(f"Too many words analyzed: {len(words)} (maximum {self.validation_rules['max_words_per_sentence']})")
+        CONFIDENCE CALCULATION:
+        - Weighted average of factors
+        - Penalty for low individual scores
+        - Bonus for consistently high scores
+        """
+        if not confidence_factors:
+            return 0.0
 
-        if issues:
-            return {'issues': issues, 'penalty': 20}
+        # Weighted average with emphasis on lower scores
+        avg_confidence = sum(confidence_factors) / len(confidence_factors)
 
-        return None
+        # Apply penalty for any very low confidence factors
+        min_confidence = min(confidence_factors)
+        if min_confidence < 0.5:
+            avg_confidence *= 0.8
 
-    def _validate_grammatical_roles(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate grammatical role assignments."""
-        issues = []
-        warnings = []
+        return max(0.0, min(1.0, avg_confidence))
 
-        words = result.get('words', [])
-        allowed_roles = set(self.config.grammatical_roles.keys())
+    def _adjust_confidence_for_complexity(self, confidence: float, complexity: str) -> float:
+        """
+        Adjust confidence score based on complexity level.
 
-        for i, word_data in enumerate(words):
-            role = word_data.get('grammatical_role', '')
-
-            if role not in allowed_roles:
-                issues.append(f"Word {i+1} ('{word_data.get('word', '')}'): Invalid grammatical role '{role}'")
-
-            # Check for required categories
-            if i == 0 and 'noun' not in [w.get('grammatical_role') for w in words]:
-                warnings.append("No noun found in sentence - may indicate incorrect analysis")
-
-            if 'verb' not in [w.get('grammatical_role') for w in words]:
-                warnings.append("No verb found in sentence - may indicate incorrect analysis")
-
-        if issues:
-            return {'issues': issues, 'warnings': warnings, 'penalty': 15}
-
-        return {'warnings': warnings} if warnings else None
-
-    def _validate_word_segmentation(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate word segmentation quality."""
-        issues = []
-        warnings = []
-
-        sentence = result.get('original_sentence', '')
-        words = result.get('words', [])
-
-        # Check if words roughly reconstruct the sentence
-        analyzed_text = ''.join([w.get('word', '') for w in words])
-
-        # Allow for some flexibility in segmentation
-        if len(analyzed_text) < len(sentence) * 0.8:
-            warnings.append("Analyzed text significantly shorter than original - possible under-segmentation")
-
-        if len(analyzed_text) > len(sentence) * 1.5:
-            issues.append("Analyzed text significantly longer than original - possible over-segmentation")
-
-        # Check for common segmentation errors
-        for word_data in words:
-            word = word_data.get('word', '')
-            if len(word) > 10:  # Very long "words" might be phrases
-                warnings.append(f"Very long word detected: '{word}' - may need further segmentation")
-
-        if issues:
-            return {'issues': issues, 'warnings': warnings, 'penalty': 10}
-
-        return {'warnings': warnings} if warnings else None
-
-    def _validate_traditional_characters(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate use of Traditional Chinese characters."""
-        issues = []
-
-        sentence = result.get('original_sentence', '')
-
-        # Common Traditional vs Simplified character pairs
-        trad_simp_pairs = {
-            '臺': '台', '體': '体', '學': '学', '說': '说', '點': '点',
-            '們': '们', '還': '还', '時': '时', '間': '间', '電': '电',
-            '國': '国', '們': '们', '對': '对', '來': '来', '東': '东'
+        COMPLEXITY ADJUSTMENTS:
+        - Beginner: More lenient validation
+        - Advanced: Stricter requirements
+        - Intermediate: Standard validation
+        """
+        adjustments = {
+            "beginner": 1.1,    # Slight bonus for beginners
+            "intermediate": 1.0, # Standard
+            "advanced": 0.95    # Slight penalty for advanced (higher expectations)
         }
 
-        has_traditional = False
-        has_simplified = False
-
-        for char in sentence:
-            if char in trad_simp_pairs:
-                has_traditional = True
-            elif char in trad_simp_pairs.values():
-                has_simplified = True
-
-        if has_simplified and not has_traditional:
-            issues.append("Sentence contains Simplified characters - should use Traditional for zh-tw")
-
-        if self.validation_rules.get('traditional_characters_only', False) and has_simplified:
-            return {'issues': issues, 'penalty': 25}
-
-        return {'issues': issues, 'penalty': 5} if issues else None
-
-    def _validate_measure_words(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate measure word usage."""
-        warnings = []
-        recommendations = []
-
-        words = result.get('words', [])
-        measure_words_found = []
-
-        for word_data in words:
-            if word_data.get('grammatical_role') == 'measure_word':
-                measure_words_found.append(word_data.get('word', ''))
-
-        # Check if measure words are appropriate
-        valid_measure_words = set(self.config.word_patterns['measure_words'])
-
-        for mw in measure_words_found:
-            if mw not in valid_measure_words:
-                warnings.append(f"Unusual measure word: '{mw}' - verify if correct")
-
-        # Check for missing measure words before numerals
-        for i, word_data in enumerate(words):
-            if word_data.get('grammatical_role') == 'numeral':
-                # Look ahead for nouns that might need measure words
-                if i + 2 < len(words):
-                    next_word = words[i + 1]
-                    following_word = words[i + 2]
-
-                    if (next_word.get('grammatical_role') == 'noun' and
-                        following_word.get('grammatical_role') != 'measure_word'):
-                        recommendations.append(f"Consider measure word before noun '{next_word.get('word')}' after numeral '{word_data.get('word')}'")
-
-        return {'warnings': warnings, 'recommendations': recommendations} if warnings or recommendations else None
-
-    def _validate_aspect_particles(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate aspect particle usage."""
-        warnings = []
-
-        words = result.get('words', [])
-        aspect_particles = []
-
-        for word_data in words:
-            if word_data.get('grammatical_role') == 'aspect_particle':
-                aspect_particles.append(word_data.get('word', ''))
-
-        # Check for multiple aspect particles (unusual in Chinese)
-        if len(aspect_particles) > 1:
-            warnings.append(f"Multiple aspect particles found: {aspect_particles} - verify correctness")
-
-        # Check for valid aspect particles
-        valid_particles = set(self.config.word_patterns['aspect_particles'])
-        for particle in aspect_particles:
-            if particle not in valid_particles:
-                warnings.append(f"Unusual aspect particle: '{particle}' - verify if correct")
-
-        return {'warnings': warnings} if warnings else None
-
-    def _validate_sentence_coherence(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate overall sentence coherence."""
-        warnings = []
-
-        words = result.get('words', [])
-        roles = [w.get('grammatical_role') for w in words]
-
-        # Basic coherence checks
-        if roles.count('verb') == 0:
-            warnings.append("No verbs detected - sentence may be incomplete or incorrectly analyzed")
-
-        # Check for reasonable distribution
-        content_words = sum(1 for r in roles if r in ['noun', 'verb', 'adjective', 'adverb'])
-        function_words = len(roles) - content_words
-
-        if content_words < function_words:
-            warnings.append("More function words than content words - possible analysis error")
-
-        return {'warnings': warnings} if warnings else None
-
-    def _validate_meanings_completeness(self, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate completeness of word meanings."""
-        issues = []
-
-        words = result.get('words', [])
-
-        for i, word_data in enumerate(words):
-            meaning = word_data.get('individual_meaning', '').strip()
-
-            if not meaning:
-                issues.append(f"Word {i+1} ('{word_data.get('word', '')}'): Missing meaning")
-
-            elif len(meaning) < 3:
-                issues.append(f"Word {i+1} ('{word_data.get('word', '')}'): Meaning too short ('{meaning}')")
-
-        return {'issues': issues, 'penalty': 10} if issues else None
+        adjustment = adjustments.get(complexity, 1.0)
+        return max(0.0, min(1.0, confidence * adjustment))

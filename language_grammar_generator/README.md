@@ -1,25 +1,25 @@
 # Language Grammar Generator
 ## Comprehensive Framework for Creating Language Analyzers
 
-**Version:** 2026-01-27 (Chinese Traditional Gold Standard Added)  
+**Version:** 2026-01-28 (Chinese Simplified Gold Standard Established)  
 **Status:** Production Ready  
 **Supported Languages:** 77 Target Languages  
 
 ## 🎯 Overview
 
-This modular framework provides comprehensive guidance for implementing grammar analyzers for any language, following the **gold standard patterns** established by the Hindi, Chinese Simplified, and **Chinese Traditional** analyzers. These working implementations demonstrate the correct architectural approach that all new analyzers should follow.
+This modular framework provides comprehensive guidance for implementing grammar analyzers for any language, following the **gold standard patterns** established by the **Chinese Simplified analyzer** (Clean Architecture implementation) and Hindi analyzer. The Chinese Simplified analyzer serves as the primary reference implementation demonstrating Clean Architecture with domain-driven design, external configuration management, and comprehensive fallback systems.
 
-**Key Learning: Rich Word Explanations** - Chinese Traditional analyzer fix demonstrated that fallback systems must provide specific word meanings (e.g., "three (numeral)") rather than generic grammatical roles (e.g., "numeral in zh-tw grammar").
+**Key Learning: Clean Architecture Excellence** - Chinese Simplified analyzer demonstrates the gold standard Clean Architecture pattern with external configuration files, Jinja2 template-based prompts, and integrated fallback systems within the domain layer.
 
 ## 🚀 Quick Start
 
 ### For New Language Implementation
 
 1. **Study the Gold Standards:**
+   - **[Chinese Simplified Analyzer](languages/zh/zh_analyzer.py)** - **PRIMARY GOLD STANDARD** - Clean Architecture with domain-driven design
    - **[Hindi Analyzer](languages/hindi/hi_analyzer.py)** - Indo-European family reference
-   - **[Chinese Simplified Analyzer](languages/zh/zh_analyzer.py)** - Sino-Tibetan family reference
-   - **[Chinese Traditional Analyzer](languages/chinese_traditional/zh_tw_analyzer.py)** - Sino-Tibetan variant reference
-   - All avoid artificial confidence boosting and use clean domain-driven architecture
+   - **[Chinese Traditional Analyzer](languages/chinese_traditional/zh_tw_analyzer.py)** - Should follow Chinese Simplified patterns (currently being updated)
+   - All follow Clean Architecture: no artificial confidence boosting, external configuration, comprehensive fallbacks
 
 2. **Choose Implementation Level:**
    - **Level 1 (Beginner)**: Simple languages with basic grammar → Start with [Quick Start Guide](quick_start.md)
@@ -28,7 +28,7 @@ This modular framework provides comprehensive guidance for implementing grammar 
 
 3. **Select Language Family:**
    - [Indo-European](language_family_guides/indo_european.md) - Use Hindi as reference
-   - [Sino-Tibetan](language_family_guides/sino_tibetan.md) - Use Chinese Simplified and Chinese Traditional as references
+   - [Sino-Tibetan](language_family_guides/sino_tibetan.md) - **Use Chinese Simplified as primary reference**
    - [Afro-Asiatic](language_family_guides/afro_asiatic.md)
    - [Agglutinative](language_family_guides/agglutinative.md)
 
@@ -38,12 +38,12 @@ This modular framework provides comprehensive guidance for implementing grammar 
    Create {language}_grammar_concepts.md
 
    # 2. Implementation Phase
-   Copy gold standard analyzer structure
+   Copy Chinese Simplified analyzer structure (gold standard)
    Follow implementation_guide.md
 
    # 3. Testing Phase
    Run comprehensive test suite
-   Validate against gold standards
+   Validate against Chinese Simplified gold standard
    ```
 
 ## 📚 Documentation Structure

@@ -12,6 +12,9 @@ from streamlit_app.services.generation.grammar_processor import get_grammar_proc
 from streamlit_app.services.generation.media_processor import get_media_processor
 from streamlit_app.services.generation.deck_assembler import get_deck_assembler
 
+# Import shared utilities
+from streamlit_app.shared_utils import CONTENT_LANGUAGE_MAP
+
 # Legacy imports for backward compatibility
 try:
     from language_analyzers.analyzer_registry import get_analyzer
@@ -72,11 +75,14 @@ def generate_word_meaning_sentences_and_keywords(
     logger.info(f"Generating content for word='{word}', language='{language}', num_sentences={num_sentences}")
 
     try:
+        # Map language name for AI compatibility
+        content_language = CONTENT_LANGUAGE_MAP.get(language, language)
+        
         # Delegate to content generator service
         content_generator = get_content_generator()
         result = content_generator.generate_word_meaning_sentences_and_keywords(
             word=word,
-            language=language,
+            language=content_language,
             num_sentences=num_sentences,
             min_length=min_length,
             max_length=max_length,

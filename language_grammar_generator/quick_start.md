@@ -2,9 +2,10 @@
 ## Language Grammar Analyzer Implementation (Beginner Level)
 
 **For:** Simple languages with basic grammatical structures  
-**Gold Standards:** Study [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
+**Primary Gold Standard:** Study [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture pattern  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
 **Time Estimate:** 2-3 days for complete implementation  
-**Critical:** Follow gold standard patterns - no artificial confidence boosting
+**Critical:** Follow Chinese Simplified Clean Architecture - external configuration, integrated fallbacks, no artificial confidence boosting
 
 ## 🎯 When to Use This Guide
 
@@ -17,7 +18,7 @@ Choose this guide if your target language has:
 **Not suitable for:**
 - ❌ Complex morphology (Arabic, Sanskrit, German)
 - ❌ Free word order (Russian, Latin)
-- ❌ Tonal languages with complex particles (Chinese, Thai)
+- ❌ Tonal languages with complex particles (Chinese, Thai) - Use Sino-Tibetan guide instead
 - ❌ Agglutinative languages (Turkish, Japanese, Korean)
 
 ## 🚀 Step-by-Step Implementation
@@ -47,7 +48,26 @@ Create `{language}_grammar_concepts.md` in your language directory:
 2. "I see the big house" → [breakdown]
 ```
 
-#### 1.2 Identify Core Grammatical Roles
+#### 1.2 Study Chinese Simplified Gold Standard
+**CRITICAL:** Before implementing, study the Chinese Simplified analyzer structure:
+
+```python
+# Chinese Simplified Clean Architecture Pattern
+class ZhAnalyzer(BaseGrammarAnalyzer):
+    def __init__(self):
+        # 1. Initialize domain components
+        self.zh_config = ZhConfig()           # Loads external YAML/JSON
+        self.prompt_builder = ZhPromptBuilder(self.zh_config)
+        self.response_parser = ZhResponseParser(self.zh_config)
+        self.validator = ZhValidator(self.zh_config)
+        self.fallbacks = ZhFallbacks(self.zh_config)  # Integrated in domain
+        
+        # 2. Create language config
+        config = LanguageConfig(...)
+        super().__init__(config)
+```
+
+#### 1.3 Identify Core Grammatical Roles (Follow Chinese Simplified Pattern)
 Map your language to standard categories:
 ```python
 GRAMMATICAL_ROLES = {

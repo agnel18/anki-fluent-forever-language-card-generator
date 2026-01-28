@@ -1,51 +1,53 @@
 # Testing Guide
 ## Testing Strategy Following Gold Standard Patterns
 
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
-**Critical:** Test against gold standards - no artificial confidence boosting tests  
-**Prerequisites:** Study gold standards before testing  
-**Architecture:** Follow [Architecture Guide](architecture_guide.md) with gold standard compliance  
+**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
+**Critical:** Test against Chinese Simplified gold standard - external configuration, integrated fallbacks, natural validation  
+**Prerequisites:** Study Chinese Simplified Clean Architecture before testing  
+**Architecture:** Follow [Architecture Guide](architecture_guide.md) with Chinese Simplified compliance  
 **Time Estimate:** 1-2 weeks for gold standard compliant test suite
 
-## 🎯 Testing Philosophy - Gold Standard Compliance
+## 🎯 Testing Philosophy - Chinese Simplified Gold Standard Compliance
 
-### Quality Assurance Principles - Match Gold Standards
-- **Gold Standard Comparison:** All tests compare with Hindi/Chinese Simplified results
+### Quality Assurance Principles - Match Chinese Simplified
+- **Gold Standard Comparison:** All tests compare with Chinese Simplified Clean Architecture results
+- **External Configuration Testing:** Test YAML/JSON file loading (Chinese Simplified pattern)
+- **Integrated Fallback Testing:** Test fallbacks within domain layer (Chinese Simplified pattern)
 - **Natural Validation Testing:** No tests for artificial confidence boosting (removed)
-- **Component Isolation:** Test components separately like gold standards
-- **Facade Pattern Testing:** Test complete orchestration like gold standards
-- **External Config Testing:** Test configuration loading from files
-- **Word Meanings Testing:** For Sino-Tibetan languages, test rich explanations from dictionary
+- **Component Isolation:** Test components separately like Chinese Simplified
+- **Facade Pattern Testing:** Test complete Clean Architecture orchestration
+- **Jinja2 Template Testing:** Test template-based prompt generation
 
-### Testing Pyramid - Gold Standard Validation
+### Testing Pyramid - Chinese Simplified Validation
 ```
 ┌─────────────────┐  (Few tests, high value)
-│ Gold Standard   │  Compare with Hindi/Chinese
-│ Compliance      │  Natural validation only
+│ Gold Standard   │  Compare with Chinese Simplified
+│ Compliance      │  Clean Architecture validation
 ├─────────────────┤
 │ System Tests    │  End-to-end facade workflow
-│ Integration     │  Component orchestration
+│ Integration     │  Domain component orchestration
 ├─────────────────┤
-│ Unit Tests      │  Individual components
+│ Unit Tests      │  Individual domain components
 │                 │  (Many tests, fast)
 └─────────────────┘
 ```
 
-## 🧪 Testing Framework Setup - Gold Standard Structure
+## 🧪 Testing Framework Setup - Chinese Simplified Structure
 
-### 1. Directory Structure - Like Gold Standards
+### 1. Directory Structure - Like Chinese Simplified
 ```
 languages/{language}/tests/
 ├── __init__.py
 ├── conftest.py                    # Pytest configuration
-├── test_{language}_analyzer.py    # Main facade tests (like gold standards)
-├── test_{language}_config.py      # External config loading tests
-├── test_{language}_prompt_builder.py  # Prompt building tests
-├── test_{language}_response_parser.py # Response parsing tests
+├── test_{language}_analyzer.py    # Main facade tests (Clean Architecture)
+├── test_{language}_config.py      # External config loading tests (YAML/JSON)
+├── test_{language}_prompt_builder.py  # Jinja2 template tests
+├── test_{language}_response_parser.py # Response parsing with integrated fallbacks
 ├── test_{language}_validator.py   # NATURAL validation tests (NO boosting)
 ├── test_{language}_integration.py # Facade orchestration tests
-├── test_{language}_performance.py # Performance vs gold standards
-├── test_gold_standard_comparison.py # Compare with Hindi/Chinese
+├── test_{language}_performance.py # Performance vs Chinese Simplified
+├── test_gold_standard_comparison.py # Compare with Chinese Simplified
 ├── fixtures/
 │   ├── sample_sentences.json     # Test sentences
 │   ├── expected_outputs.json     # Expected results like gold standards

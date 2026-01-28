@@ -2,52 +2,77 @@
 ## Step-by-Step Language Analyzer Development
 
 **Prerequisites:** Complete research phase ([Research Guide](research_guide.md))  
-**Gold Standards:** Study [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py) analyzers  
+**Primary Gold Standard:** Study [Chinese Simplified](languages/zh/zh_analyzer.py) analyzer (Clean Architecture)  
+**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py) analyzer  
 **Time Estimate:** 2-4 weeks for full implementation  
-**Critical:** Follow gold standard patterns - no artificial confidence boosting
+**Critical:** Follow Chinese Simplified Clean Architecture patterns - external configuration, integrated fallbacks, no artificial confidence boosting
 
 ## 🎯 Implementation Workflow
 
 ### Phase 1: Gold Standard Study (1-2 days)
 #### 1.1 Study Working Analyzers Thoroughly
+- [ ] **Chinese Simplified Analyzer** (`languages/zh/zh_analyzer.py`) - **PRIMARY GOLD STANDARD**:
+  - Clean Architecture with domain-driven design
+  - External configuration files (YAML/JSON) for maintainability
+  - Integrated fallback system within response parser
+  - Jinja2 template-based prompt engineering
+  - Comprehensive 4-level fallback hierarchy
+  - No artificial confidence boosting - natural validation scoring
+
 - [ ] **Hindi Analyzer** (`languages/hindi/hi_analyzer.py`):
-  - Inherits from `IndoEuropeanAnalyzer`
+  - Indo-European family reference implementation
   - Clean facade pattern with domain component orchestration
-  - No artificial confidence boosting
   - Comprehensive error handling with fallbacks
   - Batch processing with 8-sentence limits
 
-- [ ] **Chinese Simplified Analyzer** (`languages/zh/zh_analyzer.py`):
-  - Inherits from `BaseGrammarAnalyzer` (analytic language)
-  - Language-specific complexity-aware prompts
-  - Character-based analysis for logographic script
-  - Natural confidence scoring without manipulation
-
 - [ ] **Chinese Traditional Analyzer** (`languages/chinese_traditional/zh_tw_analyzer.py`):
-  - Inherits from `BaseGrammarAnalyzer` (Sino-Tibetan variant)
-  - Rich explanation implementation with individual word meanings
-  - Position-based HTML coloring for character-level analysis
-  - Modular architecture with domain components (config, prompt_builder, response_parser, validator)
+  - **SHOULD FOLLOW CHINESE SIMPLIFIED PATTERNS** - Currently uses modular architecture that should be updated to Clean Architecture
+  - Contains recent fixes for AI compatibility but architecture should be simplified to match Chinese Simplified
+  - Reference for Sino-Tibetan linguistic features but use Chinese Simplified for architectural patterns
 
-#### 1.2 Identify Key Patterns
-- [ ] **Facade Pattern**: Single entry point orchestrating domain components
-- [ ] **Domain Components**: config, prompt_builder, response_parser, validator
-- [ ] **Clean Architecture**: Dependencies point inward
-- [ ] **Natural Validation**: No artificial confidence boosting
-- [ ] **Error Recovery**: Comprehensive fallback mechanisms
-- [ ] **Rich Explanations**: Individual word meanings beyond grammatical roles (Chinese gold standard)
+#### 1.2 Identify Key Patterns from Chinese Simplified
+- [ ] **Clean Architecture**: Domain layer with external configuration files
+- [ ] **External Configuration**: YAML/JSON files for grammatical roles, patterns, word meanings
+- [ ] **Integrated Fallbacks**: Fallback logic within response parser (not separate infrastructure)
+- [ ] **Template-Based Prompts**: Jinja2 templates for maintainable prompt engineering
+- [ ] **Natural Validation**: No artificial confidence boosting, quality-based scoring
+- [ ] **Domain Components**: config, prompt_builder, response_parser, validator, fallbacks, patterns
 
-#### 1.3 Critical: Rich Explanations Pattern (Chinese Gold Standard)
-**Key Learning from Chinese Traditional Fix:** Base analyzers provide only grammatical roles, but gold standard analyzers provide rich explanations with individual meanings.
+#### 1.3 Critical: Clean Architecture Pattern (Chinese Simplified Gold Standard)
+**Key Learning from Chinese Simplified:** Clean Architecture with external configuration provides better maintainability than hardcoded configurations or separate infrastructure layers.
 
-**❌ Anti-Pattern (Base Analyzer):**
+**✅ Gold Standard Pattern (Chinese Simplified):**
 ```python
-# Basic grammatical roles only
-"noun in zh-tw grammar"
-"verb in zh-tw grammar"
+# External configuration files
+zh_grammatical_roles.yaml
+zh_common_classifiers.yaml
+zh_aspect_markers.yaml
+zh_structural_particles.yaml
+zh_word_meanings.json
+zh_patterns.yaml
+
+# Domain components with integrated fallbacks
+class ZhResponseParser:
+    def __init__(self, config: ZhConfig, fallbacks: ZhFallbacks):
+        # Integrated fallback system
+        
+class ZhPromptBuilder:
+    def __init__(self, config: ZhConfig):
+        # Jinja2 template system
 ```
 
-**✅ Gold Standard Pattern (Chinese Analyzers):**
+**❌ Anti-Pattern (Complex Modular Architecture):**
+```python
+# Separate infrastructure layer
+infrastructure/
+├── zh_tw_fallbacks.py  # Separate component
+└── data/
+
+# Hardcoded configurations
+class ZhTwConfig:
+    def __init__(self):
+        self.grammatical_roles = {...}  # Hardcoded
+```
 ```python
 # Rich explanations with individual meanings
 "我 (I, me - first person singular pronoun)"

@@ -14,7 +14,7 @@ import google.generativeai as genai
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback
 
-from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE
+from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE, CONTENT_LANGUAGE_MAP
 from streamlit_app.generation_utils import validate_ipa_output
 
 logger = logging.getLogger(__name__)
@@ -84,6 +84,11 @@ class ContentGenerator:
         if gemini_api_key:
             logger.info(f"API key starts with: {gemini_api_key[:10]}... (ends with: ...{gemini_api_key[-10:] if len(gemini_api_key) > 10 else gemini_api_key})")
 
+        # Map language name for AI compatibility
+        ai_language = CONTENT_LANGUAGE_MAP.get(language, language)
+        if ai_language != language:
+            logger.info(f"Mapped language '{language}' to '{ai_language}' for AI compatibility")
+
         try:
             client = self._get_client(gemini_api_key)
             logger.info("Google Gemini client configured successfully")
@@ -131,9 +136,9 @@ class ContentGenerator:
             pronunciation_label = "PINYIN" if is_chinese else "IPA"
             pronunciation_instruction = "MANDATORY Pinyin romanization (with tone marks) for EVERY word in the sentence - including particles, function words, grammatical markers, and single characters. DO NOT skip any words." if is_chinese else "official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)"
 
-            prompt = f"""You are a native-level expert linguist in {language} with professional experience teaching it to non-native learners.
+            prompt = f"""You are a native-level expert linguist in {ai_language} with professional experience teaching it to non-native learners.
 
-Your task: Generate a complete learning package for the {language} word "{word}" in ONE response.
+Your task: Generate a complete learning package for the {ai_language} word "{word}" in ONE response.
 
 ===========================
 STEP 1: WORD MEANING
@@ -156,7 +161,7 @@ If no restrictions apply, state "No specific grammatical restrictions."
 ===========================
 STEP 2: SENTENCES
 ===========================
-Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {language} for the word "{word}".
+Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {ai_language} for the word "{word}".
 
 QUALITY RULES (STRICT):
 - Every sentence must sound like it was written by an educated native speaker
@@ -176,7 +181,7 @@ QUALITY RULES (STRICT):
   - advanced: Use complex structures, nuanced vocabulary, and advanced grammar
 
 VARIETY REQUIREMENTS:
-- Use different tenses (if applicable to {language})
+- Use different tenses (if applicable to {ai_language})
 - Use different sentence types: declarative, interrogative, imperative
 - Use the target word in different grammatical roles if possible
 {context_instruction}
