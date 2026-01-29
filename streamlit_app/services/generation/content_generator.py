@@ -407,12 +407,62 @@ IMPORTANT:
         }
 
     def _validate_and_create_fallbacks(self, sentences: List[str], translations: List[str], ipa_list: List[str], keywords: List[str],
-                                      word: str, restrictions: str, num_sentences: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str]]:
+                                      word: str, restrictions: str, num_sentences: int, max_length: int, language: str = "") -> Tuple[List[str], List[str], List[str], List[str]]:
         """Validate content and create fallbacks for invalid items."""
 
-        # Create fallback templates based on restrictions
-        if "imperative" in restrictions.lower() or "command" in restrictions.lower():
+        # Create language-specific fallback templates
+        if language.lower() == "arabic":
+            # Arabic-specific fallbacks
             fallback_templates = [
+                f"الكتاب {word} المنضدة",  # The book is on the table
+                f"الطالب {word} الفصل",    # The student is in the class
+                f"السيارة {word} الكراج",  # The car is in the garage
+                f"القطة {word} الحديقة",   # The cat is in the garden
+                f"الطعام {word} المطبخ",   # The food is in the kitchen
+                f"الأطفال {word} الملعب",  # The children are in the playground
+                f"الشمس {word} السماء",    # The sun is in the sky
+                f"الأسماك {word} الماء",   # The fish are in the water
+                f"الزهور {word} الحديقة",  # The flowers are in the garden
+                f"النجوم {word} السماء"    # The stars are in the sky
+            ]
+            fallback_translations = [
+                f"The book is {word} the table",
+                f"The student is {word} the class",
+                f"The car is {word} the garage",
+                f"The cat is {word} the garden",
+                f"The food is {word} the kitchen",
+                f"The children are {word} the playground",
+                f"The sun is {word} the sky",
+                f"The fish are {word} the water",
+                f"The flowers are {word} the garden",
+                f"The stars are {word} the sky"
+            ]
+            fallback_keywords = [
+                f"{word}, book, table, location",
+                f"{word}, student, class, school",
+                f"{word}, car, garage, vehicle",
+                f"{word}, cat, garden, animal",
+                f"{word}, food, kitchen, cooking",
+                f"{word}, children, playground, fun",
+                f"{word}, sun, sky, weather",
+                f"{word}, fish, water, aquarium",
+                f"{word}, flowers, garden, nature",
+                f"{word}, stars, sky, night"
+            ]
+        elif "imperative" in restrictions.lower() or "command" in restrictions.lower():
+            fallback_templates = [
+                f"{word} here and sit down!",
+                f"{word} and eat your food!",
+                f"{word} and listen to me!",
+                f"{word} and introduce yourself!",
+                f"{word} quickly!",
+                f"Please {word} now!",
+                f"{word} immediately!",
+                f"You should {word} right away!",
+                f"Don't wait, {word}!",
+                f"{word} without delay!"
+            ]
+            fallback_translations = [
                 f"{word} here and sit down!",
                 f"{word} and eat your food!",
                 f"{word} and listen to me!",
@@ -438,6 +488,18 @@ IMPORTANT:
             ]
         else:
             fallback_templates = [
+                f"This is a sample sentence with {word}.",
+                f"Here is an example using {word}.",
+                f"Look at this sentence containing {word}.",
+                f"Consider this phrase with {word}.",
+                f"Observe how {word} is used here.",
+                f"Note this example featuring {word}.",
+                f"See this sentence including {word}.",
+                f"Examine this phrase with {word}.",
+                f"Study this example using {word}.",
+                f"Review this sentence with {word}."
+            ]
+            fallback_translations = [
                 f"This is a sample sentence with {word}.",
                 f"Here is an example using {word}.",
                 f"Look at this sentence containing {word}.",
