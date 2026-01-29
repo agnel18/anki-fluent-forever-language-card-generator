@@ -324,11 +324,16 @@ IMPORTANT:
         # Extract sentences
         if "SENTENCES:" in response_text and "TRANSLATIONS:" in response_text:
             sentences_part = response_text.split("SENTENCES:")[1].split("TRANSLATIONS:")[0].strip()
+            # Extract all non-empty lines, whether numbered or not
             for line in sentences_part.split("\n"):
                 line = line.strip()
-                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
-                    sentence = line.split(".", 1)[1].strip() if "." in line else line
-                    if sentence:
+                if line:
+                    # Remove numbering if present (e.g., "1. " -> "")
+                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
+                        sentence = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
+                    else:
+                        sentence = line
+                    if sentence and len(sentence) > 1:  # Avoid single character lines
                         sentences.append(sentence)
 
         # Extract translations
@@ -337,9 +342,13 @@ IMPORTANT:
             translations_part = response_text.split("TRANSLATIONS:")[1].split(pronunciation_section)[0].strip()
             for line in translations_part.split("\n"):
                 line = line.strip()
-                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
-                    translation = line.split(".", 1)[1].strip() if "." in line else line
-                    if translation:
+                if line:
+                    # Remove numbering if present
+                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
+                        translation = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
+                    else:
+                        translation = line
+                    if translation and len(translation) > 1:
                         translations.append(translation)
 
         # Extract IPA/Pinyin
@@ -347,9 +356,13 @@ IMPORTANT:
             ipa_part = response_text.split(pronunciation_section)[1].split("KEYWORDS:")[0].strip()
             for line in ipa_part.split("\n"):
                 line = line.strip()
-                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
-                    ipa = line.split(".", 1)[1].strip() if "." in line else line
-                    if ipa:
+                if line:
+                    # Remove numbering if present
+                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
+                        ipa = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
+                    else:
+                        ipa = line
+                    if ipa and len(ipa) > 1:
                         # Validate IPA/Pinyin output
                         # Normalize language name for lookup (convert to lowercase, replace spaces with underscores)
                         normalized_language = language.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('（', '').replace('）', '')
@@ -368,9 +381,13 @@ IMPORTANT:
             keywords_part = response_text.split("KEYWORDS:")[1].strip()
             for line in keywords_part.split("\n"):
                 line = line.strip()
-                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
-                    kw = line.split(".", 1)[1].strip() if "." in line else line
-                    if kw:
+                if line:
+                    # Remove numbering if present
+                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
+                        kw = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
+                    else:
+                        kw = line
+                    if kw and len(kw) > 1:
                         keywords.append(kw)
 
         logger.info(f"Parsed: meaning='{meaning}', restrictions='{restrictions}', sentences={len(sentences)}, translations={len(translations)}, {'pinyin' if is_chinese else 'ipa'}={len(ipa_list)}, keywords={len(keywords)}")
