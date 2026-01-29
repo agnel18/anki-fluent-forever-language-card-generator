@@ -174,6 +174,7 @@ STEP 1: WORD MEANING
 ===========================
 {enriched_meaning_instruction}
 Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
 
 ===========================
 WORD-SPECIFIC RESTRICTIONS
@@ -186,6 +187,7 @@ Examples:
 - Contextual restrictions: ONLY use in specific situations (e.g., directional verbs)
 
 If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
 
 ===========================
 STEP 2: SENTENCES

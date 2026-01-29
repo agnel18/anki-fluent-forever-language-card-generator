@@ -157,6 +157,7 @@ STEP 1: WORD MEANING
 ===========================
 {enriched_meaning_instruction}
 Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
 
 ===========================
 WORD-SPECIFIC RESTRICTIONS
@@ -164,6 +165,7 @@ WORD-SPECIFIC RESTRICTIONS
 Based on the meaning above, identify any grammatical constraints for "{word}".
 Examples: imperatives (commands only), specific persons/moods, contextual restrictions.
 If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
 
 ===========================
 STEP 2: SENTENCES
