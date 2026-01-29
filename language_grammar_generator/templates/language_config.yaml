@@ -1,0 +1,159 @@
+# languages/{language}/infrastructure/data/language_config.yaml
+"""
+Language Configuration for {Language}
+
+GOLD STANDARD CONFIGURATION:
+This file contains the core language settings and metadata for {Language} analysis.
+It defines language properties, capabilities, and analysis parameters.
+
+CONFIGURATION SECTIONS:
+- language: Basic language information and properties
+- analysis: Analysis settings and complexity levels
+- ui: User interface customization options
+- api: External service integration settings
+
+LANGUAGE PROPERTIES:
+- code: ISO language code
+- name: Full language name
+- script: Writing system used
+- direction: Text direction (ltr/rtl)
+- complexity_levels: Supported analysis depths
+
+CUSTOMIZATION:
+- Update all placeholders with actual language values
+- Adjust complexity requirements based on language difficulty
+- Configure UI colors and themes
+- Set API endpoints and parameters
+"""
+
+language:
+  code: "{lang_code}"
+  name: "{Language}"
+  native_name: "{Native Language Name}"
+  script: "{script_name}"  # e.g., "Arabic", "Devanagari", "Cyrillic"
+  direction: "{text_direction}"  # "ltr" or "rtl"
+  unicode_ranges:
+    - "U+0600-U+06FF"  # Basic Arabic
+    - "U+0750-U+077F"  # Extended Arabic
+    - "U+08A0-U+08FF"  # Additional Arabic
+    - "U+FB50-U+FDFF"  # Presentation forms A
+    - "U+FE70-U+FEFF"  # Presentation forms B
+  iso_codes:
+    - "{lang_code}"
+    - "{additional_iso_codes}"
+
+analysis:
+  supported_complexities:
+    - "beginner"
+    - "intermediate"
+    - "advanced"
+
+  complexity_requirements:
+    beginner:
+      max_sentence_length: 15
+      required_roles: ["noun", "verb", "adjective", "adverb", "pronoun"]
+      excluded_features: ["subjunctive", "aspect", "case", "classifier"]
+
+    intermediate:
+      max_sentence_length: 25
+      required_roles: ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "determiner"]
+      excluded_features: ["complex_aspect", "rare_cases"]
+
+    advanced:
+      max_sentence_length: 50
+      required_roles: ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "determiner", "interjection"]
+      excluded_features: []
+
+  default_complexity: "intermediate"
+
+  language_specific_rules:
+    word_order: "{word_order_type}"  # e.g., "SVO", "SOV", "V2"
+    agreement_system: "{agreement_type}"  # e.g., "gender_number", "case", "none"
+    morphological_type: "{morphology_type}"  # e.g., "fusional", "agglutinative", "isolating"
+    script_type: "{script_type}"  # e.g., "abjad", "alphabet", "syllabic"
+
+ui:
+  theme:
+    primary_color: "#4ECDC4"
+    secondary_color: "#45B7D1"
+    accent_color: "#FF6B6B"
+    background_color: "#F8F9FA"
+    text_color: "#2C3E50"
+
+  complexity_colors:
+    beginner: "#FFEB3B"    # Yellow
+    intermediate: "#FF9800" # Orange
+    advanced: "#F44336"    # Red
+
+  grammatical_role_colors:
+    noun: "#FF6B6B"        # Red
+    verb: "#4ECDC4"        # Teal
+    adjective: "#45B7D1"   # Blue
+    adverb: "#96CEB4"      # Green
+    pronoun: "#FFEAA7"     # Light Yellow
+    preposition: "#DDA0DD" # Plum
+    conjunction: "#98D8C8" # Mint
+    determiner: "#F7DC6F"  # Gold
+    interjection: "#FFB6C1" # Pink
+
+  fonts:
+    primary: "Arial Unicode MS"
+    fallback: "Tahoma, sans-serif"
+
+api:
+  ai_service:
+    provider: "gemini"
+    model: "gemini-2.0-flash-exp"
+    max_tokens: 2000
+    temperature: 0.3
+    timeout: 30
+
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout: 60
+    success_threshold: 3
+
+  caching:
+    enabled: true
+    max_size: 100
+    ttl: 3600
+
+validation:
+  text_requirements:
+    min_length: 1
+    max_length: 1000
+    allow_mixed_scripts: false
+    require_diacritics: false
+
+  quality_checks:
+    enable_spell_check: false
+    enable_grammar_check: true
+    enable_style_check: false
+
+  performance:
+    max_analysis_time: 30
+    cache_enabled: true
+    batch_size_limit: 10
+
+features:
+  supported_features:
+    - "single_sentence_analysis"
+    - "batch_analysis"
+    - "complexity_based_analysis"
+    - "target_word_focusing"
+    - "validation_and_quality_metrics"
+    - "performance_monitoring"
+    - "circuit_breaker_protection"
+
+  experimental_features:
+    - "advanced_morphological_analysis"
+    - "semantic_role_labeling"
+    - "discourse_analysis"
+
+metadata:
+  version: "1.0.0"
+  created_date: "2024-01-01"
+  last_updated: "2024-01-01"
+  author: "Language Learning Team"
+  description: "Configuration for {Language} grammatical analysis system"
+  compatibility: "v1.0+"

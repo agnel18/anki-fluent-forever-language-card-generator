@@ -1,0 +1,52 @@
+# languages/arabic/infrastructure/data/ar_definite_article_patterns.yaml
+# Arabic Definite Article Patterns Configuration
+# Defines definite article assimilation rules (sun/moon letters)
+
+definite_article:
+  name: "definite article (ال)"
+  base_form: "al-"
+  description: "Arabic definite article that assimilates with sun letters"
+
+sun_letters:
+  name: "sun letters (حروف شمسية)"
+  letters: ["ت", "ث", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ل", "ن"]
+  assimilation_rule: "ال + sun_letter → assimilated form"
+  description: "Letters that cause definite article assimilation"
+
+moon_letters:
+  name: "moon letters (حروف قمرية)"
+  letters: ["ا", "ب", "ج", "ح", "خ", "ع", "غ", "ف", "ق", "ك", "م", "ه", "و", "ي"]
+  assimilation_rule: "ال + moon_letter → no assimilation"
+  description: "Letters that don't cause definite article assimilation"
+
+assimilation_examples:
+  sun_letters:
+    - word: "الشمس"
+      assimilated: "ash-shams"
+      meaning: "the sun"
+    - word: "القمر"
+      assimilated: "al-qamar"
+      meaning: "the moon"
+    - word: "النور"
+      assimilated: "an-nūr"
+      meaning: "the light"
+
+  moon_letters:
+    - word: "البيت"
+      assimilated: "al-bayt"
+      meaning: "the house"
+    - word: "الكتاب"
+      assimilated: "al-kitāb"
+      meaning: "the book"
+    - word: "الماء"
+      assimilated: "al-māʾ"
+      meaning: "the water"
+
+pronunciation_rules:
+  assimilation: "When ال precedes a sun letter, the ل is assimilated and doubled"
+  gemination: "The sun letter is pronounced with shadda (doubling)"
+  spelling: "In writing, ال is kept but assimilation affects pronunciation"
+
+exceptions:
+  foreign_words: "Foreign words may not follow assimilation rules"
+  proper_nouns: "Some proper nouns retain ال without assimilation"

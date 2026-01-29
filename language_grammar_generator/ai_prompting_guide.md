@@ -130,13 +130,15 @@ class {Language}ResponseParser:
         self.config = config
 
     def parse_response(self, ai_response: str, sentence: str, target_word: str) -> Dict:
-        """Parse AI response - LIKE GOLD STANDARD PARSING"""
+        """Parse AI response with ROBUST JSON EXTRACTION - LIKE GOLD STANDARD PARSING"""
         try:
-            # Parse JSON like gold standards
-            data = json.loads(ai_response)
+            # ROBUST JSON EXTRACTION - handles markdown blocks, explanatory text, etc.
+            json_data = self._extract_json(ai_response)
+            if not json_data:
+                return self._create_fallback_response(sentence, target_word)
 
             # Normalize structure like gold standards
-            normalized = self._normalize_response(data, sentence, target_word)
+            normalized = self._normalize_response(json_data, sentence, target_word)
 
             # Language-specific processing like Hindi/Chinese
             processed = self._apply_language_specific_processing(normalized)
@@ -146,6 +148,31 @@ class {Language}ResponseParser:
         except (json.JSONDecodeError, KeyError) as e:
             # Fallback parsing like gold standards
             return self._create_fallback_response(sentence, target_word)
+
+    def _extract_json(self, ai_response: str) -> Dict:
+        """ROBUST JSON EXTRACTION - handles various AI response formats"""
+        try:
+            cleaned_response = ai_response.strip()
+
+            # Method 1: Direct parsing if starts with JSON
+            if cleaned_response.startswith(('{', '[')):
+                return json.loads(cleaned_response)
+
+            # Method 2: Extract from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
+            if json_match:
+                return json.loads(json_match.group(1))
+
+            # Method 3: Extract JSON between curly braces
+            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+            if brace_match:
+                return json.loads(brace_match.group(0))
+
+            # Method 4: Try entire response
+            return json.loads(cleaned_response)
+
+        except json.JSONDecodeError:
+            return None
 
     def _normalize_response(self, data: Dict, sentence: str, target_word: str) -> Dict:
         """Normalize to standard structure - LIKE GOLD STANDARD NORMALIZATION"""
@@ -1453,8 +1480,54 @@ class CircuitBreakerOpenException(Exception):
 **Prevention:** Prompt optimization and length monitoring
 
 ### 4. JSON Parsing Failures
-**Problem:** AI returns malformed JSON
-**Prevention:** Multiple parsing strategies and fallback mechanisms
+**Problem:** AI returns JSON wrapped in explanatory text, markdown code blocks, or malformed JSON
+**Prevention:** Implement robust JSON extraction with multiple fallback methods
+
+**Common AI Response Formats That Break Basic Parsing:**
+```json
+// ❌ FAILS: AI explanatory text before JSON
+"Here's the analysis for the Arabic sentence: {\"words\": [...]}"
+
+// ❌ FAILS: Markdown code blocks
+"```json\n{\"words\": [...]}\n```"
+
+// ❌ FAILS: Mixed explanatory content
+"The grammatical analysis shows: {\"words\": [...]} This indicates..."
+```
+
+**✅ SOLUTION: Robust JSON Extraction**
+```python
+def _extract_json(self, ai_response: str) -> Dict:
+    """Extract JSON from AI response with multiple fallback methods"""
+    try:
+        cleaned_response = ai_response.strip()
+
+        # Method 1: Direct parsing if starts with JSON
+        if cleaned_response.startswith(('{', '[')):
+            return json.loads(cleaned_response)
+
+        # Method 2: Extract from markdown code blocks
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
+        if json_match:
+            return json.loads(json_match.group(1))
+
+        # Method 3: Extract JSON between curly braces
+        brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+        if brace_match:
+            return json.loads(brace_match.group(0))
+
+        # Method 4: Try entire response
+        return json.loads(cleaned_response)
+
+    except json.JSONDecodeError:
+        return None
+```
+
+**Testing Robust Parsing:**
+- Test with markdown-wrapped responses
+- Test with explanatory text prefixes
+- Test with inline JSON in sentences
+- Ensure fallback to basic analysis when parsing fails
 
 ### 5. Quality Degradation
 **Problem:** Analysis quality drops over time

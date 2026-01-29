@@ -7,7 +7,22 @@ import sys
 from typing import Dict, Type, Optional, List, Any
 from pathlib import Path
 
-from .base_analyzer import BaseGrammarAnalyzer
+# Use absolute import instead of relative
+try:
+    from language_analyzers.base_analyzer import BaseGrammarAnalyzer
+except ImportError:
+    # Fallback for when running from different locations
+    try:
+        from .base_analyzer import BaseGrammarAnalyzer
+    except ImportError:
+        # Last resort - try importing from streamlit_app
+        import sys
+        import os
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        streamlit_app_dir = os.path.dirname(current_dir)
+        if streamlit_app_dir not in sys.path:
+            sys.path.insert(0, streamlit_app_dir)
+        from language_analyzers.base_analyzer import BaseGrammarAnalyzer
 
 logger = logging.getLogger(__name__)
 

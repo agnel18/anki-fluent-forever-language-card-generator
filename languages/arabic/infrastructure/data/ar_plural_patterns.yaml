@@ -1,0 +1,92 @@
+# languages/arabic/infrastructure/data/ar_plural_patterns.yaml
+# Arabic Plural Patterns Configuration
+# Defines Arabic plural formation patterns (sound vs broken plurals)
+
+plural_types:
+  sound_masculine:
+    name: "sound masculine plural (جمع المذكر السالم)"
+    pattern: "add ون/ين to singular"
+    suffix: "ūna (ون)"
+    description: "Regular plural for masculine nouns"
+    examples:
+      - singular: "كتاب (kitāb)"
+        plural: "كتبون (kutubūn)"
+        meaning: "books"
+      - singular: "معلم (muʿallim)"
+        plural: "معلمون (muʿallimūn)"
+        meaning: "teachers"
+
+  sound_feminine:
+    name: "sound feminine plural (جمع المؤنث السالم)"
+    pattern: "add ات to singular"
+    suffix: "āt (ات)"
+    description: "Regular plural for feminine nouns"
+    examples:
+      - singular: "معلمة (muʿallima)"
+        plural: "معلمات (muʿallimāt)"
+        meaning: "teachers (feminine)"
+      - singular: "كلمة (kalima)"
+        plural: "كلمات (kalimāt)"
+        meaning: "words"
+
+  broken_plural:
+    name: "broken plural (جمع تكسير)"
+    pattern: "internal vowel changes"
+    description: "Irregular plural formation"
+    categories:
+      fiʿāl:
+        pattern: "fiʿāl → afʿila"
+        examples:
+          - singular: "كتاب (kitāb)"
+            plural: "كتب (kutub)"
+            meaning: "books"
+      fiʿla:
+        pattern: "fiʿla → fiʿal"
+        examples:
+          - singular: "رجل (rajul)"
+            plural: "رجال (rijāl)"
+            meaning: "men"
+      faʿl:
+        pattern: "faʿl → fiʿāl"
+        examples:
+          - singular: "باب (bāb)"
+            plural: "أبواب (abwāb)"
+            meaning: "doors"
+
+dual:
+  name: "dual (مثنى)"
+  pattern: "add ان/ين to singular"
+  suffix: "āni (ان)"
+  description: "Special form for exactly two items"
+  examples:
+    - singular: "كتاب (kitāb)"
+      dual: "كتابان (kitābān)"
+      meaning: "two books"
+    - singular: "معلم (muʿallim)"
+      dual: "معلمان (muʿallimān)"
+      meaning: "two teachers"
+
+irregular_plurals:
+  name: "irregular plurals"
+  description: "Plurals that don't follow standard patterns"
+  examples:
+    - singular: "رجل (rajul)"
+      plural: "رجال (rijāl)"
+      meaning: "men"
+    - singular: "امرأة (imraʾa)"
+      plural: "نساء (nisāʾ)"
+      meaning: "women"
+    - singular: "ولد (walad)"
+      plural: "أولاد (awlād)"
+      meaning: "boys"
+
+plural_patterns:
+  masculine_sound: "singular + ūna"
+  feminine_sound: "singular + āt"
+  dual: "singular + āni"
+  broken: "various internal changes"
+
+agreement_rules:
+  sound_plural: "treated as feminine singular"
+  broken_plural: "follow singular gender"
+  dual: "treated as masculine plural"

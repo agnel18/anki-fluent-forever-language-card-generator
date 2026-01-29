@@ -1,0 +1,35 @@
+# languages/arabic/infrastructure/data/ar_case_markers.yaml
+# Arabic Case Markers Configuration
+# Defines case marking patterns (i'rab) in Arabic
+
+case_markers:
+  nominative:
+    name: "nominative (رفع)"
+    markers: ["u", "un", "uu", "uuna", "aatu", "aatun", "aatuu", "aatuuna"]
+    description: "Subject case - marks the doer of the action"
+
+  accusative:
+    name: "accusative (نصب)"
+    markers: ["a", "an", "aa", "ayni", "ayna", "aynayni", "aynayn"]
+    description: "Object case - marks the direct object"
+
+  genitive:
+    name: "genitive (جر)"
+    markers: ["i", "in", "ii", "ayni", "ayna", "aynayni", "aynayn"]
+    description: "Possessive case - marks possession or relation"
+
+patterns:
+  definite_article_assimilation:
+    sun_letters: ["ت", "ث", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ل", "ن"]
+    assimilation_rule: "ال + sun_letter → aṣ-ṣun_letter"
+    examples: ["الشمس → ash-shams", "القمر → al-qamar"]
+
+  tanween_patterns:
+    tanween_dhamma: "un (ٌ)"
+    tanween_kasra: "in (ٍ)"
+    tanween_fatha: "an (ً)"
+
+  i3rab_markers:
+    short_vowels: ["a", "i", "u"]
+    tanween: ["an", "in", "un"]
+    alif_maqsoora: ["ى"]

@@ -203,21 +203,23 @@ Analyze the sentence now:"""
 
 ```python
 # languages/english/english_response_parser.py
+import json
+import re
+
 class EnglishResponseParser:
     def __init__(self):
         self.config = EnglishConfig()
 
     def parse_response(self, response_text, sentence, complexity):
-        """Parse AI response into standardized format"""
+        """Parse AI response into standardized format with ROBUST JSON EXTRACTION"""
 
         try:
-            # Extract JSON from response
-            json_start = response_text.find('{')
-            json_end = response_text.rfind('}') + 1
-            json_str = response_text[json_start:json_end]
+            # ROBUST JSON EXTRACTION - handles various AI response formats
+            json_data = self._extract_json(response_text)
+            if not json_data:
+                return self._create_fallback_response(sentence, complexity)
 
-            import json
-            parsed = json.loads(json_str)
+            parsed = json_data
 
             # Validate structure
             if 'words' not in parsed:
@@ -259,6 +261,31 @@ class EnglishResponseParser:
         except Exception as e:
             # Fallback parsing for malformed responses
             return self._fallback_parse(response_text, sentence, complexity)
+
+    def _extract_json(self, response_text: str) -> dict:
+        """Extract JSON from AI response with robust parsing"""
+        try:
+            cleaned_response = response_text.strip()
+
+            # Method 1: Direct parsing if starts with JSON
+            if cleaned_response.startswith(('{', '[')):
+                return json.loads(cleaned_response)
+
+            # Method 2: Extract from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
+            if json_match:
+                return json.loads(json_match.group(1))
+
+            # Method 3: Extract JSON between curly braces
+            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+            if brace_match:
+                return json.loads(brace_match.group(0))
+
+            # Method 4: Try entire response
+            return json.loads(cleaned_response)
+
+        except json.JSONDecodeError:
+            return None
 
     def _calculate_confidence(self, word_explanations, sentence):
         """Calculate confidence score for analysis"""

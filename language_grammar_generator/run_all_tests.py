@@ -60,9 +60,22 @@ class TestRunner:
             "zh": "ZhAnalyzer",  # Chinese Simplified
             "hi": "HiAnalyzer",
             "es": "EsAnalyzer",
-            "ar": "ArAnalyzer"
+            "ar": "ArAnalyzer",
+            "arabic": "ArAnalyzer"  # Special case for when user passes "arabic"
         }
         return mapping.get(language_code, f"{language_code.title()}Analyzer")
+
+    def _get_file_name(self, language_code: str) -> str:
+        """Map language code to analyzer file name."""
+        mapping = {
+            "zh_tw": "zh_tw",
+            "zh": "zh",  # Chinese Simplified
+            "hi": "hi",
+            "es": "es",
+            "ar": "ar",
+            "arabic": "ar"  # Special case for when user passes "arabic"
+        }
+        return mapping.get(language_code, language_code)
 
     def run_all_tests(self) -> bool:
         """Run all test suites."""
@@ -72,6 +85,7 @@ class TestRunner:
         test_suites = [
             self.run_unit_tests,
             self.run_integration_tests,
+            self.run_content_generation_tests,
             self.run_system_tests,
             self.run_performance_tests,
             self.run_gold_standard_comparison,
@@ -116,11 +130,12 @@ class TestRunner:
 
     def run_unit_tests(self) -> bool:
         """Run unit tests for individual components."""
+        file_name = self._get_file_name(self.language_code)
         test_files = [
-            f"tests/test_{self.language_code}_config.py",
-            f"tests/test_{self.language_code}_prompt_builder.py",
-            f"tests/test_{self.language_code}_response_parser.py",
-            f"tests/test_{self.language_code}_validator.py"
+            f"tests/test_{file_name}_config.py",
+            f"tests/test_{file_name}_prompt_builder.py",
+            f"tests/test_{file_name}_response_parser.py",
+            f"tests/test_{file_name}_validator.py"
         ]
 
         return self._run_pytest_files(test_files, "Unit Tests")
@@ -133,6 +148,14 @@ class TestRunner:
         ]
 
         return self._run_pytest_files(test_files, "Integration Tests")
+
+    def run_content_generation_tests(self) -> bool:
+        """Run content generation tests for AI-powered sentence generation."""
+        content_gen_test_file = self.base_path / "tests" / "test_content_generation.py"
+        if not content_gen_test_file.exists():
+            self._create_content_generation_test_file()
+
+        return self._run_pytest_files(["tests/test_content_generation.py"], "Content Generation Tests")
 
     def run_system_tests(self) -> bool:
         """Run end-to-end system tests."""
@@ -176,7 +199,12 @@ class TestRunner:
         cmd = [sys.executable, "-m", "pytest"]
 
         if self.coverage:
-            cmd.extend(["--cov=languages", "--cov-report=html", "--cov-report=term"])
+            try:
+                import pytest_cov  # type: ignore
+                cmd.extend(["--cov=languages", "--cov-report=html", "--cov-report=term"])
+            except ImportError:
+                print(f"⚠️ Coverage requested but pytest-cov not installed. Running without coverage.")
+                self.coverage = False
 
         if self.parallel:
             cmd.extend(["-n", "auto"])
@@ -222,7 +250,7 @@ System tests for {language_code} analyzer - End-to-end testing.
 import pytest
 import os
 from dotenv import load_dotenv
-from languages.{directory_name}.{language_code}_analyzer import {class_name}
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
 
 # Load environment variables
 load_dotenv()
@@ -274,8 +302,225 @@ class Test{class_name}System:
 '''
         directory_name = self._get_directory_name(self.language_code)
         class_name = self._get_class_name(self.language_code)
-        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / "tests" / "test_system.py"
+        test_file.parent.mkdir(exist_ok=True)
+        test_file.write_text(content)
+
+    def _create_content_generation_test_file(self):
+        """Create a content generation test file."""
+        content = '''
+"""
+Content generation tests for {language_code} analyzer - AI-powered sentence generation.
+"""
+
+import pytest
+import os
+from unittest.mock import Mock, patch
+from dotenv import load_dotenv
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
+
+# Load environment variables
+load_dotenv()
+
+
+class Test{class_name}ContentGeneration:
+    """Content generation tests for AI-powered sentence generation."""
+
+    @pytest.fixture
+    def analyzer(self):
+        """Create analyzer for testing."""
+        return {class_name}()
+
+    @pytest.fixture
+    def mock_content_generator(self):
+        """Mock content generator for testing."""
+        mock_gen = Mock()
+        mock_gen.generate_sentences.return_value = [
+            {{
+                "sentence": "Test sentence 1",
+                "translation": "Test translation 1",
+                "grammar_explanation": "Test explanation 1"
+            }},
+            {{
+                "sentence": "Test sentence 2",
+                "translation": "Test translation 2",
+                "grammar_explanation": "Test explanation 2"
+            }}
+        ]
+        return mock_gen
+
+    def test_sentence_generation_prompt_creation(self, analyzer):
+        """Test that language-specific prompts are created correctly."""
+        target_word = "test_word"
+        difficulty = "intermediate"
+        context = "vocabulary"
+
+        # Check if method exists
+        if not hasattr(analyzer, 'create_sentence_generation_prompt'):
+            pytest.skip("create_sentence_generation_prompt method not implemented")
+
+        prompt = analyzer.create_sentence_generation_prompt(target_word, difficulty, context)
+
+        assert prompt is not None
+        assert isinstance(prompt, str)
+        assert len(prompt) > 0
+        assert target_word in prompt
+        assert difficulty in prompt
+        # Language-specific assertions would go here
+
+    def test_content_generator_integration(self, analyzer, mock_content_generator):
+        """Test integration with content generator service."""
+        target_word = "test_word"
+        difficulty = "intermediate"
+        api_key = os.getenv('GEMINI_API_KEY', 'test_key')
+
+        # Check if method exists
+        if not hasattr(analyzer, 'generate_sentences'):
+            pytest.skip("generate_sentences method not implemented")
+
+        with patch('content_generator.ContentGenerator', return_value=mock_content_generator):
+            sentences = analyzer.generate_sentences(target_word, difficulty, api_key)
+
+            assert sentences is not None
+            assert len(sentences) > 0
+            assert all(isinstance(s, dict) for s in sentences)
+            assert all('sentence' in s for s in sentences)
+            assert all('translation' in s for s in sentences)
+
+    def test_ai_response_parsing(self, analyzer):
+        """Test parsing of AI responses into structured format."""
+        # Check if method exists
+        if not hasattr(analyzer, 'parse_ai_response'):
+            pytest.skip("parse_ai_response method not implemented")
+
+        # Test valid response
+        valid_response = """
+        1. Sentence: Hello world
+        Translation: Hello world translation
+        Grammar: Basic greeting
+
+        2. Sentence: How are you?
+        Translation: How are you translation
+        Grammar: Question structure
+        """
+
+        parsed = analyzer.parse_ai_response(valid_response)
+        assert parsed is not None
+        assert len(parsed) > 0
+        assert all('sentence' in item for item in parsed)
+
+        # Test malformed response handling
+        malformed_response = "Invalid response format"
+        parsed_malformed = analyzer.parse_ai_response(malformed_response)
+        # Should handle gracefully, possibly with fallback
+        assert parsed_malformed is not None
+
+    def test_fallback_mechanisms(self, analyzer):
+        """Test fallback mechanisms when AI generation fails."""
+        target_word = "test_word"
+        difficulty = "intermediate"
+        api_key = "invalid_key"
+
+        # Check if method exists
+        if not hasattr(analyzer, 'generate_sentences'):
+            pytest.skip("generate_sentences method not implemented")
+
+        # Test with invalid API key - should fallback gracefully
+        try:
+            sentences = analyzer.generate_sentences(target_word, difficulty, api_key)
+            # Should not crash, may return empty list or fallback content
+            assert isinstance(sentences, list)
+        except Exception as e:
+            # Should handle API errors gracefully
+            assert "API" in str(e) or "key" in str(e).lower()
+
+    def test_language_specific_prompts(self, analyzer):
+        """Test that prompts are tailored to language characteristics."""
+        target_word = "test_word"
+        difficulty = "beginner"
+
+        # Check if method exists
+        if not hasattr(analyzer, 'create_sentence_generation_prompt'):
+            pytest.skip("create_sentence_generation_prompt method not implemented")
+
+        prompt = analyzer.create_sentence_generation_prompt(target_word, difficulty)
+
+        # Language-specific prompt validation
+        # This would include checks for script type, grammar patterns, etc.
+        assert prompt is not None
+        assert self.language_code.upper() in prompt or self.language_code in prompt
+
+    def test_sentence_quality_validation(self, analyzer, mock_content_generator):
+        """Test that generated sentences meet quality criteria."""
+        target_word = "test_word"
+        difficulty = "intermediate"
+        api_key = os.getenv('GEMINI_API_KEY', 'test_key')
+
+        # Check if method exists
+        if not hasattr(analyzer, 'generate_sentences'):
+            pytest.skip("generate_sentences method not implemented")
+
+        with patch('content_generator.ContentGenerator', return_value=mock_content_generator):
+            sentences = analyzer.generate_sentences(target_word, difficulty, api_key)
+
+            for sentence in sentences:
+                assert 'sentence' in sentence
+                assert 'translation' in sentence
+                assert len(sentence['sentence']) > 0
+                assert len(sentence['translation']) > 0
+                # Check that target word appears in sentence
+                assert target_word in sentence['sentence'].lower()
+
+    def test_batch_sentence_generation(self, analyzer, mock_content_generator):
+        """Test batch generation of multiple sentences."""
+        target_words = ["word1", "word2", "word3"]
+        difficulty = "intermediate"
+        api_key = os.getenv('GEMINI_API_KEY', 'test_key')
+
+        # Check if method exists
+        if not hasattr(analyzer, 'batch_generate_sentences'):
+            pytest.skip("batch_generate_sentences method not implemented")
+
+        with patch('content_generator.ContentGenerator', return_value=mock_content_generator):
+            results = analyzer.batch_generate_sentences(target_words, difficulty, api_key)
+
+            assert len(results) == len(target_words)
+            for word, sentences in results.items():
+                assert word in target_words
+                assert isinstance(sentences, list)
+                assert len(sentences) > 0
+
+    def test_error_handling_and_recovery(self, analyzer):
+        """Test error handling during content generation."""
+        # Check if method exists
+        if not hasattr(analyzer, 'generate_sentences'):
+            pytest.skip("generate_sentences method not implemented")
+
+        # Test with network timeout simulation
+        target_word = "test_word"
+        api_key = "test_key"
+
+        with patch('content_generator.ContentGenerator') as mock_gen_class:
+            mock_instance = Mock()
+            mock_instance.generate_sentences.side_effect = Exception("Network timeout")
+            mock_gen_class.return_value = mock_instance
+
+            # Should handle the error gracefully
+            try:
+                sentences = analyzer.generate_sentences(target_word, "intermediate", api_key)
+                # May return empty list or fallback content
+                assert isinstance(sentences, list)
+            except Exception:
+                # Should not crash the entire application
+                pass
+'''
+        directory_name = self._get_directory_name(self.language_code)
+        class_name = self._get_class_name(self.language_code)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
+        test_file = self.base_path / "tests" / "test_content_generation.py"
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)
 
@@ -287,7 +532,7 @@ Performance tests for {language_code} analyzer.
 """
 
 import pytest
-from languages.{directory_name}.{language_code}_analyzer import {class_name}
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
 
 
 class Test{class_name}Performance:
@@ -304,7 +549,8 @@ class Test{class_name}Performance:
 '''
         directory_name = self._get_directory_name(self.language_code)
         class_name = self._get_class_name(self.language_code)
-        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / "tests" / "test_performance.py"
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)
@@ -322,7 +568,7 @@ consistency and quality standards are met.
 import pytest
 import os
 from dotenv import load_dotenv
-from languages.{directory_name}.{language_code}_analyzer import {class_name}
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
 from languages.zh.zh_analyzer import ZhAnalyzer
 from languages.hindi.hi_analyzer import HiAnalyzer
 
@@ -396,7 +642,8 @@ class Test{class_name}GoldStandardComparison:
 '''
         directory_name = self._get_directory_name(self.language_code)
         class_name = self._get_class_name(self.language_code)
-        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / "tests" / "test_gold_standard_comparison.py"
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)
@@ -413,7 +660,7 @@ These tests prevent reintroduction of previously fixed bugs.
 import pytest
 import os
 from dotenv import load_dotenv
-from languages.{directory_name}.{language_code}_analyzer import {class_name}
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
 
 # Load environment variables
 load_dotenv()
@@ -445,7 +692,8 @@ class Test{class_name}Regression:
 '''
         directory_name = self._get_directory_name(self.language_code)
         class_name = self._get_class_name(self.language_code)
-        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / "tests" / "test_regression.py"
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)

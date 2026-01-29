@@ -8,7 +8,18 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 
 # Import centralized configuration
-from ..shared_utils import get_gemini_model, get_gemini_fallback_model
+try:
+    from ..shared_utils import get_gemini_model, get_gemini_fallback_model
+except ImportError:
+    # Fallback for when running from different locations
+    try:
+        from shared_utils import get_gemini_model, get_gemini_fallback_model
+    except ImportError:
+        # Define fallback functions
+        def get_gemini_model():
+            return None
+        def get_gemini_fallback_model():
+            return None
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +36,8 @@ class GrammarAnalysis:
     html_output: str
     confidence_score: float
     word_explanations: List[List[Any]] = field(default_factory=list)
+    is_rtl: bool = False  # Right-to-left text direction
+    text_direction: str = "ltr"  # Text direction: "ltr" or "rtl"
 
 @dataclass
 class LanguageConfig:
@@ -209,6 +222,29 @@ IMPORTANT:
             Dictionary mapping grammatical element types to hex colors
         """
         pass
+
+    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                     enriched_meaning: str = "", min_length: int = 3,
+                                     max_length: int = 15, difficulty: str = "intermediate",
+                                     topics: Optional[List[str]] = None) -> Optional[str]:
+        """
+        Get language-specific sentence generation prompt.
+        Default implementation returns None - subclasses can override for custom prompts.
+
+        Args:
+            word: Target word to generate content for
+            language: Language name
+            num_sentences: Number of sentences to generate
+            enriched_meaning: Pre-enriched meaning data
+            min_length: Minimum sentence length
+            max_length: Maximum sentence length
+            difficulty: Difficulty level
+            topics: Specific topics to focus on
+
+        Returns:
+            Custom prompt string or None to use default
+        """
+        return None
 
     def analyze_grammar(self, sentence: str, target_word: str,
                        complexity: str, gemini_api_key: str) -> GrammarAnalysis:

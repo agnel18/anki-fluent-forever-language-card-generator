@@ -129,10 +129,31 @@ except Exception as e:
 "
 ```
 
-**❌ Gold Standard Mismatches:**
+**❌ JSON Parsing Failures:**
 ```bash
-python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
+# Test robust JSON parsing with various AI response formats
+python -c "
+from languages.{language_code}.domain.{language_code}_response_parser import {LanguageCode}ResponseParser
+from languages.{language_code}.domain.{language_code}_config import {LanguageCode}Config
+
+config = {LanguageCode}Config()
+parser = {LanguageCode}ResponseParser(config)
+
+# Test markdown-wrapped JSON
+markdown_response = '''Here is my analysis:
+```json
+{{\"words\": [{{\"word\": \"test\", \"grammatical_role\": \"noun\", \"meaning\": \"test\"}}], \"explanations\": {{\"overall_structure\": \"test\", \"key_features\": \"test\"}}}}
 ```
+'''
+try:
+    result = parser.parse_response(markdown_response, 'beginner', 'Test sentence', 'test')
+    print('✓ Robust JSON parsing works')
+except Exception as e:
+    print(f'✗ JSON parsing error: {e}')
+"
+```
+
+**❌ Gold Standard Mismatches:**
 
 ## 📊 Success Metrics
 

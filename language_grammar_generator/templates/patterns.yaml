@@ -1,0 +1,147 @@
+# languages/{language}/infrastructure/data/patterns.yaml
+"""
+Linguistic Patterns Configuration for {Language}
+
+GOLD STANDARD PATTERNS:
+This file defines regex patterns and linguistic rules for {Language} text processing.
+Patterns are used for text validation, feature extraction, and grammatical analysis.
+
+PATTERN CATEGORIES:
+- text_validation: Patterns for validating {Language} text
+- word_patterns: Regex patterns for different word types
+- sentence_patterns: Patterns for sentence structure recognition
+- script_patterns: Unicode ranges and script validation
+
+PATTERN FORMAT:
+Each pattern includes:
+- regex: The regular expression pattern
+- description: What the pattern matches
+- examples: Sample matches
+- flags: Regex flags (case-insensitive, multiline, etc.)
+
+CUSTOMIZATION:
+- Update regex patterns for your language's script
+- Add language-specific morphological patterns
+- Include patterns for special characters or diacritics
+- Adjust validation rules based on language requirements
+"""
+
+text_validation:
+  # Basic text validation patterns
+  has_{lang_code}_characters:
+    regex: "[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]"
+    description: "Contains {Language} script characters (Arabic, Persian, Urdu ranges)"
+    examples: ["مرحبا", "سلام", "كتاب"]
+    flags: ["UNICODE"]
+
+  is_{lang_code}_text:
+    regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\s\u064B-\u065F\u0670\u0674-\u0678\u06D6-\u06ED\u08F0-\u08F3]+$"
+    description: "Text consists entirely of {Language} characters and diacritics"
+    examples: ["هذا نص باللغة العربية", "مرحبا بالجميع"]
+    flags: ["UNICODE", "MULTILINE"]
+
+word_patterns:
+  # Word-level patterns
+  noun_pattern:
+    regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]{2,}$"
+    description: "Basic noun pattern (2+ {Language} characters)"
+    examples: ["كتاب", "مدرسة", "طالب"]
+    flags: ["UNICODE"]
+
+  verb_pattern:
+    regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+[\u064B-\u065F\u0670]?[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]*$"
+    description: "Verb pattern with optional short vowels"
+    examples: ["يكتب", "درس", "يذهب"]
+    flags: ["UNICODE"]
+
+  adjective_pattern:
+    regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+[\u064B-\u065F\u0670]?[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]*$"
+    description: "Adjective pattern (similar to nouns but with descriptive function)"
+    examples: ["جميل", "كبير", "صغير"]
+    flags: ["UNICODE"]
+
+sentence_patterns:
+  # Sentence-level patterns
+  basic_sentence:
+    regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\s\u064B-\u065F\u0670\u0674-\u0678\u06D6-\u06ED\u08F0-\u08F3]+[.؟!]$"
+    description: "Basic sentence ending with punctuation"
+    examples: ["هذا جملة.", "كيف حالك؟", "مرحبا!"]
+    flags: ["UNICODE"]
+
+  question_sentence:
+    regex: ".*[؟].*$"
+    description: "Question sentence (ends with Arabic question mark)"
+    examples: ["ما اسمك؟", "أين تسكن؟"]
+    flags: ["UNICODE"]
+
+script_patterns:
+  # Script and character validation
+  arabic_range:
+    regex: "[\u0600-\u06FF]"
+    description: "Arabic script basic range"
+    examples: ["ا", "ب", "ت"]
+    flags: ["UNICODE"]
+
+  extended_arabic:
+    regex: "[\u0750-\u077F]"
+    description: "Extended Arabic letters"
+    examples: ["ݑ", "ݒ", "ݓ"]
+    flags: ["UNICODE"]
+
+  arabic_presentation_forms:
+    regex: "[\uFB50-\uFDFF\uFE70-\uFEFF]"
+    description: "Arabic presentation forms and ligatures"
+    examples: ["ﷲ", "ﷺ", "ﷻ"]
+    flags: ["UNICODE"]
+
+diacritic_patterns:
+  # Diacritical marks and vowel signs
+  short_vowels:
+    regex: "[\u064B-\u065F\u0670]"
+    description: "Arabic short vowels and diacritics"
+    examples: ["َ", "ِ", "ُ", "ْ", "ّ"]
+    flags: ["UNICODE"]
+
+  tanwin:
+    regex: "[\u064B-\u064D]"
+    description: "Tanwin (nunation) marks"
+    examples: ["ً", "ٍ", "ٌ"]
+    flags: ["UNICODE"]
+
+punctuation_patterns:
+  # Punctuation specific to Arabic script
+  arabic_comma:
+    regex: "،"
+    description: "Arabic comma"
+    examples: ["،"]
+    flags: ["UNICODE"]
+
+  arabic_semicolon:
+    regex: "؛"
+    description: "Arabic semicolon"
+    examples: ["؛"]
+    flags: ["UNICODE"]
+
+  arabic_question_mark:
+    regex: "؟"
+    description: "Arabic question mark"
+    examples: ["؟"]
+    flags: ["UNICODE"]
+
+validation_rules:
+  # Complex validation rules
+  minimum_length:
+    min_chars: 1
+    max_chars: 1000
+    description: "Text length constraints"
+
+  script_purity:
+    allow_latin: false
+    allow_digits: true
+    allow_punctuation: true
+    description: "Script purity requirements"
+
+  diacritic_usage:
+    required: false
+    preferred: true
+    description: "Diacritic mark preferences"

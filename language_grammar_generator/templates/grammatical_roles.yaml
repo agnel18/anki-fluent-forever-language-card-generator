@@ -1,0 +1,152 @@
+# languages/{language}/infrastructure/data/grammatical_roles.yaml
+"""
+Grammatical Roles Configuration for {Language}
+
+GOLD STANDARD CONFIGURATION:
+This file defines the grammatical roles used in {Language} analysis.
+Roles are organized by complexity level with descriptions and examples.
+
+CONFIGURATION STRUCTURE:
+- beginner: Basic parts of speech for simple analysis
+- intermediate: Additional grammatical categories
+- advanced: Complete grammatical framework
+
+ROLE DEFINITIONS:
+Each role includes:
+- description: Clear explanation of the grammatical function
+- examples: Sample words demonstrating the role
+- color: UI color coding for visualization
+
+CUSTOMIZATION:
+- Add language-specific roles as needed
+- Include examples in {Language} script
+- Adjust complexity levels based on language difficulty
+"""
+
+beginner:
+  noun:
+    description: "Person, place, thing, or idea"
+    examples: ["example1", "example2", "example3"]
+    color: "#FF6B6B"
+
+  verb:
+    description: "Action or state of being"
+    examples: ["example1", "example2", "example3"]
+    color: "#4ECDC4"
+
+  adjective:
+    description: "Describes or modifies a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#45B7D1"
+
+  adverb:
+    description: "Modifies verb, adjective, or another adverb"
+    examples: ["example1", "example2", "example3"]
+    color: "#96CEB4"
+
+  pronoun:
+    description: "Replaces a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#FFEAA7"
+
+intermediate:
+  # Include all beginner roles
+  noun:
+    description: "Person, place, thing, or idea"
+    examples: ["example1", "example2", "example3"]
+    color: "#FF6B6B"
+
+  verb:
+    description: "Action or state of being"
+    examples: ["example1", "example2", "example3"]
+    color: "#4ECDC4"
+
+  adjective:
+    description: "Describes or modifies a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#45B7D1"
+
+  adverb:
+    description: "Modifies verb, adjective, or another adverb"
+    examples: ["example1", "example2", "example3"]
+    color: "#96CEB4"
+
+  pronoun:
+    description: "Replaces a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#FFEAA7"
+
+  # Add intermediate roles
+  preposition:
+    description: "Shows relationship between words"
+    examples: ["example1", "example2", "example3"]
+    color: "#DDA0DD"
+
+  conjunction:
+    description: "Connects clauses or sentences"
+    examples: ["example1", "example2", "example3"]
+    color: "#98D8C8"
+
+  determiner:
+    description: "Introduces a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#F7DC6F"
+
+advanced:
+  # Include all intermediate roles
+  noun:
+    description: "Person, place, thing, or idea"
+    examples: ["example1", "example2", "example3"]
+    color: "#FF6B6B"
+
+  verb:
+    description: "Action or state of being"
+    examples: ["example1", "example2", "example3"]
+    color: "#4ECDC4"
+
+  adjective:
+    description: "Describes or modifies a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#45B7D1"
+
+  adverb:
+    description: "Modifies verb, adjective, or another adverb"
+    examples: ["example1", "example2", "example3"]
+    color: "#96CEB4"
+
+  pronoun:
+    description: "Replaces a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#FFEAA7"
+
+  preposition:
+    description: "Shows relationship between words"
+    examples: ["example1", "example2", "example3"]
+    color: "#DDA0DD"
+
+  conjunction:
+    description: "Connects clauses or sentences"
+    examples: ["example1", "example2", "example3"]
+    color: "#98D8C8"
+
+  determiner:
+    description: "Introduces a noun"
+    examples: ["example1", "example2", "example3"]
+    color: "#F7DC6F"
+
+  # Add advanced language-specific roles
+  interjection:
+    description: "Expresses emotion or sudden feeling"
+    examples: ["example1", "example2", "example3"]
+    color: "#FFB6C1"
+
+  # Add more advanced roles as needed for your language
+  # particle:
+  #   description: "Grammatical particle with specific function"
+  #   examples: ["example1", "example2", "example3"]
+  #   color: "#E6E6FA"
+
+  # classifier:
+  #   description: "Classifies nouns by category or measurement"
+  #   examples: ["example1", "example2", "example3"]
+  #   color: "#F0E68C"

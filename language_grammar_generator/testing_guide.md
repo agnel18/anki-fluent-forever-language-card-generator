@@ -487,7 +487,103 @@ class Test{Language}ResponseParser:
             color = word_exp[2]
             assert color.startswith('#')
             assert len(color) == 7
+
+    def test_robust_json_parsing_markdown_blocks(self, analyzer):
+        """Test robust JSON parsing with markdown code blocks"""
+        parser = analyzer.response_parser
+
+        # Test response wrapped in markdown code block
+        markdown_response = '''Here's my analysis:
+
+```json
+{{
+  "words": [
+    {{
+      "word": "test",
+      "grammatical_role": "noun",
+      "meaning": "test word"
+    }}
+  ],
+  "explanations": {{
+    "overall_structure": "Simple test",
+    "key_features": "Basic structure"
+  }}
+}}
 ```
+
+This should work correctly.'''
+
+        result = parser.parse_response(markdown_response, "beginner", "Test sentence", "test")
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 1
+        assert result['explanations']['overall_structure'] == "Simple test"
+
+    def test_robust_json_parsing_inline_json(self, analyzer):
+        """Test robust JSON parsing with JSON embedded in explanatory text"""
+        parser = analyzer.response_parser
+
+        # Test JSON embedded in explanatory text
+        inline_response = '''Let me analyze this sentence for you.
+
+The grammatical breakdown is: {
+  "words": [
+    {
+      "word": "test",
+      "grammatical_role": "noun",
+      "meaning": "test subject"
+    },
+    {
+      "word": "runs",
+      "grammatical_role": "verb",
+      "meaning": "action verb"
+    }
+  ],
+  "explanations": {
+    "overall_structure": "Subject-verb sentence",
+    "key_features": "Present tense"
+  }
+}
+
+I hope this helps!'''
+
+        result = parser.parse_response(inline_response, "beginner", "Test sentence", "test")
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 2
+        assert result['explanations']['overall_structure'] == "Subject-verb sentence"
+
+    def test_robust_json_parsing_ai_text_prefix(self, analyzer):
+        """Test robust JSON parsing with AI explanatory text prefix"""
+        parser = analyzer.response_parser
+
+        # Test response starting with explanatory text then JSON
+        ai_response = '''Based on my analysis, here is the grammatical breakdown:
+
+{
+  "words": [
+    {
+      "word": "The",
+      "grammatical_role": "determiner",
+      "meaning": "Definite article"
+    }
+  ],
+  "explanations": {
+    "overall_structure": "Simple sentence",
+    "key_features": "Article usage"
+  }
+}
+
+This analysis considers language-specific features.'''
+
+        result = parser.parse_response(ai_response, "beginner", "Test sentence", "test")
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 1
+        assert "Simple sentence" in result['explanations']['overall_structure']
 
 ### 4. Validator Tests
 
@@ -1151,6 +1247,594 @@ class Test{Language}Performance:
 
         # Large input should be no more than 5x slower than small input
         assert large_time < small_time * 5, "Performance degradation too steep"
+```
+
+## 🎯 Content Generation Testing - Critical Addition
+
+### Overview - Why This Was Missing
+Content generation testing was not included in the original comprehensive test suite, which led to Arabic sentence generation falling back to English samples. This section adds the missing test coverage for:
+
+- Language-specific sentence generation prompts
+- Content generator integration with language analyzers
+- AI response parsing for different languages
+- Fallback mechanism validation
+
+### 1. Content Generation Test Structure
+```
+languages/{language}/tests/
+├── test_content_generation.py      # Language-specific content generation
+├── test_content_integration.py     # Content generator + analyzer integration
+└── fixtures/
+    ├── content_generation_samples.json
+    └── content_generation_expected.json
+```
+
+### 2. Language-Specific Content Generation Tests
+
+**File:** `tests/test_{language}_content_generation.py`
+```python
+import pytest
+from unittest.mock import patch, MagicMock
+from streamlit_app.services.generation.content_generator import ContentGenerator
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+class Test{Language}ContentGeneration:
+    """Test language-specific content generation integration"""
+
+    @pytest.fixture
+    def content_generator(self):
+        """Create content generator for testing"""
+        return ContentGenerator()
+
+    @pytest.fixture
+    def analyzer(self):
+        """Get language analyzer"""
+        return get_analyzer('{language_code}')
+
+    def test_analyzer_has_sentence_generation_prompt(self, analyzer):
+        """Test that analyzer provides sentence generation prompts"""
+        assert analyzer is not None, "Analyzer should be available"
+
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="test_word",
+            language="{Language}",
+            num_sentences=3,
+            enriched_meaning="test meaning",
+            max_length=15,
+            difficulty="intermediate"
+        )
+
+        assert prompt is not None, "Should provide custom sentence generation prompt"
+        assert isinstance(prompt, str), "Prompt should be a string"
+        assert len(prompt) > 100, "Prompt should be substantial"
+
+        # Language-specific validations
+        assert "{Language}" in prompt, "Should reference correct language"
+        assert "test_word" in prompt, "Should include target word"
+
+    def test_prompt_contains_language_specific_instructions(self, analyzer):
+        """Test that prompts include language-specific requirements"""
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="test",
+            language="{Language}",
+            num_sentences=3
+        )
+
+        # Check for language-specific requirements
+        # (Customize these assertions based on language requirements)
+        assert "Arabic" in prompt or "Hindi" in prompt or "Chinese" in prompt, "Should specify language"
+
+    @pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+    def test_prompt_varies_by_difficulty(self, analyzer, difficulty):
+        """Test that prompts adapt to difficulty levels"""
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="test",
+            language="{Language}",
+            num_sentences=3,
+            difficulty=difficulty
+        )
+
+        assert difficulty in prompt, f"Should include {difficulty} difficulty level"
+
+    def test_prompt_handles_missing_parameters(self, analyzer):
+        """Test prompt generation with minimal parameters"""
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="test",
+            language="{Language}",
+            num_sentences=2
+        )
+
+        assert prompt is not None, "Should handle missing optional parameters"
+        assert "test" in prompt, "Should include target word"
+
+    def test_prompt_integration_with_content_generator(self, content_generator, analyzer):
+        """Test that content generator uses analyzer prompts"""
+        # Mock the AI call to avoid actual API calls
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            # Mock successful AI response
+            mock_response = MagicMock()
+            mock_response.text = '''
+MEANING: test (a test word)
+RESTRICTIONS: No specific restrictions
+SENTENCES:
+1. Test sentence one.
+2. Test sentence two.
+3. Test sentence three.
+TRANSLATIONS:
+1. Translation one.
+2. Translation two.
+3. Translation three.
+IPA:
+1. /test/
+2. /test/
+3. /test/
+KEYWORDS:
+1. test, word, language
+2. test, word, language
+3. test, word, language
+'''
+            mock_client.generate_content.return_value = mock_response
+
+            # Test content generation
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="test",
+                language="{Language}",
+                num_sentences=3,
+                gemini_api_key="test_key"
+            )
+
+            # Verify it used custom prompt (not generic)
+            assert result is not None, "Should generate content successfully"
+            assert 'sentences' in result, "Should include sentences"
+            assert len(result['sentences']) == 3, "Should generate requested number of sentences"
+```
+
+### 3. Content Generator Integration Tests
+
+**File:** `tests/test_content_integration.py`
+```python
+import pytest
+from unittest.mock import patch, MagicMock
+from streamlit_app.services.generation.content_generator import ContentGenerator
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+class TestContentGeneratorIntegration:
+    """Test content generator integration with language analyzers"""
+
+    @pytest.fixture
+    def content_generator(self):
+        return ContentGenerator()
+
+    def test_language_analyzer_discovery(self, content_generator):
+        """Test that content generator can find language analyzers"""
+        # Test various language codes
+        test_languages = ['ar', 'hi', 'zh', 'es', 'fr']
+
+        for lang_code in test_languages:
+            analyzer = get_analyzer(lang_code)
+            if analyzer:  # Some languages might not have analyzers yet
+                assert hasattr(analyzer, 'get_sentence_generation_prompt'), \
+                    f"Analyzer {lang_code} should have sentence generation prompt method"
+
+    def test_fallback_to_generic_prompt(self, content_generator):
+        """Test fallback when no language-specific analyzer available"""
+        # Use a language that doesn't have an analyzer
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.text = '''
+MEANING: nonexistent (a made-up word)
+RESTRICTIONS: No restrictions
+SENTENCES:
+1. This is a sample sentence with nonexistent.
+2. Another sample sentence with nonexistent.
+3. Third sample sentence with nonexistent.
+TRANSLATIONS:
+1. Translation one.
+2. Translation two.
+3. Translation three.
+IPA:
+1. /test/
+2. /test/
+3. /test/
+KEYWORDS:
+1. test, word, language
+2. test, word, language
+3. test, word, language
+'''
+            mock_client.generate_content.return_value = mock_response
+
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="nonexistent",
+                language="NonExistentLanguage",
+                num_sentences=3,
+                gemini_api_key="test_key"
+            )
+
+            assert result is not None, "Should still generate content with generic prompt"
+            assert len(result['sentences']) == 3, "Should generate sentences even with fallback"
+
+    def test_arabic_specific_prompt_used(self, content_generator):
+        """Test that Arabic analyzer provides Arabic-specific prompts"""
+        analyzer = get_analyzer('ar')
+        assert analyzer is not None, "Arabic analyzer should be available"
+
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="كتاب",
+            language="Arabic",
+            num_sentences=3
+        )
+
+        # Verify Arabic-specific content
+        assert "Arabic" in prompt, "Should specify Arabic language"
+        assert "Modern Standard Arabic" in prompt, "Should specify MSA"
+        assert "RTL" in prompt, "Should mention RTL text direction"
+        assert "sun letters" in prompt, "Should mention Arabic definite article rules"
+        assert "root-based morphology" in prompt, "Should mention Arabic morphology"
+
+    def test_prompt_parameter_passing(self, content_generator):
+        """Test that all parameters are correctly passed to prompts"""
+        analyzer = get_analyzer('ar')
+
+        prompt = analyzer.get_sentence_generation_prompt(
+            word="test_word",
+            language="Arabic",
+            num_sentences=5,
+            enriched_meaning="test (a test meaning)",
+            max_length=20,
+            difficulty="advanced",
+            topics=["education", "technology"]
+        )
+
+        assert "test_word" in prompt, "Should include target word"
+        assert "5" in prompt, "Should include number of sentences"
+        assert "20" in prompt, "Should include max length"
+        assert "advanced" in prompt, "Should include difficulty"
+        assert "education" in prompt and "technology" in prompt, "Should include topics"
+
+    @pytest.mark.parametrize("language,expected_features", [
+        ("Arabic", ["RTL", "sun letters", "root-based morphology"]),
+        ("Hindi", ["Devanagari", "gender agreement", "case marking"]),
+        ("Chinese", ["characters", "tones", "measure words"]),
+    ])
+    def test_language_specific_prompt_features(self, language, expected_features):
+        """Test that each language includes its specific linguistic features"""
+        from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE
+
+        lang_code = LANGUAGE_NAME_TO_CODE.get(language, language.lower()[:2])
+        analyzer = get_analyzer(lang_code)
+
+        if analyzer:  # Skip if analyzer not implemented yet
+            prompt = analyzer.get_sentence_generation_prompt(
+                word="test",
+                language=language,
+                num_sentences=3
+            )
+
+            for feature in expected_features:
+                assert feature in prompt, f"Language {language} prompt should include {feature}"
+
+    def test_content_generation_error_handling(self, content_generator):
+        """Test error handling in content generation"""
+        # Test with invalid API key
+        with pytest.raises(ValueError, match="API key"):
+            content_generator.generate_word_meaning_sentences_and_keywords(
+                word="test",
+                language="Arabic",
+                num_sentences=3,
+                gemini_api_key="invalid_key"
+            )
+
+    def test_ai_response_parsing_robustness(self, content_generator):
+        """Test that content generator handles various AI response formats"""
+        test_responses = [
+            # Standard format
+            '''MEANING: test (a test)
+RESTRICTIONS: none
+SENTENCES:
+1. Sentence one.
+2. Sentence two.
+TRANSLATIONS:
+1. Translation one.
+2. Translation two.
+IPA:
+1. /test/
+2. /test/
+KEYWORDS:
+1. test, word, language
+2. test, word, language''',
+
+            # Malformed but recoverable
+            '''MEANING: test (a test)
+SENTENCES:
+1. Sentence one.
+TRANSLATIONS:
+1. Translation one.''',
+
+            # Minimal response
+            '''MEANING: test
+SENTENCES:
+1. Test sentence.'''
+        ]
+
+        for response_text in test_responses:
+            with patch.object(content_generator, '_get_client') as mock_get_client:
+                mock_client = MagicMock()
+                mock_get_client.return_value = mock_client
+
+                mock_response = MagicMock()
+                mock_response.text = response_text
+                mock_client.generate_content.return_value = mock_response
+
+                result = content_generator.generate_word_meaning_sentences_and_keywords(
+                    word="test",
+                    language="Arabic",
+                    num_sentences=1,
+                    gemini_api_key="test_key"
+                )
+
+                assert result is not None, f"Should handle response format: {response_text[:50]}..."
+                assert 'meaning' in result, "Should extract meaning"
+```
+
+### 4. Fallback Mechanism Testing
+
+**File:** `tests/test_fallback_mechanisms.py`
+```python
+import pytest
+from unittest.mock import patch, MagicMock
+from streamlit_app.services.generation.content_generator import ContentGenerator
+
+class TestFallbackMechanisms:
+    """Test content generation fallback mechanisms"""
+
+    @pytest.fixture
+    def content_generator(self):
+        return ContentGenerator()
+
+    def test_fallback_to_english_samples(self, content_generator):
+        """Test fallback to English samples when parsing fails"""
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            # Mock a response that will fail parsing
+            mock_response = MagicMock()
+            mock_response.text = "This is not a valid structured response"
+            mock_client.generate_content.return_value = mock_response
+
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="كتاب",
+                language="Arabic",
+                num_sentences=3,
+                gemini_api_key="test_key"
+            )
+
+            # Should still return a result with fallback sentences
+            assert result is not None, "Should provide fallback result"
+            assert 'sentences' in result, "Should include sentences"
+            assert len(result['sentences']) == 3, "Should generate requested number of sentences"
+
+            # Check that fallback sentences contain the word
+            for sentence in result['sentences']:
+                assert "كتاب" in sentence, "Fallback sentences should contain target word"
+
+    def test_fallback_keywords_generation(self, content_generator):
+        """Test fallback keyword generation"""
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.text = "Invalid response format"
+            mock_client.generate_content.return_value = mock_response
+
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="test_word",
+                language="Arabic",
+                num_sentences=2,
+                gemini_api_key="test_key"
+            )
+
+            assert 'keywords' in result, "Should include keywords"
+            assert len(result['keywords']) == 2, "Should have keywords for each sentence"
+
+            # Check fallback keyword format
+            for keyword_set in result['keywords']:
+                assert isinstance(keyword_set, str), "Keywords should be strings"
+                assert len(keyword_set.split(',')) == 3, "Should have 3 keywords per sentence"
+
+    def test_partial_parsing_fallback(self, content_generator):
+        """Test fallback when only some sections parse successfully"""
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            # Response with valid meaning but invalid sentences
+            mock_response = MagicMock()
+            mock_response.text = '''MEANING: test (a test word)
+RESTRICTIONS: No restrictions
+SENTENCES:
+This is not properly formatted sentence data
+'''
+            mock_client.generate_content.return_value = mock_response
+
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="test",
+                language="Arabic",
+                num_sentences=2,
+                gemini_api_key="test_key"
+            )
+
+            # Should have meaning but fallback sentences
+            assert result['meaning'] == 'test (a test word)', "Should parse meaning correctly"
+            assert len(result['sentences']) == 2, "Should provide fallback sentences"
+
+    def test_language_specific_fallback_behavior(self, content_generator):
+        """Test that fallbacks maintain language-specific expectations"""
+        # Test that even in fallback, the system tries to maintain language context
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.text = "Completely invalid response"
+            mock_client.generate_content.return_value = mock_response
+
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="كتاب",
+                language="Arabic",
+                num_sentences=1,
+                gemini_api_key="test_key"
+            )
+
+            # The word should still appear in Arabic script in fallback
+            sentence = result['sentences'][0]
+            assert "كتاب" in sentence, "Fallback should preserve Arabic word"
+
+### 5. Content Generation Performance Tests
+
+**File:** `tests/test_content_generation_performance.py`
+```python
+import pytest
+import time
+from streamlit_app.services.generation.content_generator import ContentGenerator
+
+class TestContentGenerationPerformance:
+    """Test content generation performance"""
+
+    @pytest.fixture
+    def content_generator(self):
+        return ContentGenerator()
+
+    def test_content_generation_speed(self, content_generator):
+        """Test that content generation completes within time limits"""
+        with patch.object(content_generator, '_get_client') as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.text = '''
+MEANING: test (a test)
+RESTRICTIONS: none
+SENTENCES:
+1. Test sentence one.
+2. Test sentence two.
+TRANSLATIONS:
+1. Translation one.
+2. Translation two.
+IPA:
+1. /test/
+2. /test/
+KEYWORDS:
+1. test, word, language
+2. test, word, language
+'''
+            mock_client.generate_content.return_value = mock_response
+
+            start_time = time.time()
+            result = content_generator.generate_word_meaning_sentences_and_keywords(
+                word="test",
+                language="Arabic",
+                num_sentences=2,
+                gemini_api_key="test_key"
+            )
+            end_time = time.time()
+
+            duration = end_time - start_time
+            assert duration < 5.0, f"Content generation took {duration:.2f}s, should be < 5.0s"
+
+    def test_analyzer_prompt_retrieval_speed(self):
+        """Test that analyzer prompt retrieval is fast"""
+        from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+        analyzers_to_test = ['ar', 'hi', 'zh']  # Test implemented analyzers
+
+        for lang_code in analyzers_to_test:
+            analyzer = get_analyzer(lang_code)
+            if analyzer:
+                start_time = time.time()
+                prompt = analyzer.get_sentence_generation_prompt(
+                    word="test",
+                    language="TestLanguage",
+                    num_sentences=3
+                )
+                end_time = time.time()
+
+                duration = end_time - start_time
+                assert duration < 0.1, f"Prompt retrieval for {lang_code} took {duration:.3f}s, should be < 0.1s"
+```
+
+### 6. Content Generation Test Fixtures
+
+**File:** `tests/fixtures/content_generation_samples.json`
+```json
+{
+  "arabic": {
+    "words": [
+      {
+        "word": "كتاب",
+        "meaning": "book (a written work)",
+        "expected_sentences": 3,
+        "language_features": ["RTL", "Arabic script", "sun letters"]
+      },
+      {
+        "word": "مدرسة",
+        "meaning": "school (place of learning)",
+        "expected_sentences": 4,
+        "language_features": ["feminine noun", "case marking"]
+      }
+    ]
+  },
+  "hindi": {
+    "words": [
+      {
+        "word": "किताब",
+        "meaning": "book (written material)",
+        "expected_sentences": 3,
+        "language_features": ["Devanagari", "gender agreement"]
+      }
+    ]
+  }
+}
+```
+
+**File:** `tests/fixtures/content_generation_expected.json`
+```json
+{
+  "arabic_كتاب": {
+    "meaning": "book (a written work)",
+    "sentences_should_contain_arabic": true,
+    "sentences_should_not_contain": ["This is a sample sentence"],
+    "translations_should_be_english": true,
+    "ipa_should_be_phonetic": true,
+    "keywords_should_be_english": true
+  }
+}
+```
+
+### 7. Integration with Existing Test Framework
+
+Add to `language_grammar_generator/run_all_tests.py`:
+```python
+def run_content_generation_tests(language_code: str):
+    """Run content generation tests for a language"""
+    test_files = [
+        f"languages/{language_code}/tests/test_content_generation.py",
+        f"languages/{language_code}/tests/test_content_integration.py",
+        f"languages/{language_code}/tests/test_fallback_mechanisms.py",
+        f"languages/{language_code}/tests/test_content_generation_performance.py"
+    ]
+
+    # Run tests if files exist
+    for test_file in test_files:
+        if os.path.exists(test_file):
+            run_pytest_file(test_file)
 ```
 
 ## 🚀 CI/CD Integration

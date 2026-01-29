@@ -432,6 +432,8 @@ Provide batch grammatical analysis in JSON format."""
 
 **File:** `domain/{language}_response_parser.py`
 
+> **CRITICAL:** Implement robust JSON parsing to handle AI responses that may be wrapped in markdown code blocks, explanatory text, or other formats. AI models often return JSON embedded in explanatory text rather than pure JSON. Use the robust extraction methods shown below to prevent fallback analysis due to parsing failures.
+
 **Step 3.3.1: Basic Implementation**
 ```python
 import json
@@ -474,21 +476,58 @@ class {Language}ResponseParser(ZhResponseParser):
             return self.fallbacks.create_fallback(sentence, complexity)
 ```
 
-**Step 3.3.2: JSON Extraction**
+**Step 3.3.2: Robust JSON Extraction**
 ```python
     def _extract_json(self, ai_response: str) -> Dict[str, Any]:
-        """Extract JSON from AI response"""
+        """Extract JSON from AI response with robust parsing for various formats"""
         try:
-            # Look for JSON block in response
-            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            # Clean the response
+            cleaned_response = ai_response.strip()
+
+            # If response starts with JSON, try direct parsing first
+            if cleaned_response.startswith(('{', '[')):
+                try:
+                    return json.loads(cleaned_response)
+                except json.JSONDecodeError:
+                    pass  # Continue with extraction methods
+
+            # Method 1: Extract from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
             if json_match:
-                json_str = json_match.group()
-                return json.loads(json_str)
-            else:
-                # Try parsing entire response
-                return json.loads(ai_response.strip())
+                try:
+                    return json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    pass
+
+            # Method 2: Extract JSON between curly braces (most common case)
+            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+            if brace_match:
+                try:
+                    return json.loads(brace_match.group(0))
+                except json.JSONDecodeError:
+                    pass
+
+            # Method 3: Look for JSON after explanatory text
+            # Pattern: some text, then JSON starting a new line
+            lines = cleaned_response.split('\n')
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if line.startswith(('{', '[')):
+                    try:
+                        # Try to parse from this line onwards
+                        potential_json = '\n'.join(lines[i:])
+                        return json.loads(potential_json)
+                    except json.JSONDecodeError:
+                        continue
+
+            # Method 4: Try parsing entire response as last resort
+            return json.loads(cleaned_response)
+
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parsing failed: {e}")
+            logger.error(f"JSON parsing failed for all extraction methods: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error during JSON extraction: {e}")
             return None
 
     def _validate_response_structure(self, json_data: Dict) -> bool:

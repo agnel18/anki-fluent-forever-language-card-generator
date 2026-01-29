@@ -1,0 +1,74 @@
+# languages/arabic/infrastructure/data/ar_verb_patterns.yaml
+# Arabic Verb Patterns Configuration
+# Defines Arabic verb conjugation patterns and forms
+
+verb_forms:
+  perfect:
+    name: "perfect (ماض)"
+    pattern: "faʿala"
+    description: "Past tense - completed action"
+    examples: ["kataba (wrote)", "ʾakala (ate)", "ḍaraba (hit)"]
+
+  imperfect:
+    name: "imperfect (مضارع)"
+    pattern: "yafʿalu"
+    description: "Present/continuous tense"
+    examples: ["yaktubu (writes)", "yaʾkulu (eats)", "yaḍribu (hits)"]
+
+  imperative:
+    name: "imperative (أمر)"
+    pattern: "ufʿul"
+    description: "Command form"
+    examples: ["uktub (write!)", "kul (eat!)", "iḍrib (hit!)"]
+
+  active_participle:
+    name: "active participle (اسم فاعل)"
+    pattern: "fāʿil"
+    description: "Present active participle - 'one who does'"
+    examples: ["kātib (writer)", "ʾākil (eater)", "ḍārib (hitter)"]
+
+  passive_participle:
+    name: "passive participle (اسم مفعول)"
+    pattern: "mafʿūl"
+    description: "Passive participle - 'one who is done to'"
+    examples: ["maktūb (written)", "maʾkūl (eaten)", "maḍrūb (hit)"]
+
+root_patterns:
+  triliteral:
+    name: "triliteral roots (جذور ثلاثية)"
+    pattern: "f-ʿ-l"
+    description: "Most common Arabic root pattern"
+    examples: ["k-t-b (write)", "ʾ-k-l (eat)", "ḍ-r-b (hit)"]
+
+  quadriliteral:
+    name: "quadriliteral roots (جذور رباعية)"
+    pattern: "f-ʿ-l-l"
+    description: "Four-consonant roots"
+    examples: ["b-h-r-j (sparkle)", "sh-m-l-l (become leftist)"]
+
+conjugation_patterns:
+  strong_verb:
+    name: "strong verb (فعل صحيح)"
+    description: "Regular verbs with no weak letters"
+    perfect: ["kataba", "katabta", "kataba", "katabnā", "katabtum", "katabū"]
+    imperfect: ["yaktubu", "taktubu", "taktubīna", "naktubu", "taktubūna", "yaktubūna"]
+
+  assimilated_verb:
+    name: "assimilated verb (فعل مهموز)"
+    description: "Verbs beginning with alif"
+    examples: ["ʾakala (eat)", "ʾadhina (allow)"]
+
+  hollow_verb:
+    name: "hollow verb (فعل أجوف)"
+    description: "Verbs with waw or ya as middle radical"
+    examples: ["qāla (said)", "māta (died)"]
+
+  defective_verb:
+    name: "defective verb (فعل ناقص)"
+    description: "Verbs ending with waw or ya"
+    examples: ["ramā (threw)", "nasiya (forgot)"]
+
+  doubled_verb:
+    name: "doubled verb (فعل مضعف)"
+    description: "Verbs with repeated middle radical"
+    examples: ["ḍaraba (hit)", "ḥasuna (was good)"]

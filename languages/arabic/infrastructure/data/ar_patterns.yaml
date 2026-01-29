@@ -1,0 +1,72 @@
+# languages/arabic/infrastructure/data/ar_patterns.yaml
+# Arabic Patterns Configuration
+# Regex patterns and linguistic rules for Arabic analysis
+
+patterns:
+  # Definite article patterns
+  definite_article_sun: '\bا[سشصضطظلن]\w*'
+  definite_article_moon: '\bال\w+'
+
+  # Case marking patterns (i'rab)
+  tanween_dhamma: '\w+ٌ\b'
+  tanween_kasra: '\w+ٍ\b'
+  tanween_fatha: '\w+ً\b'
+
+  # Verb form patterns
+  perfect_verb: '\b\w*[اى](\s|$)'
+  imperfect_verb: '\bي\w*[و]\b'
+  imperative_verb: '\b[ائ]\w*[و]\b'
+
+  # Noun patterns
+  sound_masculine_plural: '\w+ون\b'
+  sound_feminine_plural: '\w+ات\b'
+  dual: '\w+ان\b'
+
+  # Particle patterns
+  preposition: '\b(في|من|إلى|على|مع|بعد|قبل|حتى|خلال|عند)\b'
+  conjunction: '\b(و|ف|ثم|بل|لكن|أما|إما|إذن|لأن|حتى)\b'
+  interrogative: '\b(هل|من|ما|متى|أين|كيف|لماذا|أي)\b'
+
+  # Number patterns
+  cardinal_number: '\b(واحد|اثنان|ثلاثة|أربعة|خمسة|ستة|سبعة|ثمانية|تسعة|عشرة)\b'
+  ordinal_number: '\b(الأول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر)\b'
+
+validation_rules:
+  arabic_script_only:
+    pattern: '^[\u0600-\u06FF\s\p{P}]+$'
+    description: "Text should contain only Arabic script characters"
+
+  minimum_word_length:
+    min_length: 1
+    description: "Words should be at least 1 character long"
+
+  maximum_word_length:
+    max_length: 50
+    description: "Words should not exceed 50 characters"
+
+  arabic_diacritics_allowed:
+    pattern: '[\u064B-\u065F]'
+    description: "Arabic diacritical marks are allowed"
+
+linguistic_features:
+  root_based_morphology: true
+  case_system: "three cases (nominative, accusative, genitive)"
+  gender_agreement: "masculine/feminine with number agreement"
+  definite_article_assimilation: true
+  dual_number: true
+  broken_plural_system: true
+  verb_form_system: "ten derived forms (abwab)"
+  right_to_left_script: true
+
+quality_checks:
+  arabic_content_ratio:
+    min_ratio: 0.8
+    description: "At least 80% of text should be Arabic characters"
+
+  diacritic_usage:
+    recommended: true
+    description: "Diacritics improve accuracy but are optional"
+
+  root_identification:
+    required: false
+    description: "Root identification is advanced feature"

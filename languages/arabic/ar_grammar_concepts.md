@@ -1,283 +1,334 @@
-# Arabic Grammar Concepts and Implementation Guide
+# Arabic Grammar Concepts - Comprehensive Analysis
+## العربية - Arabic Grammar Analysis
 
-## Overview
-This document outlines the linguistic research, grammatical structures, and implementation requirements for creating a comprehensive Arabic grammar analyzer (`ar_analyzer.py`) following the gold standard approach established by the Hindi analyzer.
+### Language Overview
+Arabic (العربية) is a Central Semitic language within the Afro-Asiatic language family. It is the liturgical language of Islam and serves as the official language of 22 countries across the Middle East and North Africa. Modern Standard Arabic (MSA) is used in formal contexts, while numerous colloquial dialects exist regionally.
 
-## Language Family and Characteristics
-**Arabic** belongs to the **Afro-Asiatic** language family, specifically the **Semitic** branch. It is a **fusional** language with **root-based morphology**, **case marking (i'rab)**, and **right-to-left (RTL)** script direction.
+### Historical Development
+- **Classical Arabic (الفصحى الكلاسيكية)**: Language of the Quran (7th century CE) and pre-Islamic poetry (6th century CE)
+- **Modern Standard Arabic (MSA)**: Standardized form developed in the 19th-20th centuries
+- **Colloquial Arabic**: Regional dialects evolved from Classical Arabic through natural linguistic processes
 
-## Core Linguistic Features
+### Development of Arabic Grammatical Tradition
+- **Pre-Islamic Period**: Bedouin poetry established linguistic norms
+- **Early Islamic Period**: Need to preserve Quran led to grammatical studies
+- **Classical Period (8th-10th centuries)**: Systematic grammar development
+  - **Basra School**: Emphasis on analogy and usage
+  - **Kufa School**: Emphasis on morphology and etymology
+- **Medieval Period**: Refinement and codification of rules
+- **Modern Period**: Adaptation for MSA and educational purposes
 
-### 1. Morphological Structure
-Arabic employs a **root-and-pattern system** where most words are derived from **triliteral roots** (three consonants) combined with vowel patterns and affixes.
+### Role in Islamic Scholarship
+- **Quranic Preservation**: Grammar ensures accurate recitation and interpretation
+- **Hadith Studies**: Authentication of prophetic traditions
+- **Islamic Jurisprudence**: Precise legal language
+- **Literary Criticism**: Analysis of classical Arabic literature
 
-**Root Types:**
-- **Triliteral** (3 consonants): Most common (e.g., ك-ت-ب k-t-b "write")
-- **Quadriliteral** (4 consonants): Less common (e.g., د-ه-ر-ج d-h-r-j "scatter")
-- **Bilateral** (2 consonants): Rare, mostly for onomatopoeia
+## Phonology and Writing System
 
-**Vowel Patterns (ʾIʿrāb - Case Marking):**
-- **Nominative (Rafʿ)**: Ending with damma (ُ) -u
-- **Accusative (Naṣb)**: Ending with fatha (َ) -a
-- **Genitive (Jarr)**: Ending with kasra (ِ) -i
-
-### 2. Script and Writing System
-- **Arabic Script**: Abjad system, 28 letters + hamza/tāʾ marbūṭa
+### Arabic Script (الخط العربي)
+- **Type**: Abjad (consonantal alphabet)
 - **Direction**: Right-to-Left (RTL)
-- **Special Characters**: 
-  - Hamza (ء) - glottal stop
-  - Tāʾ marbūṭa (ة) - feminine marker
-  - Shadda (ّ) - gemination/consonant doubling
-  - Ḥarakāt (diacritics): fatha (َ), damma (ُ), kasra (ِ), sukūn (ْ)
+- **Unicode Range**: U+0600-U+06FF
+- **Special Features**:
+  - 28 basic consonants
+  - Long vowels represented by letters (ا، و، ي)
+  - Short vowels (harakat) written as diacritics
+  - Shadda (شدة) for gemination
+  - Hamza (همزة) for glottal stop
 
-### 3. Grammatical Categories
+### Phonetic Inventory
+- **Consonants**: 28 phonemes including emphatic consonants (ط، ض، ص، ظ)
+- **Vowels**: 3 short (a, i, u) and 3 long (ā, ī, ū) vowels
+- **Syllable Structure**: CV, CVC, CVCC (no consonant clusters in onset)
 
-#### A. Nouns (ʾIsm)
-- **Gender**: Masculine (default), Feminine (-a/ة)
-- **Number**: Singular, Dual (-ān/ayn), Plural (sound/broken)
-- **Case**: Rafʿ (u), Naṣb (a), Jarr (i)
-- **Definiteness**: Indefinite (no article), Definite (al- + assimilation rules)
+#### Consonant Inventory (IPA)
 
-#### B. Verbs (Fiʿl)
-- **Stem Forms (ʾAbwāb)**: 10 derived forms (I-X) from triliteral roots
-- **Tense/Aspect**: Perfect (past), Imperfect (present/future), Imperative
-- **Person**: 1st, 2nd, 3rd singular/dual/plural
-- **Voice**: Active, Passive
-- **Mood**: Indicative, Subjunctive, Jussive
+| Place → Manner ↓ | Bilabial | Labiodental | Dental | Alveolar | Postalveolar | Palatal | Velar | Uvular | Pharyngeal | Glottal |
+|------------------|----------|-------------|--------|----------|--------------|---------|-------|--------|------------|---------|
+| **Plosive** | b | | t d | | | | k g | q | | ʔ |
+| **Emphatic Plosive** | | | tˤ dˤ | | | | | | | |
+| **Fricative** | | f | θ ð | s z | ʃ | | x ɣ | | ħ ʕ | h |
+| **Emphatic Fricative** | | | | sˤ | | | | | | |
+| **Nasal** | m | | | n | | | | | | |
+| **Lateral** | | | | l | | | | | | |
+| **Trill** | | | | r | | | | | | |
+| **Approximant** | w | | | | | j | | | | |
 
-#### C. Particles (Ḥarf)
-- **Prepositions**: فِي (fī "in"), مِن (min "from"), عَلَى (ʿalā "on"), etc.
-- **Conjunctions**: وَ (wa "and"), فَ (fa "then"), أَو (aw "or")
-- **Interrogatives**: هَل (hal), أَ (ʾa), مَا (mā)
-- **Negation**: لَا (lā), لَم (lam), لَن (lan), etc.
+#### Vowel System
+- **Short Vowels**: /a/, /i/, /u/
+- **Long Vowels**: /aː/, /iː/, /uː/
+- **Diphthongs**: /aj/, /aw/ (represented by ي and و)
 
-### 4. Syntactic Features
-- **Word Order**: VSO (Verb-Subject-Object) in formal/written Arabic
-- **Agreement**: Gender, number, case agreement between constituents
-- **Idafa Construction**: Noun-noun possession without preposition
-- **Relative Clauses**: Introduced by الَّذِي (allaḏī) and variants
+### Phonological Processes
+- **Assimilation**: Definite article assimilation with "sun letters" (ت، ث، د، ذ، ر، ز، س، ش، ص، ض، ط، ظ، ل، ن)
+  - Example: الشمس (ash-shams) "the sun" vs القمر (al-qamar) "the moon"
+- **Gemination**: Consonant doubling (shadda) affects duration and emphasis
+- **Elision**: Vowel dropping in fast speech (especially case endings)
+- **Emphasis Spread**: Velarization affects adjacent sounds (emphasis harmony)
+- **Hamza Assimilation**: Glottal stop behavior varies by position and dialect
 
-## Implementation Requirements
+## Morphology (صرف - Morphology)
 
-### 1. Arabic-Specific Patterns
-Focus on the most frequent and distinctive grammatical markers:
+### Root-Based System (الجذر والوزن)
+Arabic morphology is fundamentally root-based, where most words are derived from three-consonant roots (جذور ثلاثية).
 
-#### A. Case Endings (ʾIʿrāb)
-```regex
-# Nominative (Rafʿ) - damma
-raf_pattern = r'\b\w*ُ\b'
+#### Root Types
+- **Triliteral Roots (ثلاثية)**: Most common (e.g., ك-ت-ب, ق-ر-أ, ش-ر-ب)
+- **Quadriliteral Roots (رباعية)**: Four consonants (e.g., د-ه-ر-ج, ب-ر-ق-ش)
+- **Bilateral Roots (ثنائية)**: Two consonants (rare, mostly in loanwords)
 
-# Accusative (Naṣb) - fatha  
-nasb_pattern = r'\b\w*َ\b'
+#### Morphological Patterns (الأوزان)
+Words are formed by inserting roots into vowel-consonant patterns:
 
-# Genitive (Jarr) - kasra
-jarr_pattern = r'\b\w*ِ\b'
+| Form | Pattern | Meaning | Example | Root |
+|------|---------|---------|---------|------|
+| I | فَعَلَ | Basic action | كَتَبَ (kataba - to write) | ك-ت-ب |
+| II | فَعَّلَ | Intensive/Causative | كَتَّبَ (kattaba - to make write) | ك-ت-ب |
+| III | فَاعَلَ | Reciprocal | كَاتَبَ (kātaba - to correspond) | ك-ت-ب |
+| IV | أَفْعَلَ | Causative | أَكْتَبَ (aktaba - to dictate) | ك-ت-ب |
+| V | تَفَعَّلَ | Reflexive | تَكَتَّبَ (takattaba - to subscribe) | ك-ت-ب |
+| VI | تَفَاعَلَ | Reciprocal | تَكَاتَبَ (takātaba - to correspond) | ك-ت-ب |
+| VII | اِنْفَعَلَ | Passive/Reflexive | اِنْكَتَبَ (nkataba - to be written) | ك-ت-ب |
+| VIII | اِفْتَعَلَ | Reflexive | اِكْتَتَبَ (ktataba - to enroll) | ك-ت-ب |
+| IX | اِفْعَلَّ | Color/Defect | اِحْمَرَّ (hmarr - to become red) | ح-م-ر |
+| X | اِسْتَفْعَلَ | Request/Reflexive | اِسْتَكْتَبَ (staktaba - to copy) | ك-ت-ب |
+
+### Word Classes
+
+#### Nouns (الأسماء)
+- **Proper Nouns (الأعلام)**: Names of people, places, etc.
+- **Common Nouns (الأجناس)**: General categories
+- **Derived Nouns**:
+  - Active Participles (اسم الفاعل): كاتب (kātib - writer)
+  - Passive Participles (اسم المفعول): مكتوب (maktūb - written)
+  - Instrument Nouns (اسم الآلة): مكتب (maktab - desk)
+  - Place Nouns (اسم المكان): مكتبة (maktaba - library)
+
+#### Verbs (الأفعال)
+- **Perfect (الماضي)**: Completed actions (kataba - he wrote)
+- **Imperfect (المضارع)**: Ongoing/incomplete actions (yaktubu - he writes)
+- **Imperative (الأمر)**: Commands (uktub - write!)
+- **Verbal Nouns (المصادر)**: Action nouns (kitāba - writing)
+
+#### Particles (الحروف)
+- **Prepositions (حروف الجر)**: بِ، لِ، كَ، فِي، عَلَى، إِلَى، مِنْ، عَنْ
+- **Conjunctions (حروف العطف)**: وَ، فَ، أَوْ، ثُمَّ، بَلْ، لَكِنْ
+- **Interjections (أدوات التعجب)**: أَيّ، هَيْهَاتِ، أَلَا
+
+### Number and Gender
+- **Gender**: Masculine (مذكر) vs Feminine (مؤنث)
+- **Number**: Singular (مفرد), Dual (مثنى), Plural (جمع)
+  - Sound Masculine Plural: -ūn/-īn (كتب - kutub)
+  - Sound Feminine Plural: -āt (كتب - kutubāt)
+  - Broken Plural: Internal vowel changes (كتاب - كتب)
+
+## Syntax (نحو - Syntax)
+
+### Case System (الإعراب - I'rab)
+Arabic has a comprehensive case marking system using short vowels:
+
+| Case | Ending | Function | Example | Translation |
+|------|--------|----------|---------|-------------|
+| Nominative (الرفع) | -u | Subject | الْكِتَابُ (al-kitābu) | the book (subject) |
+| Accusative (النصب) | -a | Direct object | رَأَيْتُ الْكِتَابَ (ra'aytu al-kitāba) | I saw the book |
+| Genitive (الجر) | -i | Possession/after prepositions | فِي الْكِتَابِ (fī al-kitābi) | in the book |
+
+#### Complete Case Examples
+- **Nominative**: الطالبُ مجتهدٌ (at-tālibu mujtahidun) - The student is diligent
+- **Accusative**: قرأتُ الدرسَ (qara'tu ad-darsa) - I read the lesson
+- **Genitive**: ذهبتُ إلى المدرسةِ (dhahabtu ilā al-madrasati) - I went to the school
+
+### Sentence Structure
+
+#### Nominal Sentences (الجملة الاسمية)
+- Subject (مبتدأ) + Predicate (خبر)
+- No verb required
+- Example: الطالب مجتهد (at-tālibu mujtahid - The student is diligent)
+
+#### Verbal Sentences (الجملة الفعلية)
+- Verb + Subject + Object
+- VSO word order in formal Arabic
+- Example: كتب الطالب الدرس (kataba at-tālibu ad-darsa - The student wrote the lesson)
+
+### Agreement Rules
+- **Number Agreement**: Subject-verb agreement in number
+- **Gender Agreement**: Adjectives agree with nouns in gender
+- **Case Agreement**: Modifiers agree with head nouns in case
+
+### Complex Structures
+- **Relative Clauses**: Introduced by الذي/التي/اللذان/اللتان
+- **Conditional Sentences**: إِنْ...فَ، إِذَا...فَ
+- **Causal Clauses**: لأن، بسبب أن
+- **Purpose Clauses**: لِ، كَيْ
+
+## Semantics and Pragmatics
+
+### Semantic Fields
+- **Polysemy**: Words with multiple related meanings
+- **Metaphor**: Figurative language based on root meanings
+- **Idioms**: Fixed expressions with non-literal meanings
+
+### Pragmatic Features
+- **Honorifics**: Respect markers in address
+- **Indirect Speech**: Polite forms of communication
+- **Context Dependency**: Meaning varies by social context
+
+## Diglossia and Dialectal Variation
+
+### Modern Standard Arabic (MSA) vs Colloquial Arabic
+Arabic exhibits diglossia - the coexistence of two distinct varieties:
+
+#### Grammatical Differences
+| Feature | MSA | Egyptian Arabic | Gulf Arabic |
+|---------|-----|----------------|-------------|
+| **Negation** | لم يذهب (lam yadhhab) | مش راح (mish rāh) | ما راح (mā rāh) |
+| **Future** | سَيَذْهَبُ (sayaḏhabu) | هَيْرُوح (hayrūḥ) | رَايِح (rāyiḥ) |
+| **Relative Pronoun** | الذي (allaḏī) | اللي (illi) | اللي (illi) |
+| **Word Order** | VSO formal | SVO common | SVO common |
+
+#### Morphological Differences
+- **Verb Forms**: MSA uses all 10 Classical forms; dialects often simplify
+- **Case System**: MSA maintains full i'rab; dialects mostly eliminate case endings
+- **Gender Agreement**: More consistent in MSA than dialects
+
+#### Lexical Differences
+- **Synonyms**: Different words for same concepts (e.g., "car" = سيارة in MSA, عربية in Egypt)
+- **Loanwords**: More English/French in dialects, Classical roots in MSA
+- **Regional Vocabulary**: Local terms vary significantly
+
+### Sociolinguistic Context
+- **Code Switching**: Common alternation between MSA and colloquial
+- **Domain-Specific Use**: MSA for formal writing, news, education; colloquial for daily communication
+- **Prestige**: MSA carries higher social prestige despite limited native speakers
+
+## Pedagogical Approaches
+
+### Traditional Grammar (النحو التقليدي)
+- Based on Classical Arabic texts
+- Focus on case markings (i'rab)
+- Memorization of patterns and rules
+
+### Modern Linguistics
+- Structural analysis
+- Corpus-based studies
+- Contrastive analysis with other languages
+
+### Teaching Challenges
+- **RTL Processing**: Display and input issues
+- **Morphological Complexity**: Large vocabulary from roots
+- **Case System**: Abstract for speakers of case-less languages
+- **Diglossia**: MSA vs colloquial dialects
+
+## Implementation for Language Learning
+
+### Complexity Levels
+
+#### Beginner Level (مبتدئ)
+- Basic vocabulary (1000-2000 words)
+- Present tense verbs (Form I only)
+- Simple nominal and verbal sentences
+- Definite article and basic prepositions
+- Focus: Communication and basic comprehension
+
+**Practice Example:**
+- Sentence: الطالب يقرأ الكتاب (at-tālibu yaqra'u al-kitāba)
+- Analysis: Subject (طالب) + Verb (يقرأ) + Object (كتاب) with definite article assimilation
+
+#### Intermediate Level (متوسط)
+- Expanded vocabulary (3000-5000 words)
+- All verb forms (I-VI) with basic conjugations
+- Complex sentences with subordination
+- Case markings in written texts
+- Focus: Reading comprehension and formal writing
+
+**Practice Example:**
+- Sentence: كتب الطالب الدرس الذي أعطاه المعلم (kataba at-tālibu ad-darsa alladhī aʿṭāhu al-muʿallimu)
+- Analysis: Relative clause structure with case markings and verb forms
+
+#### Advanced Level (متقدم)
+- Full morphological analysis
+- All verb forms and derivations
+- Complex syntactic structures
+- Literary and classical texts
+- Focus: Academic and professional Arabic
+
+**Practice Example:**
+- Root Analysis: ك-ت-ب → كاتب (writer), مكتوب (written), كتابة (writing), تكاتب (correspondence)
+- Syntactic Analysis: Complex conditional sentences with subjunctive mood
+
+### Analysis Challenges
+
+#### Computational Issues
+- **Ambiguity Resolution**: Multiple morphological analyses possible
+- **Diacritic Handling**: Short vowels often omitted in writing
+- **Dialectal Variation**: MSA vs regional dialects
+- **Historical Forms**: Classical vs modern usage
+
+#### Arabic Natural Language Processing (NLP)
+- **Stemming**: Root extraction algorithms (Khoja, ISRI, Tashaphyne)
+- **Part-of-Speech Tagging**: Statistical and rule-based approaches
+- **Named Entity Recognition**: Person, location, organization identification
+- **Machine Translation**: MSA to dialects and vice versa
+- **Speech Recognition**: Handling regional pronunciation variations
+
+#### Computational Morphology
+- **Finite-State Transducers**: For morphological analysis and generation
+- **Corpus-Based Methods**: Statistical learning from large Arabic text corpora
+- **Neural Approaches**: Deep learning for morphological disambiguation
+- **Rule-Based Systems**: Traditional grammar rules implemented computationally
+
+#### Pedagogical Considerations
+- **Root-Based Learning**: Teach vocabulary through root families
+- **Pattern Recognition**: Help learners identify morphological patterns
+- **Contextual Learning**: Use authentic texts and situations
+- **Error Correction**: Focus on common learner errors
+
+### References
+- **Classical Grammar**:
+  - **Al-Kitab al-Asasi** by Ibn Ya'ish (11th century) - Foundational Classical grammar
+  - **Al-Ajurrumiyya** (13th century) - Traditional primer still used today
+  - **Al-Alfiyya** by Ibn Malik (13th century) - Comprehensive grammatical poem
+
+- **Modern Linguistic Works**:
+  - **A Reference Grammar of Modern Standard Arabic** by Karin C. Ryding (2005) - Comprehensive MSA grammar
+  - **Arabic Grammar** by Haywood & Nahmad (1965) - Classic introductory text
+  - **Al-Nahw al-Wadih** by Ali al-Jarim and Mustafa Amin (1977) - Modern Arabic grammar
+  - **The Arabic Language** by Kees Versteegh (1997) - Historical linguistics
+  - **Modern Written Arabic** by Elsaid Badawi et al. (2010) - Contemporary usage
+
+- **Computational Linguistics**:
+  - **Arabic Natural Language Processing** research papers
+  - **Quranic Arabic Corpus** (corpus.quran.com) - Annotated Quranic texts
+  - **Penn Arabic Treebank** - Syntactically annotated Arabic texts
+
+### Arabic Script Examples
+
+#### Basic Sentence Structure:
+```
+Nominal Sentence: الطالبُ مجتهدٌ
+                 at-tālibu mujtahidun
+                 "The student is diligent"
+
+Verbal Sentence:  يَقْرَأُ الطالِبُ الكِتابَ
+                 yaqraʾu at-tālibu al-kitāba
+                 "The student reads the book"
 ```
 
-#### B. Definite Article Assimilation
-```regex
-# Al- assimilates to consonant following it
-# al- + tāʾ (ت) → at- (ات)
-# al- + ḍād (ض) → aḍ- (اض)
-assimilation_patterns = {
-    'ات': 'الت',
-    'اض': 'الض',
-    'اظ': 'الظ',
-    'ان': 'الن',
-    # etc.
-}
+#### Root-Based Word Formation:
+```
+Root: ك-ت-ب (k-t-b = write)
+
+Form I:  كَتَبَ (kataba) = he wrote
+Form II: كَتَّبَ (kattaba) = he made write
+Form III: كَاتَبَ (kātaba) = he corresponded
+Form VIII: اِكْتَتَبَ (ktataba) = he enrolled
+
+Derived Nouns:
+كاتب (kātib) = writer
+كتاب (kitāb) = book
+مكتب (maktab) = office
+كتابة (kitāba) = writing
 ```
 
-#### C. Verb Form Recognition
-```regex
-# Form I (basic): faʿala → يَفْعُلُ (yafʿulu)
-form1_pattern = r'\bيَ\w*ُ\b'
-
-# Form II (intensive): faʿʿala → يُفَعِّلُ (yufaʿʿilu)
-form2_pattern = r'\bيُ\w*ِّ\w*ُ\b'
-
-# Form III (cooperative): fāʿala → يُفَاعِلُ (yufāʿilu)
-form3_pattern = r'\bيُ\w*َا\w*ِ\w*ُ\b'
-```
-
-#### D. Particle Recognition
-```regex
-# Common prepositions
-preposition_pattern = r'\b(فِي|مِن|عَلَى|إِلَى|عَن|مَع|بَيْن|حَتَّى|لِ|كَ|بِ|وَ|فَ|أَو|لَا|لَم|لَن|مَا)\b'
-
-# Interrogatives
-interrogative_pattern = r'\b(هَل|أَ|مَا|مَن|مَاذَا|أَيْن|كَيْف|مَتَى)\b'
-```
-
-### 2. Grammatical Role Mapping
-Define Arabic-appropriate categories:
-
-```python
-GRAMMATICAL_ROLES = {
-    # Nouns and adjectives
-    'noun': {'ar': 'اِسْم', 'color': '#2E8B57'},  # Sea Green
-    'adjective': {'ar': 'صِفَة', 'color': '#32CD32'},  # Lime Green
-    
-    # Verbs
-    'verb_perfect': {'ar': 'فِعْل مَاضٍ', 'color': '#FF6347'},  # Tomato
-    'verb_imperfect': {'ar': 'فِعْل مُضَارِع', 'color': '#FF4500'},  # Orange Red
-    'verb_imperative': {'ar': 'فِعْل أَمْر', 'color': '#DC143C'},  # Crimson
-    
-    # Particles
-    'preposition': {'ar': 'حَرْف جَرّ', 'color': '#4169E1'},  # Royal Blue
-    'conjunction': {'ar': 'حَرْف عَطْف', 'color': '#0000FF'},  # Blue
-    'interrogative': {'ar': 'اِسْتِفْهَام', 'color': '#8A2BE2'},  # Blue Violet
-    'negation': {'ar': 'نَفْي', 'color': '#FF1493'},  # Deep Pink
-    
-    # Cases
-    'nominative': {'ar': 'رَفْع', 'color': '#228B22'},  # Forest Green
-    'accusative': {'ar': 'نَصْب', 'color': '#006400'},  # Dark Green
-    'genitive': {'ar': 'جَرّ', 'color': '#008000'},  # Green
-    
-    # Other
-    'definite_article': {'ar': 'اَلْ', 'color': '#FFD700'},  # Gold
-    'pronoun': {'ar': 'ضَمِير', 'color': '#FF69B4'},  # Hot Pink
-    'particle': {'ar': 'حَرْف', 'color': '#1E90FF'},  # Dodger Blue
-}
-```
-
-### 3. Word Ordering for RTL Script
-**CRITICAL**: Since Arabic is RTL, word explanations MUST be ordered from right-to-left to match reading direction.
-
-```python
-def _reorder_explanations_by_sentence_position(self, sentence: str, word_explanations: List) -> List:
-    """
-    For Arabic (RTL language): Reorder explanations to match right-to-left reading order.
-    
-    Arabic sentences are read right-to-left, so explanations should be ordered
-    from the rightmost word to the leftmost word in the sentence.
-    """
-    # Find position of each word in sentence
-    # Sort by position in reverse order (RTL)
-    # Return sorted list
-```
-
-### 4. Validation Logic
-Implement Arabic-specific checks:
-
-#### A. Case Marking Validation
-- Check for proper case endings on nouns/adjectives
-- Validate agreement in idafa constructions
-- Ensure preposition + noun combinations have correct case
-
-#### B. Root-Based Validation
-- Verify triliteral root consistency in derived words
-- Check for valid verb form patterns
-- Validate assimilation rules for definite article
-
-#### C. Script Validation
-- Ensure proper Arabic characters (U+0600-U+06FF range)
-- Check for required diacritics in formal Arabic
-- Validate hamza placement
-
-### 5. Prompt Adaptation
-Arabic-specific prompts must:
-- Use Arabic grammatical terminology (ʾIʿrāb, ʾAbwāb, etc.)
-- Include Arabic examples with proper script
-- Reference root-based morphology
-- **CRITICAL**: Specify RTL word ordering: "WORDS MUST BE LISTED FROM RIGHT TO LEFT as they appear in the Arabic sentence"
-
-### 6. Color Scheme
-Adapt color scheme for Arabic grammatical categories:
-- Use culturally appropriate colors
-- Ensure good contrast for Arabic text
-- Consider color psychology in Arabic context
-
-## Implementation Architecture
-
-### Class Structure
-```python
-class ArAnalyzer(BaseGrammarAnalyzer):
-    """
-    Arabic Grammar Analyzer
-    
-    Features:
-    - Root-based morphological analysis
-    - Case marking (ʾIʿrāb) recognition
-    - RTL word ordering for explanations
-    - Arabic script support with Unicode
-    - Comprehensive particle recognition
-    """
-    
-    # Arabic-specific constants
-    ARABIC_RANGE = (0x0600, 0x06FF)  # Arabic Unicode block
-    RTL_DIRECTION = True
-    
-    def __init__(self):
-        super().__init__()
-        self._initialize_patterns()
-        self._setup_arabic_validation()
-```
-
-### Key Methods to Implement
-
-#### A. `_initialize_patterns()`
-Initialize Arabic-specific regex patterns for:
-- Case endings (rafʿ, naṣb, jarr)
-- Verb forms (I-X)
-- Particles (prepositions, conjunctions, interrogatives)
-- Definite article assimilation
-- Root patterns
-
-#### B. `_validate_arabic_script()`
-- Check Unicode ranges for Arabic characters
-- Validate diacritic usage
-- Ensure RTL compatibility
-
-#### C. `_analyze_root_based_morphology()`
-- Extract triliteral roots
-- Identify verb forms and patterns
-- Validate morphological consistency
-
-#### D. `_apply_case_marking()`
-- Detect case endings
-- Apply agreement rules
-- Handle idafa constructions
-
-#### E. `_reorder_for_rtl()`
-- Implement RTL word ordering
-- Ensure explanations match reading direction
-
-## Testing Requirements
-
-### Test Sentences
-Include diverse Arabic sentences covering:
-- Different verb forms (I, II, III, etc.)
-- Case marking examples
-- Particle usage
-- Root-based derivations
-- Formal vs. colloquial variations
-
-### Validation Tests
-- Case ending accuracy (>85% confidence)
-- Root extraction correctness
-- RTL ordering verification
-- Script validation
-- Particle recognition
-
-## Success Criteria
-- **Authentic**: True to Arabic grammatical rules and Classical Arabic standards
-- **RTL-Aware**: Proper right-to-left word ordering for optimal user experience
-- **Root-Based**: Accurate morphological analysis using triliteral root system
-- **Comprehensive**: Covers major Arabic grammatical structures (ʾIʿrāb, ʾAbwāb, particles)
-- **Efficient**: Optimized batch processing with Arabic-appropriate fallbacks
-- **User-Friendly**: Explanations in sentence order (RTL) with Arabic terminology
-
-## References
-- **Wright, W.**: A Grammar of the Arabic Language (2 vols.)
-- **Haywood, J.A. & Nahmad, H.M.**: A New Arabic Grammar
-- **Sibawayh**: Al-Kitāb (The Book) - Classical Arabic grammar
-- **Modern Standard Arabic grammars** for contemporary usage
-
-## Implementation Notes
-- **Script Direction**: All word ordering logic must account for RTL reading direction
-- **Unicode Support**: Full Arabic Unicode range (U+0600-U+06FF) plus extensions
-- **Diacritics**: Handle ḥarakāt properly for accurate analysis
-- **Root Focus**: Prioritize root-based analysis over surface forms
-- **Case Sensitivity**: Arabic is case-insensitive but diacritic-sensitive
-- **Cultural Context**: Use appropriate colors and terminology for Arabic learners
+This comprehensive framework ensures accurate analysis of Arabic grammatical structures while supporting effective language learning pedagogy.

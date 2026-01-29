@@ -1,0 +1,124 @@
+{
+  "_metadata": {
+    "language": "{Language}",
+    "language_code": "{lang_code}",
+    "version": "1.0.0",
+    "description": "Word meanings and grammatical explanations for {Language} analysis",
+    "last_updated": "2024-01-01"
+  },
+
+  "word_meanings": {
+    "common_nouns": {
+      "description": "Frequently used nouns in {Language}",
+      "examples": {
+        "example1": {
+          "meaning": "Translation/meaning in English",
+          "grammatical_notes": "Any special grammatical properties",
+          "usage_context": "Common usage patterns"
+        },
+        "example2": {
+          "meaning": "Translation/meaning in English",
+          "grammatical_notes": "Any special grammatical properties",
+          "usage_context": "Common usage patterns"
+        }
+      }
+    },
+
+    "common_verbs": {
+      "description": "Frequently used verbs in {Language}",
+      "examples": {
+        "example1": {
+          "meaning": "Translation/meaning in English",
+          "grammatical_notes": "Conjugation patterns, transitivity, etc.",
+          "usage_context": "Common sentence structures"
+        },
+        "example2": {
+          "meaning": "Translation/meaning in English",
+          "grammatical_notes": "Conjugation patterns, transitivity, etc.",
+          "usage_context": "Common sentence structures"
+        }
+      }
+    },
+
+    "grammatical_particles": {
+      "description": "Particles and grammatical markers in {Language}",
+      "examples": {
+        "example1": {
+          "meaning": "Translation/meaning in English",
+          "grammatical_function": "What grammatical role it plays",
+          "usage_examples": ["example sentence 1", "example sentence 2"]
+        }
+      }
+    },
+
+    "pronouns": {
+      "description": "Pronouns and their forms in {Language}",
+      "personal": {
+        "first_singular": {
+          "word": "example",
+          "meaning": "I/me",
+          "grammatical_notes": "Subject/object forms, politeness levels"
+        },
+        "second_singular": {
+          "word": "example",
+          "meaning": "you",
+          "grammatical_notes": "Formal/informal distinctions"
+        }
+      }
+    }
+  },
+
+  "grammatical_concepts": {
+    "sentence_structure": {
+      "description": "Basic sentence structure patterns in {Language}",
+      "patterns": [
+        {
+          "name": "Basic Subject-Verb-Object",
+          "structure": "Subject + Verb + Object",
+          "example": "example sentence",
+          "translation": "English translation",
+          "notes": "Most common sentence pattern"
+        },
+        {
+          "name": "Subject-Object-Verb",
+          "structure": "Subject + Object + Verb",
+          "example": "example sentence",
+          "translation": "English translation",
+          "notes": "Alternative word order"
+        }
+      ]
+    },
+
+    "tense_aspects": {
+      "description": "Tense and aspect systems in {Language}",
+      "present": {
+        "description": "Present tense forms and usage",
+        "examples": ["example1", "example2"]
+      },
+      "past": {
+        "description": "Past tense forms and usage",
+        "examples": ["example1", "example2"]
+      }
+    },
+
+    "agreement_rules": {
+      "description": "Grammatical agreement patterns",
+      "subject_verb": {
+        "description": "How subjects agree with verbs",
+        "rules": ["rule1", "rule2"]
+      }
+    }
+  },
+
+  "language_specific_features": {
+    "description": "Unique grammatical features of {Language}",
+    "features": [
+      {
+        "name": "Feature Name",
+        "description": "Description of the feature",
+        "examples": ["example1", "example2"],
+        "importance": "Why this matters for learners"
+      }
+    ]
+  }
+}

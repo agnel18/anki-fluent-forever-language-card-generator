@@ -284,6 +284,7 @@ def with_fallback(*fallback_funcs: Callable) -> Callable:
 # Language code mappings
 LANGUAGE_NAME_TO_CODE = {
     'arabic': 'ar',
+    'Modern Standard Arabic': 'ar',
     'chinese_simplified': 'zh',
     'chinese_traditional': 'zh',
     'hindi': 'hi',
@@ -303,6 +304,7 @@ LANGUAGE_CODE_TO_NAME = {v: k for k, v in LANGUAGE_NAME_TO_CODE.items()}
 CONTENT_LANGUAGE_MAP = {
     "Chinese (Traditional)": "Traditional Chinese",
     "Chinese (Simplified)": "Simplified Chinese",
+    "Arabic": "Modern Standard Arabic",
 }
 
 # ============================================================================

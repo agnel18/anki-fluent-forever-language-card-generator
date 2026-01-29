@@ -344,7 +344,7 @@ class TestArAnalyzer:
             ]
         }
 
-        with patch.object(analyzer, '_call_ai_model', return_value=json.dumps(mock_response)):
+        with patch.object(analyzer, '_call_ai', return_value=json.dumps(mock_response)):
             result = analyzer.analyze_grammar(sentence, target_word, complexity, "fake_key")
 
             assert result.target_word == target_word
@@ -386,7 +386,7 @@ class TestArAnalyzer:
 
         mock_response = {"words": mock_words}
 
-        with patch.object(analyzer, '_call_ai_model', return_value=json.dumps(mock_response)):
+        with patch.object(analyzer, '_call_ai', return_value=json.dumps(mock_response)):
             result = analyzer.analyze_grammar(sentence, target_word, complexity, "fake_key")
 
             # Verify the analysis completed successfully

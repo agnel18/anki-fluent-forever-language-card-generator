@@ -1,0 +1,85 @@
+# languages/arabic/infrastructure/data/ar_root_patterns.yaml
+# Arabic Root Patterns Configuration
+# Defines Arabic triliteral and quadriliteral root patterns
+
+root_types:
+  triliteral:
+    name: "triliteral roots (جذور ثلاثية)"
+    pattern: "f-ʿ-l"
+    description: "Three-consonant roots forming most Arabic words"
+    structure: "first-middle-last radical"
+    examples:
+      - root: "ك-ت-ب (k-t-b)"
+        meaning: "write"
+        words: ["كتاب (kitāb) - book", "كاتب (kātib) - writer", "مكتب (maktab) - office"]
+      - root: "أ-ك-ل (ʾ-k-l)"
+        meaning: "eat"
+        words: ["أكل (ʾakl) - food", "أكل (ʾakala) - ate", "يأكل (yaʾkulu) - eats"]
+      - root: "ض-ر-ب (ḍ-r-b)"
+        meaning: "hit/strike"
+        words: ["ضرب (ḍaraba) - hit", "يضرب (yaḍribu) - hits", "ضارب (ḍārib) - hitter"]
+
+  quadriliteral:
+    name: "quadriliteral roots (جذور رباعية)"
+    pattern: "f-ʿ-l-l"
+    description: "Four-consonant roots"
+    structure: "first-second-third-fourth radical"
+    examples:
+      - root: "ب-ه-ر-ج (b-h-r-j)"
+        meaning: "sparkle/shine"
+        words: ["بهرج (bahraj) - splendor", "تبرج (tabarraj) - to adorn oneself"]
+      - root: "ش-م-ل-ل (sh-m-l-l)"
+        meaning: "become leftist"
+        words: ["شمال (shimāl) - left/north", "شمالي (shimāliyy) - northern"]
+
+weak_letters:
+  name: "weak letters (حروف علة)"
+  letters: ["ا", "و", "ي"]
+  description: "Letters that can be elided or change form in conjugation"
+  types:
+    assimilated: "First radical is alif (ʾ)"
+    hollow: "Middle radical is waw or ya"
+    defective: "Last radical is waw or ya"
+    doubled: "Middle two radicals are the same"
+
+root_categories:
+  strong:
+    name: "strong roots (جذور صحيحة)"
+    description: "Roots with no weak letters"
+    pattern: "All radicals are strong consonants"
+
+  assimilated:
+    name: "assimilated roots (جذور مهموزة)"
+    description: "Roots beginning with hamza"
+    pattern: "ʾ-f-ʿ-l"
+    examples: ["ʾ-k-l (eat)", "ʾ-dh-n (allow)"]
+
+  hollow:
+    name: "hollow roots (جذور أجوف)"
+    description: "Roots with waw/ya as middle radical"
+    pattern: "f-w/y-l"
+    examples: ["q-w-l (say)", "m-w-t (die)"]
+
+  defective:
+    name: "defective roots (جذور ناقصة)"
+    description: "Roots ending with waw/ya"
+    pattern: "f-ʿ-w/y"
+    examples: ["r-m-y (throw)", "n-s-y (forget)"]
+
+  doubled:
+    name: "doubled roots (جذور مضعفة)"
+    description: "Roots with repeated middle radical"
+    pattern: "f-ʿ-ʿ-l"
+    examples: ["ḍ-r-b (hit)", "ḥ-s-n (be good)"]
+
+morphological_patterns:
+  form_i: "faʿala - basic form"
+  form_ii: "faʿʿala - intensive/causative"
+  form_iii: "fāʿala - reciprocal"
+  form_iv: "ʾafʿala - causative"
+  form_v: "tafaʿʿala - reflexive"
+  form_vi: "tafāʿala - reciprocal reflexive"
+  form_vii: "infʿala - passive reflexive"
+  form_viii: "iftʿala - middle voice"
+  form_ix: "ifʿalla - color/defect"
+  form_x: "istafʿala - request"

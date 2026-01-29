@@ -4,7 +4,7 @@ Language-specific configuration for {Language} analyzer.
 Defines grammatical roles, color schemes, and language rules.
 """
 
-class {Language}Config:
+class LanguageConfig:
     """
     Configuration class for {Language} grammatical analysis.
 

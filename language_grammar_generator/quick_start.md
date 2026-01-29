@@ -189,35 +189,59 @@ Be accurate and provide clear explanations."""
 
 ### Step 5: Implement Response Parser (1 hour)
 
-Handle AI responses with basic validation:
+Handle AI responses with **robust JSON parsing** - AI models often wrap JSON in explanatory text:
 
 ```python
 # languages/{language}/domain/{language}_response_parser.py
 import json
+import re
 from .zh_response_parser import ZhResponseParser
 
 class {Language}ResponseParser(ZhResponseParser):
-    """Parses AI responses for {Language} analysis"""
+    """Parses AI responses for {Language} analysis with robust JSON extraction"""
 
     def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str) -> dict:
-        """Parse and validate AI response"""
+        """Parse and validate AI response with robust JSON extraction"""
         try:
-            # Extract JSON from response
-            json_start = ai_response.find('{')
-            json_end = ai_response.rfind('}') + 1
-            json_str = ai_response[json_start:json_end]
-
-            result = json.loads(json_str)
-
-            # Basic validation
-            if 'words' not in result:
+            # Robust JSON extraction - handles markdown blocks, explanatory text, etc.
+            json_data = self._extract_json(ai_response)
+            if not json_data:
                 return self.fallbacks.create_fallback(sentence, complexity)
 
-            return result
+            # Basic validation
+            if 'words' not in json_data and 'batch_results' not in json_data:
+                return self.fallbacks.create_fallback(sentence, complexity)
+
+            return json_data
 
         except Exception as e:
             # Use fallback for parsing errors
             return self.fallbacks.create_fallback(sentence, complexity)
+
+    def _extract_json(self, ai_response: str) -> dict:
+        """Extract JSON from AI response with multiple fallback methods"""
+        try:
+            cleaned_response = ai_response.strip()
+
+            # Method 1: Direct parsing if starts with JSON
+            if cleaned_response.startswith(('{', '[')):
+                return json.loads(cleaned_response)
+
+            # Method 2: Extract from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
+            if json_match:
+                return json.loads(json_match.group(1))
+
+            # Method 3: Extract JSON between curly braces
+            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+            if brace_match:
+                return json.loads(brace_match.group(0))
+
+            # Method 4: Try entire response
+            return json.loads(cleaned_response)
+
+        except json.JSONDecodeError:
+            return None
 ```
 
 ### Step 6: Implement Validator (1 hour)

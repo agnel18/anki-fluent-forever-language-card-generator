@@ -15,6 +15,7 @@ import google.generativeai as genai
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback
 
 from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE, CONTENT_LANGUAGE_MAP
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
 from streamlit_app.generation_utils import validate_ipa_output
 
 logger = logging.getLogger(__name__)
@@ -136,7 +137,35 @@ class ContentGenerator:
             pronunciation_label = "PINYIN" if is_chinese else "IPA"
             pronunciation_instruction = "MANDATORY Pinyin romanization (with tone marks) for EVERY word in the sentence - including particles, function words, grammatical markers, and single characters. DO NOT skip any words." if is_chinese else "official IPA symbols only (not pinyin, not romanization, not any non-IPA symbols)"
 
-            prompt = f"""You are a native-level expert linguist in {ai_language} with professional experience teaching it to non-native learners.
+            # Check for language-specific sentence generation prompt
+            language_code = LANGUAGE_NAME_TO_CODE.get(language, language.lower()[:2])
+            analyzer = get_analyzer(language_code)
+            custom_prompt = None
+            if analyzer:
+                try:
+                    custom_prompt = analyzer.get_sentence_generation_prompt(
+                        word=word,
+                        language=language,
+                        num_sentences=num_sentences,
+                        enriched_meaning=enriched_meaning,
+                        min_length=min_length,
+                        max_length=max_length,
+                        difficulty=difficulty,
+                        topics=topics
+                    )
+                    if custom_prompt:
+                        logger.info(f"Using language-specific sentence generation prompt for {language}")
+                        prompt = custom_prompt
+                    else:
+                        logger.info(f"No custom prompt available for {language}, using generic prompt")
+                except Exception as e:
+                    logger.warning(f"Failed to get custom prompt for {language}: {e}, falling back to generic")
+            else:
+                logger.info(f"No analyzer available for {language} ({language_code}), using generic prompt")
+
+            # Build generic prompt if no custom prompt was found
+            if not custom_prompt:
+                prompt = f"""You are a native-level expert linguist in {ai_language} with professional experience teaching it to non-native learners.
 
 Your task: Generate a complete learning package for the {ai_language} word "{word}" in ONE response.
 
@@ -254,7 +283,7 @@ IMPORTANT:
                         prompt,
                         generation_config=genai.types.GenerationConfig(
                             temperature=0.7,  # Creativity for sentence variety
-                            max_output_tokens=2000,  # Enough for meaning + sentences + keywords
+                            max_output_tokens=4000,  # Increased for Arabic and complex responses
                         )
                     )
                     logger.info(f"API call successful with model: {model_name}")
@@ -274,6 +303,12 @@ IMPORTANT:
 
             # Parse the response
             result = self._parse_generation_response(response_text, word, language, num_sentences, max_length)
+            
+            # Debug: log parsing results
+            parsed_sentences = len(result.get('sentences', []))
+            if parsed_sentences == 0:
+                logger.warning(f"Failed to parse sentences from response. Raw response: {response_text}")
+            
             return result
 
         except Exception as e:
@@ -324,16 +359,20 @@ IMPORTANT:
         # Extract sentences
         if "SENTENCES:" in response_text and "TRANSLATIONS:" in response_text:
             sentences_part = response_text.split("SENTENCES:")[1].split("TRANSLATIONS:")[0].strip()
-            # Extract all non-empty lines, whether numbered or not
             for line in sentences_part.split("\n"):
                 line = line.strip()
-                if line:
-                    # Remove numbering if present (e.g., "1. " -> "")
-                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
-                        sentence = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
-                    else:
-                        sentence = line
-                    if sentence and len(sentence) > 1:  # Avoid single character lines
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    sentence = line.split(".", 1)[1].strip() if "." in line else line
+                    if sentence:
+                        sentences.append(sentence)
+        elif "SENTENCES:" in response_text:
+            # Handle case where response is truncated and missing TRANSLATIONS section
+            sentences_part = response_text.split("SENTENCES:")[1].strip()
+            for line in sentences_part.split("\n"):
+                line = line.strip()
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    sentence = line.split(".", 1)[1].strip() if "." in line else line
+                    if sentence:
                         sentences.append(sentence)
 
         # Extract translations
@@ -342,13 +381,9 @@ IMPORTANT:
             translations_part = response_text.split("TRANSLATIONS:")[1].split(pronunciation_section)[0].strip()
             for line in translations_part.split("\n"):
                 line = line.strip()
-                if line:
-                    # Remove numbering if present
-                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
-                        translation = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
-                    else:
-                        translation = line
-                    if translation and len(translation) > 1:
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    translation = line.split(".", 1)[1].strip() if "." in line else line
+                    if translation:
                         translations.append(translation)
 
         # Extract IPA/Pinyin
@@ -356,13 +391,9 @@ IMPORTANT:
             ipa_part = response_text.split(pronunciation_section)[1].split("KEYWORDS:")[0].strip()
             for line in ipa_part.split("\n"):
                 line = line.strip()
-                if line:
-                    # Remove numbering if present
-                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
-                        ipa = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
-                    else:
-                        ipa = line
-                    if ipa and len(ipa) > 1:
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    ipa = line.split(".", 1)[1].strip() if "." in line else line
+                    if ipa:
                         # Validate IPA/Pinyin output
                         # Normalize language name for lookup (convert to lowercase, replace spaces with underscores)
                         normalized_language = language.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('（', '').replace('）', '')
@@ -381,16 +412,16 @@ IMPORTANT:
             keywords_part = response_text.split("KEYWORDS:")[1].strip()
             for line in keywords_part.split("\n"):
                 line = line.strip()
-                if line:
-                    # Remove numbering if present
-                    if line[0].isdigit() and len(line) > 2 and line[1:3] in [". ", "). "]:
-                        kw = line.split(".", 1)[1].strip() if "." in line else line.split(")", 1)[1].strip()
-                    else:
-                        kw = line
-                    if kw and len(kw) > 1:
+                if line and any(line.startswith(f"{i}.") for i in range(1, num_sentences + 1)):
+                    kw = line.split(".", 1)[1].strip() if "." in line else line
+                    if kw:
                         keywords.append(kw)
 
         logger.info(f"Parsed: meaning='{meaning}', restrictions='{restrictions}', sentences={len(sentences)}, translations={len(translations)}, {'pinyin' if is_chinese else 'ipa'}={len(ipa_list)}, keywords={len(keywords)}")
+
+        # Debug: log parsing results
+        if len(sentences) == 0:
+            logger.warning(f"Failed to parse sentences from response. Raw response: {response_text}")
 
         # Validate and create fallbacks
         validated_sentences, validated_translations, validated_ipa, validated_keywords = self._validate_and_create_fallbacks(
@@ -407,62 +438,12 @@ IMPORTANT:
         }
 
     def _validate_and_create_fallbacks(self, sentences: List[str], translations: List[str], ipa_list: List[str], keywords: List[str],
-                                      word: str, restrictions: str, num_sentences: int, max_length: int, language: str = "") -> Tuple[List[str], List[str], List[str], List[str]]:
+                                      word: str, restrictions: str, num_sentences: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str]]:
         """Validate content and create fallbacks for invalid items."""
 
-        # Create language-specific fallback templates
-        if language.lower() == "arabic":
-            # Arabic-specific fallbacks
+        # Create fallback templates based on restrictions
+        if "imperative" in restrictions.lower() or "command" in restrictions.lower():
             fallback_templates = [
-                f"الكتاب {word} المنضدة",  # The book is on the table
-                f"الطالب {word} الفصل",    # The student is in the class
-                f"السيارة {word} الكراج",  # The car is in the garage
-                f"القطة {word} الحديقة",   # The cat is in the garden
-                f"الطعام {word} المطبخ",   # The food is in the kitchen
-                f"الأطفال {word} الملعب",  # The children are in the playground
-                f"الشمس {word} السماء",    # The sun is in the sky
-                f"الأسماك {word} الماء",   # The fish are in the water
-                f"الزهور {word} الحديقة",  # The flowers are in the garden
-                f"النجوم {word} السماء"    # The stars are in the sky
-            ]
-            fallback_translations = [
-                f"The book is {word} the table",
-                f"The student is {word} the class",
-                f"The car is {word} the garage",
-                f"The cat is {word} the garden",
-                f"The food is {word} the kitchen",
-                f"The children are {word} the playground",
-                f"The sun is {word} the sky",
-                f"The fish are {word} the water",
-                f"The flowers are {word} the garden",
-                f"The stars are {word} the sky"
-            ]
-            fallback_keywords = [
-                f"{word}, book, table, location",
-                f"{word}, student, class, school",
-                f"{word}, car, garage, vehicle",
-                f"{word}, cat, garden, animal",
-                f"{word}, food, kitchen, cooking",
-                f"{word}, children, playground, fun",
-                f"{word}, sun, sky, weather",
-                f"{word}, fish, water, aquarium",
-                f"{word}, flowers, garden, nature",
-                f"{word}, stars, sky, night"
-            ]
-        elif "imperative" in restrictions.lower() or "command" in restrictions.lower():
-            fallback_templates = [
-                f"{word} here and sit down!",
-                f"{word} and eat your food!",
-                f"{word} and listen to me!",
-                f"{word} and introduce yourself!",
-                f"{word} quickly!",
-                f"Please {word} now!",
-                f"{word} immediately!",
-                f"You should {word} right away!",
-                f"Don't wait, {word}!",
-                f"{word} without delay!"
-            ]
-            fallback_translations = [
                 f"{word} here and sit down!",
                 f"{word} and eat your food!",
                 f"{word} and listen to me!",
@@ -488,18 +469,6 @@ IMPORTANT:
             ]
         else:
             fallback_templates = [
-                f"This is a sample sentence with {word}.",
-                f"Here is an example using {word}.",
-                f"Look at this sentence containing {word}.",
-                f"Consider this phrase with {word}.",
-                f"Observe how {word} is used here.",
-                f"Note this example featuring {word}.",
-                f"See this sentence including {word}.",
-                f"Examine this phrase with {word}.",
-                f"Study this example using {word}.",
-                f"Review this sentence with {word}."
-            ]
-            fallback_translations = [
                 f"This is a sample sentence with {word}.",
                 f"Here is an example using {word}.",
                 f"Look at this sentence containing {word}.",

@@ -1,0 +1,101 @@
+{
+  "word_meanings": {
+    "الله": {
+      "english": "God, Allah",
+      "context": "religious term, supreme deity in Islam",
+      "grammatical_info": "proper noun, masculine, definite"
+    },
+    "كتاب": {
+      "english": "book",
+      "context": "written material, publication",
+      "grammatical_info": "noun, masculine, sound plural: كتب"
+    },
+    "بيت": {
+      "english": "house, home",
+      "context": "dwelling place, family residence",
+      "grammatical_info": "noun, masculine, sound plural: بيوت"
+    },
+    "مدرسة": {
+      "english": "school",
+      "context": "educational institution",
+      "grammatical_info": "noun, feminine, sound plural: مدارس"
+    },
+    "طالب": {
+      "english": "student (masculine)",
+      "context": "person studying at educational institution",
+      "grammatical_info": "noun, masculine, sound plural: طلاب"
+    },
+    "طالبة": {
+      "english": "student (feminine)",
+      "context": "female person studying at educational institution",
+      "grammatical_info": "noun, feminine, sound plural: طالبات"
+    },
+    "أكل": {
+      "english": "ate, eating",
+      "context": "consumption of food",
+      "grammatical_info": "verb, perfect form from root أ-ك-ل"
+    },
+    "يأكل": {
+      "english": "eats, is eating",
+      "context": "present continuous eating",
+      "grammatical_info": "verb, imperfect form from root أ-ك-ل"
+    },
+    "كتب": {
+      "english": "wrote, writing",
+      "context": "act of writing",
+      "grammatical_info": "verb, perfect form from root ك-ت-ب"
+    },
+    "يكتب": {
+      "english": "writes, is writing",
+      "context": "present continuous writing",
+      "grammatical_info": "verb, imperfect form from root ك-ت-ب"
+    },
+    "في": {
+      "english": "in, at",
+      "context": "location, time preposition",
+      "grammatical_info": "preposition, governs genitive case"
+    },
+    "من": {
+      "english": "from, of",
+      "context": "origin, partitive preposition",
+      "grammatical_info": "preposition, governs genitive case"
+    },
+    "إلى": {
+      "english": "to, towards",
+      "context": "direction, goal preposition",
+      "grammatical_info": "preposition, governs genitive case"
+    },
+    "الشمس": {
+      "english": "the sun",
+      "context": "star, daylight",
+      "grammatical_info": "noun, feminine, definite (sun letter assimilation)"
+    },
+    "القمر": {
+      "english": "the moon",
+      "context": "satellite, night light",
+      "grammatical_info": "noun, masculine, definite (moon letter)"
+    },
+    "ماء": {
+      "english": "water",
+      "context": "liquid, drink",
+      "grammatical_info": "noun, masculine, broken plural: مياه"
+    },
+    "رجل": {
+      "english": "man, foot",
+      "context": "male person or body part",
+      "grammatical_info": "noun, masculine, broken plural: رجال"
+    },
+    "امرأة": {
+      "english": "woman",
+      "context": "female person",
+      "grammatical_info": "noun, feminine, broken plural: نساء"
+    }
+  },
+  "metadata": {
+    "language": "Arabic",
+    "script": "Arabic",
+    "total_words": 20,
+    "last_updated": "2026-01-29",
+    "source": "Arabic analyzer configuration"
+  }
+}

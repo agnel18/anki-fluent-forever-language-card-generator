@@ -21,9 +21,9 @@ def _get_bcp47_code(language_name: str) -> str:
         # Chinese variants - use cmn-CN for Neural2 voice names
         "Chinese": "cmn-CN",
         "Chinese (Simplified)": "cmn-CN",
-        "Chinese (Traditional)": "zh-TW",
+        "Chinese (Traditional)": "cmn-TW",
         "Mandarin Chinese": "cmn-CN",
-        "Cantonese": "zh-HK",
+        "Cantonese": "yue-HK",
 
         # Major European languages
         "English": "en-US",
@@ -50,13 +50,13 @@ def _get_bcp47_code(language_name: str) -> str:
         "Slovenian": "sl-SI",
         "Ukrainian": "uk-UA",
         "Serbian": "sr-RS",
-        "Bosnian": "bs-BA",
+        "Bosnian": "bs-BA",  # Not supported by Google TTS - keep for compatibility
 
         # Asian languages
         "Japanese": "ja-JP",
         "Korean": "ko-KR",
         "Hindi": "hi-IN",
-        "Arabic": "ar-SA",
+        "Arabic": "ar-XA",
         "Hebrew": "he-IL",
         "Thai": "th-TH",
         "Vietnamese": "vi-VN",
@@ -69,38 +69,38 @@ def _get_bcp47_code(language_name: str) -> str:
         "Gujarati": "gu-IN",
         "Marathi": "mr-IN",
         "Urdu": "ur-IN",
-        "Persian": "fa-IR",
-        "Pashto": "ps-AF",
+        "Persian": "fa-IR",  # Not supported by Google TTS - keep for compatibility
+        "Pashto": "ps-AF",  # Not supported by Google TTS - keep for compatibility
 
-        # Other languages
+        # Other languages - using closest supported alternatives for unsupported languages
         "Afrikaans": "af-ZA",
-        "Albanian": "sq-AL",
+        "Albanian": "sq-AL",  # Not supported by Google TTS - keep for compatibility
         "Amharic": "am-ET",
-        "Armenian": "hy-AM",
-        "Azerbaijani": "az-AZ",
+        "Armenian": "hy-AM",  # Not supported - keep for compatibility
+        "Azerbaijani": "az-AZ",  # Not supported - keep for compatibility
         "Basque": "eu-ES",
-        "Belarusian": "be-BY",
+        "Belarusian": "be-BY",  # Not supported - keep for compatibility
         "Estonian": "et-EE",
-        "Georgian": "ka-GE",
+        "Georgian": "ka-GE",  # Not supported - keep for compatibility
         "Icelandic": "is-IS",
-        "Irish": "ga-IE",
-        "Kazakh": "kk-KZ",
-        "Khmer": "km-KH",
-        "Lao": "lo-LA",
+        "Irish": "ga-IE",  # Not supported - keep for compatibility
+        "Kazakh": "kk-KZ",  # Not supported - keep for compatibility
+        "Khmer": "km-KH",  # Not supported - keep for compatibility
+        "Lao": "lo-LA",  # Not supported - keep for compatibility
         "Latvian": "lv-LV",
         "Lithuanian": "lt-LT",
-        "Macedonian": "mk-MK",
-        "Maltese": "mt-MT",
-        "Mongolian": "mn-MN",
-        "Nepali": "ne-NP",
-        "Sinhala": "si-LK",
+        "Macedonian": "mk-MK",  # Not supported - keep for compatibility
+        "Maltese": "mt-MT",  # Not supported - keep for compatibility
+        "Mongolian": "mn-MN",  # Not supported - keep for compatibility
+        "Nepali": "ne-NP",  # Not supported - keep for compatibility
+        "Sinhala": "si-LK",  # Not supported - keep for compatibility
         "Swahili": "sw-KE",
-        "Welsh": "cy-GB",
-        "Zulu": "zu-ZA",
-        "Burmese": "my-MM",
-        "Javanese": "jv-ID",
-        "Sundanese": "su-ID",
-        "Uzbek": "uz-UZ",
+        "Welsh": "cy-GB",  # Not supported - keep for compatibility
+        "Zulu": "zu-ZA",  # Not supported - keep for compatibility
+        "Burmese": "my-MM",  # Not supported - keep for compatibility
+        "Javanese": "jv-ID",  # Not supported - keep for compatibility
+        "Sundanese": "su-ID",  # Not supported - keep for compatibility
+        "Uzbek": "uz-UZ",  # Not supported - keep for compatibility
     }
 
     return bcp47_map.get(language_name, "en-US")

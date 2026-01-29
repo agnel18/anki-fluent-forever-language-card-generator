@@ -1,0 +1,27 @@
+{
+  "beginner_simple": {
+    "sentence": "القطة سوداء",
+    "expected_roles": ["definite_article", "noun", "adjective"],
+    "min_confidence": 0.7,
+    "required_explanations": ["overall_structure", "key_features"]
+  },
+  "beginner_with_target": {
+    "sentence": "القطة نائمة",
+    "target": "قطة",
+    "expected_roles": ["definite_article", "noun", "adjective"],
+    "min_confidence": 0.8,
+    "required_explanations": ["overall_structure", "key_features"]
+  },
+  "intermediate_complex": {
+    "sentence": "الطالب الذي يدرس بجد سيحصل على درجة عالية",
+    "expected_roles": ["definite_article", "noun", "relative_pronoun", "verb", "adverb", "verb", "preposition", "noun", "adjective"],
+    "min_confidence": 0.75,
+    "required_explanations": ["overall_structure", "key_features"]
+  },
+  "advanced_complex": {
+    "sentence": "الخوارزمية التي تم تحسينها للأداء الآن تعالج البيانات بكفاءة أكبر من الإصدارات السابقة مع الحفاظ على التوافق مع الإصدارات السابقة",
+    "expected_roles": ["definite_article", "noun", "relative_pronoun", "passive_verb", "preposition", "noun", "adverb", "verb", "definite_article", "noun", "adverb", "adjective", "preposition", "definite_article", "noun", "adjective", "preposition", "noun", "preposition", "definite_article", "noun", "adjective"],
+    "min_confidence": 0.8,
+    "required_explanations": ["overall_structure", "key_features"]
+  }
+}

@@ -593,6 +593,121 @@ class TestLanguageResponseParser:
         assert result['sentence'] == sentence
         assert result['complexity'] == complexity
 
+    def test_robust_json_parsing_markdown_blocks(self, parser):
+        """Test robust JSON parsing with markdown code blocks and extra text"""
+        sentence = "The cat sits."
+        complexity = "beginner"
+
+        # Test markdown code block with JSON
+        markdown_response = '''Here's my analysis:
+
+```json
+{{
+  "words": [
+    {{
+      "word": "The",
+      "grammatical_role": "determiner",
+      "meaning": "Definite article"
+    }},
+    {{
+      "word": "cat",
+      "grammatical_role": "noun",
+      "meaning": "Subject noun"
+    }}
+  ],
+  "explanations": {{
+    "overall_structure": "Simple sentence",
+    "key_features": "Subject-verb structure"
+  }}
+}}
+```
+
+This should work correctly.'''
+
+        result = parser.parse_response(markdown_response, sentence, complexity)
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 2
+        assert result['explanations']['overall_structure'] == "Simple sentence"
+
+    def test_robust_json_parsing_inline_json(self, parser):
+        """Test robust JSON parsing with JSON embedded in explanatory text"""
+        sentence = "The cat sits."
+        complexity = "beginner"
+
+        # Test JSON embedded in text without markdown
+        inline_response = '''Let me analyze this sentence for you.
+
+The grammatical breakdown is: {
+  "words": [
+    {
+      "word": "The",
+      "grammatical_role": "determiner",
+      "meaning": "Definite article"
+    },
+    {
+      "word": "cat",
+      "grammatical_role": "noun",
+      "meaning": "Subject of the sentence"
+    },
+    {
+      "word": "sits",
+      "grammatical_role": "verb",
+      "meaning": "Present tense verb"
+    }
+  ],
+  "explanations": {
+    "overall_structure": "Subject-verb sentence",
+    "key_features": "Simple present tense"
+  }
+}
+
+I hope this helps!'''
+
+        result = parser.parse_response(inline_response, sentence, complexity)
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 3
+        assert result['explanations']['overall_structure'] == "Subject-verb sentence"
+
+    def test_robust_json_parsing_ai_text_prefix(self, parser):
+        """Test robust JSON parsing with AI explanatory text prefix"""
+        sentence = "The cat sits."
+        complexity = "beginner"
+
+        # Test response that starts with explanatory text then JSON
+        ai_response = '''Based on my analysis of the Arabic sentence, here is the grammatical breakdown:
+
+{
+  "words": [
+    {
+      "word": "The",
+      "grammatical_role": "determiner",
+      "meaning": "Definite article introducing the noun"
+    },
+    {
+      "word": "cat",
+      "grammatical_role": "noun",
+      "meaning": "The subject of the sentence"
+    }
+  ],
+  "explanations": {
+    "overall_structure": "Simple subject-verb sentence",
+    "key_features": "Present tense, definite article usage"
+  }
+}
+
+This analysis considers the right-to-left reading direction and Arabic-specific grammatical features.'''
+
+        result = parser.parse_response(ai_response, sentence, complexity)
+
+        assert 'word_explanations' in result
+        assert 'explanations' in result
+        assert len(result['word_explanations']) == 2
+        assert "subject-verb sentence" in result['explanations']['overall_structure']
+
     def test_malformed_json_fallback(self, parser):
         """Test fallback parsing for malformed JSON"""
         sentence = "The cat sits."

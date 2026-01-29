@@ -1,0 +1,79 @@
+{
+  "valid_response": {
+    "words": [
+      {"word": "القطة", "grammatical_role": "noun", "meaning": "Subject noun with definite article (ال) showing assimilation"},
+      {"word": "سوداء", "grammatical_role": "adjective", "meaning": "Predicate adjective in nominative case, feminine singular"}
+    ],
+    "explanations": {
+      "overall_structure": "Simple nominal sentence (جملة اسمية) with subject-predicate structure in Arabic",
+      "key_features": "Definite article assimilation with sun letter, adjective agreement in gender and case"
+    }
+  },
+  "intermediate_response": {
+    "words": [
+      {"word": "الطالب", "grammatical_role": "noun", "meaning": "Subject noun in nominative case with definite article"},
+      {"word": "الذي", "grammatical_role": "relative_pronoun", "meaning": "Relative pronoun connecting to the following relative clause"},
+      {"word": "يدرس", "grammatical_role": "imperfect_verb", "meaning": "Imperfect verb in present tense, third person masculine singular"},
+      {"word": "بجد", "grammatical_role": "adverb", "meaning": "Adverb of manner indicating intensity"},
+      {"word": "سيحصل", "grammatical_role": "perfect_verb", "meaning": "Perfect verb with future particle (س) indicating future tense"},
+      {"word": "على", "grammatical_role": "preposition", "meaning": "Preposition indicating acquisition or attainment"},
+      {"word": "درجة", "grammatical_role": "noun", "meaning": "Object noun in genitive case after preposition"},
+      {"word": "عالية", "grammatical_role": "adjective", "meaning": "Attributive adjective describing the noun درجة"}
+    ],
+    "explanations": {
+      "overall_structure": "Complex sentence with main clause and relative clause (صلة), verb-subject-object word order",
+      "key_features": "Case marking (i'rab), relative clause structure, verb conjugation patterns"
+    }
+  },
+  "advanced_response": {
+    "words": [
+      {"word": "الخوارزمية", "grammatical_role": "noun", "meaning": "Subject noun in nominative case, derived from Greek with Arabic definite article"},
+      {"word": "التي", "grammatical_role": "relative_pronoun", "meaning": "Feminine relative pronoun introducing relative clause"},
+      {"word": "تم", "grammatical_role": "passive_particle", "meaning": "Passive voice particle with following verb"},
+      {"word": "تحسينها", "grammatical_role": "passive_verb", "meaning": "Passive verb form IV (أفعل) in perfect tense, feminine singular"},
+      {"word": "للأداء", "grammatical_role": "preposition", "meaning": "Preposition ل + definite noun in genitive case"},
+      {"word": "الآن", "grammatical_role": "adverb", "meaning": "Time adverb indicating present moment"},
+      {"word": "تعالج", "grammatical_role": "imperfect_verb", "meaning": "Imperfect verb form VIII (افتعل) in active voice"},
+      {"word": "البيانات", "grammatical_role": "noun", "meaning": "Direct object in accusative case, plural"},
+      {"word": "بكفاءة", "grammatical_role": "adverb", "meaning": "Adverb of manner from root ك-ف-و (efficiency)"},
+      {"word": "أكبر", "grammatical_role": "adjective", "meaning": "Comparative adjective in elative form"},
+      {"word": "من", "grammatical_role": "preposition", "meaning": "Comparative preposition"},
+      {"word": "الإصدارات", "grammatical_role": "noun", "meaning": "Object of comparison in genitive case"},
+      {"word": "السابقة", "grammatical_role": "adjective", "meaning": "Attributive adjective indicating precedence"}
+    ],
+    "explanations": {
+      "overall_structure": "Complex passive construction with relative clause, comparative structure, and technical vocabulary",
+      "key_features": "Form VIII verb patterns, elative comparative adjectives, passive voice with relative clauses, technical Arabic vocabulary"
+    }
+  },
+  "malformed_response": "This is not JSON",
+  "incomplete_response": {
+    "words": [
+      {"word": "القطة", "grammatical_role": "noun"}
+    ]
+  },
+  "batch_response": {
+    "batch_results": [
+      {
+        "words": [
+          {"word": "مرحبا", "grammatical_role": "noun", "meaning": "Greeting noun used as interjection"},
+          {"word": "بك", "grammatical_role": "preposition", "meaning": "Preposition indicating means or accompaniment"}
+        ],
+        "explanations": {
+          "overall_structure": "Simple greeting phrase",
+          "key_features": "Common Arabic greeting with preposition"
+        }
+      },
+      {
+        "words": [
+          {"word": "كيف", "grammatical_role": "interrogative", "meaning": "Interrogative particle asking about manner"},
+          {"word": "حالك", "grammatical_role": "noun", "meaning": "Possessive construction (حال + ك) meaning 'your condition'"}
+        ],
+        "explanations": {
+          "overall_structure": "Interrogative sentence structure",
+          "key_features": "Possessive pronoun attachment, interrogative word order"
+        }
+      }
+    ]
+  }
+}
