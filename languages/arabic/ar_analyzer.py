@@ -1,489 +1,438 @@
 # Arabic Grammar Analyzer
-# Comprehensive analyzer for Arabic (العربية)
-# Language Family: Afro-Asiatic (Semitic)
-# Script Type: abjad (RTL)
-# Complexity Rating: high
+# Main facade for Arabic grammar analysis
+# Clean Architecture implementation with RTL text handling
 
-import re
-import json
 import logging
-from typing import Dict, List, Any, Tuple
+import re
+from typing import Optional, Dict, Any, List
+from dataclasses import dataclass
+from languages.arabic.domain.ar_config import ArabicConfig
+from languages.arabic.domain.ar_prompt_builder import ArabicPromptBuilder
+from languages.arabic.domain.ar_response_parser import ArabicResponseParser
+from languages.arabic.domain.ar_validator import ArabicValidator
 
-from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+# Import BaseGrammarAnalyzer
+import sys
+import os
+# Try different import paths
+try:
+    from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+    from shared_utils import get_gemini_model, get_gemini_fallback_model
+except ImportError:
+    try:
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
+        from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+        from shared_utils import get_gemini_model, get_gemini_fallback_model
+    except ImportError:
+        # Fallback - define minimal classes if import fails
+        @dataclass
+        class LanguageConfig:
+            code: str
+            name: str
+            native_name: str
+            family: str
+            script_type: str
+            complexity_rating: str
+            key_features: List[str]
+            supported_complexity_levels: List[str]
+
+        class BaseGrammarAnalyzer:
+            def __init__(self, language_config):
+                self.config = language_config
+        class GrammarAnalysis:
+            pass
 
 logger = logging.getLogger(__name__)
 
+@dataclass
+class GrammarAnalysis:
+    """Result of grammar analysis"""
+    sentence: str
+    target_word: str
+    language_code: str
+    complexity_level: str
+    word_explanations: list
+    explanations: Dict[str, str]
+    confidence_score: float
+    html_output: str
+    color_scheme: Dict[str, str]
+    is_rtl: bool = True
+    text_direction: str = "rtl"
+
 class ArAnalyzer(BaseGrammarAnalyzer):
     """
-    Grammar analyzer for Arabic (العربية).
+    Arabic Grammar Analyzer - Clean Architecture Implementation
 
-    Key Features: ['root_based_morphology', 'case_marking_i3rab', 'verb_forms_abwab', 'definite_article_assimilation', 'particle_recognition']
-    Complexity Levels: ['beginner', 'intermediate', 'advanced']
+    Key Features:
+    - RTL (Right-to-Left) text handling
+    - Root-based morphology analysis
+    - Case marking (i'rab) recognition
+    - Verb forms (abwab) identification
+    - Definite article assimilation
+    - Comprehensive Arabic linguistic features
     """
 
     VERSION = "1.0"
     LANGUAGE_CODE = "ar"
     LANGUAGE_NAME = "Arabic"
 
-    # Arabic Unicode range for script validation
-    ARABIC_UNICODE_RANGE = (0x0600, 0x06FF)
+    def __init__(self,
+                 config: Optional[ArabicConfig] = None,
+                 prompt_builder: Optional[ArabicPromptBuilder] = None,
+                 response_parser: Optional[ArabicResponseParser] = None,
+                 validator: Optional[ArabicValidator] = None):
 
-    # Standardized grammatical role enums for consistency across complexity levels
-    GRAMMATICAL_ROLES = {
-        'beginner': [
-            'noun', 'verb', 'particle', 'other'
-        ],
-        'intermediate': [
-            'noun', 'verb', 'adjective', 'preposition', 'conjunction',
-            'interrogative', 'negation', 'definite_article', 'pronoun', 'other'
-        ],
-        'advanced': [
-            'noun', 'verb', 'adjective', 'preposition', 'conjunction',
-            'interrogative', 'negation', 'definite_article', 'pronoun',
-            'nominative', 'accusative', 'genitive', 'perfect_verb', 'imperfect_verb',
-            'imperative_verb', 'active_participle', 'passive_participle', 'other'
-        ]
-    }
+        # Dependency injection for testability - must be set before super().__init__()
+        self.arabic_config = config or ArabicConfig()
+        self.prompt_builder = prompt_builder or ArabicPromptBuilder(self.arabic_config)
+        self.response_parser = response_parser or ArabicResponseParser(self.arabic_config)
+        self.validator = validator or ArabicValidator(self.arabic_config)
 
-    def __init__(self):
-        config = LanguageConfig(
+        # Create language config for BaseGrammarAnalyzer
+        language_config = LanguageConfig(
             code="ar",
             name="Arabic",
             native_name="العربية",
-            family="Afro-Asiatic",
+            family="Semitic",
             script_type="abjad",
             complexity_rating="high",
-            key_features=['root_based_morphology', 'case_marking_i3rab', 'verb_forms_abwab', 'definite_article_assimilation', 'particle_recognition'],
-            supported_complexity_levels=['beginner', 'intermediate', 'advanced']
+            key_features=["RTL text", "root-based morphology", "case marking", "verb forms"],
+            supported_complexity_levels=["beginner", "intermediate", "advanced"]
         )
-        super().__init__(config)
 
-        # Language-specific patterns and rules
-        self._initialize_patterns()
+        # Store language config separately
+        self.language_config = language_config
 
-    def _initialize_patterns(self):
-        """Initialize Arabic-specific patterns and rules"""
+        # Initialize base class
+        super().__init__(language_config)
 
-        # Case endings (ḥarakāt - diacritics for iʿrāb)
-        self.case_endings = {
-            'nominative': r'ُ',  # ḍamma (u)
-            'accusative': r'َ',  # fatḥa (a)
-            'genitive': r'ِ'     # kasra (i)
-        }
+        # Override config property for testing compatibility
+        # (BaseGrammarAnalyzer sets self.config to language_config, but tests expect arabic_config)
+        self._base_config = self.config  # Store the original
+        self.config = self.arabic_config  # Override for tests
 
-        # Definite article assimilation patterns
-        self.definite_article_patterns = {
-            'original': r'\bال',
-            'assimilated_ta': r'\bات',  # ال + ت → ات
-            'assimilated_dad': r'\bاض', # ال + ض → اض
-            'assimilated_tha': r'\bاظ', # ال + ظ → اظ
-            'assimilated_nun': r'\bان'  # ال + ن → ان
-        }
+        # Validate configuration
+        self._validate_setup()
 
-        # Common particles (ḥurūf)
-        self.particle_patterns = {
-            'prepositions': r'\b(فِي|مِن|عَلَى|إِلَى|عَن|مَع|بَيْن|حَتَّى|لِ|كَ|بِ|وَ|فَ|أَو|لَا|لَم|لَن|مَا)\b',
-            'conjunctions': r'\b(وَ|فَ|أَو|لَكِن|بَل|أَمَّا|إِمَّا|إِذَا|إِذَن|حَيْثُ|مَعَ|مَعَ أَنَّ|رُبَمَا)\b',
-            'interrogatives': r'\b(هَل|أَ|مَا|مَن|مَاذَا|أَيْن|كَيْف|مَتَى|كَم|أَيُّ|أَيَّان)\b',
-            'negations': r'\b(لَا|لَم|لَن|مَا|لَيْسَ)\b'
-        }
-
-        # Verb form patterns (ʾabwāb - forms I-X)
-        self.verb_form_patterns = {
-            'form1_perfect': r'\bيَ\w*ُ\b',      # Form I perfect (yafʿulu)
-            'form1_imperfect': r'\bيَ\w*ِ\w*ُ\b', # Form I imperfect (yafʿilu)
-            'form2': r'\bيُ\w*ِّ\w*ُ\b',         # Form II (yufaʿʿilu)
-            'form3': r'\bيُ\w*َا\w*ِ\w*ُ\b',     # Form III (yufāʿilu)
-            'form4': r'\bيُ\w*ْ\w*ِ\w*ُ\b',     # Form IV (yuʾfilu)
-            'form5': r'\bيَتَ\w*َ\w*ُ\b',       # Form V (yatafaʿʿalu)
-            'form6': r'\bيَتَ\w*َا\w*ُ\b',      # Form VI (yatacāʿalu)
-            'form7': r'\bيَنْ\w*ِ\w*ُ\b',       # Form VII (yanfilu)
-            'form8': r'\bيَ\w*ْتَ\w*ِ\w*ُ\b',   # Form VIII (yaʾtafilu)
-            'form9': r'\bيَ\w*ْفَعْلَلُ\b',     # Form IX (yaʾfalallu)
-            'form10': r'\bيَسْتَ\w*ِ\w*ُ\b'     # Form X (yastaʾfilu)
-        }
-
-        # Root patterns (triliteral roots)
-        self.root_patterns = [
-            r'\b\w{3}\b',  # Basic triliteral
-            r'\b\w{4}\b',  # Quadriliteral
-        ]
-
-    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """Generate AI prompt for Arabic grammar analysis"""
-        if complexity == "beginner":
-            return self._get_beginner_prompt(sentence, target_word, native_language)
-        elif complexity == "intermediate":
-            return self._get_intermediate_prompt(sentence, target_word, native_language)
-        elif complexity == "advanced":
-            return self._get_advanced_prompt(sentence, target_word, native_language)
-        else:
-            return self._get_beginner_prompt(sentence, target_word, native_language)
-
-    def _get_beginner_prompt(self, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """Generate beginner-level Arabic grammar analysis prompt with contextual meanings"""
-        allowed_roles = self.GRAMMATICAL_ROLES['beginner']
-
-        return f"""Analyze this Arabic sentence word by word: {sentence}
-
-Target word: "{target_word}"
-
-For EACH word in the sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left - RTL), provide:
-- word: the exact Arabic word as it appears
-- individual_meaning: the {native_language} translation WITH grammatical context (e.g., "the book (noun)", "in (preposition)")
-- grammatical_role: EXACTLY ONE category from: {', '.join(allowed_roles)}
-
-CRITICAL REQUIREMENTS:
-- WORDS MUST BE LISTED FROM RIGHT TO LEFT as they appear in the Arabic sentence (RTL order)
-- EVERY word MUST have individual_meaning with BOTH translation AND grammatical context
-- grammatical_role MUST be EXACTLY from the allowed list
-
-Arabic grammatical categories:
-- noun: اِسْم (things, people, places - can have definite article ال)
-- verb: فِعْل (actions, states - can be perfect or imperfect)
-- particle: حَرْف (prepositions, conjunctions, etc.)
-- other: anything not fitting above
-
-Examples:
-- "الكتاب" → individual_meaning: "the book (definite noun)", grammatical_role: "noun"
-- "في" → individual_meaning: "in/inside (preposition)", grammatical_role: "particle"
-- "يقرأ" → individual_meaning: "reads (verb)", grammatical_role: "verb"
-- "جميل" → individual_meaning: "beautiful (adjective used as noun)", grammatical_role: "noun"
-
-Return JSON format:
-{{
-  "words": [
-    {{
-      "word": "الكتاب",
-      "individual_meaning": "the book (definite noun)",
-      "grammatical_role": "noun"
-    }},
-    {{
-      "word": "يقرأ",
-      "individual_meaning": "reads (verb)",
-      "grammatical_role": "verb"
-    }}
-  ]
-}}
-
-VALIDATION REQUIREMENTS:
-- EVERY word in the sentence MUST have an "individual_meaning" field with context
-- individual_meaning MUST include both translation and grammatical function
-- Provide explanations in {native_language}
-"""
-
-    def _get_intermediate_prompt(self, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """Generate intermediate-level Arabic grammar analysis prompt"""
-        allowed_roles = self.GRAMMATICAL_ROLES['intermediate']
-
-        return f"""Analyze this Arabic sentence with intermediate grammar focus: {sentence}
-
-Target word: "{target_word}"
-
-Analyze each word IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left - RTL):
-
-For each word provide:
-- word: exact Arabic word
-- individual_meaning: {native_language} translation
-- grammatical_role: from {', '.join(allowed_roles)}
-
-Focus on:
-- Definite article (ال) and assimilation
-- Prepositions and their case requirements
-- Basic verb forms and patterns
-- Question particles
-
-CRITICAL: WORDS MUST BE LISTED FROM RIGHT TO LEFT (RTL order) as they appear in Arabic.
-
-Return JSON:
-{{
-  "words": [
-    {{
-      "word": "الطالب",
-      "individual_meaning": "the student",
-      "grammatical_role": "noun"
-    }}
-  ]
-}}"""
-
-    def _get_advanced_prompt(self, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """Generate advanced-level Arabic grammar analysis prompt"""
-        allowed_roles = self.GRAMMATICAL_ROLES['advanced']
-
-        return f"""Perform advanced morphological analysis of this Arabic sentence: {sentence}
-
-Target word: "{target_word}"
-
-Analyze each word IN RTL ORDER (right to left) with focus on:
-- Root-based morphology (triliteral roots)
-- Case markings (iʿrāb - nominative, accusative, genitive)
-- Verb forms (ʾabwāb I-X)
-- Complex particles and their grammatical functions
-
-For each word:
-- word: exact Arabic word
-- individual_meaning: {native_language} translation
-- grammatical_role: from {', '.join(allowed_roles)}
-
-CRITICAL: WORDS MUST BE LISTED FROM RIGHT TO LEFT as they appear in Arabic text.
-
-Include analysis of:
-- Case endings (ḍamma, fatḥa, kasra)
-- Definite article assimilation patterns
-- Verb conjugation patterns
-- Root extraction where applicable
-
-Return JSON with comprehensive analysis."""
+    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
+        """Generate Arabic-specific AI prompt for grammar analysis."""
+        return self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
-        """
-        Parse AI response into standardized Arabic grammar analysis format.
-        Handles RTL word ordering for Arabic script.
-        """
-        try:
-            # Extract JSON from response
-            json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', ai_response, re.DOTALL)
-            if json_match:
-                json_str = json_match.group(1)
-                parsed = json.loads(json_str)
-                parsed['sentence'] = sentence
-                return self._transform_to_standard_format(parsed, complexity, sentence)
+        """Parse AI response into standardized grammar analysis format."""
+        # Parse using Arabic-specific parser
+        parsed_result = self.response_parser.parse_response(
+            ai_response, complexity, sentence, ""
+        )
 
-            # Try direct JSON parsing
-            parsed = json.loads(ai_response)
-            parsed['sentence'] = sentence
-            return self._transform_to_standard_format(parsed, complexity, sentence)
-
-        except Exception as e:
-            logger.error(f"Failed to parse Arabic grammar response: {e}")
-            return self._create_fallback_parse(ai_response, sentence)
-
-    def _transform_to_standard_format(self, parsed_data: Dict[str, Any], complexity: str = 'beginner', sentence: str = '') -> Dict[str, Any]:
-        """Transform Arabic analyzer output to standard BaseGrammarAnalyzer format"""
-        try:
-            words = parsed_data.get('words', [])
-            explanations = parsed_data.get('explanations', {})
-
-            # Transform words into elements grouped by grammatical role
-            elements = {}
-            for word_data in words:
-                grammatical_role = word_data.get('grammatical_role', 'other')
-                if grammatical_role not in elements:
-                    elements[grammatical_role] = []
-                elements[grammatical_role].append(word_data)
-
-            # Create word_explanations for HTML coloring
-            word_explanations = []
-            colors = self.get_color_scheme(complexity)
-
-            for word_data in words:
-                word = word_data.get('word', '')
-                grammatical_role = word_data.get('grammatical_role', 'other')
-                individual_meaning = word_data.get('individual_meaning', '')
-                category = self._map_grammatical_role_to_category(grammatical_role)
-                color = colors.get(category, '#888888')
-
-                explanation = individual_meaning if individual_meaning else grammatical_role
-                word_explanations.append([word, grammatical_role, color, explanation])
-
-            # Reorder for RTL display
-            word_explanations = self._reorder_explanations_for_rtl(sentence, word_explanations)
-
-            return {
-                'elements': elements,
-                'explanations': explanations,
-                'word_explanations': word_explanations,
-                'sentence': parsed_data.get('sentence', sentence)
-            }
-
-        except Exception as e:
-            logger.error(f"Failed to transform Arabic analysis data: {e}")
-            return {
-                'elements': {},
-                'explanations': {'error': 'Data transformation failed'},
-                'word_explanations': [],
-                'sentence': parsed_data.get('sentence', sentence)
-            }
-
-    def _reorder_explanations_for_rtl(self, sentence: str, word_explanations: List) -> List:
-        """
-        Reorder word explanations to match Arabic RTL reading order.
-        Arabic is read right-to-left, so explanations should match this order.
-        """
-        if not word_explanations or not sentence:
-            return word_explanations
-
-        # For Arabic (RTL), we need to reorder explanations to match the reading direction
-        # Find position of each word in the sentence and sort from right to left
-        positioned_explanations = []
-
-        for explanation in word_explanations:
-            if len(explanation) >= 4:
-                word = explanation[0]  # word is at index 0
-                if word:
-                    # Find all occurrences of this word in the sentence
-                    positions = []
-                    start = 0
-                    while True:
-                        pos = sentence.find(word, start)
-                        if pos == -1:
-                            break
-                        positions.append(pos)
-                        start = pos + 1
-
-                    # Use the first occurrence position
-                    # For RTL, we'll sort by position descending (right to left)
-                    position = positions[0] if positions else float('inf')
-                    positioned_explanations.append((position, explanation))
-
-        # Sort by position in ascending order (RTL reading: left to right in string = right to left in reading)
-        positioned_explanations.sort(key=lambda x: x[0])
-
-        # Extract just the explanations
-        sorted_explanations = [exp for _, exp in positioned_explanations]
-
-        return sorted_explanations
-
-    def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map Arabic grammatical roles to color categories"""
-        # For Arabic, the color scheme keys match the grammatical roles directly
-        return grammatical_role
-
-    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Return color scheme for Arabic grammatical elements"""
-        schemes = {
-            "beginner": {
-                "noun": "#FFAA00",        # Orange - Things/objects
-                "verb": "#44FF44",        # Green - Actions
-                "particle": "#FF4444",    # Red - Function words
-                "other": "#888888"         # Gray
-            },
-            "intermediate": {
-                "noun": "#FFAA00",        # Orange
-                "verb": "#44FF44",        # Green
-                "adjective": "#FF44FF",   # Magenta
-                "preposition": "#FF4444", # Red
-                "conjunction": "#FF4444", # Red
-                "interrogative": "#FF4444", # Red
-                "negation": "#FF4444",    # Red
-                "definite_article": "#FFD700", # Gold
-                "pronoun": "#FF69B4",     # Pink
-                "other": "#888888"
-            },
-            "advanced": {
-                "noun": "#FFAA00",        # Orange
-                "verb": "#44FF44",        # Green
-                "adjective": "#FF44FF",   # Magenta
-                "preposition": "#FF4444", # Red
-                "conjunction": "#FF4444", # Red
-                "interrogative": "#FF4444", # Red
-                "negation": "#FF4444",    # Red
-                "definite_article": "#FFD700", # Gold
-                "pronoun": "#FF69B4",     # Pink
-                "nominative": "#228B22",  # Forest Green
-                "accusative": "#228B22",  # Forest Green
-                "genitive": "#228B22",    # Forest Green
-                "perfect_verb": "#32CD32", # Lime Green
-                "imperfect_verb": "#32CD32", # Lime Green
-                "imperative_verb": "#32CD32", # Lime Green
-                "active_participle": "#32CD32", # Lime Green
-                "passive_participle": "#32CD32", # Lime Green
-                "other": "#888888"
-            }
+        # Convert to BaseGrammarAnalyzer format
+        return {
+            'grammatical_elements': parsed_result.get('grammatical_elements', {}),
+            'explanations': parsed_result.get('explanations', {}),
+            'color_scheme': parsed_result.get('color_scheme', {}),
+            'html_output': parsed_result.get('html_output', ''),
+            'confidence_score': parsed_result.get('confidence_score', 0.0),
+            'word_explanations': parsed_result.get('word_explanations', [])
         }
 
-        return schemes.get(complexity, schemes["beginner"])
+    def _validate_setup(self):
+        """Validate analyzer setup"""
+        if not self.arabic_config.is_arabic_text("مرحبا"):  # Test Arabic text detection
+            logger.warning("Arabic text detection may not be working properly")
 
-    def get_batch_grammar_prompt(self, complexity: str, sentences: List[str], target_word: str, native_language: str = "English") -> str:
-        """Generate Arabic-specific AI prompt for batch grammar analysis with RTL ordering and contextual meanings"""
-        allowed_roles = self.GRAMMATICAL_ROLES.get(complexity, self.GRAMMATICAL_ROLES['intermediate'])
-        sentences_text = "\n".join(f"{i+1}. {sentence}" for i, sentence in enumerate(sentences))
+    def analyze_grammar(self,
+                       sentence: str,
+                       target_word: str,
+                       complexity: str = "intermediate",
+                       gemini_api_key: str = "") -> GrammarAnalysis:
+        """
+        Analyze Arabic grammar for given sentence.
 
-        return f"""Analyze the grammar of these Arabic sentences and provide detailed word-by-word analysis for each one.
+        CRITICAL: Arabic is RTL - word explanations are returned in reverse order
+        for correct display in RTL reading direction.
+        """
+        try:
+            logger.info(f"Analyzing Arabic sentence: {sentence}")
 
-Target word: "{target_word}"
-Language: Arabic (العربية)
-Complexity level: {complexity}
-Analysis should be in {native_language}
+            # Validate inputs
+            if not self._validate_inputs(sentence, target_word, complexity):
+                return self._create_fallback_analysis(sentence, target_word, complexity)
 
-Sentences to analyze:
-{sentences_text}
+            # Build prompt
+            prompt = self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
 
-For EACH word in EVERY sentence, IN THE ORDER THEY APPEAR IN THE SENTENCE (right to left, as Arabic is read from right to left), provide:
-- word: the exact Arabic word as it appears in the sentence
-- individual_meaning: the {native_language} translation/meaning WITH CONTEXT (MANDATORY - provide detailed, contextual meanings like grammatical function + basic meaning)
-- grammatical_role: EXACTLY ONE category from this list: {', '.join(allowed_roles)}
+            # Call AI API
+            ai_response = self._call_ai(prompt, gemini_api_key)
+            if not ai_response:
+                logger.warning("AI API call failed, using fallback")
+                return self._create_fallback_analysis(sentence, target_word, complexity)
 
-CRITICAL REQUIREMENTS:
-- WORDS MUST BE LISTED IN THE EXACT ORDER THEY APPEAR IN THE SENTENCE (right to left for Arabic)
-- individual_meaning MUST include BOTH the basic translation AND grammatical context
-- grammatical_role MUST be EXACTLY from the allowed list (one word only)
-- Do NOT group words by category - list them in sentence reading order
+            # Parse response
+            parsed_result = self.response_parser.parse_response(
+                ai_response, complexity, sentence, target_word
+            )
 
-Examples of DETAILED contextual meanings:
-- الكتاب: individual_meaning: "the book (definite noun with definite article)", grammatical_role: "noun"
-- في: individual_meaning: "in/inside (preposition requiring genitive case)", grammatical_role: "preposition"
-- يقرأ: individual_meaning: "reads/is reading (imperfect verb, form I, third person masculine singular)", grammatical_role: "verb"
-- الطالب: individual_meaning: "the student (definite noun, nominative case)", grammatical_role: "noun"
-- ذلك: individual_meaning: "that (demonstrative pronoun, masculine singular)", grammatical_role: "pronoun"
-- جميل: individual_meaning: "beautiful (adjective agreeing with noun in gender/case)", grammatical_role: "adjective"
-- ما: individual_meaning: "what (interrogative particle introducing question)", grammatical_role: "interrogative"
-- أحب: individual_meaning: "I love (perfect verb, first person singular, form I)", grammatical_role: "verb"
+            # Validate result
+            validated_result = self.validator.validate_result(parsed_result, sentence)
 
-For ADVANCED level, include morphological details:
-- Root information (triliteral roots)
-- Verb form (ʾabwāb I-X)
-- Case markings (ʾiʿrāb: nominative/accusative/genitive)
-- Definite article assimilation
+            # Build final analysis
+            analysis = self._build_analysis_result(
+                sentence, target_word, complexity, validated_result
+            )
 
-Return JSON in this exact format:
-{{
-  "batch_results": [
-    {{
-      "sentence_index": 1,
-      "sentence": "{sentences[0] if sentences else ''}",
-      "words": [
-        {{
-          "word": "الكتاب",
-          "individual_meaning": "the book (definite noun with definite article)",
-          "grammatical_role": "noun"
-        }},
-        {{
-          "word": "يقرأ",
-          "individual_meaning": "reads (imperfect verb, third person masculine singular)",
-          "grammatical_role": "verb"
-        }}
-      ],
-      "word_combinations": [],
-      "explanations": {{
-        "sentence_structure": "Brief grammatical summary of the sentence",
-        "complexity_notes": "Notes about grammatical structures used at {{complexity}} level"
-      }}
-    }}
-  ]
-}}
+            logger.info(f"Arabic analysis completed with confidence: {analysis.confidence_score:.2f}")
+            return analysis
 
-IMPORTANT:
-- Analyze ALL {len(sentences)} sentences
-- EVERY word MUST have DETAILED individual_meaning (translation + grammatical context)
-- grammatical_role MUST be EXACTLY from the allowed list
-- Words must be in RIGHT-TO-LEFT reading order for Arabic
-- Include morphological details for advanced analysis
-- Return ONLY the JSON object, no additional text
-"""
+        except Exception as e:
+            logger.error(f"Error in Arabic grammar analysis: {e}")
+            return self._create_fallback_analysis(sentence, target_word, complexity)
+
+    def _validate_inputs(self, sentence: str, target_word: str, complexity: str) -> bool:
+        """Validate input parameters"""
+        if not sentence or not sentence.strip():
+            logger.error("Empty sentence provided")
+            return False
+
+        if not target_word or not target_word.strip():
+            logger.error("Empty target word provided")
+            return False
+
+        valid_complexities = ['beginner', 'intermediate', 'advanced']
+        if complexity not in valid_complexities:
+            logger.error(f"Invalid complexity: {complexity}")
+            return False
+
+        # Check if sentence contains Arabic text
+        if not self.arabic_config.is_arabic_text(sentence):
+            logger.warning("Sentence does not appear to contain Arabic text")
+
+        return True
+
+    def _call_ai(self, prompt: str, api_key: str) -> Optional[str]:
+        """Call AI API for analysis"""
+        if not api_key:
+            logger.error("No API key provided")
+            return None
+
+        try:
+            import google.generativeai as genai
+
+            # Configure API
+            genai.configure(api_key=api_key)
+
+            # Try primary model first
+            try:
+                model = genai.GenerativeModel(get_gemini_model())
+                response = model.generate_content(prompt)
+                ai_response = response.text.strip()
+            except Exception as primary_error:
+                logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
+                # Fallback to preview model
+                model = genai.GenerativeModel(get_gemini_fallback_model())
+                response = model.generate_content(prompt)
+                ai_response = response.text.strip()
+
+            return ai_response
+
+        except Exception as e:
+            logger.error(f"AI API call failed: {e}")
+            return None
+
+    def _select_model(self, prompt: str) -> str:
+        """Select appropriate AI model based on prompt complexity"""
+        # Use shared utility functions for model selection
+        # Could add logic to use different models based on complexity
+        return get_gemini_model()
+
+    def _build_analysis_result(self,
+                             sentence: str,
+                             target_word: str,
+                             complexity: str,
+                             validated_result: Dict[str, Any]) -> GrammarAnalysis:
+        """Build final GrammarAnalysis object"""
+
+        # Get color scheme
+        color_scheme = self.arabic_config.get_color_scheme(complexity)
+
+        # Generate HTML output
+        html_output = self._generate_html_output(
+            sentence, validated_result['word_explanations'], color_scheme
+        )
+
+        # Extract explanations
+        explanations = validated_result.get('explanations', {})
+
+        return GrammarAnalysis(
+            sentence=sentence,
+            target_word=target_word,
+            language_code=self.LANGUAGE_CODE,
+            complexity_level=complexity,
+            word_explanations=validated_result['word_explanations'],
+            explanations=explanations,
+            confidence_score=validated_result.get('confidence_score', 0.0),
+            html_output=html_output,
+            color_scheme=color_scheme,
+            is_rtl=True,
+            text_direction="rtl"
+        )
+
+    def _generate_html_output(self, sentence: str, word_explanations: List[List], color_scheme: Dict[str, str]) -> str:
+        """Generate HTML output for Arabic text with inline word coloring and RTL support"""
+        # For Arabic (RTL), generate colored sentence like other analyzers but with RTL direction
+
+        # Create mapping of words to their explanations
+        word_to_explanation = {}
+        for exp in word_explanations:
+            if len(exp) >= 4:
+                word, role, color, meaning = exp
+                # Clean word for consistent matching
+                clean_word = re.sub(r'[.!?،؛:"\'()\[\]{}]', '', word)
+                word_to_explanation[clean_word] = (word, role, color, meaning)
+
+        # Split sentence into words (Arabic uses spaces like other languages)
+        words_in_sentence = re.findall(r'\S+', sentence)
+
+        html_parts = []
+        html_parts.append('<div dir="rtl" style="font-family: Arial, sans-serif; text-align: right; direction: rtl;">')
+
+        # Add the colored sentence
+        html_parts.append('<p><strong>الجملة:</strong> ')
+        sentence_parts = []
+
+        for word in words_in_sentence:
+            # Clean word for matching
+            clean_word = re.sub(r'[.!?،؛:"\'()\[\]{}]', '', word)
+
+            if clean_word in word_to_explanation:
+                original_word, role, color, meaning = word_to_explanation[clean_word]
+                # Escape curly braces and apply coloring
+                safe_word = word.replace('{', '{{').replace('}', '}}')
+                colored_word = f'<span style="color: {color}; font-weight: bold;" title="{role}: {meaning}">{safe_word}</span>'
+                sentence_parts.append(colored_word)
+            else:
+                # Word without analysis
+                safe_word = word.replace('{', '{{').replace('}', '}}')
+                sentence_parts.append(f'<span style="color: #888888;">{safe_word}</span>')
+
+        html_parts.append(' '.join(sentence_parts))
+        html_parts.append('</p>')
+
+        # Add word-by-word explanations in RTL reading order (same as sentence)
+        # For RTL, explanations appear in the order they would be read
+        html_parts.append('<div style="margin-top: 20px;">')
+        html_parts.append('<strong>التحليل التفصيلي:</strong>')
+        html_parts.append('<div style="direction: rtl; text-align: right;">')
+
+        # Word explanations should be in RTL reading order (same as sentence)
+        # Since word_explanations are in reading order, display them as-is
+        for word, role, color, meaning in word_explanations:
+            safe_word = word.replace('{', '{{').replace('}', '}}')
+            html_parts.append(
+                f'<div style="margin: 5px 0; padding: 5px; background-color: {color}20; border-radius: 3px;">'
+                f'<strong style="color: {color};">{safe_word}</strong> - '
+                f'<em>{role}</em>: {meaning}'
+                f'</div>'
+            )
+
+        html_parts.append('</div>')
+        html_parts.append('</div>')
+        html_parts.append('</div>')
+
+        return ''.join(html_parts)
+
+    def _create_fallback_analysis(self,
+                                sentence: str,
+                                target_word: str,
+                                complexity: str) -> GrammarAnalysis:
+        """Create fallback analysis when main analysis fails"""
+        logger.warning("Creating fallback analysis for Arabic")
+
+        # Basic word tokenization
+        words = sentence.split()
+        color_scheme = self.arabic_config.get_color_scheme(complexity)
+
+        # Create basic explanations (in reading order)
+        word_explanations = []
+        for word in words:  # Keep in reading order for RTL
+            color = color_scheme.get('noun', '#708090')
+            explanation = [word, 'noun (اسم)', color, 'Basic analysis - unable to perform detailed grammatical analysis']
+            word_explanations.append(explanation)
+
+        return GrammarAnalysis(
+            sentence=sentence,
+            target_word=target_word,
+            language_code=self.LANGUAGE_CODE,
+            complexity_level=complexity,
+            word_explanations=word_explanations,
+            explanations={
+                'overall_structure': 'Basic sentence analysis (fallback mode)',
+                'key_features': 'Unable to perform detailed Arabic grammatical analysis'
+            },
+            confidence_score=0.1,  # Low confidence for fallback
+            html_output=self._generate_fallback_html(sentence, word_explanations),
+            color_scheme=color_scheme,
+            is_rtl=True,
+            text_direction="rtl"
+        )
+
+    def _generate_fallback_html(self, sentence: str, word_explanations: list) -> str:
+        """Generate fallback HTML output"""
+        html = f'''
+        <div dir="rtl" style="font-family: Arial, sans-serif; text-align: right;">
+            <p><strong>تحليل أساسي للجملة:</strong> {sentence}</p>
+            <p style="color: #ff6b6b;">⚠️ لم يتمكن النظام من إجراء تحليل نحوي مفصل</p>
+            <p>الجملة تحتوي على {len(word_explanations)} كلمات</p>
+        </div>
+        '''
+        return html
+
+    # Public interface methods
+    def get_supported_complexities(self) -> list:
+        """Get supported complexity levels"""
+        return ['beginner', 'intermediate', 'advanced']
+
+    def get_language_info(self) -> Dict[str, Any]:
+        """Get language information"""
+        return {
+            'code': self.LANGUAGE_CODE,
+            'name': self.LANGUAGE_NAME,
+            'native_name': self.arabic_config.language_name_native,
+            'is_rtl': self.arabic_config.is_rtl,
+            'script_type': self.arabic_config.script_type,
+            'family': 'Afro-Asiatic (Semitic)',
+            'features': list(self.arabic_config.linguistic_features.keys())
+        }
+
+    def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
+        """
+        Batch analyze multiple Arabic sentences.
+
+        For Arabic, we use the single sentence analysis approach since Arabic grammar
+        analysis requires detailed per-sentence processing with RTL considerations.
+        """
+        results = []
+        for sentence in sentences:
+            try:
+                analysis = self.analyze_grammar(sentence, target_word, complexity, gemini_api_key)
+                results.append(analysis)
+            except Exception as e:
+                logger.error(f"Failed to analyze Arabic sentence: {e}")
+                results.append(self._create_fallback_analysis(sentence, target_word, complexity))
+
+        return results
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """Validate Arabic grammar analysis quality (85% threshold required)"""
         try:
             words = parsed_data.get('word_explanations', [])
-            elements = parsed_data.get('elements', {})
+            elements = parsed_data.get('grammatical_elements', {})
 
             # Basic checks
             has_words = len(words) > 0
             has_elements = len(elements) > 0
 
             # Check Arabic script usage
-            arabic_chars = sum(1 for char in original_sentence if self.ARABIC_UNICODE_RANGE[0] <= ord(char) <= self.ARABIC_UNICODE_RANGE[1])
+            arabic_chars = sum(1 for char in original_sentence if 0x0600 <= ord(char) <= 0x06FF)
             arabic_ratio = arabic_chars / len(original_sentence) if original_sentence else 0
 
             # Word coverage
@@ -500,14 +449,13 @@ IMPORTANT:
             return confidence
 
         except Exception as e:
-            logger.error(f"Arabic validation failed: {e}")
-            return 0.5
+            logger.error(f"Error validating Arabic analysis: {e}")
+            return 0.0
 
-    def _create_fallback_parse(self, ai_response: str, sentence: str) -> Dict[str, Any]:
-        """Create fallback analysis when parsing fails"""
-        return {
-            'elements': {},
-            'explanations': {'error': 'Analysis temporarily unavailable'},
-            'word_explanations': [],
-            'sentence': sentence
-        }
+    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
+        """Return color scheme for grammatical elements based on complexity level."""
+        return self.arabic_config.get_color_scheme(complexity)
+
+    def validate_arabic_text(self, text: str) -> bool:
+        """Validate if text contains Arabic characters."""
+        return self.arabic_config.is_arabic_text(text)
