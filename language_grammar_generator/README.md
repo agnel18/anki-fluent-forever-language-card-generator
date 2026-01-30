@@ -279,7 +279,10 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 
 ### Completed Languages
 - ✅ **Spanish** - Indo-European family implementation
-- ✅ **Arabic** - Afro-Asiatic family implementation
+- ✅ **Arabic** - Afro-Asiatic family implementation with **role hierarchy and complexity filtering**
+- ✅ **Chinese Simplified** - Sino-Tibetan family with Clean Architecture gold standard
+- ✅ **Chinese Traditional** - Sino-Tibetan family with rich word meanings dictionary
+- ✅ **Hindi** - Indo-European family gold standard reference
 
 ### In Progress
 - 🚧 **French** - Advanced Indo-European features

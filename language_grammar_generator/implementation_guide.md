@@ -88,72 +88,95 @@ class ZhTwConfig:
 - [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
 - [ ] **Sentence Generation Character Limits**: Word explanations < 75 chars, grammar summaries < 60 chars (CRITICAL for UX)
 
-#### 1.4 Critical: Word Meanings Dictionary Pattern (Sino-Tibetan Requirement)
+#### 1.4 Critical: Role Hierarchy & Complexity Filtering (Arabic Analyzer Innovation)
 
-**Key Learning:** Sino-Tibetan languages require external word meanings dictionaries to provide rich explanations instead of generic grammatical roles.
+**Key Learning from Arabic Analyzer:** Implement role hierarchy mapping and complexity-based filtering to provide educational depth without visual clutter.
 
 **Why Required:**
-- Sino-Tibetan languages use logographic scripts where characters have specific semantic meanings
-- Generic fallback explanations like "numeral in zh-tw grammar" don't help learners
-- Specific meanings like "three (numeral)" provide actual learning value
+- **Educational Depth vs Visual Clarity**: Specific roles (imperfect_verb) provide detailed explanations while general roles (verb) maintain consistent coloring
+- **Progressive Disclosure**: Beginner learners see basic roles, advanced learners see morphological details
+- **Color Inheritance**: Specific roles inherit colors from parent categories for visual consistency
+- **Role Consistency**: Meaning text matches display role to eliminate grammatical role repetition
 
 **Implementation Pattern:**
 ```python
-# 1. Create word meanings JSON file
-# File: infrastructure/data/{language}_word_meanings.json
-{
-  "一": "one (numeral)",
-  "二": "two (numeral)", 
-  "三": "three (numeral)",
-  "如果": "if (conjunction)",
-  "答案": "answer, solution (noun)"
-}
-
-# 2. Load in config
+# 1. Role Hierarchy Mapping
 class LanguageConfig:
-    def __init__(self):
-        config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
-        self.word_meanings = self._load_json(config_dir / "{language}_word_meanings.json")
-    
-    def _load_json(self, path: Path) -> Dict[str, Any]:
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Failed to load word meanings: {e}")
-            return {}
-
-# 3. Use in fallbacks
-class LanguageFallbacks:
-    def _analyze_word(self, word: str) -> Dict[str, Any]:
-        # Check word meanings first
-        if word in self.config.word_meanings:
-            meaning = self.config.word_meanings[word]
-            role = self._guess_grammatical_role(word)
-            return {
-                'word': word,
-                'individual_meaning': meaning,  # Rich meaning
-                'grammatical_role': role,
-                'confidence': 'high'
-            }
-        
-        # Generic fallback only if no dictionary entry
-        role = self._guess_grammatical_role(word)
-        meaning = self._generate_fallback_explanation(word, role)
+    def _create_role_hierarchy(self) -> Dict[str, str]:
+        """Map specific roles to parent roles for color inheritance"""
         return {
-            'word': word,
-            'individual_meaning': meaning,  # Generic fallback
-            'grammatical_role': role,
-            'confidence': 'low'
+            # Verb subtypes inherit verb color
+            'perfect_verb': 'verb',
+            'imperfect_verb': 'verb', 
+            'imperative_verb': 'verb',
+            'active_participle': 'verb',
+            'passive_participle': 'verb',
+            
+            # Noun subtypes inherit noun color
+            'dual': 'noun',
+            'sound_plural': 'noun',
+            'broken_plural': 'noun',
+            
+            # Case markers inherit from base roles
+            'nominative': 'noun',
+            'accusative': 'noun',
+            'genitive': 'noun',
         }
+
+# 2. Complexity-Based Role Filtering
+class LanguageConfig:
+    def _create_complexity_filters(self) -> Dict[str, set]:
+        """Filter roles based on complexity level"""
+        return {
+            'beginner': {'noun', 'verb', 'pronoun', 'particle'},
+            'intermediate': {
+                'noun', 'verb', 'pronoun', 'adjective', 'preposition', 
+                'conjunction', 'interrogative', 'negation', 'definite_article',
+                'imperfect_verb', 'perfect_verb', 'active_participle', 'passive_participle'
+            },
+            'advanced': set()  # Allow all roles
+        }
+    
+    def should_show_role(self, role: str, complexity: str) -> bool:
+        """Check if role should be displayed at complexity level"""
+        if complexity == 'advanced':
+            return True
+        allowed_roles = self.complexity_role_filters.get(complexity, set())
+        return role in allowed_roles or self.get_parent_role(role) in allowed_roles
+
+# 3. Role Processing in Response Parser
+class LanguageResponseParser:
+    def _process_word_explanations(self, words_data: List[Dict], complexity: str) -> List[List]:
+        # Apply complexity filtering
+        if not self.config.should_show_role(normalized_role, complexity):
+            display_role = self.config.get_parent_role(normalized_role)  # Use parent role
+        else:
+            display_role = normalized_role  # Use specific role
+        
+        # Color inheritance from parent role
+        parent_role = self.config.get_parent_role(normalized_role)
+        color = color_scheme.get(parent_role, color_scheme.get('other', '#708090'))
+        
+        # Ensure meaning text matches display role (CRITICAL)
+        if meaning and '(' in meaning and ')' in meaning:
+            role_pattern = r'^([^\s]+)\s*\(([^)]+)\):\s*(.+)$'
+            match = re.match(role_pattern, meaning.strip())
+            if match:
+                word_part, original_role, rest_meaning = match.groups()
+                # Replace with display_role to eliminate repetition
+                updated_meaning = f"{word_part} ({display_role}): {rest_meaning}"
+                meaning = updated_meaning
+        
+        return [word, role_display, color, meaning]
 ```
 
 **Critical Checklist:**
-- [ ] **Create word meanings JSON**: Essential vocabulary with specific meanings
-- [ ] **Load in config**: Config class loads JSON file on initialization  
-- [ ] **Prioritize dictionary**: Fallbacks check word_meanings before generic explanations
-- [ ] **Test rich explanations**: Verify dictionary provides specific meanings over generic roles
-- [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
+- [ ] **Role Hierarchy Mapping**: Create `_create_role_hierarchy()` method mapping specific to parent roles
+- [ ] **Complexity Filters**: Implement `_create_complexity_filters()` with progressive role disclosure
+- [ ] **Role Filtering Logic**: Add `should_show_role()` method for complexity-based filtering
+- [ ] **Color Inheritance**: Use parent roles for color lookup to maintain visual consistency
+- [ ] **Meaning Consistency**: Update meaning text to match display role and eliminate repetition
+- [ ] **Arabic Word Combination Handling**: Properly split and color combined words like "والبطيخ"
 
 #### 1.5 Critical: Sentence Generation Character Limits (UX Requirement)
 

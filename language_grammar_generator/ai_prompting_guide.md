@@ -28,6 +28,7 @@
 - **Fallback Mechanisms:** Graceful degradation like Chinese Simplified
 - **Validation Loops:** Cross-check with linguistic rules (no artificial boosting)
 - **Performance Monitoring:** Track natural confidence distributions
+- **Role Consistency:** Ensure meaning text matches display role to eliminate grammatical repetition
 
 ## 📝 Prompt Template Architecture - Chinese Simplified Gold Standard Structure
 
@@ -296,7 +297,84 @@ def benchmark_against_gold_standards():
     }
 ```
 
-## 🚨 Common AI Issues - Gold Standard Solutions
+## � Word Explanation Format & Parsing - Arabic Analyzer Innovation
+
+### Standardized Word Explanation Format (Arabic Analyzer Pattern)
+
+**Key Learning from Arabic Analyzer:** Use consistent word explanation format to eliminate grammatical role repetition and ensure educational clarity.
+
+**Required Format:**
+```
+WORD (DISPLAY_ROLE): contextual meaning — grammatical function
+```
+
+**Examples:**
+- `"تأكل (imperfect verb): eats/is eating — main verb of the sentence"`
+- `"الموز (noun): the banana — direct object of the verb"`
+- `"و (conjunction): and — connects two objects"`
+
+**Why Required:**
+- **Consistency:** Same format across all analyzers prevents jarring differences
+- **Educational Value:** Combines semantic meaning with syntactic function
+- **No Repetition:** Display role matches meaning text to eliminate duplication
+- **Parsing Reliability:** Structured format enables reliable extraction
+
+### AI Prompt Template for Word Explanations
+
+**File:** `languages/{language}/domain/{language}_config.json`
+```json
+{
+  "prompt_templates": {
+    "batch": "\nYou are an expert linguist specializing in {language} grammar analysis.\n\nSentences: {sentences}\nTarget word: \"{target_word}\"\nComplexity level: {complexity}\n\nMANDATORY: Respond with VALID JSON only.\n\nREQUIRED JSON FORMAT:\n{{\n  \"batch_results\": [\n    {{\n      \"sentence\": \"exact sentence text\",\n      \"analysis\": [\n        {{\n          \"word\": \"exact_word\",\n          \"grammatical_role\": \"role_key\",\n          \"meaning\": \"WORD (DISPLAY_ROLE): contextual meaning — grammatical function\"\n        }}\n      ]\n    }}\n  ]\n}}\n\nCOMPLEXITY-SPECIFIC ROLE REQUIREMENTS:\n- beginner: Use only basic roles\n- intermediate: Use basic + specific roles\n- advanced: Use all morphological roles\n\nCRITICAL RULES:\n1. EXACTLY 3 fields per word: \"word\", \"grammatical_role\", \"meaning\"\n2. \"meaning\" MUST follow: \"WORD (DISPLAY_ROLE): meaning — function\"\n3. DISPLAY_ROLE must match the role shown to users\n\nGrammatical roles: {grammatical_roles}\n"
+  }
+}
+```
+
+### Response Parser - Role Consistency Processing
+
+**File:** `languages/{language}/domain/{language}_response_parser.py`
+```python
+class LanguageResponseParser:
+    def _process_word_explanations(self, words_data: List[Dict], complexity: str) -> List[List]:
+        for word_data in words_data:
+            word = word_data.get('word', '')
+            grammatical_role = word_data.get('grammatical_role', '')
+            meaning = word_data.get('meaning', '')
+            
+            # Apply complexity-based role filtering
+            normalized_role = self._normalize_grammatical_role(grammatical_role)
+            if not self.config.should_show_role(normalized_role, complexity):
+                display_role = self.config.get_parent_role(normalized_role)
+            else:
+                display_role = normalized_role
+            
+            # Color inheritance from parent role
+            parent_role = self.config.get_parent_role(normalized_role)
+            color = color_scheme.get(parent_role, '#708090')
+            
+            # CRITICAL: Ensure meaning text matches display role
+            if meaning and '(' in meaning and ')' in meaning:
+                role_pattern = r'^([^\s]+)\s*\(([^)]+)\):\s*(.+)$'
+                match = re.match(role_pattern, meaning.strip())
+                if match:
+                    word_part, original_role, rest_meaning = match.groups()
+                    # Replace with display_role to eliminate repetition
+                    updated_meaning = f"{word_part} ({display_role}): {rest_meaning}"
+                    meaning = updated_meaning
+            
+            explanations.append([word, display_role, color, meaning])
+        
+        return explanations
+```
+
+**Critical Checklist:**
+- [ ] **Standardized Format:** Use "WORD (ROLE): meaning — function" format consistently
+- [ ] **Role Consistency:** Meaning text matches display role to eliminate repetition
+- [ ] **Complexity Filtering:** Apply role hierarchy based on complexity level
+- [ ] **Color Inheritance:** Use parent roles for consistent coloring
+- [ ] **Parsing Reliability:** Structured format enables reliable extraction
+
+## �🚨 Common AI Issues - Gold Standard Solutions
 
 ### Issue 1: Artificial Confidence Boosting Detected
 **Symptoms:** Confidence scores manipulated beyond natural AI output

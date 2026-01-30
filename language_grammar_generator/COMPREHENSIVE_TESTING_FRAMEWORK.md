@@ -76,6 +76,10 @@ python -m pytest streamlit_app/test_<language>_analysis.py::test_<language>_anal
 - 📖 **Detailed Explanations** - Combine meaning with function (e.g., "verb (imperfect) - meaning 'we respect'")
 - 🌍 **Cultural Context** - Language-specific grammatical features
 - 📊 **Quality Metrics** - Minimum explanation length and keyword validation
+- 🎯 **Role Consistency** - Meaning text matches display role (no grammatical repetition)
+- 🎨 **Color Inheritance** - Specific roles inherit colors from parent categories
+- 🏗️ **Role Hierarchy** - Specific roles map to parent categories for progressive disclosure
+- 📊 **Complexity Filtering** - Roles appropriately filtered by learner level
 
 ### Phase 5: Sentence Generation Quality Testing
 ```bash
@@ -145,6 +149,44 @@ python -c "from languages.{language_code}.{language_code}_analyzer import {Langu
 **❌ Configuration Errors:**
 ```bash
 python -c "from languages.{language_code}.domain.{language_code}_config import {LanguageCode}Config; c = {LanguageCode}Config(); print('Config loaded successfully')"
+```
+
+**❌ Role Hierarchy & Complexity Filtering Errors (Arabic Analyzer Innovation):**
+```bash
+python -c "
+from languages.{language_code}.domain.{language_code}_config import {LanguageCode}Config
+config = {LanguageCode}Config()
+
+# Test role hierarchy mapping
+print('Testing role hierarchy...')
+hierarchy = config.role_hierarchy
+if not hierarchy:
+    print('✗ Role hierarchy not implemented')
+else:
+    print(f'✓ Role hierarchy has {len(hierarchy)} mappings')
+    
+    # Test specific mappings
+    test_roles = ['imperfect_verb', 'proper_noun', 'comparative_adjective']
+    for role in test_roles:
+        parent = config.get_parent_role(role)
+        if parent != role:  # Should have a parent
+            print(f'✓ {role} → {parent}')
+        else:
+            print(f'✗ {role} has no parent mapping')
+
+# Test complexity filtering
+print('\\nTesting complexity filtering...')
+for level in ['beginner', 'intermediate', 'advanced']:
+    allowed = config.complexity_role_filters.get(level, set())
+    print(f'{level}: {len(allowed)} roles allowed')
+    
+    # Test role visibility logic
+    test_role = 'imperfect_verb'
+    should_show = config.should_show_role(test_role, level)
+    print(f'  {test_role} visible in {level}: {should_show}')
+
+print('✓ Role hierarchy and complexity filtering validation complete')
+"
 ```
 
 **❌ Integration Failures:**

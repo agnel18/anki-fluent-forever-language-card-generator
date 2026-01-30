@@ -12,6 +12,13 @@ RESPONSIBILITIES:
 3. Handle malformed responses gracefully
 4. Calculate confidence scores
 5. Provide fallback parsing for errors
+6. CRITICAL: Ensure role consistency in word explanations (Arabic analyzer innovation)
+
+ROLE CONSISTENCY PROCESSING (Arabic Analyzer Pattern):
+- Apply complexity-based role filtering using role hierarchy
+- Ensure meaning text matches display role to eliminate grammatical repetition
+- Use parent roles for color inheritance while showing specific roles in explanations
+- Follow standardized word explanation format: "WORD (DISPLAY_ROLE): meaning — function"
 
 PARSING FEATURES:
 - JSON extraction and validation
@@ -19,6 +26,8 @@ PARSING FEATURES:
 - Fallback parsing for non-JSON responses
 - Language-specific validation
 - Error recovery and logging
+- Role hierarchy processing for educational depth
+- Color inheritance for visual consistency
 
 INTEGRATION:
 - Called by main analyzer after AI response
@@ -406,3 +415,94 @@ class LanguageResponseParser:
 
         # Default to noun (most common fallback)
         return 'noun'
+
+    def _process_word_explanations_with_role_consistency(self, words_data: List[Dict], complexity: str) -> List[List]:
+        """
+        Process word explanations with role consistency (Arabic Analyzer Innovation)
+        
+        CRITICAL FEATURES:
+        - Apply complexity-based role filtering using role hierarchy
+        - Ensure meaning text matches display role to eliminate grammatical repetition
+        - Use parent roles for color inheritance while showing specific roles in explanations
+        - Follow standardized format: "WORD (DISPLAY_ROLE): meaning — function"
+        """
+        processed_explanations = []
+        
+        # Get color scheme for complexity level
+        color_scheme = self.config.get_color_scheme(complexity)
+        grammatical_roles = self.config.get_grammatical_roles(complexity)
+        
+        for word_data in words_data:
+            word = word_data.get('word', '')
+            
+            # Handle both old format (grammatical_role) and new AI format (role)
+            role_key = (word_data.get('grammatical_roles') or 
+                       word_data.get('grammatical_role') or
+                       word_data.get('role', 'other'))
+            if role_key is None:
+                role_key = 'other'
+            if isinstance(role_key, list):
+                role_key = role_key[-1] if role_key else 'other'
+            
+            meaning = word_data.get('meaning', '')
+            
+            # Normalize role key
+            normalized_role = self._normalize_grammatical_role(role_key)
+            
+            # Apply complexity-based role filtering
+            if not self.config.should_show_role(normalized_role, complexity):
+                display_role = self.config.get_parent_role(normalized_role)
+            else:
+                display_role = normalized_role
+            
+            # Get color for role - use parent role for color inheritance
+            parent_role = self.config.get_parent_role(normalized_role)
+            color = color_scheme.get(parent_role, color_scheme.get('other', '#708090'))
+            
+            # Get display name for role
+            role_display = grammatical_roles.get(display_role, display_role)
+            
+            # CRITICAL: Update meaning to use display_role instead of original AI role
+            if meaning and '(' in meaning and ')' in meaning:
+                import re
+                role_pattern = r'^([^\s]+)\s*\(([^)]+)\):\s*(.+)$'
+                match = re.match(role_pattern, meaning.strip())
+                if match:
+                    word_part, original_role, rest_meaning = match.groups()
+                    # Replace with display_role to eliminate repetition
+                    updated_meaning = f"{word_part} ({display_role}): {rest_meaning}"
+                    meaning = updated_meaning
+            
+            # Create explanation tuple: [word, role_display, color, meaning]
+            explanation = [word, role_display, color, meaning]
+            processed_explanations.append(explanation)
+        
+        return processed_explanations
+
+    def _normalize_grammatical_role(self, role: str) -> str:
+        """Normalize grammatical role to standard format"""
+        if not role:
+            return 'other'
+        
+        # Convert to lowercase and replace spaces/hyphens with underscores
+        normalized = role.lower().replace(' ', '_').replace('-', '_')
+        
+        # Map common variations to standard roles
+        role_mappings = {
+            'noun_phrase': 'noun',
+            'verb_phrase': 'verb',
+            'adjective_phrase': 'adjective',
+            'adverb_phrase': 'adverb',
+            'prepositional_phrase': 'preposition',
+            'conj': 'conjunction',
+            'prep': 'preposition',
+            'adv': 'adverb',
+            'adj': 'adjective',
+            'n': 'noun',
+            'v': 'verb',
+            'pron': 'pronoun',
+            'det': 'determiner',
+            'art': 'article'
+        }
+        
+        return role_mappings.get(normalized, normalized)

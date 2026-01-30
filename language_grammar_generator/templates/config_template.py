@@ -83,6 +83,10 @@ class LanguageConfig:
 
         self._setup_color_schemes()
 
+        # Role hierarchy and complexity filtering (Arabic Analyzer Innovation)
+        self.role_hierarchy = self._create_role_hierarchy()
+        self.complexity_role_filters = self._create_complexity_filters()
+
     def _setup_color_schemes(self):
         """Setup color schemes for different complexity levels"""
 
@@ -134,23 +138,19 @@ class LanguageConfig:
             return self.advanced_colors
 
     def get_grammatical_roles(self, complexity):
-        """Get grammatical roles for complexity level"""
+        """Get grammatical roles for complexity level with hierarchy filtering"""
         all_roles = self.grammatical_roles
 
-        if complexity == 'beginner':
-            # Return only basic roles for beginners
-            basic_keys = ['noun', 'verb', 'adjective', 'adverb', 'pronoun',
-                         'preposition', 'conjunction', 'determiner']
-            return {{k: v for k, v in all_roles.items() if k in basic_keys}}
-
-        elif complexity == 'intermediate':
-            # Exclude most advanced roles
-            exclude_keys = ['interjection', 'aspect', 'case', 'classifier',
-                           'aspect_marker', 'structural_particle', 'discourse_particle']
-            return {{k: v for k, v in all_roles.items() if k not in exclude_keys}}
-
-        else:  # advanced
+        if complexity == 'advanced':
             return all_roles
+
+        # Use complexity filtering with role hierarchy (Arabic Analyzer Innovation)
+        filtered_roles = {}
+        for role_key, display_name in all_roles.items():
+            if self.should_show_role(role_key, complexity):
+                filtered_roles[role_key] = display_name
+
+        return filtered_roles
 
     def get_language_specific_rules(self):
         """Get language-specific grammatical rules"""
@@ -187,9 +187,150 @@ class LanguageConfig:
         return roles.get(role_key, role_key.replace('_', ' ').title())
 
     def get_color_for_role(self, role, complexity):
-        """Get color for grammatical role"""
+        """Get color for grammatical role with hierarchy inheritance"""
         colors = self.get_color_scheme(complexity)
-        return colors.get(role, '#808080')  # Default gray
+
+        # First try direct role match
+        if role in colors:
+            return colors[role]
+
+        # Try parent role for color inheritance (Arabic Analyzer Innovation)
+        parent_role = self.get_parent_role(role)
+        if parent_role in colors:
+            return colors[parent_role]
+
+        # Default fallback
+        return '#808080'  # Default gray
+
+    def _create_role_hierarchy(self) -> Dict[str, str]:
+        """
+        Create role hierarchy mapping for color inheritance (Arabic Analyzer Innovation)
+        
+        Maps specific grammatical roles to their parent categories for:
+        - Color inheritance: Specific roles use parent colors for visual consistency
+        - Complexity filtering: Parent roles shown when specific roles are too advanced
+        - Educational progression: General → Specific as learner advances
+        """
+        return {
+            # Verb subtypes inherit verb color
+            'perfect_verb': 'verb',
+            'imperfect_verb': 'verb',
+            'imperative_verb': 'verb',
+            'active_participle': 'verb',
+            'passive_participle': 'verb',
+            'reflexive_verb': 'verb',
+            'auxiliary_verb': 'verb',
+            'modal_verb': 'verb',
+            'gerund': 'verb',
+            'infinitive': 'verb',
+            
+            # Noun subtypes inherit noun color
+            'proper_noun': 'noun',
+            'common_noun': 'noun',
+            'abstract_noun': 'noun',
+            'concrete_noun': 'noun',
+            'countable_noun': 'noun',
+            'uncountable_noun': 'noun',
+            'compound_noun': 'noun',
+            
+            # Adjective subtypes inherit adjective color
+            'comparative_adjective': 'adjective',
+            'superlative_adjective': 'adjective',
+            'possessive_adjective': 'adjective',
+            
+            # Adverb subtypes inherit adverb color
+            'manner_adverb': 'adverb',
+            'place_adverb': 'adverb',
+            'time_adverb': 'adverb',
+            'degree_adverb': 'adverb',
+            
+            # Pronoun subtypes inherit pronoun color
+            'personal_pronoun': 'pronoun',
+            'demonstrative_pronoun': 'pronoun',
+            'interrogative_pronoun': 'pronoun',
+            'relative_pronoun': 'pronoun',
+            'indefinite_pronoun': 'pronoun',
+            
+            # Preposition subtypes inherit preposition color
+            'simple_preposition': 'preposition',
+            'compound_preposition': 'preposition',
+            
+            # Conjunction subtypes inherit conjunction color
+            'coordinating_conjunction': 'conjunction',
+            'subordinating_conjunction': 'conjunction',
+            
+            # Determiner subtypes inherit determiner color
+            'definite_article': 'determiner',
+            'indefinite_article': 'determiner',
+            'demonstrative_determiner': 'determiner',
+            'possessive_determiner': 'determiner',
+            
+            # Language-specific morphological features
+            'classifier': 'other',
+            'aspect_marker': 'other',
+            'structural_particle': 'other',
+            'discourse_particle': 'other',
+            'case_marker': 'other',
+            'tense_marker': 'other',
+            'mood_marker': 'other',
+            'number_marker': 'other',
+            'gender_marker': 'other'
+        }
+
+    def _create_complexity_filters(self) -> Dict[str, set]:
+        """
+        Create complexity-based role filtering (Arabic Analyzer Innovation)
+        
+        Defines which grammatical roles are appropriate for each complexity level:
+        - beginner: Basic parts of speech only
+        - intermediate: Common specific roles added
+        - advanced: All morphological and language-specific features
+        """
+        return {
+            'beginner': {
+                'noun', 'verb', 'adjective', 'adverb', 'pronoun', 
+                'preposition', 'conjunction', 'determiner', 'interjection'
+            },
+            'intermediate': {
+                # Basic roles
+                'noun', 'verb', 'adjective', 'adverb', 'pronoun',
+                'preposition', 'conjunction', 'determiner', 'interjection',
+                # Common specific roles
+                'perfect_verb', 'imperfect_verb', 'active_participle', 'passive_participle',
+                'reflexive_verb', 'auxiliary_verb', 'modal_verb',
+                'comparative_adjective', 'superlative_adjective',
+                'personal_pronoun', 'demonstrative_pronoun', 'interrogative_pronoun',
+                'definite_article', 'indefinite_article',
+                'coordinating_conjunction', 'subordinating_conjunction'
+            },
+            'advanced': set()  # Allow all roles for advanced learners
+        }
+
+    def should_show_role(self, role: str, complexity: str) -> bool:
+        """
+        Check if a grammatical role should be displayed at given complexity level
+        
+        Logic:
+        - Advanced: Show all roles
+        - Other levels: Show role if directly allowed OR if its parent role is allowed
+        - This enables progressive disclosure while maintaining color consistency
+        """
+        if complexity == 'advanced':
+            return True
+        
+        allowed_roles = self.complexity_role_filters.get(complexity, set())
+        return role in allowed_roles or self.get_parent_role(role) in allowed_roles
+
+    def get_parent_role(self, role: str) -> str:
+        """
+        Get the parent role for color inheritance and complexity filtering
+        
+        Returns the parent category for specific grammatical roles.
+        Used for:
+        - Color inheritance: Specific roles use parent colors
+        - Complexity filtering: Parent roles shown when specific roles are too advanced
+        """
+        return self._create_role_hierarchy().get(role, role)
 
     def get_complexity_requirements(self):
         """Get requirements for each complexity level"""
