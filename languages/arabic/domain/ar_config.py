@@ -43,6 +43,12 @@ class ArConfig:
         # Load color schemes for different complexity levels
         self.color_schemes = self._load_color_schemes()
 
+        # Create role hierarchy mapping for color inheritance
+        self.role_hierarchy = self._create_role_hierarchy()
+
+        # Create complexity-based role filtering
+        self.complexity_role_filters = self._create_complexity_filters()
+
         # Load prompt templates
         self.prompt_templates = self._load_prompt_templates()
 
@@ -225,6 +231,76 @@ class ArConfig:
             }
         }
 
+    def _create_role_hierarchy(self) -> Dict[str, str]:
+        """Create role hierarchy mapping for color inheritance"""
+        return {
+            # Verb subtypes inherit verb color
+            'perfect_verb': 'verb',
+            'imperfect_verb': 'verb',
+            'imperative_verb': 'verb',
+            'active_participle': 'verb',
+            'passive_participle': 'verb',
+            'verbal_noun': 'noun',  # Verbal nouns are nouns
+            
+            # Noun subtypes inherit noun color
+            'instrument_noun': 'noun',
+            'place_noun': 'noun',
+            'sound_plural': 'noun',
+            'broken_plural': 'noun',
+            'dual': 'noun',
+            
+            # Case markers inherit from their base roles
+            'nominative': 'noun',  # Case applies to nouns
+            'accusative': 'noun',
+            'genitive': 'noun',
+            
+            # Verb forms inherit verb color
+            'verb_form_i': 'verb',
+            'verb_form_ii': 'verb',
+            'verb_form_iii': 'verb',
+            'verb_form_iv': 'verb',
+            'verb_form_v': 'verb',
+            'verb_form_vi': 'verb',
+            'verb_form_vii': 'verb',
+            'verb_form_viii': 'verb',
+            'verb_form_ix': 'verb',
+            'verb_form_x': 'verb',
+            
+            # Other linguistic features
+            'root_based': 'other',
+            'emphatic_consonant': 'other',
+            'sun_letter': 'other',
+            'moon_letter': 'other',
+            'hamza': 'other',
+            'shadda': 'other',
+            'tanween': 'other'
+        }
+
+    def _create_complexity_filters(self) -> Dict[str, set]:
+        """Create complexity-based role filtering"""
+        return {
+            'beginner': {
+                'noun', 'verb', 'pronoun', 'particle', 'other'
+            },
+            'intermediate': {
+                'noun', 'verb', 'pronoun', 'adjective', 'preposition', 'conjunction', 
+                'interrogative', 'negation', 'definite_article', 'imperfect_verb', 
+                'perfect_verb', 'active_participle', 'passive_participle', 'other'
+            },
+            'advanced': set()  # Allow all roles for advanced
+        }
+
+    def should_show_role(self, role: str, complexity: str) -> bool:
+        """Check if a role should be shown at given complexity level"""
+        if complexity == 'advanced':
+            return True
+        allowed_roles = self.complexity_role_filters.get(complexity, set())
+        return role in allowed_roles or self.get_parent_role(role) in allowed_roles
+
+    def get_parent_role(self, role: str) -> str:
+        """Get the parent role for color inheritance"""
+        return self.role_hierarchy.get(role, role)
+
     def _load_prompt_templates(self) -> Dict[str, str]:
         """Load prompt templates from external configuration"""
         config_path = Path(__file__).parent / "ar_config.json"
@@ -238,55 +314,76 @@ class ArConfig:
         """Default prompt templates for Arabic"""
         return {
             'single': """
-Analyze the Arabic sentence: "{sentence}"
-
+Analyze this Arabic sentence for language learning: "{sentence}"
 Target word: "{target_word}"
-Complexity level: {complexity}
 
-Provide a grammatical analysis with the following grammatical roles:
-{grammatical_roles}
+For each word, provide a detailed explanation that combines grammatical role, meaning, and function in this EXACT format:
 
-IMPORTANT: Arabic is read from RIGHT TO LEFT. Analyze words in their correct RTL order.
-Consider Arabic-specific features: root-based morphology, case marking (i'rab), verb forms (abwab), definite article assimilation.
+"grammatical_role (specific_type) - meaning 'semantic_meaning' - functions as syntactic_function - morphological_notes"
 
-For each word, provide:
-1. The word as it appears in the sentence
-2. Its grammatical role
-3. A brief explanation of its function
-4. Any relevant morphological notes (root, pattern, case marking, etc.)
+EXAMPLE for Arabic word "يكتب":
+"verb (imperfect) - meaning 'he writes' - functions as main verb of sentence - Form I, third person masculine singular, nominative case"
 
-CRITICAL: Respond with VALID JSON only. Do not include any explanatory text, markdown formatting, or code blocks. Start your response directly with the JSON object.
-
-Format your response as JSON with this exact structure:
+Return ONLY valid JSON in this exact format:
 {{
   "words": [
     {{
-      "word": "word_text",
-      "grammatical_role": "role_key",
-      "meaning": "brief explanation"
+      "word": "exact_word",
+      "grammatical_role": "brief_role",
+      "meaning": "grammatical_role (specific_type) - meaning 'semantic_meaning' - functions as syntactic_function - morphological_notes"
     }}
   ],
-  "explanations": {{
-    "overall_structure": "sentence structure analysis",
-    "key_features": "important grammatical features"
+  "overall_analysis": {{
+    "sentence_structure": "brief description",
+    "key_features": "important grammatical points"
   }}
 }}
 """,
             'batch': """
-Analyze these Arabic sentences:
+You are an expert linguist specializing in Arabic grammar analysis. Your task is to analyze Arabic sentences and provide contextual word meanings.
 
-{sentences}
-
+Sentences: {sentences}
 Target word: "{target_word}"
 Complexity level: {complexity}
 
-Provide grammatical analysis for each sentence. Arabic is RTL - analyze in correct reading order.
+MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
+
+REQUIRED JSON FORMAT:
+{{
+  "batch_results": [
+    {{
+      "sentence": "exact sentence text",
+      "analysis": [
+        {{
+          "word": "exact_word",
+          "grammatical_role": "noun|verb|pronoun|adjective|conjunction|preposition|other",
+          "meaning": "WORD (GRAMMATICAL_ROLE): contextual meaning — grammatical function"
+        }}
+      ],
+      "explanations": {{
+        "overall_structure": "brief description",
+        "key_features": "important grammatical points"
+      }}
+    }}
+  ]
+}}
+
+CRITICAL RULES:
+1. EXACTLY 3 fields per word: "word", "grammatical_role", "meaning"
+2. "meaning" MUST follow this format: "WORD (GRAMMATICAL_ROLE): contextual meaning — grammatical function"
+3. Use contextual meanings, not generic definitions
+4. Explain each word's specific role in THIS sentence
+
+EXAMPLES:
+- "هي (pronoun): she — subject of the sentence"
+- "تأكل (verb): eats/is eating — main verb of the sentence"  
+- "الموز (noun): the banana — direct object of the verb"
+- "و (conjunction): and — connects two objects"
+- "البطيخ (noun): the watermelon — second direct object"
+
+DO NOT add fields like "case", "person", "type", "other". ONLY use "word", "grammatical_role", "meaning".
 
 Grammatical roles: {grammatical_roles}
-
-CRITICAL: Respond with VALID JSON only. Do not include any explanatory text, markdown formatting, or code blocks. Start your response directly with the JSON object.
-
-Format as JSON with batch_results array containing one object per sentence.
 """,
             'sentence_generation': """
 You are an expert in Modern Standard Arabic.

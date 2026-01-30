@@ -1,6 +1,6 @@
-# languages/{language}/domain/{lang_code}_analyzer.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_analyzer.py
 """
-{Language} Analyzer - Main Facade Component
+LANGUAGE_NAME_PLACEHOLDER Analyzer - Main Facade Component
 
 GOLD STANDARD ANALYZER ARCHITECTURE:
 This is the main facade that orchestrates all domain components.
@@ -21,7 +21,7 @@ ANALYZER FEATURES:
 - Caching and optimization support
 
 INTEGRATION:
-- Entry point for {Language} grammar analysis
+- Entry point for LANGUAGE_NAME_PLACEHOLDER grammar analysis
 - Called by application layer services
 - Uses infrastructure for external dependencies (AI, monitoring)
 - Returns standardized analysis results
@@ -31,14 +31,14 @@ INTEGRATION:
 from typing import Dict, Any, Optional, List
 
 # Import domain components (will be available when template is used)
-# from .{lang_code}_prompt_builder import LanguagePromptBuilder  # type: ignore
-# from .{lang_code}_response_parser import LanguageResponseParser  # type: ignore
-# from .{lang_code}_validator import LanguageValidator  # type: ignore
+# from .LANG_CODE_PLACEHOLDER_prompt_builder import LanguagePromptBuilder  # type: ignore
+# from .LANG_CODE_PLACEHOLDER_response_parser import LanguageResponseParser  # type: ignore
+# from .LANG_CODE_PLACEHOLDER_validator import LanguageValidator  # type: ignore
 
 
 class LanguageAnalyzer:
     """
-    Main analyzer facade for {Language} grammatical analysis.
+    Main analyzer facade for LANGUAGE_NAME_PLACEHOLDER grammatical analysis.
 
     GOLD STANDARD ARCHITECTURE:
     - Clean Architecture with domain components
@@ -74,7 +74,7 @@ class LanguageAnalyzer:
     def analyze_grammar(self, sentence: str, target_word: Optional[str] = None,
                        complexity: str = 'intermediate', api_key: Optional[str] = None) -> Dict[str, Any]:
         """
-        Analyze {Language} sentence grammar using AI.
+        Analyze LANGUAGE_NAME_PLACEHOLDER sentence grammar using AI.
 
         Args:
             sentence: The sentence to analyze
@@ -136,7 +136,7 @@ class LanguageAnalyzer:
     def analyze_batch(self, sentences: List[str], target_word: Optional[str] = None,
                      complexity: str = 'intermediate', api_key: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        Analyze multiple {Language} sentences in batch.
+        Analyze multiple LANGUAGE_NAME_PLACEHOLDER sentences in batch.
 
         Args:
             sentences: List of sentences to analyze
@@ -166,8 +166,8 @@ class LanguageAnalyzer:
     def get_language_info(self) -> Dict[str, Any]:
         """Get comprehensive language and analyzer information"""
         return {
-            'language_code': self.config.get('language_code', '{lang_code}'),
-            'language_name': self.config.get('language_name', '{Language}'),
+            'language_code': self.config.get('language_code', 'LANG_CODE_PLACEHOLDER'),
+            'language_name': self.config.get('language_name', 'LANGUAGE_NAME_PLACEHOLDER'),
             'supported_complexities': self.get_supported_complexities(),
             'grammatical_roles': self.config.get('grammatical_roles', {}),
             'color_scheme': self.config.get('color_scheme', {}),
@@ -183,10 +183,10 @@ class LanguageAnalyzer:
         }
 
     def validate_text(self, text: str) -> Dict[str, Any]:
-        """Validate if text is valid {Language} text"""
+        """Validate if text is valid LANGUAGE_NAME_PLACEHOLDER text"""
         return {
             'is_valid': self._is_language_text(text),
-            'language_code': self.config.get('language_code', '{lang_code}'),
+            'language_code': self.config.get('language_code', 'LANG_CODE_PLACEHOLDER'),
             'detected_script': self._detect_script(text),
             'confidence': 0.9 if self._is_language_text(text) else 0.1
         }
@@ -292,7 +292,7 @@ class LanguageAnalyzer:
         }
 
     def _is_language_text(self, text: str) -> bool:
-        """Check if text is valid {Language} text"""
+        """Check if text is valid LANGUAGE_NAME_PLACEHOLDER text"""
         # Basic validation - customize for your language
         if not text or not text.strip():
             return False

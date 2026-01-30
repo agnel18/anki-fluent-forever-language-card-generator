@@ -463,6 +463,24 @@ python language_grammar_generator/run_all_tests.py --language {language_code} --
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed
 ```
 
+### Step 3: Gold Standard Quality Testing
+```bash
+# Test explanation quality with real API calls
+python streamlit_app/test_<language>_analysis.py
+
+# Validate semantic + syntactic explanations
+python -m pytest streamlit_app/test_<language>_analysis.py::test_<language>_analyzer_quality -v
+```
+
+### Step 4: Sentence Generation Testing
+```bash
+# Test AI-powered sentence generation
+python test_<language>_sentences.py
+
+# Validate no fallback to sample sentences
+python -m pytest tests/test_sentence_generator.py -k <language> -v
+```
+
 ### Step 3: Troubleshooting Failed Tests
 
 **❌ Method Missing Errors:**
@@ -501,6 +519,8 @@ python language_grammar_generator/compare_with_gold_standard.py --language {lang
 - [ ] All unit tests pass
 - [ ] All integration tests pass
 - [ ] All system tests pass
+- [ ] Gold standard quality tests pass (semantic + syntactic explanations)
+- [ ] Sentence generation tests pass (no fallback to samples)
 - [ ] Performance requirements met
 - [ ] Gold standard comparison passes
 - [ ] Regression tests pass

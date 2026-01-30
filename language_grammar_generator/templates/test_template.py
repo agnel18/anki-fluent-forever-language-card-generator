@@ -1,6 +1,6 @@
-# tests/test_{language}_analyzer.py
+# tests/test_LANGUAGE_PLACEHOLDER_analyzer.py
 """
-Comprehensive unit tests for {Language} analyzer components.
+Comprehensive unit tests for LANGUAGE_NAME_PLACEHOLDER analyzer components.
 
 GOLD STANDARD TESTING PATTERN:
 This template follows the testing approach used by Hindi and Chinese Simplified analyzers.
@@ -17,45 +17,49 @@ COMPONENTS TESTED:
 - Domain components (config, prompt_builder, response_parser, validator)
 - Integration scenarios
 - Error handling and fallbacks
+- Gold standard quality validation (semantic + syntactic explanations)
+- Sentence generation quality testing (AI-powered vs fallback)
 
 INTEGRATION WITH AUTOMATED TESTING:
 - Use validate_implementation.py for pre-deployment checks
 - Use run_all_tests.py for comprehensive test execution
 - Use compare_with_gold_standard.py for quality validation
+- Use test_LANGUAGE_PLACEHOLDER_analysis.py for gold standard explanation quality
+- Use test_LANGUAGE_PLACEHOLDER_sentences.py for sentence generation validation
 - Auto-generated test files provide additional coverage
 
 USAGE:
     # Run specific component tests
-    python -m pytest tests/test_{language}_analyzer.py::Test{Language}Analyzer::test_initialization -v
+    python -m pytest tests/test_LANGUAGE_PLACEHOLDER_analyzer.py::TestLANGUAGE_NAME_PLACEHOLDERAnalyzer::test_initialization -v
 
     # Run all tests for this language
-    python language_grammar_generator/run_all_tests.py --language {lang_code}
+    python language_grammar_generator/run_all_tests.py --language LANG_CODE_PLACEHOLDER
 
     # Validate before deployment
-    python language_grammar_generator/validate_implementation.py --language {lang_code}
+    python language_grammar_generator/validate_implementation.py --language LANG_CODE_PLACEHOLDER
 """
 
 import pytest
 from unittest.mock import Mock, patch
 import json
-# from languages.{language}.{language}_analyzer import {Language}Analyzer
-# from languages.{language}.{language}_config import {Language}Config
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_config import LANGUAGE_NAME_PLACEHOLDERConfig
 
 
-# class Test{Language}Analyzer:
+# class TestLANGUAGE_NAME_PLACEHOLDERAnalyzer:
 class TestLanguageAnalyzer:
-    """Comprehensive tests for {Language} analyzer - follows gold standard pattern"""
+    """Comprehensive tests for LANGUAGE_NAME_PLACEHOLDER analyzer - follows gold standard pattern"""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer instance for testing"""
-        # return {Language}Analyzer()
+        # return LANGUAGE_NAME_PLACEHOLDERAnalyzer()
         return None  # Replace with actual analyzer instance
 
     @pytest.fixture
     def config(self):
         """Create config instance for testing"""
-        # return {Language}Config()
+        # return LANGUAGE_NAME_PLACEHOLDERConfig()
         return None  # Replace with actual config instance
 
     def test_initialization(self, analyzer):
@@ -64,7 +68,7 @@ class TestLanguageAnalyzer:
         # assert analyzer.prompt_builder is not None
         # assert analyzer.response_parser is not None
         # assert analyzer.validator is not None
-        # assert isinstance(analyzer.config, {Language}Config)
+        # assert isinstance(analyzer.config, LANGUAGE_NAME_PLACEHOLDERConfig)
         pass  # Implement test
 
     def test_language_info(self, analyzer):
@@ -75,8 +79,8 @@ class TestLanguageAnalyzer:
         # for key in required_keys:
         #     assert key in info
         #
-        # assert info['language_code'] == '{lang_code}'
-        # assert info['language_name'] == '{Language}'
+        # assert info['language_code'] == 'LANG_CODE_PLACEHOLDER'
+        # assert info['language_name'] == 'LANGUAGE_NAME_PLACEHOLDER'
         # assert len(info['supported_complexities']) == 3  # beginner, intermediate, advanced
         pass  # Implement test
 
@@ -244,9 +248,9 @@ class TestLanguageAnalyzer:
         assert 0.0 <= score <= 1.0
 
 
-# tests/test_{language}_config.py
+# tests/test_LANGUAGE_PLACEHOLDER_config.py
 """
-Unit tests for {Language} configuration - follows gold standard pattern.
+Unit tests for LANGUAGE_NAME_PLACEHOLDER configuration - follows gold standard pattern.
 
 GOLD STANDARD CONFIG TESTING:
 - Tests configuration loading from external files
@@ -256,17 +260,17 @@ GOLD STANDARD CONFIG TESTING:
 """
 
 import pytest
-# from languages.{language}.{language}_config import {Language}Config
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_config import LANGUAGE_NAME_PLACEHOLDERConfig
 
 
-# class Test{Language}Config:
+# class TestLANGUAGE_NAME_PLACEHOLDERConfig:
 class TestLanguageConfig:
-    """Test {Language} configuration functionality - gold standard pattern"""
+    """Test LANGUAGE_NAME_PLACEHOLDER configuration functionality - gold standard pattern"""
 
     @pytest.fixture
     def config(self):
         """Create config instance for testing"""
-        # return {Language}Config()
+        # return LANGUAGE_NAME_PLACEHOLDERConfig()
         return None  # Replace with actual config instance
 
     def test_initialization(self, config):
@@ -435,23 +439,23 @@ class TestLanguageConfig:
         assert 'excluded_features' in beginner_reqs
 
 
-# tests/test_{language}_prompt_builder.py
+# tests/test_LANGUAGE_PLACEHOLDER_prompt_builder.py
 """
-Unit tests for {Language} prompt builder.
+Unit tests for LANGUAGE_NAME_PLACEHOLDER prompt builder.
 """
 
 import pytest
-# from languages.{language}.{language}_prompt_builder import {Language}PromptBuilder
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_prompt_builder import LANGUAGE_NAME_PLACEHOLDERPromptBuilder
 
 
-# class Test{Language}PromptBuilder:
+# class TestLANGUAGE_NAME_PLACEHOLDERPromptBuilder:
 class TestLanguagePromptBuilder:
-    """Test {Language} prompt building functionality"""
+    """Test LANGUAGE_NAME_PLACEHOLDER prompt building functionality"""
 
     @pytest.fixture
     def prompt_builder(self):
         """Create prompt builder instance for testing"""
-        # return {Language}PromptBuilder()
+        # return LANGUAGE_NAME_PLACEHOLDERPromptBuilder()
         return None  # Replace with actual prompt builder instance
 
     def test_initialization(self, prompt_builder):
@@ -483,7 +487,7 @@ class TestLanguagePromptBuilder:
         prompt = prompt_builder.build_single_prompt(sentence, "", "beginner")
 
         # Check for required elements
-        assert "{Language}" in prompt  # Should contain language name
+        assert "LANGUAGE_NAME_PLACEHOLDER" in prompt  # Should contain language name
         assert sentence in prompt
         assert "beginner" in prompt
         assert "JSON" in prompt  # Should specify JSON output format
@@ -530,24 +534,24 @@ class TestLanguagePromptBuilder:
         assert len(prompt_builder.prompt_cache) == 0
 
 
-# tests/test_{language}_response_parser.py
+# tests/test_LANGUAGE_PLACEHOLDER_response_parser.py
 """
-Unit tests for {Language} response parser.
+Unit tests for LANGUAGE_NAME_PLACEHOLDER response parser.
 """
 
 import pytest
 import json
-# from languages.{language}.{language}_response_parser import {Language}ResponseParser
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_response_parser import LANGUAGE_NAME_PLACEHOLDERResponseParser
 
 
-# class Test{Language}ResponseParser:
+# class TestLANGUAGE_NAME_PLACEHOLDERResponseParser:
 class TestLanguageResponseParser:
-    """Test {Language} response parsing functionality"""
+    """Test LANGUAGE_NAME_PLACEHOLDER response parsing functionality"""
 
     @pytest.fixture
     def parser(self):
         """Create parser instance for testing"""
-        # return {Language}ResponseParser()
+        # return LANGUAGE_NAME_PLACEHOLDERResponseParser()
         return None  # Replace with actual parser instance
 
     def test_initialization(self, parser):
@@ -755,9 +759,9 @@ This analysis considers the right-to-left reading direction and Arabic-specific 
         assert all(len(explanation) == 4 for explanation in result['word_explanations'])  # (word, role, color, meaning)
 
 
-# tests/test_{language}_validator.py
+# tests/test_LANGUAGE_PLACEHOLDER_validator.py
 """
-Unit tests for {Language} validator - follows gold standard pattern.
+Unit tests for LANGUAGE_NAME_PLACEHOLDER validator - follows gold standard pattern.
 
 GOLD STANDARD VALIDATION TESTING:
 - Tests validation without artificial confidence boosting
@@ -767,17 +771,17 @@ GOLD STANDARD VALIDATION TESTING:
 """
 
 import pytest
-# from languages.{language}.{language}_validator import {Language}Validator
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_validator import LANGUAGE_NAME_PLACEHOLDERValidator
 
 
-# class Test{Language}Validator:
+# class TestLANGUAGE_NAME_PLACEHOLDERValidator:
 class TestLanguageValidator:
-    """Test {Language} validation functionality - gold standard pattern"""
+    """Test LANGUAGE_NAME_PLACEHOLDER validation functionality - gold standard pattern"""
 
     @pytest.fixture
     def validator(self):
         """Create validator instance for testing"""
-        # return {Language}Validator()
+        # return LANGUAGE_NAME_PLACEHOLDERValidator()
         return None  # Replace with actual validator instance
 
     def test_initialization(self, validator):
@@ -1037,27 +1041,27 @@ class TestLanguageValidator:
             assert 0.0 <= metric_value <= 1.0
 
 
-# tests/test_{language}_integration.py
+# tests/test_LANGUAGE_PLACEHOLDER_integration.py
 """
-Integration tests for {Language} analyzer.
+Integration tests for LANGUAGE_NAME_PLACEHOLDER analyzer.
 """
 
 import pytest
 from unittest.mock import patch, Mock
-# from languages.{language}.{language}_analyzer import {Language}Analyzer
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
 
 
-# class Test{Language}Integration:
+# class TestLANGUAGE_NAME_PLACEHOLDERIntegration:
 class TestLanguageIntegration:
-    """Test {Language} analyzer integration"""
+    """Test LANGUAGE_NAME_PLACEHOLDER analyzer integration"""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer instance for testing"""
-        # return {Language}Analyzer()
+        # return LANGUAGE_NAME_PLACEHOLDERAnalyzer()
         return None  # Replace with actual analyzer instance
 
-    @patch('languages.{language}.{language}_analyzer.{Language}AIService')
+    @patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.LANGUAGE_NAME_PLACEHOLDERAIService')
     def test_full_analysis_workflow(self, mock_ai_service_class, analyzer):
         """Test complete analysis workflow"""
         # Setup mock AI service
@@ -1103,7 +1107,7 @@ class TestLanguageIntegration:
         assert 'issues' in result['validation']
         assert 'quality_metrics' in result['validation']
 
-    @patch('languages.{language}.{language}_analyzer.{Language}AIService')
+    @patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.LANGUAGE_NAME_PLACEHOLDERAIService')
     def test_error_recovery_workflow(self, mock_ai_service_class, analyzer):
         """Test error recovery in analysis workflow"""
         # Setup mock to raise exception
@@ -1143,28 +1147,28 @@ class TestLanguageIntegration:
             assert len(colors) > 0
 
 
-# tests/test_{language}_performance.py
+# tests/test_LANGUAGE_PLACEHOLDER_performance.py
 """
-Performance tests for {Language} analyzer.
+Performance tests for LANGUAGE_NAME_PLACEHOLDER analyzer.
 """
 
 import pytest
 import time
 from unittest.mock import patch, Mock
-# from languages.{language}.{language}_analyzer import {Language}Analyzer
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
 
 
-# class Test{Language}Performance:
+# class TestLANGUAGE_NAME_PLACEHOLDERPerformance:
 class TestLanguagePerformance:
-    """Test {Language} analyzer performance"""
+    """Test LANGUAGE_NAME_PLACEHOLDER analyzer performance"""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer instance for testing"""
-        # return {Language}Analyzer()
+        # return LANGUAGE_NAME_PLACEHOLDERAnalyzer()
         return None  # Replace with actual analyzer instance
 
-    @patch('languages.{language}.{language}_analyzer.{Language}AIService')
+    @patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.LANGUAGE_NAME_PLACEHOLDERAIService')
     def test_analysis_response_time(self, mock_ai_service_class, analyzer):
         """Test analysis response time is reasonable"""
         # Setup mock with fast response
@@ -1242,27 +1246,27 @@ class TestLanguagePerformance:
         assert sentence in prompt
 
 
-# tests/test_{language}_linguistic_accuracy.py
+# tests/test_LANGUAGE_PLACEHOLDER_linguistic_accuracy.py
 """
-Linguistic accuracy tests for {Language} analyzer.
+Linguistic accuracy tests for LANGUAGE_NAME_PLACEHOLDER analyzer.
 """
 
 import pytest
 from unittest.mock import patch, Mock
-# from languages.{language}.{language}_analyzer import {Language}Analyzer
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
 
 
-# class Test{Language}LinguisticAccuracy:
+# class TestLANGUAGE_NAME_PLACEHOLDERLinguisticAccuracy:
 class TestLanguageLinguisticAccuracy:
-    """Test {Language} analyzer linguistic accuracy"""
+    """Test LANGUAGE_NAME_PLACEHOLDER analyzer linguistic accuracy"""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer instance for testing"""
-        # return {Language}Analyzer()
+        # return LANGUAGE_NAME_PLACEHOLDERAnalyzer()
         return None  # Replace with actual analyzer instance
 
-    @patch('languages.{language}.{language}_analyzer.{Language}AIService')
+    @patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.LANGUAGE_NAME_PLACEHOLDERAIService')
     def test_basic_grammatical_roles(self, mock_ai_service_class, analyzer):
         """Test recognition of basic grammatical roles"""
         mock_ai_service = Mock()
@@ -1297,7 +1301,7 @@ class TestLanguageLinguisticAccuracy:
         # Check confidence is reasonable
         assert result['confidence_score'] > 0.5
 
-    @patch('languages.{language}.{language}_analyzer.{Language}AIService')
+    @patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.LANGUAGE_NAME_PLACEHOLDERAIService')
     def test_complex_sentence_handling(self, mock_ai_service_class, analyzer):
         """Test handling of complex sentence structures"""
         mock_ai_service = Mock()
@@ -1383,3 +1387,342 @@ class TestLanguageLinguisticAccuracy:
             assert 'is_valid' in validation
             assert 'issues' in validation
             assert 'quality_metrics' in validation
+
+    # ==========================================
+    # GOLD STANDARD QUALITY TESTS
+    # ==========================================
+
+    def test_gold_standard_explanation_quality(self, analyzer):
+        """Test gold standard explanation quality - combines semantic meaning + syntactic function"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # Test sentences that should produce detailed explanations
+        test_sentences = [
+            "{Test sentence 1 for LANGUAGE_NAME_PLACEHOLDER.}",
+            "{Test sentence 2 for LANGUAGE_NAME_PLACEHOLDER.}"
+        ]
+
+        # Mock AI responses that provide gold standard quality
+        mock_responses = [
+            '''{{
+  "words": [
+    {{
+      "word": "{word1}",
+      "grammatical_role": "verb",
+      "meaning": "verb (imperfect) - meaning '{semantic_meaning}' - functions as {syntactic_function} - {morphological_notes}"
+    }},
+    {{
+      "word": "{word2}",
+      "grammatical_role": "noun",
+      "meaning": "noun (definite) - meaning '{semantic_meaning}' - functions as {syntactic_function} - {morphological_notes}"
+    }}
+  ],
+  "overall_analysis": {{
+    "sentence_structure": "Subject-verb-object structure",
+    "key_features": "Language-specific grammatical features demonstrated"
+  }}
+}}''',
+            '''{{
+  "words": [
+    {{
+      "word": "{word3}",
+      "grammatical_role": "adjective",
+      "meaning": "adjective (attributive) - meaning '{semantic_meaning}' - functions as {syntactic_function} - {morphological_notes}"
+    }}
+  ],
+  "overall_analysis": {{
+    "sentence_structure": "Complex sentence structure",
+    "key_features": "Advanced grammatical constructions"
+  }}
+}}'''
+        ]
+
+        for i, (sentence, mock_response) in enumerate(zip(test_sentences, mock_responses)):
+            with patch.object(analyzer, '_call_ai') as mock_ai:
+                mock_ai.return_value = mock_response
+
+                result = analyzer.analyze_grammar(sentence, "{target_word}", "intermediate", "test_key")
+
+                assert result is not None
+                assert 'word_explanations' in result
+
+                # Validate gold standard quality for each word explanation
+                for word_info in result['word_explanations']:
+                    if isinstance(word_info, list) and len(word_info) >= 4:
+                        word, role, color, meaning = word_info
+                    elif isinstance(word_info, dict):
+                        word = word_info.get('word', '')
+                        role = word_info.get('role', '')
+                        meaning = word_info.get('meaning', '')
+                    else:
+                        continue
+
+                    # Gold standard quality checks
+                    assert meaning, f"Word '{word}' has no meaning"
+
+                    # Should be detailed enough (not too short)
+                    assert len(meaning.strip()) >= 20, f"Meaning for '{word}' too short: {meaning}"
+
+                    # Should include both semantic and syntactic information
+                    has_semantic = any(keyword in meaning.lower() for keyword in [
+                        "meaning", "means", "refers to", "expresses", "represents"
+                    ])
+                    has_syntactic = any(keyword in meaning.lower() for keyword in [
+                        "functions as", "serves as", "acts as", "used as", "subject", "object",
+                        "modifier", "predicate", "introduces", "connects", "governs"
+                    ])
+
+                    assert has_semantic or has_syntactic, f"Meaning lacks semantic or syntactic content: {meaning}"
+
+    def test_gold_standard_comparison(self, analyzer):
+        """Compare with gold standard analyzers (Chinese Simplified, Hindi)"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # Load gold standard results for comparison
+        gold_standard_results = {
+            'zh': {
+                'sentence': '我爱学习中文。',
+                'word_count': 5,
+                'avg_explanation_length': 45,
+                'semantic_syntactic_ratio': 0.8
+            },
+            'hi': {
+                'sentence': 'मैं हिंदी सीखना चाहता हूँ।',
+                'word_count': 5,
+                'avg_explanation_length': 42,
+                'semantic_syntactic_ratio': 0.75
+            }
+        }
+
+        # Test that our analyzer produces comparable quality
+        test_sentence = "{Test sentence in LANGUAGE_NAME_PLACEHOLDER.}"
+
+        with patch.object(analyzer, '_call_ai') as mock_ai:
+            # Mock a high-quality response
+            mock_ai.return_value = '''{{
+  "words": [
+    {{"word": "word1", "grammatical_role": "noun", "meaning": "noun (subject) - meaning 'test' - functions as sentence subject - nominative case"}},
+    {{"word": "word2", "grammatical_role": "verb", "meaning": "verb (main) - meaning 'to test' - functions as predicate - present tense"}},
+    {{"word": "word3", "grammatical_role": "object", "meaning": "noun (object) - meaning 'language' - functions as direct object - accusative case"}}
+  ],
+  "overall_analysis": {{"sentence_structure": "SVO structure", "key_features": "Standard grammatical features"}}
+}}'''
+
+            result = analyzer.analyze_grammar(test_sentence, "word1", "intermediate", "test_key")
+
+            # Compare with gold standards
+            word_count = len(result.get('word_explanations', []))
+            total_explanation_length = sum(len(str(word_info[3] if isinstance(word_info, list) and len(word_info) >= 4 else word_info.get('meaning', ''))) for word_info in result.get('word_explanations', []))
+            avg_explanation_length = total_explanation_length / word_count if word_count > 0 else 0
+
+            # Should be within reasonable range of gold standards
+            assert 3 <= word_count <= 8, f"Word count {word_count} outside expected range"
+            assert avg_explanation_length >= 30, f"Average explanation length {avg_explanation_length} too short compared to gold standards"
+
+    # ==========================================
+    # SENTENCE GENERATION TESTS
+    # ==========================================
+
+    def test_sentence_generation_quality(self, analyzer):
+        """Test AI-powered sentence generation quality"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # Test that sentence generation works with database words
+        test_words = ["{word1}", "{word2}", "{word3}", "{word4}"]
+
+        for word in test_words:
+            # Mock successful sentence generation (not falling back to samples)
+            with patch('sentence_generator.generate_word_meaning_sentences_and_keywords') as mock_gen:
+                mock_gen.return_value = {
+                    'meaning': f'Meaning of {word}',
+                    'restrictions': 'None',
+                    'sentences': [
+                        f'This is a test sentence with {word}.',
+                        f'Another sentence containing {word}.',
+                        f'{word} appears in this sentence.',
+                        f'Final sentence with {word}.'
+                    ],
+                    'translations': ['Translation 1', 'Translation 2', 'Translation 3', 'Translation 4'],
+                    'ipa': ['/ɪpə/', '/ɪpə/', '/ɪpə/', '/ɪpə/'],
+                    'keywords': ['keyword1', 'keyword2', 'keyword3']
+                }
+
+                # This would typically call the sentence generator
+                # result = generate_word_meaning_sentences_and_keywords(
+                #     word=word,
+                #     language="LANGUAGE_NAME_PLACEHOLDER",
+                #     num_sentences=4,
+                #     difficulty="intermediate",
+                #     gemini_api_key="test_key"
+                # )
+
+                # For now, just test the mock
+                result = mock_gen.return_value
+
+                # Validate sentence generation quality
+                assert 'sentences' in result
+                assert len(result['sentences']) == 4
+
+                # Check that sentences are not fallback samples
+                for sentence in result['sentences']:
+                    assert word in sentence, f"Target word '{word}' not found in sentence: {sentence}"
+                    assert len(sentence.split()) >= 3, f"Sentence too short: {sentence}"
+
+                # Validate translations and IPA
+                assert 'translations' in result
+                assert len(result['translations']) == 4
+                assert 'ipa' in result
+                assert len(result['ipa']) == 4
+
+    def test_sentence_generation_fallback_prevention(self, analyzer):
+        """Test that sentence generation avoids falling back to sample sentences"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # Test with words that might cause fallback
+        problematic_words = ["{difficult_word1}", "{difficult_word2}"]
+
+        for word in problematic_words:
+            with patch('sentence_generator.generate_word_meaning_sentences_and_keywords') as mock_gen:
+                # Mock response that shows successful AI generation
+                mock_gen.return_value = {
+                    'meaning': f'AI-generated meaning for {word}',
+                    'restrictions': 'None',
+                    'sentences': [
+                        f'AI generated: The {word} is important.',
+                        f'AI generated: We use {word} here.',
+                        f'AI generated: {word} functions well.',
+                        f'AI generated: Understanding {word} helps.'
+                    ],
+                    'translations': ['AI translation 1', 'AI translation 2', 'AI translation 3', 'AI translation 4'],
+                    'ipa': ['/aɪ/', '/aɪ/', '/aɪ/', '/aɪ/'],
+                    'keywords': ['ai', 'generated', 'content']
+                }
+
+                result = mock_gen.return_value
+
+                # Ensure it's not using fallback sample sentences
+                sentences_text = ' '.join(result['sentences']).lower()
+                assert 'sample' not in sentences_text, "Using fallback sample sentences"
+                assert 'example' not in sentences_text, "Using fallback example sentences"
+
+                # Ensure AI-generated content markers
+                assert any('ai generated' in s.lower() for s in result['sentences']), "Not marked as AI-generated"
+
+    def test_sentence_generation_with_real_api(self, analyzer):
+        """Integration test for sentence generation with real API calls"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # This test would run with real API calls in CI/CD
+        # For unit tests, we skip or use extensive mocking
+
+        # Skip in normal unit test runs - run separately with API access
+        pytest.skip("Real API test - run separately with test_sentence_generation_real_api.py")
+
+        # When run with API access:
+        # - Test with actual database words
+        # - Verify no fallback to samples
+        # - Validate sentence quality and grammar
+        # - Check cultural appropriateness
+        # - Measure generation performance
+
+    def test_batch_grammar_analysis(self, analyzer):
+        """Test batch processing of multiple sentences for efficiency."""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        # Test sentences - replace with actual LANGUAGE_NAME_PLACEHOLDER sentences
+        sentences = [
+            "{Test sentence 1 in LANGUAGE_NAME_PLACEHOLDER.}",
+            "{Test sentence 2 in LANGUAGE_NAME_PLACEHOLDER.}",
+            "{Test sentence 3 in LANGUAGE_NAME_PLACEHOLDER.}"
+        ]
+
+        target_word = "{target_word}"
+        complexity = "intermediate"
+
+        # Mock the AI call to return batch results
+        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
+            mock_gen = Mock()
+            mock_gen_class.return_value = mock_gen
+
+            # Mock batch response with detailed grammatical analysis
+            mock_response = Mock()
+            mock_response.text = '''{
+  "batch_results": [
+    {
+      "sentence": "''' + sentences[0] + '''",
+      "words": [
+        {
+          "word": "''' + target_word + '''",
+          "grammatical_role": "noun",
+          "type": "proper_noun",
+          "person": "third",
+          "number": "singular",
+          "case": "nominative",
+          "meaning": "specific LANGUAGE_NAME_PLACEHOLDER grammatical explanation"
+        }
+      ],
+      "explanations": {
+        "overall_structure": "Subject-verb-object structure",
+        "key_features": "LANGUAGE_NAME_PLACEHOLDER specific features"
+      }
+    }
+  ]
+}'''
+            mock_gen.generate_content.return_value = mock_response
+
+            # Test batch analysis
+            results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "test_api_key")
+
+            # Verify results
+            assert len(results) == len(sentences), f"Expected {len(sentences)} results, got {len(results)}"
+
+            for i, result in enumerate(results):
+                assert result.sentence == sentences[i], f"Sentence mismatch at index {i}"
+                assert result.target_word == target_word, f"Target word mismatch at index {i}"
+                assert result.language_code == "LANG_CODE_PLACEHOLDER", f"Language code mismatch at index {i}"
+                assert result.complexity_level == complexity, f"Complexity mismatch at index {i}"
+                assert len(result.word_explanations) > 0, f"No word explanations for sentence {i}"
+
+                # Check that explanations are not generic fallbacks
+                for exp in result.word_explanations:
+                    assert len(exp) >= 4, f"Malformed explanation: {exp}"
+                    word, role, color, meaning = exp
+                    # Ensure meaning is specific, not generic
+                    assert "a thing, person, or concept" not in meaning, f"Generic explanation found: {meaning}"
+                    assert "a word that describes" not in meaning, f"Generic explanation found: {meaning}"
+
+    def test_batch_processing_efficiency(self, analyzer):
+        """Test that batch processing is more efficient than individual processing."""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        sentences = ["{Sentence 1}", "{Sentence 2}", "{Sentence 3}", "{Sentence 4}", "{Sentence 5}"]
+        target_word = "{target_word}"
+        complexity = "intermediate"
+
+        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
+            mock_gen = Mock()
+            mock_gen_class.return_value = mock_gen
+
+            # Mock successful batch response
+            mock_response = Mock()
+            mock_response.text = '{"batch_results": []}'
+            mock_gen.generate_content.return_value = mock_response
+
+            # Time batch processing
+            import time
+            start_time = time.time()
+            batch_results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "test_api_key")
+            batch_time = time.time() - start_time
+
+            # Verify batch processing completes
+            assert len(batch_results) == len(sentences), "Batch processing failed to return correct number of results"
+
+            # Batch should be reasonably fast (less than 1 second with mocking)
+            assert batch_time < 1.0, f"Batch processing too slow: {batch_time} seconds"

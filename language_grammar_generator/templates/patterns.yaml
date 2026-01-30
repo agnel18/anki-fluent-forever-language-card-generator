@@ -1,13 +1,13 @@
-# languages/{language}/infrastructure/data/patterns.yaml
+# languages/LANGUAGE_PLACEHOLDER/infrastructure/data/patterns.yaml
 """
-Linguistic Patterns Configuration for {Language}
+Linguistic Patterns Configuration for LANGUAGE_NAME_PLACEHOLDER
 
 GOLD STANDARD PATTERNS:
-This file defines regex patterns and linguistic rules for {Language} text processing.
+This file defines regex patterns and linguistic rules for LANGUAGE_NAME_PLACEHOLDER text processing.
 Patterns are used for text validation, feature extraction, and grammatical analysis.
 
 PATTERN CATEGORIES:
-- text_validation: Patterns for validating {Language} text
+- text_validation: Patterns for validating LANGUAGE_NAME_PLACEHOLDER text
 - word_patterns: Regex patterns for different word types
 - sentence_patterns: Patterns for sentence structure recognition
 - script_patterns: Unicode ranges and script validation
@@ -28,15 +28,15 @@ CUSTOMIZATION:
 
 text_validation:
   # Basic text validation patterns
-  has_{lang_code}_characters:
+  has_LANG_CODE_PLACEHOLDER_characters:
     regex: "[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]"
-    description: "Contains {Language} script characters (Arabic, Persian, Urdu ranges)"
+    description: "Contains LANGUAGE_NAME_PLACEHOLDER script characters (Arabic, Persian, Urdu ranges)"
     examples: ["مرحبا", "سلام", "كتاب"]
     flags: ["UNICODE"]
 
-  is_{lang_code}_text:
+  is_LANG_CODE_PLACEHOLDER_text:
     regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\s\u064B-\u065F\u0670\u0674-\u0678\u06D6-\u06ED\u08F0-\u08F3]+$"
-    description: "Text consists entirely of {Language} characters and diacritics"
+    description: "Text consists entirely of LANGUAGE_NAME_PLACEHOLDER characters and diacritics"
     examples: ["هذا نص باللغة العربية", "مرحبا بالجميع"]
     flags: ["UNICODE", "MULTILINE"]
 
@@ -44,7 +44,7 @@ word_patterns:
   # Word-level patterns
   noun_pattern:
     regex: "^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]{2,}$"
-    description: "Basic noun pattern (2+ {Language} characters)"
+    description: "Basic noun pattern (2+ LANGUAGE_NAME_PLACEHOLDER characters)"
     examples: ["كتاب", "مدرسة", "طالب"]
     flags: ["UNICODE"]
 

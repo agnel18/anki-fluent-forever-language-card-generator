@@ -1,13 +1,13 @@
-# languages/{language}/domain/{lang_code}_patterns.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_patterns.py
 """
-{Language} Patterns - Domain Component
+LANGUAGE_NAME_PLACEHOLDER Patterns - Domain Component
 
 GOLD STANDARD PATTERN APPROACH:
-This component provides regex patterns and linguistic rules for {Language} text processing.
+This component provides regex patterns and linguistic rules for LANGUAGE_NAME_PLACEHOLDER text processing.
 It handles morphological recognition, validation, and feature extraction.
 
 RESPONSIBILITIES:
-1. Define regex patterns for {Language} linguistic features
+1. Define regex patterns for LANGUAGE_NAME_PLACEHOLDER linguistic features
 2. Provide morphological pattern recognition
 3. Validate text against language-specific rules
 4. Extract linguistic features from text
@@ -33,7 +33,7 @@ from typing import Dict, Any, Optional, Pattern
 
 class LanguagePatterns:
     """
-    Regex patterns and markers for {Language} analysis.
+    Regex patterns and markers for LANGUAGE_NAME_PLACEHOLDER analysis.
 
     GOLD STANDARD PATTERN APPROACH:
     - Comprehensive regex pattern compilation
@@ -57,7 +57,7 @@ class LanguagePatterns:
         self._initialize_patterns()
 
     def _initialize_patterns(self):
-        """Initialize and compile {Language}-specific regex patterns"""
+        """Initialize and compile LANGUAGE_NAME_PLACEHOLDER-specific regex patterns"""
         # Load patterns from config if available
         patterns_data = getattr(self.config, 'patterns', {})
 
@@ -99,7 +99,7 @@ class LanguagePatterns:
                     print(f"Invalid regex pattern {pattern_name}: {e}")
 
     def validate_text(self, text: str) -> Dict[str, Any]:
-        """Validate {Language} text against linguistic patterns"""
+        """Validate LANGUAGE_NAME_PLACEHOLDER text against linguistic patterns"""
         result = {
             'is_valid': True,
             'issues': [],
@@ -115,7 +115,7 @@ class LanguagePatterns:
         # Check for valid characters
         if not self._has_valid_characters(text):
             result['is_valid'] = False
-            result['issues'].append('Contains invalid characters for {Language}')
+            result['issues'].append('Contains invalid characters for LANGUAGE_NAME_PLACEHOLDER')
 
         # Check script consistency
         if not self._is_script_consistent(text):
@@ -127,7 +127,7 @@ class LanguagePatterns:
         return result
 
     def _has_valid_characters(self, text: str) -> bool:
-        """Check if text contains only valid {Language} characters"""
+        """Check if text contains only valid LANGUAGE_NAME_PLACEHOLDER characters"""
         # Check against unicode range (placeholder - customize for your language)
         for char in text:
             char_code = ord(char)

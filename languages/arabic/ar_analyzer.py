@@ -2,6 +2,7 @@
 # Main facade for Arabic grammar analysis
 # Clean Architecture implementation with RTL text handling
 
+import json
 import logging
 import re
 from typing import Optional, Dict, Any, List
@@ -298,6 +299,12 @@ IMPORTANT:
                 ai_response, complexity, sentence, target_word
             )
 
+            logger.info(f"Parsed result keys: {list(parsed_result.keys()) if parsed_result else 'None'}")
+            if parsed_result and 'word_explanations' in parsed_result:
+                logger.info(f"Word explanations count: {len(parsed_result['word_explanations'])}")
+            else:
+                logger.error("No word_explanations in parsed result")
+
             # Validate result
             validated_result = self.validator.validate_result(parsed_result, sentence)
 
@@ -358,6 +365,9 @@ IMPORTANT:
                 response = model.generate_content(prompt)
                 ai_response = response.text.strip()
 
+            # Store for debugging
+            self._last_ai_response = ai_response
+            
             return ai_response
 
         except Exception as e:
@@ -411,7 +421,7 @@ IMPORTANT:
         # Get color scheme based on complexity
         color_scheme = self.arabic_config.get_color_scheme(complexity)
 
-        # Create mapping of words to their explanations
+        # Create mapping of words to their explanations with flexible matching
         word_to_explanation = {}
         for exp in word_explanations:
             if len(exp) >= 4:
@@ -429,6 +439,7 @@ IMPORTANT:
             # Clean word for matching
             clean_word = re.sub(r'[.!?،؛:"\'()\[\]{}]', '', word)
 
+            # Try exact match first
             if clean_word in word_to_explanation:
                 original_word, role, color, meaning = word_to_explanation[clean_word]
                 # Escape curly braces and apply coloring
@@ -436,9 +447,33 @@ IMPORTANT:
                 colored_word = f'<span style="color: {color}; font-weight: bold;" title="{role}: {meaning}">{safe_word}</span>'
                 sentence_parts.append(colored_word)
             else:
-                # Word without analysis
-                safe_word = word.replace('{', '{{').replace('}', '}}')
-                sentence_parts.append(f'<span style="color: #888888;">{safe_word}</span>')
+                # Try flexible Arabic matching for combined words (e.g., "والبطيخ" -> "و" + "البطيخ")
+                found_match = False
+                # Check if this word starts with common Arabic prefixes that might be combined
+                arabic_prefixes = ['و', 'ف', 'ب', 'ك', 'ل', 'ال']
+                for prefix in arabic_prefixes:
+                    if clean_word.startswith(prefix) and len(clean_word) > len(prefix):
+                        remaining_word = clean_word[len(prefix):]
+                        if remaining_word in word_to_explanation:
+                            # Found a match - color the prefix and the remaining word
+                            prefix_part = word[:len(prefix)]
+                            remaining_part = word[len(prefix):]
+
+                            prefix_color = color_scheme.get('particle', '#888888')
+                            remaining_orig, remaining_role, remaining_color, remaining_meaning = word_to_explanation[remaining_word]
+
+                            safe_prefix = prefix_part.replace('{', '{{').replace('}', '}}')
+                            safe_remaining = remaining_part.replace('{', '{{').replace('}', '}}')
+
+                            colored_word = f'<span style="color: {prefix_color}; font-weight: bold;" title="conjunction (حرف عطف): {prefix_part} — connects words">{safe_prefix}</span><span style="color: {remaining_color}; font-weight: bold;" title="{remaining_role}: {remaining_meaning}">{safe_remaining}</span>'
+                            sentence_parts.append(colored_word)
+                            found_match = True
+                            break
+
+                if not found_match:
+                    # Word without analysis
+                    safe_word = word.replace('{', '{{').replace('}', '}}')
+                    sentence_parts.append(f'<span style="color: #888888;">{safe_word}</span>')
 
         # Return only the colored sentence HTML with RTL support
         return f'<span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;">{" ".join(sentence_parts)}</span>'
@@ -523,9 +558,15 @@ IMPORTANT:
         - Maintains output consistency regardless of partial failures
         """
         logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
+        logger.info(f"DEBUG: response_parser type: {type(self.response_parser)}")
+        logger.info(f"DEBUG: has parse_batch_response: {hasattr(self.response_parser, 'parse_batch_response')}")
         try:
             prompt = self.prompt_builder.build_batch_prompt(sentences, target_word, complexity)
             ai_response = self._call_ai(prompt, gemini_api_key)
+            logger.info(f"DEBUG: AI response received, length: {len(ai_response) if ai_response else 0}")
+            logger.info(f"DEBUG: AI response preview: {ai_response[:1000] if ai_response else 'None'}")
+            if ai_response:
+                logger.info(f"DEBUG: Full AI response: {ai_response}")
             results = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
 
             grammar_analyses = []
@@ -603,6 +644,65 @@ IMPORTANT:
         except Exception as e:
             logger.error(f"Error validating Arabic analysis: {e}")
             return 0.0
+
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = "") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response for Arabic grammar analysis.
+        Handles the specific batch format used by Arabic analyzer.
+        """
+        try:
+            # Extract JSON from response
+            if "```json" in ai_response:
+                ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+            elif "```" in ai_response:
+                ai_response = ai_response.split("```")[1].split("```")[0].strip()
+
+            batch_data = json.loads(ai_response)
+            
+            if "batch_results" not in batch_data:
+                raise ValueError("Missing batch_results in response")
+
+            results = []
+            for item in batch_data["batch_results"]:
+                sentence = item.get("sentence", "")
+                analysis_data = item.get("analysis", [])
+                
+                # Convert analysis array to words format expected by parser
+                words_data = []
+                for word_item in analysis_data:
+                    word_data = {
+                        'word': word_item.get('word', ''),
+                        'role': word_item.get('role', 'other'),
+                        'features': word_item.get('features', [])
+                    }
+                    words_data.append(word_data)
+                
+                # Create a temporary response for the parser
+                temp_response = json.dumps({
+                    'analysis': words_data,
+                    'explanations': item.get('explanations', {})
+                })
+                
+                # Parse using the response parser
+                parsed_result = self.response_parser.parse_response(
+                    temp_response, complexity, sentence, target_word
+                )
+                
+                # Convert to expected format
+                result = {
+                    'sentence': sentence,
+                    'elements': parsed_result.get('elements', {}),
+                    'explanations': parsed_result.get('explanations', {}),
+                    'word_explanations': parsed_result.get('word_explanations', [])
+                }
+                results.append(result)
+            
+            return results
+
+        except Exception as e:
+            logger.error(f"Batch parsing failed: {e}")
+            # Fallback to individual parsing
+            return [self.parse_grammar_response(json.dumps({"analysis": []}), complexity, sentence) for sentence in sentences]
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return color scheme for grammatical elements based on complexity level."""

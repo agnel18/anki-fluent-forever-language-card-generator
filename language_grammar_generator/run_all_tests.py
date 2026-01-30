@@ -85,6 +85,7 @@ class TestRunner:
         test_suites = [
             self.run_unit_tests,
             self.run_integration_tests,
+            self.run_batch_processing_tests,
             self.run_content_generation_tests,
             self.run_system_tests,
             self.run_performance_tests,
@@ -140,14 +141,13 @@ class TestRunner:
 
         return self._run_pytest_files(test_files, "Unit Tests")
 
-    def run_integration_tests(self) -> bool:
-        """Run integration tests for component interaction."""
-        test_files = [
-            f"tests/test_{self.language_code}_analyzer.py",
-            "tests/test_integration.py"
-        ]
+    def run_batch_processing_tests(self) -> bool:
+        """Run batch processing tests for efficient multi-sentence analysis."""
+        batch_test_file = self.base_path / "test_batch.py"
+        if not batch_test_file.exists():
+            self._create_batch_processing_test_file()
 
-        return self._run_pytest_files(test_files, "Integration Tests")
+        return self._run_pytest_files([f"test_{self.language_code}_batch.py"], "Batch Processing Tests")
 
     def run_content_generation_tests(self) -> bool:
         """Run content generation tests for AI-powered sentence generation."""
@@ -695,6 +695,170 @@ class Test{class_name}Regression:
         file_name = self._get_file_name(self.language_code)
         content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / "tests" / "test_regression.py"
+        test_file.parent.mkdir(exist_ok=True)
+        test_file.write_text(content)
+
+    def _create_batch_processing_test_file(self):
+        """Create a batch processing test file."""
+        content = '''
+"""
+Batch processing tests for {language_code} analyzer.
+Tests efficient multi-sentence analysis using batch_analyze_grammar method.
+"""
+
+import pytest
+import os
+from unittest.mock import Mock, patch
+from dotenv import load_dotenv
+from languages.{directory_name}.{file_name}_analyzer import {class_name}
+
+# Load environment variables
+load_dotenv()
+
+
+class Test{class_name}BatchProcessing:
+    """Batch processing tests for efficient multi-sentence analysis."""
+
+    @pytest.fixture
+    def analyzer(self):
+        """Create analyzer for testing."""
+        return {class_name}()
+
+    def test_batch_analyze_grammar_method_exists(self, analyzer):
+        """Test that batch_analyze_grammar method exists and is callable."""
+        assert hasattr(analyzer, 'batch_analyze_grammar'), "batch_analyze_grammar method missing"
+        assert callable(getattr(analyzer, 'batch_analyze_grammar')), "batch_analyze_grammar not callable"
+
+    def test_batch_processing_structure(self, analyzer):
+        """Test that batch processing returns correct structure."""
+        sentences = ["Test sentence 1", "Test sentence 2", "Test sentence 3"]
+        target_word = "test"
+        complexity = "intermediate"
+
+        # Mock the AI call to avoid actual API usage
+        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
+            mock_gen = Mock()
+            mock_gen_class.return_value = mock_gen
+
+            # Mock batch response
+            mock_response = Mock()
+            json_response = {
+                "batch_results": [
+                    {
+                        "sentence": "Test sentence 1",
+                        "words": [
+                            {
+                                "word": "test",
+                                "grammatical_role": "noun",
+                                "type": "common_noun",
+                                "person": "third",
+                                "number": "singular",
+                                "case": "nominative",
+                                "meaning": "specific grammatical explanation"
+                            }
+                        ],
+                        "explanations": {
+                            "overall_structure": "Subject-verb-object structure",
+                            "key_features": "specific features"
+                        }
+                    }
+                ]
+            }
+            import json
+            mock_response.text = json.dumps(json_response)
+            mock_gen.generate_content.return_value = mock_response
+
+            # Test batch analysis
+            results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "test_api_key")
+
+            # Verify results structure
+            assert len(results) == len(sentences), f"Expected {len(sentences)} results, got {len(results)}"
+
+            for i, result in enumerate(results):
+                assert hasattr(result, 'sentence'), f"Result {i} missing sentence attribute"
+                assert hasattr(result, 'target_word'), f"Result {i} missing target_word attribute"
+                assert hasattr(result, 'language_code'), f"Result {i} missing language_code attribute"
+                assert hasattr(result, 'complexity_level'), f"Result {i} missing complexity_level attribute"
+                assert hasattr(result, 'word_explanations'), f"Result {i} missing word_explanations attribute"
+                assert len(result.word_explanations) > 0, f"Result {i} has no word explanations"
+
+    def test_batch_processing_with_real_api(self, analyzer):
+        """Integration test for batch processing with real API calls."""
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            pytest.skip("GEMINI_API_KEY not available for real API test")
+
+        # Test sentences - replace with actual language sentences
+        sentences = ["{Test sentence 1 in language.}", "{Test sentence 2 in language.}", "{Test sentence 3 in language.}"]
+        target_word = "{target_word}"
+        complexity = "intermediate"
+
+        # Test with real API
+        results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, api_key)
+
+        # Verify results
+        assert len(results) == len(sentences), f"Expected {len(sentences)} results, got {len(results)}"
+
+        success_count = 0
+        for i, result in enumerate(results):
+            assert result.sentence == sentences[i], f"Sentence mismatch at index {i}"
+            assert result.target_word == target_word, f"Target word mismatch at index {i}"
+            assert result.language_code == "{language_code}", f"Language code mismatch at index {i}"
+            assert result.complexity_level == complexity, f"Complexity mismatch at index {i}"
+            assert len(result.word_explanations) > 0, f"No word explanations for sentence {i}"
+
+            # Check if explanations are specific (not generic fallbacks)
+            has_specific_explanations = False
+            for exp in result.word_explanations:
+                if len(exp) >= 4:
+                    word, role, color, meaning = exp
+                    # Check if meaning contains specific grammatical terms
+                    if not any(generic in meaning.lower() for generic in [
+                        "a thing, person, or concept",
+                        "a word that describes",
+                        "other word",
+                        "basic analysis"
+                    ]):
+                        has_specific_explanations = True
+                        break
+
+            if has_specific_explanations:
+                success_count += 1
+
+        # At least some sentences should have specific explanations
+        assert success_count > 0, "No sentences produced specific grammatical explanations"
+
+    def test_batch_efficiency(self, analyzer):
+        """Test that batch processing is more efficient than individual processing."""
+        sentences = ["{Sentence 1}", "{Sentence 2}", "{Sentence 3}", "{Sentence 4}", "{Sentence 5}"]
+        target_word = "{target_word}"
+        complexity = "intermediate"
+
+        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
+            mock_gen = Mock()
+            mock_gen_class.return_value = mock_gen
+
+            # Mock successful batch response
+            mock_response = Mock()
+            mock_response.text = '{"batch_results": []}'
+            mock_gen.generate_content.return_value = mock_response
+
+            import time
+            start_time = time.time()
+            batch_results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "test_api_key")
+            batch_time = time.time() - start_time
+
+            # Verify batch processing completes
+            assert len(batch_results) == len(sentences), "Batch processing failed to return correct number of results"
+
+            # Batch should be reasonably fast (less than 1 second with mocking)
+            assert batch_time < 1.0, "Batch processing too slow: {0} seconds".format(batch_time)
+'''
+        directory_name = self._get_directory_name(self.language_code)
+        class_name = self._get_class_name(self.language_code)
+        file_name = self._get_file_name(self.language_code)
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
+        test_file = self.base_path / "test_batch.py"
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)
 

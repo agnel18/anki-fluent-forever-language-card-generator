@@ -1,6 +1,6 @@
-# infrastructure/{language}/{lang_code}_circuit_breaker.py
+# infrastructure/LANGUAGE_PLACEHOLDER/LANG_CODE_PLACEHOLDER_circuit_breaker.py
 """
-{Language} Circuit Breaker - Infrastructure Component
+LANGUAGE_NAME_PLACEHOLDER Circuit Breaker - Infrastructure Component
 
 GOLD STANDARD CIRCUIT BREAKER IMPLEMENTATION:
 This component prevents cascade failures in AI service calls.
@@ -47,7 +47,7 @@ class CircuitBreakerOpenException(Exception):
 
 class LanguageCircuitBreaker:
     """
-    Circuit breaker for {Language} AI service protection.
+    Circuit breaker for LANGUAGE_NAME_PLACEHOLDER AI service protection.
 
     GOLD STANDARD IMPLEMENTATION:
     - Three-state pattern (Closed/Open/Half-Open)

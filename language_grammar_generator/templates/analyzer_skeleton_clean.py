@@ -1,26 +1,26 @@
-# languages/{language}/domain/analyzer_skeleton.py
+# languages/LANGUAGE_PLACEHOLDER/domain/analyzer_skeleton.py
 """
-{Language} Analyzer Skeleton - Template Reference
+LANGUAGE_NAME_PLACEHOLDER Analyzer Skeleton - Template Reference
 
 GOLD STANDARD ANALYZER ARCHITECTURE:
-This file serves as a reference template showing how to structure a complete {Language} analyzer.
+This file serves as a reference template showing how to structure a complete LANGUAGE_NAME_PLACEHOLDER analyzer.
 The actual implementation has been separated into focused, maintainable components.
 
 SEPARATED COMPONENTS:
-1. {lang_code}_config.py - Configuration loading and language metadata
-2. {lang_code}_patterns.py - Regex patterns and linguistic validation
-3. {lang_code}_prompt_builder.py - AI prompt generation for grammatical analysis
-4. {lang_code}_response_parser.py - AI response parsing and standardization
-5. {lang_code}_validator.py - Multi-layered validation with quality metrics
-6. {lang_code}_analyzer.py - Main facade orchestrating all domain components
+1. LANG_CODE_PLACEHOLDER_config.py - Configuration loading and language metadata
+2. LANG_CODE_PLACEHOLDER_patterns.py - Regex patterns and linguistic validation
+3. LANG_CODE_PLACEHOLDER_prompt_builder.py - AI prompt generation for grammatical analysis
+4. LANG_CODE_PLACEHOLDER_response_parser.py - AI response parsing and standardization
+5. LANG_CODE_PLACEHOLDER_validator.py - Multi-layered validation with quality metrics
+6. LANG_CODE_PLACEHOLDER_analyzer.py - Main facade orchestrating all domain components
 
 INFRASTRUCTURE COMPONENTS:
-7. {lang_code}_ai_service.py - AI service integration with circuit breaker
-8. {lang_code}_circuit_breaker.py - Circuit breaker for fault tolerance
+7. LANG_CODE_PLACEHOLDER_ai_service.py - AI service integration with circuit breaker
+8. LANG_CODE_PLACEHOLDER_circuit_breaker.py - Circuit breaker for fault tolerance
 
 USAGE FOR NEW LANGUAGES:
 1. Copy all template files to your language directory
-2. Replace {Language} and {lang_code} placeholders with actual values
+2. Replace LANGUAGE_NAME_PLACEHOLDER and LANG_CODE_PLACEHOLDER placeholders with actual values
 3. Customize language-specific logic in each component
 4. Load appropriate YAML/JSON configuration files
 5. Implement language-specific grammatical rules and patterns
@@ -41,11 +41,11 @@ INTEGRATION:
 
 # Example usage and integration pattern
 """
-from .{lang_code}_config import {Language}Config
-from .{lang_code}_analyzer import LanguageAnalyzer
+from .LANG_CODE_PLACEHOLDER_config import LANGUAGE_NAME_PLACEHOLDERConfig
+from .LANG_CODE_PLACEHOLDER_analyzer import LanguageAnalyzer
 
 # Initialize analyzer with configuration
-config = {Language}Config()
+config = LANGUAGE_NAME_PLACEHOLDERConfig()
 analyzer = LanguageAnalyzer(config)
 
 # Analyze sentence

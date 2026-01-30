@@ -1,9 +1,9 @@
-# languages/{language}/domain/{lang_code}_config.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_config.py
 """
-Language-specific configuration for {Language} analyzer.
+Language-specific configuration for LANGUAGE_NAME_PLACEHOLDER analyzer.
 GOLD STANDARD CONFIGURATION PATTERN:
 This file demonstrates how to structure language-specific configuration.
-It serves as the single source of truth for all {Language}-specific settings.
+It serves as the single source of truth for all LANGUAGE_NAME_PLACEHOLDER-specific settings.
 
 RESPONSIBILITIES:
 1. Load external configuration files (YAML/JSON)
@@ -13,10 +13,10 @@ RESPONSIBILITIES:
 5. Handle configuration loading errors gracefully
 
 CONFIGURATION FILES LOADED:
-- {lang_code}_grammatical_roles.yaml: Role definitions and mappings
-- {lang_code}_word_meanings.json: Pre-defined word meanings
-- {lang_code}_patterns.yaml: Regex patterns and validation rules
-- {lang_code}_*.yaml: Additional language-specific configuration files
+- LANG_CODE_PLACEHOLDER_grammatical_roles.yaml: Role definitions and mappings
+- LANG_CODE_PLACEHOLDER_word_meanings.json: Pre-defined word meanings
+- LANG_CODE_PLACEHOLDER_patterns.yaml: Regex patterns and validation rules
+- LANG_CODE_PLACEHOLDER_*.yaml: Additional language-specific configuration files
 
 USAGE FOR NEW LANGUAGES:
 1. Create language-specific YAML/JSON config files
@@ -61,7 +61,7 @@ class LanguageConfig:
 
 class LanguageConfig:
     """
-    Configuration class for {Language} grammatical analysis.
+    Configuration class for LANGUAGE_NAME_PLACEHOLDER grammatical analysis.
 
     GOLD STANDARD CONFIGURATION APPROACH:
     - External configuration files for maintainability
@@ -75,8 +75,8 @@ class LanguageConfig:
         """Initialize configuration with external file loading."""
         # Language metadata
         self.language_config = LanguageConfig(
-            code="{lang_code}",
-            name="{Language}",
+            code="LANG_CODE_PLACEHOLDER",
+            name="LANGUAGE_NAME_PLACEHOLDER",
             family="{language_family}",  # e.g., "Indo-European", "Sino-Tibetan", "Afroasiatic"
             script="{script_type}",  # e.g., "latin", "cyrillic", "arabic", "devanagari"
             word_order="{word_order}",  # e.g., "SVO", "SOV", "VSO"
@@ -87,14 +87,14 @@ class LanguageConfig:
         self._config_dir = Path(__file__).parent / "infrastructure" / "data"
 
         # Load external configuration files
-        self.grammatical_roles = self._load_yaml(self._config_dir / "{lang_code}_grammatical_roles.yaml")
-        self.word_meanings = self._load_json(self._config_dir / "{lang_code}_word_meanings.json")
-        self.patterns = self._load_yaml(self._config_dir / "{lang_code}_patterns.yaml")
+        self.grammatical_roles = self._load_yaml(self._config_dir / "LANG_CODE_PLACEHOLDER_grammatical_roles.yaml")
+        self.word_meanings = self._load_json(self._config_dir / "LANG_CODE_PLACEHOLDER_word_meanings.json")
+        self.patterns = self._load_yaml(self._config_dir / "LANG_CODE_PLACEHOLDER_patterns.yaml")
 
         # Load additional language-specific files (customize as needed)
-        # self.case_markers = self._load_yaml(self._config_dir / "{lang_code}_case_markers.yaml")
-        # self.verb_patterns = self._load_yaml(self._config_dir / "{lang_code}_verb_patterns.yaml")
-        # self.plural_patterns = self._load_yaml(self._config_dir / "{lang_code}_plural_patterns.yaml")
+        # self.case_markers = self._load_yaml(self._config_dir / "LANG_CODE_PLACEHOLDER_case_markers.yaml")
+        # self.verb_patterns = self._load_yaml(self._config_dir / "LANG_CODE_PLACEHOLDER_verb_patterns.yaml")
+        # self.plural_patterns = self._load_yaml(self._config_dir / "LANG_CODE_PLACEHOLDER_plural_patterns.yaml")
 
         # Language-specific attributes (loaded from external files)
         self.genders = []  # e.g., ['masculine', 'feminine', 'neuter'] - customize for your language
@@ -199,7 +199,7 @@ class LanguageConfig:
         return self.patterns.get('language_specific_rules', {})
 
     def is_language_text(self, text: str) -> bool:
-        """Check if text contains {Language} characters."""
+        """Check if text contains LANGUAGE_NAME_PLACEHOLDER characters."""
         # Basic validation - customize for your language
         if not text or not text.strip():
             return False

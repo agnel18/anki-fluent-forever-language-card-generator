@@ -1,9 +1,9 @@
-# languages/{language}/infrastructure/data/language_config.yaml
+# languages/LANGUAGE_PLACEHOLDER/infrastructure/data/language_config.yaml
 """
-Language Configuration for {Language}
+Language Configuration for LANGUAGE_NAME_PLACEHOLDER
 
 GOLD STANDARD CONFIGURATION:
-This file contains the core language settings and metadata for {Language} analysis.
+This file contains the core language settings and metadata for LANGUAGE_NAME_PLACEHOLDER analysis.
 It defines language properties, capabilities, and analysis parameters.
 
 CONFIGURATION SECTIONS:
@@ -27,8 +27,8 @@ CUSTOMIZATION:
 """
 
 language:
-  code: "{lang_code}"
-  name: "{Language}"
+  code: "LANG_CODE_PLACEHOLDER"
+  name: "LANGUAGE_NAME_PLACEHOLDER"
   native_name: "{Native Language Name}"
   script: "{script_name}"  # e.g., "Arabic", "Devanagari", "Cyrillic"
   direction: "{text_direction}"  # "ltr" or "rtl"
@@ -39,7 +39,7 @@ language:
     - "U+FB50-U+FDFF"  # Presentation forms A
     - "U+FE70-U+FEFF"  # Presentation forms B
   iso_codes:
-    - "{lang_code}"
+    - "LANG_CODE_PLACEHOLDER"
     - "{additional_iso_codes}"
 
 analysis:
@@ -155,5 +155,5 @@ metadata:
   created_date: "2024-01-01"
   last_updated: "2024-01-01"
   author: "Language Learning Team"
-  description: "Configuration for {Language} grammatical analysis system"
+  description: "Configuration for LANGUAGE_NAME_PLACEHOLDER grammatical analysis system"
   compatibility: "v1.0+"

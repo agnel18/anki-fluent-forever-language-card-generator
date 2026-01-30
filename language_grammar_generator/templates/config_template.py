@@ -1,12 +1,12 @@
-# languages/{language}/{language}_config.py
+# languages/LANGUAGE_PLACEHOLDER/LANGUAGE_PLACEHOLDER_config.py
 """
-Language-specific configuration for {Language} analyzer.
+Language-specific configuration for LANGUAGE_NAME_PLACEHOLDER analyzer.
 Defines grammatical roles, color schemes, and language rules.
 """
 
 class LanguageConfig:
     """
-    Configuration class for {Language} grammatical analysis.
+    Configuration class for LANGUAGE_NAME_PLACEHOLDER grammatical analysis.
 
     Defines:
     - Grammatical roles and categories
@@ -16,8 +16,8 @@ class LanguageConfig:
 
     def __init__(self):
         # Basic language information
-        self.language_code = "{lang_code}"  # ISO language code
-        self.language_name = "{Language}"   # Full language name
+        self.language_code = "LANG_CODE_PLACEHOLDER"  # ISO language code
+        self.language_name = "LANGUAGE_NAME_PLACEHOLDER"   # Full language name
 
         # Core grammatical roles (CUSTOMIZE THIS)
         self.grammatical_roles = {{

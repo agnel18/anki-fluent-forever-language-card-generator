@@ -1,6 +1,6 @@
-# languages/{language}/domain/{lang_code}_validator.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_validator.py
 """
-{Language} Validator - Domain Component
+LANGUAGE_NAME_PLACEHOLDER Validator - Domain Component
 
 GOLD STANDARD VALIDATION APPROACH:
 - Multi-layered validation (structure, content, linguistics)
@@ -36,7 +36,7 @@ from typing import Dict, Any, List
 
 class LanguageValidator:
     """
-    Validates {Language} grammar analysis results.
+    Validates LANGUAGE_NAME_PLACEHOLDER grammar analysis results.
 
     GOLD STANDARD VALIDATION APPROACH:
     - Multi-layered validation (structure, content, linguistics)
@@ -65,7 +65,7 @@ class LanguageValidator:
 
     def validate_analysis(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Validate analysis result for {Language}.
+        Validate analysis result for LANGUAGE_NAME_PLACEHOLDER.
 
         Args:
             result: Analysis result dictionary from parser

@@ -86,6 +86,7 @@ class ZhTwConfig:
 - [ ] **GrammarAnalysis return**: Structured word_explanations with [word, role, color, meaning]
 - [ ] **Individual meaning extraction**: Parse `individual_meaning` from AI responses
 - [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
+- [ ] **Sentence Generation Character Limits**: Word explanations < 75 chars, grammar summaries < 60 chars (CRITICAL for UX)
 
 #### 1.4 Critical: Word Meanings Dictionary Pattern (Sino-Tibetan Requirement)
 
@@ -153,6 +154,39 @@ class LanguageFallbacks:
 - [ ] **Prioritize dictionary**: Fallbacks check word_meanings before generic explanations
 - [ ] **Test rich explanations**: Verify dictionary provides specific meanings over generic roles
 - [ ] **Word Meanings Dictionary**: External JSON file with specific meanings (CRITICAL for Sino-Tibetan languages)
+
+#### 1.5 Critical: Sentence Generation Character Limits (UX Requirement)
+
+**Key Learning:** Sentence generation prompts must enforce strict character limits to prevent overwhelming users with verbose explanations.
+
+**Why Required:**
+- **UX Overload Prevention**: Long explanations reduce user engagement and completion rates
+- **Mobile-Friendly**: Shorter explanations work better on mobile devices
+- **Cognitive Load**: Users can process concise information more effectively
+- **Consistent Experience**: Same limits across all languages prevent jarring differences
+
+**Character Limits:**
+- **Word Explanations**: < 75 characters total (e.g., "house (building where people live)" = 32 chars)
+- **Grammar Summaries**: < 60 characters total (e.g., "Irregular verb: go/went/gone" = 26 chars)
+
+**Implementation Pattern:**
+```python
+# In sentence generation prompts (content_generator.py or custom analyzers)
+prompt = f"""
+MEANING: [brief English meaning]
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+RESTRICTIONS: [grammatical restrictions]
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+"""
+```
+
+**Critical Checklist:**
+- [ ] **Update default prompts**: Modify `content_generator.py` with character limits
+- [ ] **Update custom prompts**: If analyzer has `get_sentence_generation_prompt()`, add limits
+- [ ] **Test limits**: Verify AI responses stay within character bounds
+- [ ] **Fallback handling**: Ensure fallbacks also respect character limits
+- [ ] **Sentence Generation Character Limits**: < 75 chars for meanings, < 60 chars for grammar (CRITICAL for UX)
 
 ### Phase 2: Directory Structure Setup (2-4 hours)
 

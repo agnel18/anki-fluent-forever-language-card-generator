@@ -1,15 +1,15 @@
 {
   "_metadata": {
-    "language": "{Language}",
-    "language_code": "{lang_code}",
+    "language": "LANGUAGE_NAME_PLACEHOLDER",
+    "language_code": "LANG_CODE_PLACEHOLDER",
     "version": "1.0.0",
-    "description": "Word meanings and grammatical explanations for {Language} analysis",
+    "description": "Word meanings and grammatical explanations for LANGUAGE_NAME_PLACEHOLDER analysis",
     "last_updated": "2024-01-01"
   },
 
   "word_meanings": {
     "common_nouns": {
-      "description": "Frequently used nouns in {Language}",
+      "description": "Frequently used nouns in LANGUAGE_NAME_PLACEHOLDER",
       "examples": {
         "example1": {
           "meaning": "Translation/meaning in English",
@@ -25,7 +25,7 @@
     },
 
     "common_verbs": {
-      "description": "Frequently used verbs in {Language}",
+      "description": "Frequently used verbs in LANGUAGE_NAME_PLACEHOLDER",
       "examples": {
         "example1": {
           "meaning": "Translation/meaning in English",
@@ -41,7 +41,7 @@
     },
 
     "grammatical_particles": {
-      "description": "Particles and grammatical markers in {Language}",
+      "description": "Particles and grammatical markers in LANGUAGE_NAME_PLACEHOLDER",
       "examples": {
         "example1": {
           "meaning": "Translation/meaning in English",
@@ -52,7 +52,7 @@
     },
 
     "pronouns": {
-      "description": "Pronouns and their forms in {Language}",
+      "description": "Pronouns and their forms in LANGUAGE_NAME_PLACEHOLDER",
       "personal": {
         "first_singular": {
           "word": "example",
@@ -70,7 +70,7 @@
 
   "grammatical_concepts": {
     "sentence_structure": {
-      "description": "Basic sentence structure patterns in {Language}",
+      "description": "Basic sentence structure patterns in LANGUAGE_NAME_PLACEHOLDER",
       "patterns": [
         {
           "name": "Basic Subject-Verb-Object",
@@ -90,7 +90,7 @@
     },
 
     "tense_aspects": {
-      "description": "Tense and aspect systems in {Language}",
+      "description": "Tense and aspect systems in LANGUAGE_NAME_PLACEHOLDER",
       "present": {
         "description": "Present tense forms and usage",
         "examples": ["example1", "example2"]
@@ -111,7 +111,7 @@
   },
 
   "language_specific_features": {
-    "description": "Unique grammatical features of {Language}",
+    "description": "Unique grammatical features of LANGUAGE_NAME_PLACEHOLDER",
     "features": [
       {
         "name": "Feature Name",

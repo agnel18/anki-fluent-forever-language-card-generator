@@ -62,6 +62,36 @@ python language_grammar_generator/compare_with_gold_standard.py --language {lang
 - 📝 Linguistic quality assessment
 - 🎨 HTML generation compliance
 
+### Phase 4: Grammar Analysis Quality Testing
+```bash
+# Test gold standard explanation quality with real API calls
+python streamlit_app/test_<language>_analysis.py
+
+# Validate explanations combine semantic meaning + syntactic function
+python -m pytest streamlit_app/test_<language>_analysis.py::test_<language>_analyzer_quality -v
+```
+**Gold Standard Validation:**
+- 🔤 **Semantic Content** - Word meanings accurately represented
+- 🔧 **Syntactic Function** - Grammatical roles and sentence functions
+- 📖 **Detailed Explanations** - Combine meaning with function (e.g., "verb (imperfect) - meaning 'we respect'")
+- 🌍 **Cultural Context** - Language-specific grammatical features
+- 📊 **Quality Metrics** - Minimum explanation length and keyword validation
+
+### Phase 5: Sentence Generation Quality Testing
+```bash
+# Test AI-powered sentence generation with database words
+python test_<language>_sentences.py
+
+# Validate sentence generation avoids fallback to sample sentences
+python -m pytest tests/test_sentence_generator.py -k <language> -v
+```
+**Sentence Generation Validation:**
+- 🎯 **AI Generation Success** - Avoids fallback to sample sentences
+- 📝 **Sentence Quality** - Grammatically correct, natural language
+- 🔄 **Word Integration** - Target words properly incorporated
+- 🌍 **Cultural Appropriateness** - Culturally relevant contexts
+- 📊 **Diversity Metrics** - Varied sentence structures and contexts
+
 ## 📁 Framework Components
 
 ### 1. Validation Scripts

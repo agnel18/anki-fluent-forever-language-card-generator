@@ -1,29 +1,57 @@
-# {Language} Grammar Analyzer
+# LANGUAGE_NAME_PLACEHOLDER Grammar Analyzer
 
 ## Overview
 
-This is a Clean Architecture implementation of a {Language} grammatical analysis system. The analyzer uses external YAML/JSON configuration files and follows gold standard patterns established in the Arabic analyzer.
+This is a Clean Architecture implementation of a LANGUAGE_NAME_PLACEHOLDER grammatical analysis system. The analyzer uses external YAML/JSON configuration files and follows gold standard patterns established in the Arabic analyzer.
+
+## Critical Requirements
+
+### Sentence Generation Character Limits (UX Requirement)
+
+**MANDATORY:** All sentence generation prompts must enforce strict character limits to prevent overwhelming users with verbose explanations.
+
+**Character Limits:**
+- **Word Explanations**: < 75 characters total (e.g., "house (building where people live)" = 32 chars)
+- **Grammar Summaries**: < 60 characters total (e.g., "Irregular verb: go/went/gone" = 26 chars)
+
+**Implementation Pattern:**
+```python
+# In sentence generation prompts
+prompt = f"""
+MEANING: [brief English meaning]
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+RESTRICTIONS: [grammatical restrictions]
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+"""
+```
+
+**Why Required:**
+- **UX Overload Prevention**: Long explanations reduce user engagement and completion rates
+- **Mobile-Friendly**: Shorter explanations work better on mobile devices
+- **Cognitive Load**: Users can process concise information more effectively
+- **Consistent Experience**: Same limits across all languages prevent jarring differences
 
 ## Architecture
 
 ### Clean Architecture Components
 
 ```
-languages/{language}/
+languages/LANGUAGE_PLACEHOLDER/
 ├── domain/
-│   ├── {lang_code}_config.py          # Configuration management
-│   ├── {lang_code}_prompt_builder.py  # AI prompt generation
-│   ├── {lang_code}_response_parser.py # Response parsing & validation
-│   └── {lang_code}_validator.py       # Analysis validation
+│   ├── LANG_CODE_PLACEHOLDER_config.py          # Configuration management
+│   ├── LANG_CODE_PLACEHOLDER_prompt_builder.py  # AI prompt generation
+│   ├── LANG_CODE_PLACEHOLDER_response_parser.py # Response parsing & validation
+│   └── LANG_CODE_PLACEHOLDER_validator.py       # Analysis validation
 ├── infrastructure/
 │   ├── data/
 │   │   ├── grammatical_roles.yaml    # Role definitions by complexity
 │   │   ├── word_meanings.json        # Word meanings & concepts
 │   │   ├── patterns.yaml            # Regex patterns & validation
 │   │   └── language_config.yaml     # Core language settings
-│   ├── {lang_code}_ai_service.py     # AI service integration
-│   └── {lang_code}_circuit_breaker.py # Circuit breaker pattern
-└── {lang_code}_analyzer.py           # Main analyzer facade
+│   ├── LANG_CODE_PLACEHOLDER_ai_service.py     # AI service integration
+│   └── LANG_CODE_PLACEHOLDER_circuit_breaker.py # Circuit breaker pattern
+└── LANG_CODE_PLACEHOLDER_analyzer.py           # Main analyzer facade
 ```
 
 ## Configuration Files
@@ -59,14 +87,14 @@ Core language settings and analysis parameters:
 ### Basic Analysis
 
 ```python
-from languages.{language}.{lang_code}_analyzer import {Language}Analyzer
+from languages.LANGUAGE_PLACEHOLDER.LANG_CODE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
 
 # Initialize analyzer
-analyzer = {Language}Analyzer()
+analyzer = LANGUAGE_NAME_PLACEHOLDERAnalyzer()
 
 # Analyze a sentence
 result = analyzer.analyze_grammar(
-    sentence="Example {Language} sentence",
+    sentence="Example LANGUAGE_NAME_PLACEHOLDER sentence",
     target_word="target",
     complexity="intermediate",
     api_key="your_gemini_api_key"
@@ -114,8 +142,8 @@ advanced:
 ### Language-Specific Rules
 
 1. Add rules to `language_config.yaml` under `language_specific_rules`
-2. Implement validation logic in `{lang_code}_validator.py`
-3. Update prompt templates in `{lang_code}_prompt_builder.py`
+2. Implement validation logic in `LANG_CODE_PLACEHOLDER_validator.py`
+3. Update prompt templates in `LANG_CODE_PLACEHOLDER_prompt_builder.py`
 
 ## API Integration
 
@@ -167,19 +195,99 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## Testing
 
-### Unit Tests
+### Comprehensive Testing Framework
 
+The LANGUAGE_NAME_PLACEHOLDER analyzer uses a comprehensive testing framework that includes:
+
+#### 1. Unit Tests
 Run domain component tests:
 ```bash
-python -m pytest tests/test_{lang_code}_config.py
-python -m pytest tests/test_{lang_code}_validator.py
+python -m pytest tests/test_LANG_CODE_PLACEHOLDER_config.py
+python -m pytest tests/test_LANG_CODE_PLACEHOLDER_validator.py
 ```
 
-### Integration Tests
-
+#### 2. Integration Tests
 Test full analysis pipeline:
 ```bash
-python -m pytest tests/test_{lang_code}_analyzer_integration.py
+python -m pytest tests/test_LANG_CODE_PLACEHOLDER_analyzer_integration.py
+```
+
+#### 3. Gold Standard Quality Tests
+Test explanation quality with real API calls:
+```bash
+# Test gold standard explanation quality
+python streamlit_app/test_LANGUAGE_PLACEHOLDER_analysis.py
+
+# Run as pytest
+python -m pytest streamlit_app/test_LANGUAGE_PLACEHOLDER_analysis.py::test_LANGUAGE_PLACEHOLDER_analyzer_quality -v
+```
+**Validates:**
+- ✅ Semantic meaning accuracy
+- ✅ Syntactic function explanation
+- ✅ Detailed grammatical analysis
+- ✅ Language-specific features
+- ✅ Quality metrics (length, keywords)
+
+#### 4. Batch Processing Tests
+Test efficient multi-sentence analysis:
+```bash
+# Test batch processing with real API calls
+python test_LANGUAGE_PLACEHOLDER_batch.py
+
+# Run as pytest
+python -m pytest tests/test_LANGUAGE_PLACEHOLDER_analyzer.py::TestLANGUAGE_NAME_PLACEHOLDERAnalyzer::test_batch_grammar_analysis -v
+```
+**Validates:**
+- ✅ Batch processing efficiency (8 sentences per API call)
+- ✅ Specific grammatical explanations (not generic fallbacks)
+- ✅ Consistent results across all sentences
+- ✅ Error handling and fallbacks
+- ✅ Performance optimization
+
+#### 5. Sentence Generation Tests
+Test AI-powered sentence generation:
+```bash
+# Test sentence generation with database words
+python test_LANGUAGE_PLACEHOLDER_sentences.py
+
+# Run as pytest
+python -m pytest tests/test_sentence_generator.py -k LANGUAGE_PLACEHOLDER -v
+```
+**Validates:**
+- ✅ AI generation success (no fallback to samples)
+- ✅ Sentence grammatical correctness
+- ✅ Target word integration
+- ✅ Cultural appropriateness
+- ✅ Sentence diversity
+
+#### 5. Automated Testing Pipeline
+Run all tests with coverage:
+```bash
+# Validate implementation before deployment
+python language_grammar_generator/validate_implementation.py --language LANG_CODE_PLACEHOLDER
+
+# Run comprehensive test suite
+python language_grammar_generator/run_all_tests.py --language LANG_CODE_PLACEHOLDER --coverage
+
+# Compare with gold standards
+python language_grammar_generator/compare_with_gold_standard.py --language LANG_CODE_PLACEHOLDER
+```
+
+### Test File Structure
+```
+tests/
+├── test_LANG_CODE_PLACEHOLDER_analyzer.py       # Main facade tests
+├── test_LANG_CODE_PLACEHOLDER_config.py         # Configuration validation
+├── test_LANG_CODE_PLACEHOLDER_prompt_builder.py # AI prompt generation
+├── test_LANG_CODE_PLACEHOLDER_response_parser.py # Response processing
+├── test_LANG_CODE_PLACEHOLDER_validator.py      # Quality validation
+├── test_integration.py               # Component interaction
+└── test_system.py                    # End-to-end workflows
+
+streamlit_app/
+└── test_LANGUAGE_PLACEHOLDER_analysis.py       # Gold standard quality tests
+
+test_LANGUAGE_PLACEHOLDER_sentences.py          # Sentence generation tests
 ```
 
 ## Development Guidelines

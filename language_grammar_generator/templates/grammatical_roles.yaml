@@ -1,9 +1,9 @@
-# languages/{language}/infrastructure/data/grammatical_roles.yaml
+# languages/LANGUAGE_PLACEHOLDER/infrastructure/data/grammatical_roles.yaml
 """
-Grammatical Roles Configuration for {Language}
+Grammatical Roles Configuration for LANGUAGE_NAME_PLACEHOLDER
 
 GOLD STANDARD CONFIGURATION:
-This file defines the grammatical roles used in {Language} analysis.
+This file defines the grammatical roles used in LANGUAGE_NAME_PLACEHOLDER analysis.
 Roles are organized by complexity level with descriptions and examples.
 
 CONFIGURATION STRUCTURE:
@@ -19,7 +19,7 @@ Each role includes:
 
 CUSTOMIZATION:
 - Add language-specific roles as needed
-- Include examples in {Language} script
+- Include examples in LANGUAGE_NAME_PLACEHOLDER script
 - Adjust complexity levels based on language difficulty
 """
 

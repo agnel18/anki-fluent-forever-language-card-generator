@@ -1,6 +1,6 @@
 # tests/conftest.py
 """
-Pytest configuration for {Language} analyzer tests.
+Pytest configuration for LANGUAGE_NAME_PLACEHOLDER analyzer tests.
 
 GOLD STANDARD TESTING SETUP:
 This configuration follows the patterns used by Chinese Simplified and Hindi analyzers.
@@ -31,8 +31,8 @@ try:
 except ImportError:
     coverage = None
 
-# from languages.{language}.{language}_analyzer import {Language}Analyzer
-# from languages.{language}.{language}_config import {Language}Config
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer import LANGUAGE_NAME_PLACEHOLDERAnalyzer
+# from languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_config import LANGUAGE_NAME_PLACEHOLDERConfig
 
 
 @pytest.fixture(scope="session")
@@ -115,14 +115,14 @@ def gold_standard_results():
 @pytest.fixture
 def analyzer():
     """Create analyzer instance for testing."""
-    # return {Language}Analyzer()
+    # return LANGUAGE_NAME_PLACEHOLDERAnalyzer()
     return Mock()  # Replace with actual analyzer
 
 
 @pytest.fixture
 def config():
     """Create config instance for testing."""
-    # return {Language}Config()
+    # return LANGUAGE_NAME_PLACEHOLDERConfig()
     return Mock()  # Replace with actual config
 
 

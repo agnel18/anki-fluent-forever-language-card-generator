@@ -1,6 +1,6 @@
-# languages/{language}/domain/{lang_code}_prompt_builder.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_prompt_builder.py
 """
-{Language} Prompt Builder - Domain Component
+LANGUAGE_NAME_PLACEHOLDER Prompt Builder - Domain Component
 
 GOLD STANDARD PROMPT BUILDING:
 This component demonstrates how to create effective AI prompts for grammar analysis.
@@ -14,7 +14,7 @@ RESPONSIBILITIES:
 
 PROMPT FEATURES:
 - Complexity-aware: Different instructions for different levels
-- Language-specific: {Language}-appropriate examples and terminology
+- Language-specific: LANGUAGE_NAME_PLACEHOLDER-appropriate examples and terminology
 - Structured output: Explicit JSON format requirements
 - Target word highlighting: Special handling for focus words
 
@@ -32,7 +32,7 @@ from typing import Dict, Any, List
 
 class LanguagePromptBuilder:
     """
-    Builds AI prompts for {Language} grammatical analysis.
+    Builds AI prompts for LANGUAGE_NAME_PLACEHOLDER grammatical analysis.
 
     GOLD STANDARD PROMPT BUILDING APPROACH:
     - Complexity-based prompt customization
@@ -61,7 +61,7 @@ class LanguagePromptBuilder:
     def _get_single_template(self) -> str:
         """Get the single sentence analysis template"""
         return '''
-Analyze this {Language} sentence for grammatical structure:
+Analyze this LANGUAGE_NAME_PLACEHOLDER sentence for grammatical structure:
 
 Sentence: {{sentence}}
 Target word: {{target_word}}
@@ -108,7 +108,7 @@ Important:
     def _get_batch_template(self) -> str:
         """Get the batch analysis template"""
         return '''
-Analyze these {Language} sentences for grammatical structure:
+Analyze these LANGUAGE_NAME_PLACEHOLDER sentences for grammatical structure:
 
 Sentences: {{sentences}}
 Target word: {{target_word}}

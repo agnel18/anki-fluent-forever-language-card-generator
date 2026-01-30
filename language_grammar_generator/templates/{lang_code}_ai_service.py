@@ -1,6 +1,6 @@
-# infrastructure/{language}/{lang_code}_ai_service.py
+# infrastructure/LANGUAGE_PLACEHOLDER/LANG_CODE_PLACEHOLDER_ai_service.py
 """
-{Language} AI Service - Infrastructure Component
+LANGUAGE_NAME_PLACEHOLDER AI Service - Infrastructure Component
 
 GOLD STANDARD AI SERVICE INTEGRATION:
 This component handles external AI API communication with robust error handling.
@@ -35,7 +35,7 @@ from typing import Optional, Dict, Any
 
 class LanguageAIService:
     """
-    AI service for {Language} grammar analysis.
+    AI service for LANGUAGE_NAME_PLACEHOLDER grammar analysis.
 
     GOLD STANDARD AI INTEGRATION:
     - Circuit breaker pattern for resilience

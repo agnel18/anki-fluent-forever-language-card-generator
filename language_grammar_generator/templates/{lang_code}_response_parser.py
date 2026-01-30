@@ -1,6 +1,6 @@
-# languages/{language}/domain/{lang_code}_response_parser.py
+# languages/LANGUAGE_PLACEHOLDER/domain/LANG_CODE_PLACEHOLDER_response_parser.py
 """
-{Language} Response Parser - Domain Component
+LANGUAGE_NAME_PLACEHOLDER Response Parser - Domain Component
 
 GOLD STANDARD RESPONSE PARSING:
 This component handles AI response parsing with robust error handling.
@@ -34,7 +34,7 @@ from typing import Dict, Any, List, Optional, Tuple
 
 class LanguageResponseParser:
     """
-    Parses and validates AI responses for {Language} grammatical analysis.
+    Parses and validates AI responses for LANGUAGE_NAME_PLACEHOLDER grammatical analysis.
 
     GOLD STANDARD PARSING APPROACH:
     - Robust JSON extraction from AI responses

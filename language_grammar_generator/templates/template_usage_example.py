@@ -12,9 +12,9 @@ def generate_test_file(template_path, language_name, language_code, lang_code):
 
     # Replace placeholders
     replacements = {
-        '{language}': lang_code,
-        '{Language}': language_name,
-        '{lang_code}': language_code
+        'LANGUAGE_PLACEHOLDER': lang_code,
+        'LANGUAGE_NAME_PLACEHOLDER': language_name,
+        'LANG_CODE_PLACEHOLDER': language_code
     }
 
     for placeholder, replacement in replacements.items():
