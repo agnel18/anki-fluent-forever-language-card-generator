@@ -43,7 +43,7 @@ def test_arabic_batch():
 
     try:
         # Perform batch analysis with REAL API key
-        results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "AIzaSyCGUyM-Bhoev4VkgzizRF1vyuzWXORse0U")
+        results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "AIzaSyDR1rLuORuDWjgm1MAucH3Msi38R2zJLdQ")
 
         print(f"Got {len(results)} results")
         print()
