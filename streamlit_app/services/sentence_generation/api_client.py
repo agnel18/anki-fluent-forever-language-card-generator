@@ -9,9 +9,8 @@ from typing import Optional, Dict, Any
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from google import genai
-
-from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model
+# Use unified Gemini API wrapper with fallbacks
+from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model, get_gemini_api
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,8 @@ class APIClient:
     """
 
     def __init__(self, api_key: str):
-        self.client = genai.Client(api_key=api_key)
+        self.api = get_gemini_api()
+        self.api.configure(api_key=api_key)
 
     @retry_with_exponential_backoff(max_retries=3)
     def call_completion(self, prompt: str, temperature: float = 0.3,
@@ -43,15 +43,21 @@ class APIClient:
             Exception: If all retry attempts fail
         """
         # Configure generation parameters
-        generation_config = genai.types.GenerateContentConfig(
-            temperature=temperature,
-            max_output_tokens=max_tokens,
-        )
+        if self.api.api_type == 'new':
+            config = self.api.genai.types.GenerateContentConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            )
+        else:
+            config = self.api.genai.types.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            )
 
-        response = self.client.models.generate_content(
+        response = self.api.generate_content(
             model=get_gemini_model(),
             contents=prompt,
-            config=generation_config
+            config=config
         )
 
         response_text = response.text.strip()

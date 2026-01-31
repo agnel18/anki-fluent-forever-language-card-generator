@@ -9,10 +9,8 @@ from typing import Optional
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from google import genai
-
-# Import cache manager and error recovery
-from streamlit_app.shared_utils import cached_api_call, retry_with_exponential_backoff, with_fallback, get_gemini_model
+# Use unified Gemini API wrapper with fallbacks
+from streamlit_app.shared_utils import cached_api_call, retry_with_exponential_backoff, with_fallback, get_gemini_model, get_gemini_api
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +47,8 @@ class MeaningService:
         if not gemini_api_key:
             raise ValueError("Gemini API key required")
 
-        client = genai.Client(api_key=gemini_api_key)
+        api = get_gemini_api()
+        api.configure(api_key=gemini_api_key)
 
         prompt = f"""Provide a brief English meaning for the {language} word \"{word}\".
 
@@ -58,15 +57,21 @@ Example: \"house (a building where people live)\" or \"he (male pronoun, used as
 
 IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanation, no JSON."""
 
-        generation_config = genai.types.GenerateContentConfig(
-            temperature=0.3,  # Lower temperature for consistency
-            max_output_tokens=100,
-        )
+        if api.api_type == 'new':
+            config = api.genai.types.GenerateContentConfig(
+                temperature=0.3,  # Lower temperature for consistency
+                max_output_tokens=100,
+            )
+        else:
+            config = api.genai.types.GenerationConfig(
+                temperature=0.3,  # Lower temperature for consistency
+                max_output_tokens=100,
+            )
 
-        response = client.models.generate_content(
+        response = api.generate_content(
             model=get_gemini_model(),
             contents=prompt,
-            config=generation_config
+            config=config
         )
 
         # --- API USAGE TRACKING ---

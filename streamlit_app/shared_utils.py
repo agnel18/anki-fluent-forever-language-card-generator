@@ -359,3 +359,69 @@ SESSION_COMPLETED_WORDS = "completed_words"
 SESSION_SELECTION_MODE = "selection_mode"
 SESSION_SENTENCES_PER_WORD = "sentences_per_word"
 SESSION_AUDIO_SPEED = "audio_speed"
+
+# ============================================================================
+# GEMINI API WRAPPER WITH FALLBACKS
+# ============================================================================
+
+class GeminiAPI:
+    """Unified Gemini API wrapper that supports both new and old APIs with fallbacks."""
+
+    def __init__(self):
+        self.api_type = None
+        self.client = None
+        self.genai = None
+
+        # Try new API first
+        try:
+            from google import genai
+            self.api_type = 'new'
+            self.genai = genai
+            logger.info("Using new Google GenAI API")
+        except ImportError:
+            # Fall back to old API
+            try:
+                import google.generativeai as genai
+                self.api_type = 'old'
+                self.genai = genai
+                logger.info("Using fallback Google GenerativeAI API")
+            except ImportError:
+                logger.warning("No Google Gemini API available - using mock responses")
+                self.api_type = 'mock'
+
+    def configure(self, api_key: str):
+        """Configure the API with the provided key."""
+        if self.api_type == 'new':
+            self.client = self.genai.Client(api_key=api_key)
+        elif self.api_type == 'old':
+            self.genai.configure(api_key=api_key)
+        else:
+            logger.warning("Mock API - no real configuration needed")
+
+    def generate_content(self, model: str, contents: str, **kwargs):
+        """Generate content using the appropriate API."""
+        if self.api_type == 'new':
+            return self.client.models.generate_content(
+                model=model,
+                contents=contents,
+                **kwargs
+            )
+        elif self.api_type == 'old':
+            model_obj = self.genai.GenerativeModel(model)
+            return model_obj.generate_content(contents, **kwargs)
+        else:
+            # Mock response
+            class MockResponse:
+                def __init__(self, text):
+                    self.text = text
+            return MockResponse("Mock response - API not available")
+
+# Global instance
+_gemini_api = None
+
+def get_gemini_api() -> GeminiAPI:
+    """Get the global Gemini API instance."""
+    global _gemini_api
+    if _gemini_api is None:
+        _gemini_api = GeminiAPI()
+    return _gemini_api

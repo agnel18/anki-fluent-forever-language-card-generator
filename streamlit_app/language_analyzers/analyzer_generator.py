@@ -10,10 +10,8 @@ from typing import Dict, Any, Optional
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from google import genai
-
-# Import centralized configuration
-from ..shared_utils import get_gemini_model
+# Use unified Gemini API wrapper with fallbacks
+from ..shared_utils import get_gemini_api, get_gemini_model
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,8 @@ class AnalyzerGenerator:
     """Generates language analyzers using AI based on Chinese template."""
 
     def __init__(self, gemini_api_key: str):
-        self.client = genai.Client(api_key=gemini_api_key)
+        self.api = get_gemini_api()
+        self.api.configure(api_key=gemini_api_key)
 
     def generate_analyzer(self, language_name: str, language_code: str, family: str, script_type: str, complexity: str) -> str:
         """
@@ -81,15 +80,21 @@ IMPORTANT:
 Return ONLY the complete Python code for the analyzer, no explanations."""
 
         try:
-            generation_config = genai.types.GenerateContentConfig(
-                temperature=0.3,  # Consistency for code generation
-                max_output_tokens=4000,
-            )
+            if self.api.api_type == 'new':
+                config = self.api.genai.types.GenerateContentConfig(
+                    temperature=0.3,  # Consistency for code generation
+                    max_output_tokens=4000,
+                )
+            else:
+                config = self.api.genai.types.GenerationConfig(
+                    temperature=0.3,  # Consistency for code generation
+                    max_output_tokens=4000,
+                )
 
-            response = self.client.models.generate_content(
+            response = self.api.generate_content(
                 model=get_gemini_model(),
                 contents=prompt,
-                config=generation_config
+                config=config
             )
 
             generated_code = response.text.strip()
