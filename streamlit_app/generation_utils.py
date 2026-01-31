@@ -11,7 +11,7 @@ from typing import List, Dict
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from google import genai
+import google.generativeai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model

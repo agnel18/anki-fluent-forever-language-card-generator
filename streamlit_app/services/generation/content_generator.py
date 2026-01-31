@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any, Tuple, Union
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from google import genai
+import google.generativeai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback
@@ -36,7 +36,8 @@ class ContentGenerator:
 
     def _get_client(self, api_key: str):
         """Configure Google Generative AI client."""
-        return genai.Client(api_key=api_key)
+        genai.configure(api_key=api_key)
+        return genai
 
     def generate_word_meaning_sentences_and_keywords(
         self,
@@ -284,10 +285,10 @@ IMPORTANT:
             for model_name in models_to_try:
                 try:
                     logger.info(f"Attempting API call with model: {model_name}")
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents=prompt,
-                        config=genai.types.GenerateContentConfig(
+                    model = client.GenerativeModel(model_name)
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
                             temperature=0.7,  # Creativity for sentence variety
                             max_output_tokens=4000,  # Increased for Arabic and complex responses
                         )
