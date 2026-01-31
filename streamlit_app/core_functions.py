@@ -23,6 +23,30 @@ try:
     logger.info("Successfully imported from sentence_generator")
 except ImportError as e:
     logger.warning(f"Failed to import from sentence_generator: {e}. Using fallback implementations.")
+    # Define fallback functions
+    def generate_sentences(word, language, num_sentences=10, min_length=5, max_length=20, difficulty="intermediate", gemini_api_key=None, topics=None, native_language="English", enriched_word_data=None):
+        """Fallback sentence generation - returns basic structure when sentence generation is unavailable."""
+        logger.warning("Sentence generation not available - returning basic fallback")
+        basic_meaning = f"Meaning of '{word}' in {language}"
+        basic_sentences = [
+            {
+                'sentence': f"This is a sample sentence with {word}.",
+                'english_translation': f"This is a sample sentence with {word}.",
+                'ipa': '',
+                'context': 'general',
+                'image_keywords': f"{word}, language, learning",
+                'role_of_word': 'target',
+                'word': word,
+                'meaning': basic_meaning
+            }
+            for _ in range(num_sentences)
+        ]
+        return basic_meaning, basic_sentences
+    
+    def generate_word_meaning(word, language, gemini_api_key=None):
+        """Fallback word meaning generation."""
+        logger.warning("Word meaning generation not available - returning basic fallback")
+        return f"Meaning of '{word}' in {language}"
 
 # Import from audio_generator module
 try:
@@ -116,6 +140,7 @@ def generate_complete_deck(
 
             try:
                 # 1. Generate meaning + sentences + keywords (combined in one API call)
+                from streamlit_app.sentence_generator import generate_sentences
                 meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, gemini_api_key, topics, native_language)
                 if sentences is None:
                     sentences = []
@@ -412,6 +437,9 @@ def generate_deck_progressive(
             elif isinstance(enriched_word_data, dict):
                 # Legacy dictionary format - extract meaning field
                 consolidated_meaning = enriched_word_data.get('meaning', None)
+
+        # Import here to avoid potential import issues
+        from streamlit_app.sentence_generator import generate_sentences
 
         meaning, sentences = generate_sentences(word, language, num_sentences, min_length, max_length, difficulty, gemini_api_key, topics, native_language, consolidated_meaning)
         if sentences is None or not sentences:
