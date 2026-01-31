@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
+from google import genai
 
 # Import centralized configuration
 from ..shared_utils import get_gemini_model
@@ -21,8 +21,7 @@ class AnalyzerGenerator:
     """Generates language analyzers using AI based on Chinese template."""
 
     def __init__(self, gemini_api_key: str):
-        genai.configure(api_key=gemini_api_key)
-        self.model = genai.GenerativeModel(get_gemini_model())
+        self.client = genai.Client(api_key=gemini_api_key)
 
     def generate_analyzer(self, language_name: str, language_code: str, family: str, script_type: str, complexity: str) -> str:
         """
@@ -82,14 +81,15 @@ IMPORTANT:
 Return ONLY the complete Python code for the analyzer, no explanations."""
 
         try:
-            generation_config = genai.types.GenerationConfig(
+            generation_config = genai.types.GenerateContentConfig(
                 temperature=0.3,  # Consistency for code generation
                 max_output_tokens=4000,
             )
 
-            response = self.model.generate_content(
-                prompt,
-                generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=get_gemini_model(),
+                contents=prompt,
+                config=generation_config
             )
 
             generated_code = response.text.strip()

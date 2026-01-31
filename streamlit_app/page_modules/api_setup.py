@@ -50,10 +50,12 @@ def render_api_setup_page():
                     try:
                         import warnings
                         warnings.filterwarnings("ignore", category=FutureWarning)
-                        import google.generativeai as genai
-                        genai.configure(api_key=google_key)
-                        model = genai.GenerativeModel(get_gemini_model())
-                        response = model.generate_content("Hello")
+                        from google import genai
+                        client = genai.Client(api_key=google_key)
+                        response = client.models.generate_content(
+                            model=get_gemini_model(),
+                            contents="Hello"
+                        )
                         st.success("✅ Google Cloud API connection successful!")
                     except Exception as e:
                         st.error(f"❌ Google Cloud API test failed: {str(e)}")
@@ -214,11 +216,15 @@ def render_api_setup_page():
             if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
                 with st.spinner("Testing Google Cloud API connection..."):
                     try:
-                        import google.generativeai as genai
-                        genai.configure(api_key=test_key)
-                        model = genai.GenerativeModel(get_gemini_model())
-                        response = model.generate_content("Hello")
+                        from google import genai
+                        client = genai.Client(api_key=test_key)
+                        response = client.models.generate_content(
+                            model=get_gemini_model(),
+                            contents="Hello"
+                        )
                         st.success("✅ Google Cloud API connection successful!")
+                    except Exception as e:
+                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
                     except Exception as e:
                         st.error(f"❌ Google Cloud API test failed: {str(e)}")
 

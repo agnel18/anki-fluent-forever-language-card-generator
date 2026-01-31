@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
+from google import genai
 
 from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model
 
@@ -23,8 +23,7 @@ class APIClient:
     """
 
     def __init__(self, api_key: str):
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(get_gemini_model())
+        self.client = genai.Client(api_key=api_key)
 
     @retry_with_exponential_backoff(max_retries=3)
     def call_completion(self, prompt: str, temperature: float = 0.3,
@@ -44,14 +43,15 @@ class APIClient:
             Exception: If all retry attempts fail
         """
         # Configure generation parameters
-        generation_config = genai.types.GenerationConfig(
+        generation_config = genai.types.GenerateContentConfig(
             temperature=temperature,
             max_output_tokens=max_tokens,
         )
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=generation_config
+        response = self.client.models.generate_content(
+            model=get_gemini_model(),
+            contents=prompt,
+            config=generation_config
         )
 
         response_text = response.text.strip()
