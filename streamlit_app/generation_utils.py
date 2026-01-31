@@ -11,7 +11,7 @@ from typing import List, Dict
 # Suppress FutureWarnings (including google.generativeai deprecation)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
+from google import genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model
@@ -224,8 +224,7 @@ def generate_ipa_hybrid(sentence: str, language: str, gemini_api_key: str) -> st
     full_lang_name = registry.get_full_name(normalized_lang) or language
 
     try:
-        genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel(get_gemini_model())
+        client = genai.Client(api_key=gemini_api_key)
 
         # Enhanced prompt for IPA-only output using full language name
         # For some languages, romanization is more useful than strict IPA
@@ -252,7 +251,10 @@ Sentence: {sentence}
 
 Return ONLY the IPA transliteration, no explanations or additional text."""
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=get_gemini_model(),
+            contents=prompt
+        )
 
         ipa_result = response.text.strip()
 
@@ -278,7 +280,10 @@ Romanization:"""
 
 IPA:"""
 
-            fallback_response = model.generate_content(fallback_prompt)
+            fallback_response = client.models.generate_content(
+                model=get_gemini_model(),
+                contents=fallback_prompt
+            )
 
             fallback_ipa = fallback_response.text.strip()
             is_valid_fallback, fallback_result = validate_ipa_output(fallback_ipa, normalized_lang)
@@ -380,9 +385,11 @@ def generate_image_keywords(sentence: str, translation: str, target_word: str, g
         return f"{target_word}, language, learning"
 
     try:
-        genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel(get_gemini_model())
-        response = model.generate_content(f"Generate exactly 3 diverse and specific keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Make the keywords unique and visual - avoid generic terms like 'language' or 'learning'. Focus on concrete objects, actions, or scenes. Return only a comma-separated list of 3 keywords, no explanations or formatting.")
+        client = genai.Client(api_key=gemini_api_key)
+        response = client.models.generate_content(
+            model=get_gemini_model(),
+            contents=f"Generate exactly 3 diverse and specific keywords for an image that represents the sentence: '{sentence}' with translation: '{translation}'. The sentence is about the word '{target_word}'. Make the keywords unique and visual - avoid generic terms like 'language' or 'learning'. Focus on concrete objects, actions, or scenes. Return only a comma-separated list of 3 keywords, no explanations or formatting."
+        )
         raw_response = response.text.strip()
 
         # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
@@ -448,8 +455,7 @@ def batch_generate_image_keywords(
         return []
 
     try:
-        genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel(get_gemini_model())
+        client = genai.Client(api_key=gemini_api_key)
 
         # Build a single prompt for all sentences
         prompt_parts = []
@@ -465,7 +471,10 @@ Sentence 1: keyword1, keyword2, keyword3
 Sentence 2: keyword1, keyword2, keyword3
 ..."""
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=get_gemini_model(),
+            contents=prompt
+        )
         raw_response = response.text.strip()
 
         # Rate limiting: wait 5 seconds between API calls to respect per-minute limits
