@@ -267,7 +267,7 @@ def render_api_setup_page():
                             'key': test_key,
                             'q': 'test',  # Simple search term
                             'image_type': 'photo',
-                            'per_page': 1
+                            'per_page': 3  # Minimum allowed by Pixabay API
                         }
                         response = requests.get("https://pixabay.com/api/", params=params)
                         if response.status_code == 200:
