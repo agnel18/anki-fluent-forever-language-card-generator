@@ -9,7 +9,7 @@ import json
 import logging
 import time
 from typing import Optional, List, Dict, Any, Tuple, Union
-import google.generativeai as genai
+import google.genai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback

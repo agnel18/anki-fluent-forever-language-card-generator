@@ -48,7 +48,7 @@ def render_api_setup_page():
             if st.button("🧪 Re-test Google Cloud Connection", help="Re-test your Google Cloud API key"):
                 with st.spinner("Testing Google Cloud API connection..."):
                     try:
-                        import google.generativeai as genai
+                        import google.genai as genai
                         genai.configure(api_key=google_key)
                         model = genai.GenerativeModel(get_gemini_model())
                         response = model.generate_content("Hello")
@@ -262,16 +262,31 @@ def render_api_setup_page():
                 with st.spinner("Testing Pixabay API connection..."):
                     try:
                         import requests
-                        # Use a simple search term that should always work
-                        response = requests.get(f"https://pixabay.com/api/?key={test_key}&q=cat&per_page=1")
+                        # Use Pixabay API with proper parameters
+                        params = {
+                            'key': test_key,
+                            'q': 'test',  # Simple search term
+                            'image_type': 'photo',
+                            'per_page': 1
+                        }
+                        response = requests.get("https://pixabay.com/api/", params=params)
                         if response.status_code == 200:
                             data = response.json()
-                            if "hits" in data:
+                            if "hits" in data and len(data["hits"]) > 0:
                                 st.success("✅ Pixabay API connection successful!")
+                            elif "hits" in data:
+                                st.success("✅ Pixabay API connection successful! (No results for 'test' query)")
                             else:
                                 st.error("❌ Pixabay API test failed: Invalid response format")
                         else:
-                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                            error_msg = f"HTTP {response.status_code}"
+                            try:
+                                error_data = response.json()
+                                if "message" in error_data:
+                                    error_msg += f": {error_data['message']}"
+                            except:
+                                pass
+                            st.error(f"❌ Pixabay API test failed: {error_msg}")
                     except Exception as e:
                         st.error(f"❌ Pixabay API test failed: {str(e)}")
 

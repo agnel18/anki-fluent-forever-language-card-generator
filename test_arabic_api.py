@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 import json
-import google.generativeai as genai
+import google.genai as genai
 from shared_utils import get_gemini_model
 
 # Test the generic grammar analysis prompt with Arabic

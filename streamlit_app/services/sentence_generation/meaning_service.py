@@ -4,7 +4,7 @@
 import logging
 import time
 from typing import Optional
-import google.generativeai as genai
+import google.genai as genai
 
 # Import cache manager and error recovery
 from streamlit_app.shared_utils import cached_api_call, retry_with_exponential_backoff, with_fallback, get_gemini_model

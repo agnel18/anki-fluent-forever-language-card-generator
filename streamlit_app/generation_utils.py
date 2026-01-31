@@ -6,7 +6,7 @@ import pandas as pd
 import re
 import time
 from typing import List, Dict
-import google.generativeai as genai
+import google.genai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model

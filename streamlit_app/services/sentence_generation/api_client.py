@@ -4,7 +4,7 @@
 import logging
 import time
 from typing import Optional, Dict, Any
-import google.generativeai as genai
+import google.genai as genai
 
 from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model
 
