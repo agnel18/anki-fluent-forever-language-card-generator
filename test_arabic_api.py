@@ -3,8 +3,8 @@ sys.path.append('.')
 import json
 import warnings
 
-# Suppress the google.generativeai deprecation warning
-warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+# Suppress FutureWarnings (including google.generativeai deprecation)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 import google.generativeai as genai
 from shared_utils import get_gemini_model

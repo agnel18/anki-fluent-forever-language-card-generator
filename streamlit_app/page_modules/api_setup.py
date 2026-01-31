@@ -49,7 +49,7 @@ def render_api_setup_page():
                 with st.spinner("Testing Google Cloud API connection..."):
                     try:
                         import warnings
-                        warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+                        warnings.filterwarnings("ignore", category=FutureWarning)
                         import google.generativeai as genai
                         genai.configure(api_key=google_key)
                         model = genai.GenerativeModel(get_gemini_model())

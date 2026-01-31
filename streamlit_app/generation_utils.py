@@ -8,8 +8,8 @@ import time
 import warnings
 from typing import List, Dict
 
-# Suppress the google.generativeai deprecation warning
-warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+# Suppress FutureWarnings (including google.generativeai deprecation)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 import google.generativeai as genai
 
