@@ -8,8 +8,13 @@ Extracted from sentence_generator.py for better separation of concerns.
 import json
 import logging
 import time
+import warnings
 from typing import Optional, List, Dict, Any, Tuple, Union
-import google.genai as genai
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+
+import google.generativeai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback

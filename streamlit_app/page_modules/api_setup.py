@@ -48,7 +48,9 @@ def render_api_setup_page():
             if st.button("🧪 Re-test Google Cloud Connection", help="Re-test your Google Cloud API key"):
                 with st.spinner("Testing Google Cloud API connection..."):
                     try:
-                        import google.genai as genai
+                        import warnings
+                        warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+                        import google.generativeai as genai
                         genai.configure(api_key=google_key)
                         model = genai.GenerativeModel(get_gemini_model())
                         response = model.generate_content("Hello")

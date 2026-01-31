@@ -4,8 +4,13 @@
 import json
 import logging
 import re
+import warnings
 from typing import Dict, Any, Optional
-import google.genai as genai
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+
+import google.generativeai as genai
 
 # Import centralized configuration
 from ..shared_utils import get_gemini_model

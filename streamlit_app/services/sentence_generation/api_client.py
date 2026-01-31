@@ -3,8 +3,13 @@
 
 import logging
 import time
+import warnings
 from typing import Optional, Dict, Any
-import google.genai as genai
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+
+import google.generativeai as genai
 
 from streamlit_app.shared_utils import retry_with_exponential_backoff, get_gemini_model
 

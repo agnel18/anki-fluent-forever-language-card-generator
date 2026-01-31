@@ -1,7 +1,12 @@
 import sys
 sys.path.append('.')
 import json
-import google.genai as genai
+import warnings
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+
+import google.generativeai as genai
 from shared_utils import get_gemini_model
 
 # Test the generic grammar analysis prompt with Arabic

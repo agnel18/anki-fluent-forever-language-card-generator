@@ -5,8 +5,13 @@ import logging
 import pandas as pd
 import re
 import time
+import warnings
 from typing import List, Dict
-import google.genai as genai
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message=".*google.generativeai.*deprecated.*", category=FutureWarning)
+
+import google.generativeai as genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model
