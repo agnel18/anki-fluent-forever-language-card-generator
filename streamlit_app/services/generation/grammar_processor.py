@@ -202,9 +202,9 @@ class GrammarProcessor:
         """
         Generic grammar analysis fallback when no language-specific analyzer is available.
         """
-        from google import genai
+        import google.generativeai as genai
 
-        client = genai.Client(api_key=gemini_api_key)
+        genai.configure(api_key=gemini_api_key)
 
         # Color mapping for different POS categories
         color_map = {
@@ -263,10 +263,10 @@ IMPORTANT:
 - Each word_explanations entry must have exactly 4 elements: [word, pos, color, explanation]"""
 
         try:
-            response = client.models.generate_content(
-                model=get_gemini_model(),
-                contents=prompt,
-                config=genai.types.GenerateContentConfig(
+            model = genai.GenerativeModel(get_gemini_model())
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
                     temperature=0.3,  # Lower temperature for consistent analysis
                     max_output_tokens=1500,
                 )
