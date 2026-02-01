@@ -1,0 +1,1 @@
+# Spanish language analyzer domain components

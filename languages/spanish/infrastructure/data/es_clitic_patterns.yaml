@@ -1,0 +1,53 @@
+# Spanish Clitic Pronoun Patterns
+# Rules for clitic pronoun placement and forms
+
+direct_object_clitics:
+  masculine:
+    singular: "lo"
+    plural: "los"
+  feminine:
+    singular: "la"
+    plural: "las"
+
+indirect_object_clitics:
+  singular: "le"
+  plural: "les"
+
+reflexive_clitics:
+  first_person:
+    singular: "me"
+    plural: "nos"
+  second_person:
+    singular: "te"
+    plural: "os"
+  third_person:
+    singular: "se"
+    plural: "se"
+
+dative_clitics:
+  - "le"
+  - "les"
+  - "me"
+  - "te"
+  - "nos"
+  - "os"
+
+placement_rules:
+  infinitive: "Clitics attach to end of infinitive: comerlo"
+  gerund: "Clitics attach to end of gerund: comiéndolo"
+  affirmative_imperative: "Clitics attach to end: cómelo"
+  negative_imperative: "Clitics before verb: no lo comas"
+  conjugated_verbs: "Clitics before verb: lo como"
+
+combination_rules:
+  se_le: "se le → se lo/le"
+  se_te: "se te → se te"
+  se_me: "se me → se me"
+  se_nos: "se nos → se nos"
+  se_os: "se os → se os"
+
+special_cases:
+  - "le lo → se lo (leísmo)"
+  - "le la → se la"
+  - "le los → se los"
+  - "le las → se las"

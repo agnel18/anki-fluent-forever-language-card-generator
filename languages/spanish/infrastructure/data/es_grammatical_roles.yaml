@@ -1,0 +1,38 @@
+# Spanish Grammatical Roles Configuration
+# Defines grammatical roles for different complexity levels
+
+beginner:
+  noun: "noun (sustantivo)"
+  verb: "verb (verbo)"
+  adjective: "adjective (adjetivo)"
+  pronoun: "pronoun (pronombre)"
+  preposition: "preposition (preposición)"
+  conjunction: "conjunction (conjunción)"
+  determiner: "determiner (determinante)"
+  adverb: "adverb (adverbio)"
+
+intermediate:
+  noun: "noun (sustantivo)"
+  verb: "verb (verbo)"
+  adjective: "adjective (adjetivo)"
+  pronoun: "pronoun (pronombre)"
+  preposition: "preposition (preposición)"
+  conjunction: "conjunction (conjunción)"
+  determiner: "determiner (determinante)"
+  adverb: "adverb (adverbio)"
+  auxiliary: "auxiliary verb (verbo auxiliar)"
+  reflexive: "reflexive pronoun (pronombre reflexivo)"
+
+advanced:
+  noun: "noun (sustantivo)"
+  verb: "verb (verbo)"
+  adjective: "adjective (adjetivo)"
+  pronoun: "pronoun (pronombre)"
+  preposition: "preposition (preposición)"
+  conjunction: "conjunction (conjunción)"
+  determiner: "determiner (determinante)"
+  adverb: "adverb (adverbio)"
+  auxiliary: "auxiliary verb (verbo auxiliar)"
+  reflexive: "reflexive pronoun (pronombre reflexivo)"
+  clitic: "clitic pronoun (pronombre clítico)"
+  subjunctive: "subjunctive verb (verbo subjuntivo)"

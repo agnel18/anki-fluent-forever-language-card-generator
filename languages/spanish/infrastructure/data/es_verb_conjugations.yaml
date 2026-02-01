@@ -1,0 +1,69 @@
+# Spanish Verb Conjugation Patterns
+# Common conjugation patterns for validation
+
+regular_ar:
+  infinitive: "hablar"
+  present:
+    yo: "hablo"
+    tú: "hablas"
+    él: "habla"
+    nosotros: "hablamos"
+    vosotros: "habláis"
+    ellos: "hablan"
+  preterite:
+    yo: "hablé"
+    tú: "hablaste"
+    él: "habló"
+    nosotros: "hablamos"
+    vosotros: "hablasteis"
+    ellos: "hablaron"
+
+regular_er:
+  infinitive: "comer"
+  present:
+    yo: "como"
+    tú: "comes"
+    él: "come"
+    nosotros: "comemos"
+    vosotros: "coméis"
+    ellos: "comen"
+
+regular_ir:
+  infinitive: "vivir"
+  present:
+    yo: "vivo"
+    tú: "vives"
+    él: "vive"
+    nosotros: "vivimos"
+    vosotros: "vivís"
+    ellos: "viven"
+
+irregular_ser:
+  infinitive: "ser"
+  present:
+    yo: "soy"
+    tú: "eres"
+    él: "es"
+    nosotros: "somos"
+    vosotros: "sois"
+    ellos: "son"
+
+irregular_estar:
+  infinitive: "estar"
+  present:
+    yo: "estoy"
+    tú: "estás"
+    él: "está"
+    nosotros: "estamos"
+    vosotros: "estáis"
+    ellos: "están"
+
+irregular_tener:
+  infinitive: "tener"
+  present:
+    yo: "tengo"
+    tú: "tienes"
+    él: "tiene"
+    nosotros: "tenemos"
+    vosotros: "tenéis"
+    ellos: "tienen"

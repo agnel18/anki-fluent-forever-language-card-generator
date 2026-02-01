@@ -1,163 +1,106 @@
-# Spanish Grammar Concepts and Implementation Guide
+# Spanish Grammar Concepts
 
-## Overview
-This document outlines the comprehensive linguistic research and implementation requirements for creating a Spanish grammar analyzer (`es_analyzer.py`) following the gold standard Hindi analyzer approach. Spanish is an Indo-European Romance language with rich inflectional morphology, gendered agreement systems, and complex verb conjugations.
+## Basic Word Order
+Spanish follows a predominantly Subject-Verb-Object (SVO) word order, similar to English, but exhibits significant flexibility due to its inflectional nature and information structure principles. The basic neutral order is SVO (e.g., "Juan come manzanas" - Juan eats apples), but variations like VSO (e.g., "Come Juan manzanas" for emphasis) and OVS (e.g., "Manzanas come Juan" for topicalization) are grammatically acceptable when motivated by discourse factors such as focus, contrast, or given/new information.
 
-## Linguistic Research
+## Grammatical Categories
 
-### Language Family and Typology
-- **Family**: Indo-European > Italic > Romance
-- **Typology**: Fusional inflectional language
-- **Script**: Latin alphabet (LTR)
-- **Word Order**: Primarily SVO (Subject-Verb-Object)
-- **Complexity**: High - extensive verb conjugations, gender/number agreement
+### Nouns (Sustantivos)
+- **Common Nouns:** mesa (table), libro (book)
+- **Proper Nouns:** Madrid, Ana
+- **Gender:** Masculine (el libro) vs. Feminine (la mesa); some nouns have variable gender (el/la estudiante)
+- **Number:** Singular (libro) vs. Plural (libros); irregular plurals (ciudad → ciudades)
+- **Countable vs. Uncountable:** agua (water, uncountable), manzana (apple, countable)
 
-### Core Grammatical Features
+### Verbs (Verbos)
+- **Regular Conjugation:** Three conjugations (-ar: hablar, -er: comer, -ir: vivir)
+- **Irregular Verbs:** ser/estar, tener, ir, etc.
+- **Tenses:** Present (hablo), Preterite (hablé), Imperfect (hablaba), Future (hablaré), Conditional (hablaría), Present Perfect (he hablado), Pluperfect (había hablado), Future Perfect (habré hablado), Conditional Perfect (habría hablado)
+- **Moods:** Indicative, Subjunctive (Present: hable, Imperfect: hablara/hablase, Future: hablare, Perfect forms), Imperative (habla)
+- **Non-Finite Forms:** Infinitive (hablar), Gerund (hablando), Past Participle (hablado)
+- **Voice:** Active (Juan come) vs. Passive (La manzana es comida por Juan) vs. Reflexive (Juan se lava)
 
-#### 1. Morphological Structure
-Spanish exhibits fusional morphology where single morphemes express multiple grammatical categories:
+### Adjectives (Adjetivos)
+- **Descriptive:** grande (big), bonito (pretty)
+- **Possessive:** mi (my), tu (your), su (his/her/its/their)
+- **Demonstrative:** este (this), ese (that), aquel (that over there)
+- **Indefinite:** algún (some), ningún (none), todo (all)
+- **Numeral:** uno (one), primero (first)
+- **Agreement:** Must agree in gender and number with the noun they modify (casa grande → casas grandes)
+- **Position:** Typically post-nominal (la casa roja), but some pre-nominal for emphasis or meaning change (un gran hombre vs. un hombre grande)
 
-**Noun Morphology:**
-- **Gender**: Masculine (-o, -e, -a→o changes) vs. Feminine (-a, -ión, -dad)
-- **Number**: Singular vs. Plural (-s, -es, with vowel changes: casa→casas)
-- **Articles**: Definite (el/la/los/las), Indefinite (un/una/unos/unas)
+### Adverbs (Adverbios)
+- **Manner:** rápidamente (quickly), bien (well)
+- **Place:** aquí (here), allí (there)
+- **Time:** hoy (today), mañana (tomorrow)
+- **Quantity:** mucho (much), poco (little)
+- **Affirmation/Negation:** sí (yes), no (no)
+- **Formation:** From adjectives (-mente: rápido → rápidamente), or independent words
 
-**Verb Morphology:**
-- **Person**: 1st, 2nd, 3rd (yo, tú, él/ella/usted)
-- **Number**: Singular, Plural
-- **Tense**: Present, Preterite, Imperfect, Future, Conditional
-- **Mood**: Indicative, Subjunctive, Imperative
-- **Aspect**: Perfect (haber + past participle)
-- **Voice**: Active, Passive (ser/estar + past participle)
+### Pronouns (Pronombres)
+- **Personal Subject:** yo (I), tú (you), él/ella (he/she), nosotros/-as (we), vosotros/-as (you pl.), ellos/-as (they)
+- **Personal Object:** me (me), te (you), lo/la (him/her/it), nos (us), os (you pl.), los/las (them)
+- **Reflexive:** me (myself), te (yourself), se (himself/herself/itself)
+- **Possessive:** mío (mine), tuyo (yours), etc.
+- **Demonstrative:** esto (this), eso (that), aquello (that)
+- **Relative:** que (that/which/who), quien (who), cuyo (whose)
+- **Interrogative:** qué (what), quién (who), cuál (which)
 
-**Adjective Morphology:**
-- **Agreement**: Gender and number agreement with nouns
-- **Position**: Pre-nominal (descriptive) vs. Post-nominal (restrictive)
+### Prepositions (Preposiciones)
+- **Simple:** a (to/at), de (of/from), en (in/on), con (with), por (for/by/through), para (for/to/in order to), sin (without)
+- **Compound:** desde (since/from), hasta (until/to), según (according to)
+- **Usage Distinctions:** por vs. para (purpose vs. destination), a vs. en (direction vs. location)
 
-#### 2. Syntactic Features
-- **Word Order**: Flexible SVO with topicalization and focus
-- **Clitics**: Object pronouns (me, te, lo/la, nos, os, los/las)
-- **Ser vs. Estar**: Copula distinction (permanent vs. temporary states)
-- **Subjunctive**: Complex mood system for doubt, emotion, volition
-- **Prepositions**: Complex system with contractions (de+el→del, a+el→al)
+### Conjunctions (Conjunciones)
+- **Coordinating:** y (and), e (and before i/hi), o (or), u (or before o/ho), pero (but), sino (but rather), ni (neither/nor)
+- **Subordinating:** que (that), si (if), cuando (when), porque (because), aunque (although), como (as/since)
 
-#### 3. Unique Grammatical Categories
-- **Por vs. Para**: Complex preposition distinction
-- **Gustar-type verbs**: Dative subject constructions
-- **Reflexive verbs**: Extensive use of se for various functions
-- **Diminutives/Augmentatives**: -ito/-ita, -ón/-ona
-- **Imperfect vs. Preterite**: Aspectual distinction in past tense
+### Determiners (Determinantes)
+- **Articles:** Definite (el, la, los, las), Indefinite (un, una, unos, unas)
+- **Demonstratives:** este, ese, aquel and their variants
+- **Possessives:** mi, tu, su, nuestro, vuestro, su
+- **Quantifiers:** mucho, poco, varios, algunos, todo
+- **Agreement:** Like adjectives, agree in gender and number
 
-### Grammatical Role Mapping (16 Categories)
+## Key Features
+1. **Gender and Number Agreement:** Nouns have inherent gender; adjectives, articles, and some pronouns must agree. Number marking is obligatory.
+2. **Verb Conjugation Complexity:** Extensive paradigm with irregularities, especially in irregular verbs. Distinction between ser and estar for "to be".
+3. **Clitic Pronouns:** Object pronouns can appear as clitics attached to verbs (lo veo) or before (lo veo), with complex placement rules in compound tenses.
+4. **Subjunctive Mood:** Used in subordinate clauses for doubt, emotion, volition, etc. (Espero que vengas - I hope you come).
+5. **Por vs. Para Distinction:** Crucial distinction in usage (por dinero - for money/payment; para ti - for you/destination).
+6. **Adjective Position and Meaning:** Position can change meaning (un hombre grande - a big man; un gran hombre - a great man).
+7. **Differential Object Marking:** Use of "a" before animate direct objects (Veo la casa vs. Veo a Juan).
+8. **Leísmo/Loísmo/Laísmo:** Regional variations in object pronoun usage.
 
-Based on Spanish linguistic tradition and Romance language grammar:
+## Simple Examples
+1. **Basic SVO:** "El perro persigue al gato" → El (art.def.masc.sing) perro (noun.masc.sing) persigue (verb.3sg.pres.ind) al (prep+a+art.def.masc.sing) gato (noun.masc.sing)  
+   *The dog chases the cat*
 
-```python
-GRAMMATICAL_ROLES = {
-    # Content Words (Palabras de Contenido)
-    "noun": "#FFAA00",                    # Orange - People/places/things (sustantivos)
-    "verb": "#44FF44",                    # Green - Actions/states (verbos)
-    "adjective": "#FF44FF",               # Magenta - Qualities (adjetivos)
-    "adverb": "#44FFFF",                 # Cyan - Modifies verbs/adjectives (adverbios)
-    "pronoun": "#FF4444",                 # Red - Replacements (pronombres)
+2. **Adjective Agreement:** "Las casas grandes son bonitas" → Las (art.def.fem.pl) casas (noun.fem.pl) grandes (adj.fem.pl) son (verb.3pl.pres.ind) bonitas (adj.fem.pl)  
+   *The big houses are pretty*
 
-    # Function Words (Palabras Funcionales)
-    "article": "#FFD700",                 # Gold - Definite/indefinite (artículos)
-    "preposition": "#4444FF",             # Blue - Relationships (preposiciones)
-    "conjunction": "#888888",             # Gray - Connectors (conjunciones)
-    "interjection": "#FFD700",            # Gold - Exclamations (interjecciones)
+3. **Verb Conjugation:** "Yo como, tú comes, él come" → Yo (pron.1sg) como (verb.1sg.pres.ind), tú (pron.2sg) comes (verb.2sg.pres.ind), él (pron.3sg.masc) come (verb.3sg.pres.ind)  
+   *I eat, you eat, he eats*
 
-    # Spanish-Specific Categories
-    "numeral": "#FFFF44",                 # Yellow - Numbers (numerales)
-    "possessive": "#FF8C00",              # Dark orange - Possession (posesivos)
-    "demonstrative": "#FFA500",           # Orange-red - Pointing words (demostrativos)
-    "interrogative": "#DA70D6",           # Plum - Question words (interrogativos)
-    "relative": "#9013FE",                # Violet - Relative pronouns (relativos)
-    "auxiliary": "#8A2BE2",               # Purple - Helping verbs (auxiliares)
-    "reflexive": "#FF6347"                # Tomato - Reflexive pronouns (reflexivos)
-}
+4. **Preposition Distinction:** "Voy por pan para mi madre" → Voy (verb.1sg.pres.ind) por (prep) pan (noun.masc.sing) para (prep) mi (poss.1sg) madre (noun.fem.sing)  
+   *I'm going for bread for my mother*
+
+5. **Subjunctive Usage:** "Quiero que vengas" → Quiero (verb.1sg.pres.ind) que (conj) vengas (verb.2sg.pres.subj)  
+   *I want you to come*
+
+## Explanation Format
+For word explanations in analysis output, use this clear, learner-friendly format:
+
+```
+Word (grammar role): meaning(s); role in the sentence
 ```
 
-### Implementation Requirements
+Example for "El gato come pescado":
+```
+El (determiner): the; definite article specifying the noun
+gato (noun): cat; subject of the sentence  
+come (verb): eats; main action verb in present tense
+pescado (noun): fish; direct object of the verb
+```
 
-#### 1. Pattern Recognition (5-12 Most Frequent Markers)
-Focus on the most distinctive Spanish grammatical markers:
-
-**Verb Endings (Tense/Person/Number):**
-- -ar/-er/-ir infinitives
-- -o/-as/-a/-amos/-áis/-an (present indicative)
-- -é/-aste/-ó/-amos/-asteis/-aron (preterite)
-- -aba/-abas/-aba/-ábamos/-abais/-aban (imperfect)
-- -aré/-arás/-ará/-aremos/-aréis/-arán (future)
-
-**Gender/Number Markers:**
-- -o/-a (masculine/feminine)
-- -s/-es (plural)
-- -ito/-ita (diminutives)
-
-**Clitics and Particles:**
-- me/te/se/nos/os/se (reflexive/direct/indirect objects)
-- lo/la/los/las/le/les (object pronouns)
-
-**Prepositions and Contractions:**
-- de+el→del, a+el→al, con+mí→conmigo
-
-#### 2. Validation Checks (3-6 High-Signal Rules)
-- **Gender Agreement**: Adjectives agree with nouns in gender/number
-- **Verb Conjugation**: Correct person/number endings
-- **Clitic Placement**: Object pronouns positioned correctly
-- **Ser/Estar Distinction**: Appropriate copula usage
-- **Preterite/Imperfect**: Correct aspectual choice
-- **Subjunctive Triggers**: Mood usage in subordinate clauses
-
-#### 3. Script and Direction Handling
-- **Script**: Latin alphabet (a-z, ñ, accented vowels áéíóúü)
-- **Direction**: Left-to-Right (LTR)
-- **Special Characters**: ñ, accented vowels, ¿/¡ punctuation
-- **Word Ordering**: Standard LTR for explanations
-
-#### 4. Batch Processing Considerations
-- **Sentence Length**: Spanish sentences can be long with complex subordination
-- **Compound Tenses**: Perfect tenses with haber + participle
-- **Clitic Climbing**: Pronouns move in complex sentences
-- **Fallback Strategy**: Partial results for conjugation-heavy sentences
-
-### Research Sources
-
-**Primary Grammars:**
-- Butt, J. & Benjamin, T. (2011). *A New Reference Grammar of Modern Spanish*
-- Real Academia Española (RAE) grammar
-- Bosque, I. & Demonte, V. (1999). *Gramática descriptiva de la lengua española*
-
-**Linguistic Features:**
-- Gender and agreement systems
-- Verb conjugation paradigms
-- Clitic pronoun syntax
-- Aspect and mood distinctions
-- Prepositional systems
-
-### Implementation Architecture
-
-#### Inheritance Strategy
-Spanish inherits from `IndoEuropeanAnalyzer` (skeleton base) rather than creating a new Romance base class, as Romance languages share <70% implementation patterns and would create maintenance overhead.
-
-#### Key Adaptations from Hindi
-- **Replace Devanagari patterns** with Latin alphabet + accents
-- **Adapt inflectional patterns** from case/number to gender/number/person/tense
-- **Implement verb conjugation validation** instead of compound word analysis
-- **Add gender agreement checks** instead of script-specific validation
-- **LTR word ordering** (same as Hindi)
-
-#### Confidence Thresholds
-- **High Confidence (>0.85)**: Sentences with clear agreement and conjugation
-- **Medium Confidence (0.7-0.85)**: Sentences with minor agreement issues
-- **Low Confidence (<0.7)**: Sentences with multiple conjugation/agreement errors
-
-### Success Metrics
-- **Accuracy**: >90% on Spanish sentence analysis
-- **Coverage**: Handles all major tenses, moods, and agreement patterns
-- **Efficiency**: Processes 16-sentence batches within timeout limits
-- **User Experience**: Clear explanations in sentence word order (LTR)
-
-This research provides the foundation for implementing a robust Spanish grammar analyzer that respects the language's Romance linguistic heritage while following the established gold standard architecture.</content>
-<parameter name="filePath">d:\Language Learning\LanguagLearning\spanish_grammar_concepts.md
+This format balances clarity with Arabic-style conciseness, avoiding overly technical details while providing essential grammatical and semantic information.

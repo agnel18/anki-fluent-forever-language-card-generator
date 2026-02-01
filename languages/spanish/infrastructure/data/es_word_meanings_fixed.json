@@ -1,0 +1,509 @@
+{
+  "common_words": {
+    "el": {
+      "role": "determiner",
+      "meaning": "el (determiner): the; definite masculine singular article",
+      "examples": ["el libro", "el perro"]
+    },
+    "la": {
+      "role": "determiner",
+      "meaning": "la (determiner): the; definite feminine singular article",
+      "examples": ["la casa", "la mesa"]
+    },
+    "un": {
+      "role": "determiner",
+      "meaning": "un (determiner): a/an; indefinite masculine singular article",
+      "examples": ["un libro", "un perro"]
+    },
+    "una": {
+      "role": "determiner",
+      "meaning": "una (determiner): a/an; indefinite feminine singular article",
+      "examples": ["una casa", "una mesa"]
+    },
+    "ser": {
+      "role": "verb",
+      "meaning": "ser (verb): to be; expresses permanent characteristics, identity, time, date",
+      "examples": ["soy estudiante", "es médico"]
+    },
+    "estar": {
+      "role": "verb",
+      "meaning": "estar (verb): to be; expresses temporary states, location, conditions",
+      "examples": ["estoy cansado", "está en casa"]
+    },
+    "tener": {
+      "role": "verb",
+      "meaning": "tener (verb): to have; possession, age, feelings",
+      "examples": ["tengo un libro", "tiene 20 años"]
+    },
+    "hacer": {
+      "role": "verb",
+      "meaning": "hacer (verb): to do/make; actions, weather expressions",
+      "examples": ["hago la comida", "hace calor"]
+    },
+    "ir": {
+      "role": "verb",
+      "meaning": "ir (verb): to go; movement, future with ir a + infinitive",
+      "examples": ["voy al parque", "va a estudiar"]
+    },
+    "ver": {
+      "role": "verb",
+      "meaning": "ver (verb): to see; perception, understanding",
+      "examples": ["veo la televisión", "veo que está bien"]
+    },
+    "dar": {
+      "role": "verb",
+      "meaning": "dar (verb): to give; transfer, cause reactions",
+      "examples": ["me da un regalo", "da miedo"]
+    },
+    "saber": {
+      "role": "verb",
+      "meaning": "saber (verb): to know; facts, information, skills",
+      "examples": ["sé la respuesta", "sabe nadar"]
+    },
+    "querer": {
+      "role": "verb",
+      "meaning": "querer (verb): to want/love; desire, affection",
+      "examples": ["quiero un café", "quiere a su familia"]
+    },
+    "llegar": {
+      "role": "verb",
+      "meaning": "llegar (verb): to arrive; reaching destination",
+      "examples": ["llega tarde", "llegamos a casa"]
+    },
+    "pasar": {
+      "role": "verb",
+      "meaning": "pasar (verb): to pass/happen; movement, events, time",
+      "examples": ["pasa por aquí", "¿qué pasa?"]
+    },
+    "deber": {
+      "role": "verb",
+      "meaning": "deber (verb): should/must/owe; obligation, probability",
+      "examples": ["debes estudiar", "debe ser cierto"]
+    },
+    "poner": {
+      "role": "verb",
+      "meaning": "poner (verb): to put/place; position, set up",
+      "examples": ["pone el libro", "pon la mesa"]
+    },
+    "parecer": {
+      "role": "verb",
+      "meaning": "parecer (verb): to seem; appearance, opinion",
+      "examples": ["parece cansado", "me parece bien"]
+    },
+    "quedar": {
+      "role": "verb",
+      "meaning": "quedar (verb): to stay/remain; location, agreement",
+      "examples": ["queda en casa", "quedamos a las 5"]
+    },
+    "creer": {
+      "role": "verb",
+      "meaning": "creer (verb): to believe/think; opinion, trust",
+      "examples": ["creo que sí", "cree en Dios"]
+    },
+    "hablar": {
+      "role": "verb",
+      "meaning": "hablar (verb): to speak/talk; communication",
+      "examples": ["hablo español", "hablan de política"]
+    },
+    "llevar": {
+      "role": "verb",
+      "meaning": "llevar (verb): to carry/wear; transport, duration",
+      "examples": ["lleva el libro", "lleva dos años aquí"]
+    },
+    "dejar": {
+      "role": "verb",
+      "meaning": "dejar (verb): to leave/let/allow; permission, abandonment",
+      "examples": ["deja el libro", "déjame ir"]
+    },
+    "seguir": {
+      "role": "verb",
+      "meaning": "seguir (verb): to follow/continue; pursuit, continuation",
+      "examples": ["sigue el camino", "sigue estudiando"]
+    },
+    "encontrar": {
+      "role": "verb",
+      "meaning": "encontrar (verb): to find; discovery, opinion",
+      "examples": ["encuentro el libro", "lo encuentro bonito"]
+    },
+    "llamar": {
+      "role": "verb",
+      "meaning": "llamar (verb): to call/name; telephone, naming",
+      "examples": ["llama por teléfono", "se llama Juan"]
+    },
+    "venir": {
+      "role": "verb",
+      "meaning": "venir (verb): to come; movement toward speaker",
+      "examples": ["viene a casa", "viene de España"]
+    },
+    "pensar": {
+      "role": "verb",
+      "meaning": "pensar (verb): to think; cognition, intention",
+      "examples": ["pienso en ti", "piensa estudiar"]
+    },
+    "salir": {
+      "role": "verb",
+      "meaning": "salir (verb): to leave/go out; departure, result",
+      "examples": ["sale de casa", "sale caro"]
+    },
+    "volver": {
+      "role": "verb",
+      "meaning": "volver (verb): to return; coming back",
+      "examples": ["vuelve a casa", "vuelve mañana"]
+    },
+    "tomar": {
+      "role": "verb",
+      "meaning": "tomar (verb): to take/drink; grasping, consumption",
+      "examples": ["toma el libro", "toma café"]
+    },
+    "conocer": {
+      "role": "verb",
+      "meaning": "conocer (verb): to know/meet; acquaintance, familiarity",
+      "examples": ["conoce a María", "conoce la ciudad"]
+    },
+    "vivir": {
+      "role": "verb",
+      "meaning": "vivir (verb): to live; residence, existence",
+      "examples": ["vive en Madrid", "vive feliz"]
+    },
+    "sentir": {
+      "role": "verb",
+      "meaning": "sentir (verb): to feel/regret; emotion, sensation",
+      "examples": ["siento frío", "siento lo ocurrido"]
+    },
+    "tratar": {
+      "role": "verb",
+      "meaning": "tratar (verb): to try/treat; attempt, treatment",
+      "examples": ["trata de estudiar", "trata bien a los demás"]
+    },
+    "mirar": {
+      "role": "verb",
+      "meaning": "mirar (verb): to look/watch; vision, consideration",
+      "examples": ["mira la televisión", "mira el problema"]
+    },
+    "contar": {
+      "role": "verb",
+      "meaning": "contar (verb): to count/tell; enumeration, narration",
+      "examples": ["cuento hasta 10", "cuenta una historia"]
+    },
+    "empezar": {
+      "role": "verb",
+      "meaning": "empezar (verb): to begin/start; initiation",
+      "examples": ["empieza el trabajo", "empieza a llover"]
+    },
+    "esperar": {
+      "role": "verb",
+      "meaning": "esperar (verb): to wait/hope; anticipation, expectation",
+      "examples": ["espera el autobús", "espero que vengas"]
+    },
+    "buscar": {
+      "role": "verb",
+      "meaning": "buscar (verb): to look for/search; seeking",
+      "examples": ["busca el libro", "busca trabajo"]
+    },
+    "existir": {
+      "role": "verb",
+      "meaning": "existir (verb): to exist; being, presence",
+      "examples": ["existe la vida", "no existe tal cosa"]
+    },
+    "entrar": {
+      "role": "verb",
+      "meaning": "entrar (verb): to enter; ingress",
+      "examples": ["entra en la casa", "entra en vigor"]
+    },
+    "trabajar": {
+      "role": "verb",
+      "meaning": "trabajar (verb): to work; employment, effort",
+      "examples": ["trabaja en una oficina", "trabaja duro"]
+    },
+    "escribir": {
+      "role": "verb",
+      "meaning": "escribir (verb): to write; composition",
+      "examples": ["escribe una carta", "escribe libros"]
+    },
+    "perder": {
+      "role": "verb",
+      "meaning": "perder (verb): to lose; deprivation",
+      "examples": ["pierde el tiempo", "pierde el partido"]
+    },
+    "producir": {
+      "role": "verb",
+      "meaning": "producir (verb): to produce; creation, generation",
+      "examples": ["produce alimentos", "produce electricidad"]
+    },
+    "ocurrir": {
+      "role": "verb",
+      "meaning": "ocurrir (verb): to occur/happen; events",
+      "examples": ["ocurre un accidente", "ocurre a menudo"]
+    },
+    "entender": {
+      "role": "verb",
+      "meaning": "entender (verb): to understand; comprehension",
+      "examples": ["entiende el problema", "entiende español"]
+    },
+    "pedir": {
+      "role": "verb",
+      "meaning": "pedir (verb): to ask/request; solicitation",
+      "examples": ["pide ayuda", "pide un favor"]
+    },
+    "recibir": {
+      "role": "verb",
+      "meaning": "recibir (verb): to receive; acceptance",
+      "examples": ["recibe una carta", "recibe visitas"]
+    },
+    "recordar": {
+      "role": "verb",
+      "meaning": "recordar (verb): to remember/remind; memory",
+      "examples": ["recuerda el pasado", "recuerda que vengas"]
+    },
+    "terminar": {
+      "role": "verb",
+      "meaning": "terminar (verb): to finish/end; completion",
+      "examples": ["termina el trabajo", "termina la reunión"]
+    },
+    "permitir": {
+      "role": "verb",
+      "meaning": "permitir (verb): to allow/permit; authorization",
+      "examples": ["permite fumar", "permite la entrada"]
+    },
+    "aparecer": {
+      "role": "verb",
+      "meaning": "aparecer (verb): to appear; visibility",
+      "examples": ["aparece de repente", "aparece en televisión"]
+    },
+    "conseguir": {
+      "role": "verb",
+      "meaning": "conseguir (verb): to get/obtain; acquisition",
+      "examples": ["consigue un trabajo", "consigue lo que quiere"]
+    },
+    "comenzar": {
+      "role": "verb",
+      "meaning": "comenzar (verb): to begin/start; commencement",
+      "examples": ["comienza el año", "comienza a trabajar"]
+    },
+    "servir": {
+      "role": "verb",
+      "meaning": "servir (verb): to serve; utility, function",
+      "examples": ["sirve la comida", "sirve para estudiar"]
+    },
+    "sacar": {
+      "role": "verb",
+      "meaning": "sacar (verb): to take out/remove; extraction",
+      "examples": ["saca el libro", "saca buenas notas"]
+    },
+    "necesitar": {
+      "role": "verb",
+      "meaning": "necesitar (verb): to need; requirement",
+      "examples": ["necesita ayuda", "necesita dinero"]
+    },
+    "mantener": {
+      "role": "verb",
+      "meaning": "mantener (verb): to maintain/keep; preservation",
+      "examples": ["mantiene la calma", "mantiene la casa"]
+    },
+    "resultar": {
+      "role": "verb",
+      "meaning": "resultar (verb): to result/turn out; consequence",
+      "examples": ["resulta caro", "resulta ser cierto"]
+    },
+    "leer": {
+      "role": "verb",
+      "meaning": "leer (verb): to read; interpretation",
+      "examples": ["lee un libro", "lee en voz alta"]
+    },
+    "caer": {
+      "role": "verb",
+      "meaning": "caer (verb): to fall; descent",
+      "examples": ["cae al suelo", "cae la lluvia"]
+    },
+    "cambiar": {
+      "role": "verb",
+      "meaning": "cambiar (verb): to change; alteration",
+      "examples": ["cambia de opinión", "cambia el dinero"]
+    },
+    "presentar": {
+      "role": "verb",
+      "meaning": "presentar (verb): to present/introduce; introduction",
+      "examples": ["presenta el informe", "presenta a su amigo"]
+    },
+    "crear": {
+      "role": "verb",
+      "meaning": "crear (verb): to create; invention",
+      "examples": ["crea arte", "crea problemas"]
+    },
+    "abrir": {
+      "role": "verb",
+      "meaning": "abrir (verb): to open; aperture",
+      "examples": ["abre la puerta", "abre una cuenta"]
+    },
+    "considerar": {
+      "role": "verb",
+      "meaning": "considerar (verb): to consider; contemplation",
+      "examples": ["considera la opción", "considera importante"]
+    },
+    "oír": {
+      "role": "verb",
+      "meaning": "oír (verb): to hear; audition",
+      "examples": ["oye música", "oye la noticia"]
+    },
+    "acabar": {
+      "role": "verb",
+      "meaning": "acabar (verb): to finish/end; termination",
+      "examples": ["acaba el trabajo", "acaba de llegar"]
+    },
+    "convertir": {
+      "role": "verb",
+      "meaning": "convertir (verb): to convert/transform; change",
+      "examples": ["convierte agua en vino", "se convierte en rana"]
+    },
+    "ganar": {
+      "role": "verb",
+      "meaning": "ganar (verb): to win/earn; victory, income",
+      "examples": ["gana el partido", "gana dinero"]
+    },
+    "formar": {
+      "role": "verb",
+      "meaning": "formar (verb): to form/shape; formation",
+      "examples": ["forma parte", "forma una familia"]
+    },
+    "traer": {
+      "role": "verb",
+      "meaning": "traer (verb): to bring; transportation toward",
+      "examples": ["trae el libro", "trae problemas"]
+    },
+    "partir": {
+      "role": "verb",
+      "meaning": "partir (verb): to leave/divide; departure, division",
+      "examples": ["parte de Madrid", "parte el pan"]
+    },
+    "morir": {
+      "role": "verb",
+      "meaning": "morir (verb): to die; death",
+      "examples": ["muere de viejo", "muere de amor"]
+    },
+    "aceptar": {
+      "role": "verb",
+      "meaning": "aceptar (verb): to accept; acceptance",
+      "examples": ["acepta la oferta", "acepta la realidad"]
+    },
+    "realizar": {
+      "role": "verb",
+      "meaning": "realizar (verb): to realize/carry out; accomplishment",
+      "examples": ["realiza un sueño", "realiza el proyecto"]
+    },
+    "suponer": {
+      "role": "verb",
+      "meaning": "suponer (verb): to suppose/assume; supposition",
+      "examples": ["supone que vendrá", "supone un problema"]
+    },
+    "comprender": {
+      "role": "verb",
+      "meaning": "comprender (verb): to understand/comprise; comprehension",
+      "examples": ["comprende el mensaje", "comprende varios libros"]
+    },
+    "lograr": {
+      "role": "verb",
+      "meaning": "lograr (verb): to achieve/manage; attainment",
+      "examples": ["logra su objetivo", "logra convencerlo"]
+    },
+    "explicar": {
+      "role": "verb",
+      "meaning": "explicar (verb): to explain; clarification",
+      "examples": ["explica la lección", "explica el problema"]
+    },
+    "preguntar": {
+      "role": "verb",
+      "meaning": "preguntar (verb): to ask; interrogation",
+      "examples": ["pregunta la hora", "pregunta por ti"]
+    },
+    "tocar": {
+      "role": "verb",
+      "meaning": "tocar (verb): to touch/play; contact, performance",
+      "examples": ["toca la puerta", "toca el piano"]
+    },
+    "reconocer": {
+      "role": "verb",
+      "meaning": "reconocer (verb): to recognize/admit; acknowledgment",
+      "examples": ["reconoce el error", "reconoce su talento"]
+    },
+    "estudiar": {
+      "role": "verb",
+      "meaning": "estudiar (verb): to study; learning",
+      "examples": ["estudia medicina", "estudia el mapa"]
+    },
+    "alcanzar": {
+      "role": "verb",
+      "meaning": "alcanzar (verb): to reach/achieve; attainment",
+      "examples": ["alcanza la cima", "alcanza sus metas"]
+    },
+    "nacer": {
+      "role": "verb",
+      "meaning": "nacer (verb): to be born; birth",
+      "examples": ["nace en Madrid", "nace una estrella"]
+    },
+    "dirigir": {
+      "role": "verb",
+      "meaning": "dirigir (verb): to direct/manage; direction",
+      "examples": ["dirige la empresa", "dirige la orquesta"]
+    },
+    "correr": {
+      "role": "verb",
+      "meaning": "correr (verb): to run; rapid movement",
+      "examples": ["corre por el parque", "corre peligro"]
+    },
+    "utilizar": {
+      "role": "verb",
+      "meaning": "utilizar (verb): to use/utilize; employment",
+      "examples": ["utiliza la computadora", "utiliza su tiempo"]
+    },
+    "pagar": {
+      "role": "verb",
+      "meaning": "pagar (verb): to pay; payment",
+      "examples": ["paga la cuenta", "paga con tarjeta"]
+    },
+    "ayudar": {
+      "role": "verb",
+      "meaning": "ayudar (verb): to help; assistance",
+      "examples": ["ayuda a su madre", "ayuda en la tarea"]
+    },
+    "gustar": {
+      "role": "verb",
+      "meaning": "gustar (verb): to like/please; preference",
+      "examples": ["me gusta el café", "le gusta bailar"]
+    },
+    "jugar": {
+      "role": "verb",
+      "meaning": "jugar (verb): to play; recreation",
+      "examples": ["juega fútbol", "juega con fuego"]
+    },
+    "escuchar": {
+      "role": "verb",
+      "meaning": "escuchar (verb): to listen/hear; audition",
+      "examples": ["escucha música", "escucha consejos"]
+    },
+    "cumplir": {
+      "role": "verb",
+      "meaning": "cumplir (verb): to fulfill/complete; accomplishment",
+      "examples": ["cumple años", "cumple la promesa"]
+    },
+    "ofrecer": {
+      "role": "verb",
+      "meaning": "ofrecer (verb): to offer; proposal",
+      "examples": ["ofrece ayuda", "ofrece su casa"]
+    },
+    "descubrir": {
+      "role": "verb",
+      "meaning": "descubrir (verb): to discover; revelation",
+      "examples": ["descubre América", "descubre la verdad"]
+    },
+    "levantar": {
+      "role": "verb",
+      "meaning": "levantar (verb): to raise/lift; elevation",
+      "examples": ["levanta el brazo", "levanta la voz"]
+    },
+    "acercar": {
+      "role": "verb",
+      "meaning": "acercar (verb): to bring near; approximation",
+      "examples": ["acerca la silla", "se acerca el invierno"]
+    }
+  }
+}

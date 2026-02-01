@@ -1,0 +1,75 @@
+# Spanish Agreement Patterns
+# Gender and number agreement rules
+
+gender_markers:
+  masculine:
+    - "el"
+    - "un"
+    - "este"
+    - "ese"
+    - "aquel"
+    - "o"  # adjective ending
+    - "os"  # plural adjective ending
+
+  feminine:
+    - "la"
+    - "una"
+    - "esta"
+    - "esa"
+    - "aquella"
+    - "a"  # adjective ending
+    - "as"  # plural adjective ending
+
+number_markers:
+  singular:
+    - "el"
+    - "la"
+    - "un"
+    - "una"
+    - "este"
+    - "esta"
+    - "ese"
+    - "esa"
+    - "aquel"
+    - "aquella"
+    - "o"
+    - "a"
+
+  plural:
+    - "los"
+    - "las"
+    - "unos"
+    - "unas"
+    - "estos"
+    - "estas"
+    - "esos"
+    - "esas"
+    - "aquellos"
+    - "aquellas"
+    - "os"
+    - "as"
+
+adjective_agreement_rules:
+  - "Adjectives must agree in gender and number with the noun they modify"
+  - "Masculine singular: -o ending"
+  - "Feminine singular: -a ending"
+  - "Masculine plural: -os ending"
+  - "Feminine plural: -as ending"
+  - "Exceptions exist for adjectives ending in -e, -ista, etc."
+
+noun_gender_patterns:
+  masculine_endings:
+    - "o"
+    - "e"
+    - "r"
+    - "l"
+    - "n"
+    - "s"  # when stressed
+
+  feminine_endings:
+    - "a"
+    - "d"
+    - "z"
+    - "ión"
+    - "tad"
+    - "tud"

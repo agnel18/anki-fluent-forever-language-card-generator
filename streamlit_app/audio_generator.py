@@ -631,7 +631,7 @@ def get_google_voices_for_language(language_name: str) -> tuple[List[str], bool,
             "sr": ["A (Female, Standard)", "B (Male, Standard)"],  # Serbian
             "sk": ["A (Female, Standard)", "B (Male, Standard)"],  # Slovak
             "sl": ["A (Female, Standard)", "B (Male, Standard)"],  # Slovenian
-            "es": ["Maria (Female, Standard)", "Carlos (Male, Standard)"],  # Spanish
+            "es": ["Maria (Female, Spain)", "Carlos (Male, Spain)", "Lupe (Female, US)", "Pedro (Male, US)"],  # Spanish
             "sv": ["A (Female, Standard)", "B (Male, Standard)"],  # Swedish
             "tr": ["A (Female, Standard)", "B (Male, Standard)"],  # Turkish
             "uk": ["A (Female, Standard)", "B (Male, Standard)"],  # Ukrainian

@@ -1,0 +1,81 @@
+# Spanish Preposition Distinctions
+# Key distinctions between Spanish prepositions
+
+por_vs_para:
+  por:
+    usage:
+      - "Movement through space: por la calle"
+      - "Duration of time: por dos horas"
+      - "Means/method: por correo"
+      - "Cause/reason: por enfermedad"
+      - "Exchange: cambiar por"
+      - "Passive agent: hecho por"
+    examples:
+      - "Voy por el parque"  # through the park
+      - "Estudié por tres años"  # for three years
+      - "Pago por el libro"  # I pay for the book
+
+  para:
+    usage:
+      - "Destination: hacia un lugar"
+      - "Deadline: fecha límite"
+      - "Purpose/goal: con intención"
+      - "Recipient: para alguien"
+      - "Comparison: en comparación"
+      - "Become something: convertirse en"
+    examples:
+      - "Salgo para Madrid"  # I'm leaving for Madrid
+      - "El trabajo es para mañana"  # The work is for tomorrow
+      - "Estudio para ser médico"  # I study to be a doctor
+
+a_vs_en:
+  a:
+    usage:
+      - "Movement to a place: voy a Madrid"
+      - "Direct object (animate): veo a Juan"
+      - "Time: a las tres"
+      - "Manner: poco a poco"
+    examples:
+      - "Voy a la tienda"  # I go to the store
+      - "Veo a mi amigo"  # I see my friend
+
+  en:
+    usage:
+      - "Location: en casa"
+      - "Time periods: en enero"
+      - "Means of transport: en coche"
+      - "Languages: en español"
+    examples:
+      - "Estoy en el parque"  # I am in the park
+      - "Hablo en español"  # I speak in Spanish
+
+desde_vs_hasta:
+  desde:
+    usage:
+      - "Starting point in time/space: desde Madrid"
+      - "Since a time: desde 2010"
+    examples:
+      - "Vivo aquí desde 2020"  # I live here since 2020
+
+  hasta:
+    usage:
+      - "Ending point: hasta el final"
+      - "Until a time: hasta mañana"
+    examples:
+      - "Trabajo hasta las 6"  # I work until 6
+
+con_vs_sin:
+  con:
+    usage:
+      - "With/accompaniment: con amigos"
+      - "Using: con cuchillo"
+      - "Despite: con todo"
+    examples:
+      - "Voy con mi hermana"  # I go with my sister
+
+  sin:
+    usage:
+      - "Without: sin dinero"
+      - "Not including: sin ti"
+    examples:
+      - "No puedo vivir sin ti"  # I can't live without you
