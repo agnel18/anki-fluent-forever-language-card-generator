@@ -219,15 +219,8 @@ class EsResponseParser:
         if word_lower.endswith(('e', 'en')) and len(word_lower) > 3 and word_lower not in known_adjectives_e and not word_lower.endswith(('mente', 'ble')):
             return 'verb'
 
-        # Adjective endings (common patterns)
-        if any(word_lower.endswith(ending) for ending in ['oso', 'osa', 'oso', 'osa', 'e', 'es', 'ble', 'ble']):
-            return 'adjective'
-        
-        # Known adjective endings but only for longer words that are likely adjectives
-        if len(word_lower) > 4 and word_lower.endswith(('o', 'a', 'os', 'as')):
-            return 'adjective'
-        
-        # Default to noun for unrecognized words
+        # Default to noun for most words (Spanish has many nouns)
+        # Only classify as adjective if we're very confident
         return 'noun'
 
     def _tokenize_spanish(self, sentence: str) -> List[str]:
@@ -244,6 +237,8 @@ class EsResponseParser:
         Handles multiple Spanish sentences efficiently with LTR text direction.
         """
         logger.info(f"Parsing batch Spanish response for {len(sentences)} sentences")
+        logger.debug(f"AI response length: {len(ai_response)}")
+        logger.debug(f"AI response preview: {ai_response[:500]}...")
         try:
             # Clean the response
             cleaned_response = ai_response.strip()
@@ -262,6 +257,7 @@ class EsResponseParser:
 
             # Parse JSON response
             json_data = json.loads(cleaned_response)
+            logger.debug(f"Parsed JSON data keys: {list(json_data.keys()) if isinstance(json_data, dict) else 'not dict'}")
 
             # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
@@ -271,9 +267,11 @@ class EsResponseParser:
                 batch_results = json_data
             else:
                 batch_results = json_data.get('batch_results', [])
+                logger.debug(f"Found {len(batch_results)} batch results")
 
             # If no valid batch results, treat as error
             if not batch_results:
+                logger.warning("No valid batch results in AI response")
                 raise ValueError("No valid batch results in AI response")
 
             results = []
@@ -290,15 +288,32 @@ class EsResponseParser:
                         # Process the result data
                         words_data = result_data.get('words') or result_data.get('analysis', [])
 
+                        # For batch format, convert analysis array to words format
+                        if result_data.get('analysis') and not result_data.get('words'):
+                            words_data = []
+                            for analysis_item in result_data['analysis']:
+                                word_data = {
+                                    'word': analysis_item.get('word', ''),
+                                    'grammatical_role': analysis_item.get('grammatical_role', ''),
+                                    'individual_meaning': analysis_item.get('individual_meaning', '')
+                                }
+                                words_data.append(word_data)
+
+                        # Create validated_data structure for _validate_spanish_patterns
+                        temp_data = {
+                            'words': words_data,
+                            'overall_analysis': result_data.get('explanations', {})
+                        }
+
                         # Validate Spanish-specific patterns
-                        validated_data = self._validate_spanish_patterns(result_data, sentence)
+                        validated_data = self._validate_spanish_patterns(temp_data, sentence)
 
                         # Get color scheme for complexity
                         color_scheme = self.config.get_color_scheme(complexity)
 
                         result = {
                             'word_explanations': validated_data.get('words', []),
-                            'explanations': validated_data.get('explanations', {}),
+                            'explanations': validated_data.get('overall_analysis', {}),
                             'elements': validated_data.get('elements', {}),
                             'confidence': result_data.get('confidence', 0.8),
                             'color_scheme': color_scheme,

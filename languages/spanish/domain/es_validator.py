@@ -25,7 +25,7 @@ class EsValidator:
         confidence = 0.8  # Start with high confidence for Spanish (inflectional language)
 
         try:
-            word_explanations = result.get('word_explanations', [])
+            word_explanations = result.get('word_explanations') or result.get('words', [])
 
             # Check for minimum requirements
             if len(word_explanations) == 0:
@@ -33,7 +33,8 @@ class EsValidator:
                 logger.warning("No word explanations found")
 
             # Check for explanations
-            if 'explanations' not in result:
+            explanations_key = 'explanations' if 'explanations' in result else 'overall_analysis'
+            if explanations_key not in result:
                 confidence *= 0.7
                 logger.warning("No explanations section found")
 
@@ -60,7 +61,7 @@ class EsValidator:
         multiplier = 1.0
 
         try:
-            words_data = result.get('words', [])
+            words_data = result.get('words') or result.get('word_explanations', [])
 
             # Check for agreement patterns
             agreement_score = self._check_agreement_patterns(words_data)

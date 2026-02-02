@@ -106,15 +106,20 @@ class EsFallbacks:
 
     def _is_spanish_adjective(self, word: str) -> bool:
         """Check if word appears to be a Spanish adjective"""
-        # Common adjective endings
-        adj_endings = ['o', 'a', 'os', 'as', 'e', 'es', 'ante', 'ente']
-
-        # Check for adjective endings
-        if any(word.endswith(ending) for ending in adj_endings):
+        # Be very conservative - only classify as adjective if we're confident
+        # Exclude common noun plural endings that could be confused
+        if word.endswith(('es', 'os', 'as')) and len(word) <= 8:
+            return False  # Likely plural nouns, not adjectives
+        
+        # Common adjective endings that are more specific and less ambiguous
+        specific_adj_endings = ['oso', 'osa', 'oso', 'osa', 'ante', 'ente', 'ble', 'dor', 'dora']
+        
+        # Only classify longer words ending with these patterns as adjectives
+        if len(word) > 6 and any(word.endswith(ending) for ending in specific_adj_endings):
             return True
 
-        # Common adjectives
-        common_adjs = ['bueno', 'buena', 'malo', 'mala', 'grande', 'pequeño', 'pequeña', 'bonito', 'bonita', 'feo', 'fea']
+        # Common adjectives (known list)
+        common_adjs = ['bueno', 'buena', 'malo', 'mala', 'grande', 'pequeño', 'pequeña', 'bonito', 'bonita', 'feo', 'fea', 'rojo', 'roja', 'azul', 'verde', 'amarillo', 'amarilla', 'blanco', 'blanca', 'negro', 'negra']
         return word in common_adjs
 
     def _create_fallback_meaning(self, word: str, role: str, sentence: str) -> str:

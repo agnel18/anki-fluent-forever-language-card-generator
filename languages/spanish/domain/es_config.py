@@ -199,14 +199,14 @@ You are an expert linguist specializing in Spanish grammar analysis.
 
 Analyze this Spanish sentence: "{{sentence}}"
 Target word: "{{target_word}}"
-Complexity level: {{complexity}}
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
 
 CRITICAL REQUIREMENTS:
-1. Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words.
-2. Each word must have a DISTINCT contextual meaning specific to this sentence.
-3. Use the EXACT grammatical roles listed below.
+1. Analyze EVERY SINGLE WORD in the sentence, not just the target word.
+2. Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words.
+3. Each word must have a DISTINCT contextual meaning specific to this sentence.
+4. Use the EXACT grammatical roles listed below.
 
 REQUIRED JSON FORMAT:
 {% raw %}
@@ -232,14 +232,14 @@ You are an expert linguist specializing in Spanish grammar analysis.
 
 Sentences: {{sentences}}
 Target word: "{{target_word}}"
-Complexity level: {{complexity}}
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
 
 CRITICAL REQUIREMENTS:
-1. Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words.
-2. Each word must have a DISTINCT contextual meaning specific to its sentence.
-3. Use the EXACT grammatical roles listed below.
+1. For EACH sentence, analyze EVERY SINGLE WORD in that sentence.
+2. Provide UNIQUE, INDIVIDUAL meanings for EACH word in each sentence. Do NOT repeat meanings across words.
+3. Each word must have a DISTINCT contextual meaning specific to its sentence.
+4. Use the EXACT grammatical roles listed below.
 
 REQUIRED JSON FORMAT:
 {% raw %}

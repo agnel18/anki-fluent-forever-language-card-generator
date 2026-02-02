@@ -268,7 +268,7 @@ class EsAnalyzer(BaseGrammarAnalyzer):
             # Process each word
             for word_info in words:
                 word = word_info.get('word', '')
-                pos = word_info.get('pos', 'unknown')
+                pos = word_info.get('grammatical_role', 'unknown')
                 color = color_scheme.get(pos, color_scheme.get('default', '#000000'))
                 
                 # Create colored span for each word
@@ -287,22 +287,94 @@ class EsAnalyzer(BaseGrammarAnalyzer):
         """Build final GrammarAnalysis object"""
         color_scheme = self.es_config.get_color_scheme(complexity)
         
+        # Handle both single and batch result formats
+        words = validated_result.get('words') or validated_result.get('word_explanations', [])
+        explanations = validated_result.get('overall_analysis') or validated_result.get('explanations', {})
+        
+        # Generate HTML output from the parsed words
+        html_output = self._generate_basic_html(sentence, words, color_scheme)
+        
+        # Convert words to the expected word_explanations format (list of lists)
+        word_explanations = []
+        for word_data in words:
+            if isinstance(word_data, dict):
+                word = word_data.get('word', '')
+                role = word_data.get('grammatical_role', '')
+                meaning = word_data.get('individual_meaning') or word_data.get('meaning', '')
+                color = color_scheme.get(role, '#000000')
+                word_explanations.append([word, role, color, meaning])
+            elif isinstance(word_data, list) and len(word_data) >= 4:
+                # Already in correct format
+                word_explanations.append(word_data)
+        
         analysis = GrammarAnalysis(
             sentence=sentence,
             target_word=target_word,
             language_code=self.LANGUAGE_CODE,
             complexity_level=complexity,
             grammatical_elements=validated_result.get('elements', {}),
-            explanations=validated_result.get('overall_analysis', {}),
+            explanations=explanations,
             color_scheme=color_scheme,
-            html_output="",  # TODO: Implement HTML generation
+            html_output=html_output,
             confidence_score=validated_result.get('confidence', 0.5),
-            word_explanations=validated_result.get('words', []),
+            word_explanations=word_explanations,
             is_rtl=False,
             text_direction="ltr"
         )
 
         return analysis
+
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = "") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response into list of standardized grammar analysis formats.
+        
+        Args:
+            ai_response: Raw batch response from AI model
+            sentences: List of original sentences
+            complexity: Complexity level used for analysis
+            target_word: Target word being learned
+            
+        Returns:
+            List of dictionaries with grammatical elements, explanations, etc.
+        """
+        parse_result = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
+        
+        results = []
+        for i, sentence in enumerate(sentences):
+            if i < len(parse_result):
+                parsed_sentence = parse_result[i]
+                
+                # Convert ParsedSentence to expected dict format
+                word_explanations = parsed_sentence.get('word_explanations', [])
+                
+                # Group words by grammatical role for elements
+                elements = {}
+                for word_data in word_explanations:
+                    if len(word_data) >= 2:  # [word, role, color, meaning]
+                        role = word_data[1]  # role is at index 1
+                        if role not in elements:
+                            elements[role] = []
+                        elements[role].append({
+                            'word': word_data[0],
+                            'role': role,
+                            'explanation': word_data[3] if len(word_data) > 3 else ''
+                        })
+                
+                result = {
+                    'elements': elements,
+                    'explanations': parsed_sentence.get('explanations', {}),
+                    'word_explanations': word_explanations
+                }
+            else:
+                # Fallback for missing sentences
+                result = {
+                    'elements': {},
+                    'explanations': {'sentence_structure': 'Batch parsing failed', 'key_features': ''},
+                    'word_explanations': []
+                }
+            results.append(result)
+        
+        return results
 
     # Legacy compatibility methods
     def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
