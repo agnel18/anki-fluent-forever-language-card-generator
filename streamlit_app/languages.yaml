@@ -48,7 +48,7 @@ all_languages:
     
   - code: "de"
     name: "German"
-    google_tts_voice: "de-DE-KatjaNeural"
+    google_tts_voice: "de-DE-Neural2-B"
     
   - code: "it"
     name: "Italian"

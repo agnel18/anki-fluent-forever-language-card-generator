@@ -8,13 +8,13 @@ import os
 sys.path.append(os.path.dirname(__file__))
 
 from sentence_generator import analyze_grammar_and_color, LANGUAGE_NAME_TO_CODE
-from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+from language_analyzers.analyzer_registry import get_analyzer
 
 def test_integration():
     print("Testing grammar analyzer integration...")
 
     # Test language mapping
-    test_languages = ["Chinese (Simplified)", "Spanish", "Hindi", "English"]
+    test_languages = ["Chinese (Simplified)", "Spanish", "Hindi", "English", "German"]
     for lang in test_languages:
         code = LANGUAGE_NAME_TO_CODE.get(lang)
         print(f"{lang} -> {code}")

@@ -1,0 +1,165 @@
+# German Gender Patterns
+# Based on Duden grammar standards
+
+# Gender determination rules
+gender_rules:
+  semantic_rules:
+    description: "Gender based on meaning"
+    masculine:
+      - "male_persons": ["Mann", "Vater", "Sohn", "Bruder"]
+      - "days_week": ["Montag", "Dienstag", "Mittwoch"]
+      - "months": ["Januar", "Februar", "März"]
+      - "seasons": ["Frühling", "Sommer", "Herbst", "Winter"]
+      - "weather": ["Regen", "Schnee", "Wind", "Hagel"]
+      - "mountains": ["Berg", "Gipfel", "Felsen"]
+      - "metals": ["Gold", "Silber", "Stahl", "Eisen"]
+      - "alcoholic_drinks": ["Wein", "Bier", "Schnaps", "Whisky"]
+    feminine:
+      - "female_persons": ["Frau", "Mutter", "Tochter", "Schwester"]
+      - "numbers": ["Eins", "Zwei", "Drei"]
+      - "ships": ["Schiff", "Boot", "Yacht"]
+      - "cars": ["Auto", "Wagen", "Limousine"]
+      - "trees": ["Eiche", "Buche", "Kiefer"]
+      - "flowers": ["Rose", "Tulpe", "Lilie"]
+    neuter:
+      - "infinitives": ["Schwimmen", "Laufen", "Essen"]
+      - "colors": ["Rot", "Blau", "Grün"]
+      - "metals_compounds": ["Goldstück", "Silberlöffel"]
+      - "chemicals": ["Wasser", "Gas", "Öl"]
+
+  morphological_rules:
+    description: "Gender based on word endings"
+    masculine_endings:
+      - "-ig": ["Honig", "König", "Pfennig"]
+      - "-ling": ["Schmetterling", "Schützling", "Zwilling"]
+      - "-ismus": ["Sozialismus", "Kapitalismus", "Kommunismus"]
+      - "-us": ["Bus", "Virus", "Zirkus"]
+      - "-en": ["Bären", "Löwen", "Adler"]
+    feminine_endings:
+      - "-ung": ["Zeitung", "Zeichnung", "Übung"]
+      - "-heit": ["Freiheit", "Menschheit", "Gesundheit"]
+      - "-keit": ["Möglichkeit", "Schwierigkeit", "Sicherheit"]
+      - "-ei": ["Bäckerei", "Metzgerei", "Apotheke"]
+      - "-in": ["Lehrerin", "Ärztin", "Studentin"]
+      - "-schaft": ["Freundschaft", "Wissenschaft", "Herrschaft"]
+      - "-tät": ["Universität", "Fakultät", "Realität"]
+    neuter_endings:
+      - "-chen": ["Mädchen", "Büchlein", "Häuschen"]
+      - "-lein": ["Büchlein", "Männlein", "Fräulein"]
+      - "-ment": ["Parlament", "Experiment", "Fundament"]
+      - "-um": ["Museum", "Stadium", "Album"]
+      - "-tum": ["Altertum", "Christentum", "Judemtum"]
+
+  derivational_rules:
+    description: "Gender based on word formation"
+    prefixes:
+      masculine: ["der Ge-", "der Ver-"]
+      feminine: ["die Be-", "die Ent-"]
+      neuter: ["das Ge-", "das Ver-"]
+    suffixes:
+      masculine: ["-er", "-en", "-ismus", "-us"]
+      feminine: ["-in", "-ung", "-heit", "-keit"]
+      neuter: ["-chen", "-lein", "-ment", "-um"]
+
+# Gender agreement patterns
+agreement_patterns:
+  article_agreement:
+    description: "Articles must agree with noun gender"
+    definite:
+      masculine: "der"
+      feminine: "die"
+      neuter: "das"
+      plural: "die"
+    indefinite:
+      masculine: "ein"
+      feminine: "eine"
+      neuter: "ein"
+      plural: "keine" # no indefinite plural
+
+  adjective_agreement:
+    description: "Adjectives decline based on gender and case"
+    nominative:
+      masculine: "-er"
+      feminine: "-e"
+      neuter: "-es"
+      plural: "-e"
+    accusative:
+      masculine: "-en"
+      feminine: "-e"
+      neuter: "-es"
+      plural: "-e"
+
+  pronoun_agreement:
+    description: "Pronouns replace nouns and maintain gender"
+    personal:
+      masculine: ["er", "ihn", "ihm"]
+      feminine: ["sie", "sie", "ihr"]
+      neuter: ["es", "es", "ihm"]
+    possessive:
+      masculine: "sein"
+      feminine: "ihre"
+      neuter: "sein"
+      plural: "ihre"
+
+# Gender in compound nouns
+compound_gender:
+  description: "Last noun determines gender of compound"
+  examples:
+    - "Haustür": "feminine" # Tür is feminine
+    - "Hausschlüssel": "masculine" # Schlüssel is masculine
+    - "Haustier": "neuter" # Tier is neuter
+  rules:
+    - "last_noun_determines"
+    - "exceptions_exist"
+    - "learn_base_nouns"
+
+# Gender exceptions and irregularities
+exceptions:
+  description: "Words that don't follow common patterns"
+  masculine_to_feminine:
+    - "Junge" # boy -> Mädchen (girl)
+    - "Mann" # man -> Frau (woman)
+  feminine_to_masculine:
+    - "Person" # person -> but can be any gender
+  neuter_irregularities:
+    - "Mädchen" # girl (diminutive, normally neuter)
+    - "Fräulein" # young lady (neuter despite female reference)
+
+# Gender learning strategies
+learning_strategies:
+  memorize_with_article:
+    description: "Always learn nouns with their definite article"
+    examples: ["der Mann", "die Frau", "das Kind"]
+  group_by_ending:
+    description: "Learn common endings and their genders"
+    masculine_groups: ["-ig", "-ling", "-ismus"]
+    feminine_groups: ["-ung", "-heit", "-keit"]
+    neuter_groups: ["-chen", "-lein", "-ment"]
+  use_mnemonics:
+    description: "Create memory aids for irregular genders"
+    examples:
+      - "der See (lake) - masculine because it's deep like a man?"
+      - "die See (sea) - feminine because it's wide like a woman?"
+  practice_agreement:
+    description: "Practice adjective and article agreement"
+    exercises: ["article_adjective_noun", "pronoun_replacement"]
+
+# Gender in different contexts
+contextual_gender:
+  professions:
+    description: "Many professions have both masculine and feminine forms"
+    examples:
+      - "Lehrer/Lehrerin"
+      - "Arzt/Ärztin"
+      - "Student/Studentin"
+  animals:
+    description: "Animals follow natural gender when specified"
+    examples:
+      - "der Hund" # male dog
+      - "die Hündin" # female dog
+      - "das Pferd" # horse (general)
+  abstractions:
+    description: "Abstract concepts often have grammatical gender"
+    masculine: ["der Frieden", "der Hass", "der Neid"]
+    feminine: ["die Liebe", "die Hoffnung", "die Angst"]
+    neuter: ["das Glück", "das Unglück", "das Leben"]

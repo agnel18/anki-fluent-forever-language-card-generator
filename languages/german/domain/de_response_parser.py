@@ -1,0 +1,453 @@
+# German Response Parser
+# Parses AI responses for German grammar analysis
+# Clean Architecture implementation
+
+import json
+import logging
+import re
+from typing import Dict, Any, List, Optional
+
+from .de_config import DeConfig
+
+logger = logging.getLogger(__name__)
+
+class DeResponseParser:
+    """
+    Parses AI responses for comprehensive German grammar analysis.
+    Handles case system, gender agreement, verb conjugations, and complex constructions.
+    Based on Duden German grammar standards.
+    """
+
+    def __init__(self, config: DeConfig):
+        self.config = config
+
+    def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str) -> Dict[str, Any]:
+        """
+        Parse AI response for comprehensive German grammar analysis.
+
+        Args:
+            ai_response: Raw AI response containing JSON analysis
+            complexity: Analysis complexity level
+            sentence: Original German sentence being analyzed
+            target_word: Word to focus analysis on
+
+        Returns:
+            Parsed and validated analysis result
+        """
+        try:
+            # Extract JSON from response
+            json_data = self._extract_json(ai_response)
+            if not json_data:
+                logger.warning("No JSON found in response, using fallback")
+                return self._create_fallback_response(sentence)
+
+            # Validate and normalize comprehensive analysis
+            return self._validate_and_normalize_comprehensive(json_data, sentence)
+
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parsing failed: {e}")
+            return self._create_fallback_response(sentence)
+        except Exception as e:
+            logger.error(f"Response parsing failed: {e}")
+            return self._create_fallback_response(sentence)
+
+    def _extract_json(self, ai_response: str) -> Optional[Dict[str, Any]]:
+        """Extract JSON from AI response with ROBUST MULTIPLE FALLBACK METHODS - GOLD STANDARD PATTERN"""
+        try:
+            cleaned_response = ai_response.strip()
+
+            # Method 1: Direct parsing if starts with JSON (like gold standards)
+            if cleaned_response.startswith(('{', '[')):
+                return json.loads(cleaned_response)
+
+            # Method 2: Extract from markdown code blocks (like Hindi parser)
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
+            if json_match:
+                return json.loads(json_match.group(1))
+
+            # Method 3: Extract JSON between curly braces (like Arabic parser)
+            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+            if brace_match:
+                return json.loads(brace_match.group(0))
+
+            # Method 4: Try entire response as fallback
+            return json.loads(cleaned_response)
+
+        except json.JSONDecodeError as e:
+            logger.warning(f"JSON extraction failed: {e}")
+            return None
+
+    def _validate_and_normalize_comprehensive(self, data: Dict[str, Any], original_text: str) -> Dict[str, Any]:
+        """
+        Validate and normalize comprehensive German grammar analysis.
+
+        Args:
+            data: Raw parsed JSON data
+            original_text: Original text for validation
+
+        Returns:
+            Normalized analysis result
+        """
+        # Extract and validate words
+        words = self._validate_words(data.get('words', []), original_text)
+
+        # Extract and validate sentences
+        sentences = self._validate_sentences(data.get('sentences', []))
+
+        # Calculate overall confidence
+        overall_confidence = self._calculate_overall_confidence(words, sentences)
+
+        # Build analysis metadata
+        analysis_metadata = self._build_analysis_metadata(data.get('analysis_metadata', {}))
+
+        # Create elements dictionary grouped by grammatical role (like Spanish gold standard)
+        elements = {}
+        for word_data in words:
+            role = (word_data.get('grammatical_roles') or
+                   word_data.get('grammatical_role') or
+                   word_data.get('role', 'other'))
+            if isinstance(role, list):
+                role = role[-1] if role else 'other'
+
+            # Map role using config for standardization
+            standard_role = role  # Could enhance with self.config.get_grammatical_roles(complexity)
+            if standard_role not in elements:
+                elements[standard_role] = []
+            elements[standard_role].append(word_data)
+
+        # Ensure word explanations follow the required format
+        for word_data in words:
+            meaning_key = 'individual_meaning' if 'individual_meaning' in word_data else 'meaning'
+            if meaning_key in word_data:
+                meaning = word_data[meaning_key]
+                word = word_data.get('word', '')
+                role = word_data.get('grammatical_role', '')
+
+                # Convert to standardized format if needed
+                if meaning_key == 'individual_meaning':
+                    # Create the standardized format: "word (role): meaning; role in sentence"
+                    word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
+                elif not re.match(r'^[^:]+ \([^)]+\): .+; .+$', meaning):
+                    logger.warning(f"Meaning format incorrect: {meaning}")
+
+        return {
+            'words': words,
+            'sentences': sentences,
+            'overall_confidence': overall_confidence,
+            'analysis_metadata': analysis_metadata,
+            'elements': elements,  # Now properly grouped by grammatical role
+            'explanations': data.get('overall_analysis', {}),  # Add explanations for GrammarAnalysis compatibility
+            'confidence': overall_confidence,  # Add confidence for GrammarAnalysis compatibility
+            'errors': [],
+            'warnings': []
+        }
+
+    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = "") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response for German grammar analysis.
+        Handles multiple German sentences efficiently with case/gender analysis.
+        """
+        logger.info(f"Parsing batch German response for {len(sentences)} sentences")
+        logger.debug(f"AI response length: {len(ai_response)}")
+        logger.debug(f"AI response preview: {ai_response[:500]}...")
+        try:
+            # Extract JSON using robust method
+            json_data = self._extract_json(ai_response)
+            if not json_data:
+                logger.warning("No JSON found in batch response, using fallbacks")
+                return [self._create_fallback_response(s) for s in sentences]
+
+            # Check if this looks like an error response
+            if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
+                raise ValueError("AI returned error response")
+
+            if isinstance(json_data, list):
+                batch_results = json_data
+            else:
+                batch_results = json_data.get('batch_results', [])
+                logger.debug(f"Found {len(batch_results)} batch results")
+
+            # If no valid batch results, treat as error
+            if not batch_results:
+                logger.warning("No valid batch results in AI response")
+                raise ValueError("No valid batch results in AI response")
+
+            results = []
+            for i, item in enumerate(batch_results):
+                if i < len(sentences):
+                    try:
+                        sentence = sentences[i]
+                        result_data = item
+
+                        # Handle nested batch responses
+                        if 'batch_results' in result_data:
+                            result_data = result_data['batch_results'][0] if result_data['batch_results'] else {'words': [], 'explanations': {}}
+
+                        # Process the result data
+                        words_data = result_data.get('words') or result_data.get('analysis', [])
+
+                        # For batch format, convert analysis array to words format
+                        if result_data.get('analysis') and not result_data.get('words'):
+                            words_data = []
+                            for analysis_item in result_data['analysis']:
+                                word_data = {
+                                    'word': analysis_item.get('word', ''),
+                                    'grammatical_role': analysis_item.get('grammatical_role', ''),
+                                    'individual_meaning': analysis_item.get('individual_meaning', ''),
+                                    'grammatical_case': analysis_item.get('grammatical_case', ''),
+                                    'gender': analysis_item.get('gender', '')
+                                }
+                                words_data.append(word_data)
+
+                        # Create validated_data structure for _validate_and_normalize_comprehensive
+                        temp_data = {
+                            'words': words_data,
+                            'overall_analysis': result_data.get('explanations', {}),
+                            'analysis_metadata': result_data.get('analysis_metadata', {})
+                        }
+
+                        # Validate German-specific patterns
+                        validated_data = self._validate_and_normalize_comprehensive(temp_data, sentence)
+
+                        # Get color scheme for complexity
+                        color_scheme = self.config.get_color_scheme(complexity)
+
+                        result = {
+                            'word_explanations': validated_data.get('words', []),
+                            'explanations': validated_data.get('overall_analysis', {}),
+                            'elements': validated_data.get('elements', {}),
+                            'confidence': result_data.get('confidence', 0.8),
+                            'color_scheme': color_scheme,
+                            'is_rtl': False,
+                            'text_direction': 'ltr',
+                            'sentence': sentence,
+                            'target_word': target_word
+                        }
+
+                        results.append(result)
+                    except Exception as e:
+                        logger.warning(f"Batch item {i} failed: {e}")
+                        results.append(self._create_fallback_response(sentences[i]))
+                else:
+                    results.append(self._create_fallback_response(sentences[i]))
+
+            # Ensure we have results for all sentences
+            while len(results) < len(sentences):
+                results.append(self._create_fallback_response(sentences[len(results)]))
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Batch parsing failed: {e}")
+            return [self._create_fallback_response(s) for s in sentences]
+
+    def _validate_words(self, words_data: List[Dict[str, Any]], original_text: str) -> List[Dict[str, Any]]:
+        """Validate and normalize word analysis data."""
+        validated_words = []
+        original_words = original_text.split()
+
+        for i, word_data in enumerate(words_data):
+            if not isinstance(word_data, dict):
+                continue
+
+            # Ensure word matches original text
+            word = word_data.get('word', '')
+            if i < len(original_words) and word != original_words[i]:
+                # Try to match by position or use original
+                word = original_words[i] if i < len(original_words) else word
+
+            validated_word = {
+                'word': word,
+                'lemma': word_data.get('lemma', word),
+                'pos': self._normalize_pos(word_data.get('pos', 'unknown')),
+                'grammatical_role': word_data.get('grammatical_role', 'unknown'),
+                'grammatical_case': self._normalize_case(word_data.get('grammatical_case') or word_data.get('case')),
+                'gender': self._normalize_gender(word_data.get('gender')),
+                'number': word_data.get('number'),
+                'person': word_data.get('person'),
+                'tense': word_data.get('tense'),
+                'mood': word_data.get('mood'),
+                'declension_type': word_data.get('declension_type'),
+                'preposition_case': word_data.get('preposition_case'),
+                'confidence': float(word_data.get('confidence', 0.5)),
+                'features': word_data.get('features', {}),
+                'morphological_info': word_data.get('morphological_info', {})
+            }
+
+            # Format the meaning field for display, similar to Spanish analyzer
+            individual_meaning = word_data.get('individual_meaning', '')
+            grammatical_role = validated_word['grammatical_role']
+            if individual_meaning:
+                # Create the standardized format: "word (role): meaning"
+                validated_word['meaning'] = f"{word} ({grammatical_role}): {individual_meaning}"
+            else:
+                # Fallback format
+                validated_word['meaning'] = f"{word} ({grammatical_role}): {word}; word in sentence"
+
+            validated_words.append(validated_word)
+
+        return validated_words
+
+    def _validate_sentences(self, sentences_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Validate and normalize sentence analysis data."""
+        validated_sentences = []
+
+        for sentence_data in sentences_data:
+            if not isinstance(sentence_data, dict):
+                continue
+
+            validated_sentence = {
+                'text': sentence_data.get('text', ''),
+                'word_order_type': sentence_data.get('word_order_type', 'unknown'),
+                'clause_structure': sentence_data.get('clause_structure', 'unknown'),
+                'verb_position': sentence_data.get('verb_position', 'unknown'),
+                'complex_constructions': sentence_data.get('complex_constructions', []),
+                'case_assignments': sentence_data.get('case_assignments', {})
+            }
+
+            validated_sentences.append(validated_sentence)
+
+        return validated_sentences
+
+    def _normalize_pos(self, pos: str) -> str:
+        """Normalize part of speech to standard values."""
+        pos_mapping = {
+            'noun': 'noun',
+            'verb': 'verb',
+            'adjective': 'adjective',
+            'adverb': 'adverb',
+            'article': 'article',
+            'pronoun': 'pronoun',
+            'preposition': 'preposition',
+            'conjunction': 'conjunction',
+            'numeral': 'numeral',
+            'interjection': 'interjection'
+        }
+        return pos_mapping.get(pos.lower(), 'unknown')
+
+    def _normalize_case(self, case: Optional[str]) -> Optional[str]:
+        """Normalize case to standard German case names."""
+        if not case or case.lower() in ['null', 'none', '']:
+            return None
+
+        case_mapping = {
+            'nominative': 'nominative',
+            'nominativ': 'nominative',
+            'nom': 'nominative',
+            'accusative': 'accusative',
+            'akkusativ': 'accusative',
+            'acc': 'accusative',
+            'dative': 'dative',
+            'dativ': 'dative',
+            'dat': 'dative',
+            'genitive': 'genitive',
+            'genitiv': 'genitive',
+            'gen': 'genitive'
+        }
+        return case_mapping.get(case.lower())
+
+    def _normalize_gender(self, gender: Optional[str]) -> Optional[str]:
+        """Normalize gender to standard German gender names."""
+        if not gender or gender.lower() in ['null', 'none', '']:
+            return None
+
+        gender_mapping = {
+            'masculine': 'masculine',
+            'masc': 'masculine',
+            'männlich': 'masculine',
+            'maskulin': 'masculine',
+            'feminine': 'feminine',
+            'fem': 'feminine',
+            'weiblich': 'feminine',
+            'feminin': 'feminine',
+            'neuter': 'neuter',
+            'neut': 'neuter',
+            'sächlich': 'neuter',
+            'neutrum': 'neuter'
+        }
+        return gender_mapping.get(gender.lower())
+
+    def _calculate_overall_confidence(self, words: List[Dict], sentences: List[Dict]) -> float:
+        """Calculate overall analysis confidence."""
+        if not words:
+            return 0.0
+
+        word_confidences = [w.get('confidence', 0.5) for w in words]
+        avg_word_confidence = sum(word_confidences) / len(word_confidences)
+
+        # Boost confidence if we have sentence analysis
+        sentence_boost = 0.1 if sentences else 0.0
+
+        # Boost confidence for recognized German features
+        german_features_boost = 0.0
+        for word in words:
+            if word.get('case') or word.get('gender'):
+                german_features_boost = 0.2
+                break
+
+        confidence = min(1.0, avg_word_confidence + sentence_boost + german_features_boost)
+        return round(confidence, 2)
+
+    def _build_analysis_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Build comprehensive analysis metadata."""
+        return {
+            'case_system_recognized': metadata.get('case_system_recognized', False),
+            'gender_agreement_checked': metadata.get('gender_agreement_checked', False),
+            'verb_conjugation_analyzed': metadata.get('verb_conjugation_analyzed', False),
+            'word_order_validated': metadata.get('word_order_validated', False),
+            'complex_constructions_detected': metadata.get('complex_constructions_detected', []),
+            'morphological_analysis_performed': metadata.get('morphological_analysis_performed', False),
+            'fallback_used': False
+        }
+
+    def _create_fallback_response(self, original_text: str) -> Dict[str, Any]:
+        """Create fallback response when parsing fails."""
+        words = []
+        for word in original_text.split():
+            words.append({
+                'word': word,
+                'lemma': word,
+                'pos': 'unknown',
+                'grammatical_role': 'unknown',
+                'case': None,
+                'gender': None,
+                'number': None,
+                'person': None,
+                'tense': None,
+                'mood': None,
+                'declension_type': None,
+                'preposition_case': None,
+                'confidence': 0.0,
+                'features': {},
+                'morphological_info': {}
+            })
+
+        return {
+            'words': words,
+            'sentences': [{
+                'text': original_text,
+                'word_order_type': 'unknown',
+                'clause_structure': 'unknown',
+                'verb_position': 'unknown',
+                'complex_constructions': [],
+                'case_assignments': {}
+            }],
+            'overall_confidence': 0.0,
+            'analysis_metadata': {
+                'case_system_recognized': False,
+                'gender_agreement_checked': False,
+                'verb_conjugation_analyzed': False,
+                'word_order_validated': False,
+                'complex_constructions_detected': [],
+                'morphological_analysis_performed': False,
+                'fallback_used': True
+            },
+            'elements': words,  # Add elements for GrammarAnalysis compatibility
+            'explanations': {
+                'sentence_structure': 'Fallback analysis - parsing failed',
+                'key_features': 'Basic word identification only'
+            },  # Add explanations for GrammarAnalysis compatibility
+            'confidence': 0.3,  # Add confidence for GrammarAnalysis compatibility
+            'errors': ['JSON parsing failed'],
+            'warnings': ['Using fallback analysis']
+        }

@@ -65,7 +65,8 @@ class AnalyzerRegistry:
             'arabic': 'ar',
             'hindi': 'hi',
             'spanish': 'es',
-            'chinese_traditional': 'zh-tw'
+            'chinese_traditional': 'zh-tw',
+            'german': 'de'
         }
 
         # Look for language subdirectories
@@ -77,10 +78,14 @@ class AnalyzerRegistry:
                 normalized_code = language_code.replace('-', '_')
                 analyzer_file = lang_dir / f"{normalized_code}_analyzer.py"
                 
+                logger.info(f"Checking folder: {folder_name} -> language_code: {language_code} -> file: {analyzer_file}")
+                
                 if analyzer_file.exists():
+                    logger.info(f"Found analyzer file: {analyzer_file}")
                     try:
                         # Import the analyzer module
                         module_name = f"languages.{folder_name}.{normalized_code}_analyzer"
+                        logger.info(f"Importing module: {module_name}")
                         module = importlib.import_module(module_name)
 
                         # Find the analyzer class
@@ -117,6 +122,8 @@ class AnalyzerRegistry:
 
                     except Exception as e:
                         logger.error(f"Failed to load analyzer {language_code}: {e}")
+                else:
+                    logger.info(f"No analyzer file found for {folder_name}: {analyzer_file}")
 
     def get_analyzer(self, language_code: str) -> Optional[BaseGrammarAnalyzer]:
         """

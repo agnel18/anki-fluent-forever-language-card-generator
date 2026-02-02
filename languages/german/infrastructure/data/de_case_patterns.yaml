@@ -1,0 +1,230 @@
+# German Case Patterns
+# Based on Duden grammar standards
+
+# Nominative case patterns
+nominative:
+  description: "Subject case - who/what is doing the action"
+  triggers:
+    - "subject_of_sentence"
+    - "predicate_nominative"
+    - "after_copula_verbs"
+  article_endings:
+    masculine: "der"
+    feminine: "die"
+    neuter: "das"
+    plural: "die"
+  pronoun_forms:
+    ich: "ich"
+    du: "du"
+    er: "er"
+    sie: "sie"
+    es: "es"
+    wir: "wir"
+    ihr: "ihr"
+    sie_plural: "sie"
+    Sie: "Sie"
+  adjective_endings:
+    strong:
+      masculine: "-er"
+      feminine: "-e"
+      neuter: "-es"
+      plural: "-e"
+    weak:
+      all: "-e"
+    mixed:
+      masculine: "-e"
+      feminine: "-e"
+      neuter: "-e"
+      plural: "-en"
+
+# Accusative case patterns
+accusative:
+  description: "Direct object case - who/what receives the action"
+  triggers:
+    - "direct_object"
+    - "after_accusative_prepositions"
+    - "time_expressions"
+    - "measurements"
+  article_endings:
+    masculine: "den"
+    feminine: "die"
+    neuter: "das"
+    plural: "die"
+  pronoun_forms:
+    mich: "mich"
+    dich: "dich"
+    ihn: "ihn"
+    sie: "sie"
+    es: "es"
+    uns: "uns"
+    euch: "euch"
+    sie_plural: "sie"
+    Sie: "Sie"
+  adjective_endings:
+    strong:
+      masculine: "-en"
+      feminine: "-e"
+      neuter: "-es"
+      plural: "-e"
+    weak:
+      all: "-en"
+    mixed:
+      masculine: "-en"
+      feminine: "-e"
+      neuter: "-e"
+      plural: "-en"
+  prepositions:
+    definite: ["durch", "für", "gegen", "ohne", "um"]
+    indefinite: ["einen", "eine", "ein"]
+
+# Dative case patterns
+dative:
+  description: "Indirect object case - to/for whom the action is done"
+  triggers:
+    - "indirect_object"
+    - "after_dative_prepositions"
+    - "after_certain_verbs"
+    - "possessive_relationships"
+  article_endings:
+    masculine: "dem"
+    feminine: "der"
+    neuter: "dem"
+    plural: "den"
+  pronoun_forms:
+    mir: "mir"
+    dir: "dir"
+    ihm: "ihm"
+    ihr: "ihr"
+    ihm_neuter: "ihm"
+    uns: "uns"
+    euch: "euch"
+    ihnen: "ihnen"
+    Ihnen: "Ihnen"
+  adjective_endings:
+    strong:
+      masculine: "-em"
+      feminine: "-er"
+      neuter: "-em"
+      plural: "-en"
+    weak:
+      all: "-en"
+    mixed:
+      masculine: "-en"
+      feminine: "-en"
+      neuter: "-en"
+      plural: "-en"
+  prepositions:
+    definite: ["aus", "bei", "mit", "nach", "von", "zu"]
+    indefinite: ["einem", "einer", "einem"]
+  verbs_requiring_dative:
+    - "helfen"
+    - "gefallen"
+    - "gehören"
+    - "passen"
+    - "schmecken"
+
+# Genitive case patterns
+genitive:
+  description: "Possessive case - of whom/what"
+  triggers:
+    - "possession"
+    - "after_genitive_prepositions"
+    - "partitive_constructions"
+    - "after_nouns"
+  article_endings:
+    masculine: "des"
+    feminine: "der"
+    neuter: "des"
+    plural: "der"
+  pronoun_forms:
+    meiner: "meiner"
+    deiner: "deiner"
+    seiner: "seiner"
+    ihrer: "ihrer"
+    seiner_neuter: "seiner"
+    unser: "unser"
+    euer: "euer"
+    ihrer_plural: "ihrer"
+    Ihrer: "Ihrer"
+  adjective_endings:
+    strong:
+      masculine: "-es"
+      feminine: "-er"
+      neuter: "-es"
+      plural: "-er"
+    weak:
+      all: "-en"
+    mixed:
+      masculine: "-en"
+      feminine: "-en"
+      neuter: "-en"
+      plural: "-en"
+  prepositions:
+    definite: ["anstatt", "außerhalb", "innerhalb", "trotz", "während"]
+    indefinite: ["eines", "einer", "eines"]
+  genitive_constructions:
+    - "noun_genitive"
+    - "prepositional_genitive"
+    - "attributive_genitive"
+
+# Two-way prepositions (accusative or dative based on movement)
+two_way_prepositions:
+  description: "Prepositions that take accusative (movement) or dative (location)"
+  prepositions: ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"]
+  accusative_when:
+    - "wohin_questions"
+    - "movement_toward"
+    - "change_of_location"
+  dative_when:
+    - "wo_questions"
+    - "static_location"
+    - "no_movement"
+
+# Case combinations for complex constructions
+complex_patterns:
+  double_dative:
+    description: "Two dative objects in one sentence"
+    example: "Ich gebe dem Mann dem Buch" # I give the man the book
+    structure: "verb + dative_person + dative_thing"
+
+  dative_genitive:
+    description: "Dative with genitive possession"
+    example: "am Ende des Buches" # at the end of the book
+    structure: "preposition + dative + genitive"
+
+  accusative_genitive:
+    description: "Accusative with genitive specification"
+    example: "wegen des Regens" # because of the rain
+    structure: "preposition + accusative + genitive"
+
+# Case after verbs
+verb_case_patterns:
+  accusative_verbs:
+    - "haben"
+    - "nehmen"
+    - "essen"
+    - "trinken"
+    - "lesen"
+
+  dative_verbs:
+    - "helfen"
+    - "danken"
+    - "gefallen"
+    - "gehören"
+    - "passen"
+
+  genitive_verbs:
+    - "bedürfen"
+    - "gedenken"
+    - "sich erinnern"
+
+  two_case_verbs:
+    accusative_dative: ["geben", "schenken", "zeigen"]
+    dative_accusative: ["nehmen", "stehlen", "fragen"]
+
+# Case in subordinate clauses
+subordinate_clause_cases:
+  description: "Case changes in subordinate clauses"
+  conjunctions_triggering_change: ["dass", "ob", "weil", "obwohl"]
+  verb_position: "end"
+  case_preservation: "maintains_main_clause_cases"

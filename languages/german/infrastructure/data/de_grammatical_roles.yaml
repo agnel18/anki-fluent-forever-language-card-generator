@@ -1,0 +1,102 @@
+article:
+  description: "Definite/indefinite articles (der/die/das, ein/eine/ein)"
+  complexity: ["beginner", "intermediate", "advanced"]
+  german_name: "Artikel"
+  examples: ["der", "die", "das", "ein", "eine"]
+  cases: ["nominative", "accusative", "dative", "genitive"]
+  genders: ["masculine", "feminine", "neuter"]
+
+noun:
+  description: "Nouns with case and gender marking"
+  complexity: ["beginner", "intermediate", "advanced"]
+  german_name: "Substantiv/Nomen"
+  examples: ["Mann", "Frau", "Haus"]
+  cases: ["nominative", "accusative", "dative", "genitive"]
+  genders: ["masculine", "feminine", "neuter"]
+  features: ["capitalization", "compound_words", "umlaut_changes"]
+
+verb:
+  description: "Verbs with conjugation and position rules"
+  complexity: ["beginner", "intermediate", "advanced"]
+  german_name: "Verb"
+  examples: ["sein", "haben", "gehen"]
+  types: ["regular", "irregular", "strong", "weak", "mixed"]
+  positions: ["v2", "v1", "vl"]
+  features: ["separable_prefixes", "reflexive", "modal", "auxiliary"]
+
+adjective:
+  description: "Adjectives with declension (stark/schwach/gemischt)"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Adjektiv"
+  examples: ["groß", "klein", "schön"]
+  declensions: ["strong", "weak", "mixed"]
+  endings: ["-e", "-en", "-er", "-es", "-em", "-en"]
+  features: ["comparative", "superlative", "uninflected"]
+
+pronoun:
+  description: "Personal pronouns with case changes"
+  complexity: ["beginner", "intermediate", "advanced"]
+  german_name: "Pronomen"
+  examples: ["ich", "du", "er/sie/es"]
+  types: ["personal", "possessive", "reflexive", "demonstrative", "relative"]
+  cases: ["nominative", "accusative", "dative", "genitive"]
+
+preposition:
+  description: "Prepositions requiring specific cases"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Präposition"
+  examples: ["in", "auf", "mit", "für"]
+  case_requirements:
+    accusative: ["durch", "für", "gegen", "ohne", "um"]
+    dative: ["aus", "bei", "mit", "nach", "von", "zu"]
+    genitive: ["anstatt", "außerhalb", "innerhalb", "trotz", "während"]
+    two_way: ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"]
+
+conjunction:
+  description: "Coordinating and subordinating conjunctions"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Konjunktion"
+  examples: ["und", "oder", "aber", "weil"]
+  types: ["coordinating", "subordinating"]
+  word_order: ["vl_trigger", "no_change"]
+
+auxiliary:
+  description: "Auxiliary verbs (haben/sein/werden)"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Hilfsverb"
+  examples: ["haben", "sein", "werden"]
+  functions: ["perfect_tense", "passive", "future", "subjunctive"]
+
+modal:
+  description: "Modal verbs (können/müssen/wollen/dürfen)"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Modalverb"
+  examples: ["können", "müssen", "wollen"]
+  features: ["infinitive_position", "double_infinitive"]
+
+particle:
+  description: "Separable verb prefixes and particles"
+  complexity: ["advanced"]
+  german_name: "Partikel"
+  examples: ["auf", "aus", "ein", "mit"]
+  types: ["separable_prefix", "inseparable_prefix", "particle_verb"]
+
+adverb:
+  description: "Adverbs of time, place, manner"
+  complexity: ["intermediate", "advanced"]
+  german_name: "Adverb"
+  examples: ["hier", "dort", "schnell", "langsam"]
+  types: ["temporal", "local", "modal", "causal"]
+
+numeral:
+  description: "Cardinal and ordinal numbers"
+  complexity: ["beginner", "intermediate"]
+  german_name: "Zahlwort"
+  examples: ["eins", "zwei", "erste", "zweite"]
+  types: ["cardinal", "ordinal"]
+
+interjection:
+  description: "Exclamations and interjections"
+  complexity: ["beginner", "intermediate"]
+  german_name: "Interjektion"
+  examples: ["ach", "oh", "ja", "nein"]

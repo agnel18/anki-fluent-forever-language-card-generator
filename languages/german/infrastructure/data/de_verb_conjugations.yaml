@@ -1,0 +1,290 @@
+# German Verb Conjugations
+# Based on Duden grammar standards
+
+# Strong verbs (irregular) - Ablaut series
+strong_verbs:
+  ablaut_1:  # ei -> ie -> ie (sein, bleiben, schreiben)
+    - infinitive: "sein"
+      present:
+        ich: "bin"
+        du: "bist"
+        er_sie_es: "ist"
+        wir: "sind"
+        ihr: "seid"
+        sie_Sie: "sind"
+      preterite:
+        ich: "war"
+        du: "warst"
+        er_sie_es: "war"
+        wir: "waren"
+        ihr: "wart"
+        sie_Sie: "waren"
+      subjunctive:
+        ich: "sei"
+        du: "seiest"
+        er_sie_es: "sei"
+        wir: "seien"
+        ihr: "seiet"
+        sie_Sie: "seien"
+
+  ablaut_2:  # ei -> i -> i (beißen, bleiben, reißen)
+    - infinitive: "beißen"
+      present:
+        ich: "beiße"
+        du: "beißt"
+        er_sie_es: "beißt"
+        wir: "beißen"
+        ihr: "beißt"
+        sie_Sie: "beißen"
+
+  ablaut_3:  # e -> a -> o (helfen, sterben, treffen)
+    - infinitive: "helfen"
+      present:
+        ich: "helfe"
+        du: "hilfst"
+        er_sie_es: "hilft"
+        wir: "helfen"
+        ihr: "helft"
+        sie_Sie: "helfen"
+      preterite:
+        ich: "half"
+        du: "halfst"
+        er_sie_es: "half"
+        wir: "halfen"
+        ihr: "halft"
+        sie_Sie: "halfen"
+
+  ablaut_4:  # e -> a -> e (nehmen, sprechen, stehlen)
+    - infinitive: "nehmen"
+      present:
+        ich: "nehme"
+        du: "nimmst"
+        er_sie_es: "nimmt"
+        wir: "nehmen"
+        ihr: "nehmt"
+        sie_Sie: "nehmen"
+      preterite:
+        ich: "nahm"
+        du: "nahmst"
+        er_sie_es: "nahm"
+        wir: "nahmen"
+        ihr: "nahmt"
+        sie_Sie: "nahmen"
+
+  ablaut_5:  # e -> a -> e (geben, lesen, sehen)
+    - infinitive: "geben"
+      present:
+        ich: "gebe"
+        du: "gibst"
+        er_sie_es: "gibt"
+        wir: "geben"
+        ihr: "gebt"
+        sie_Sie: "geben"
+      preterite:
+        ich: "gab"
+        du: "gabst"
+        er_sie_es: "gab"
+        wir: "gaben"
+        ihr: "gabt"
+        sie_Sie: "gaben"
+
+  ablaut_6:  # a -> u -> a (fahren, tragen, waschen)
+    - infinitive: "fahren"
+      present:
+        ich: "fahre"
+        du: "fährst"
+        er_sie_es: "fährt"
+        wir: "fahren"
+        ihr: "fahrt"
+        sie_Sie: "fahren"
+      preterite:
+        ich: "fuhr"
+        du: "fuhrst"
+        er_sie_es: "fuhr"
+        wir: "fuhren"
+        ihr: "fuhrt"
+        sie_Sie: "fuhren"
+
+  ablaut_7:  # a -> ie -> a (halten, raten, schlafen)
+    - infinitive: "halten"
+      present:
+        ich: "halte"
+        du: "hältst"
+        er_sie_es: "hält"
+        wir: "halten"
+        ihr: "haltet"
+        sie_Sie: "halten"
+      preterite:
+        ich: "hielt"
+        du: "hielst"
+        er_sie_es: "hielt"
+        wir: "hielten"
+        ihr: "hieltet"
+        sie_Sie: "hielten"
+
+# Weak verbs (regular)
+weak_verbs:
+  regular:
+    - infinitive: "machen"
+      present:
+        ich: "mache"
+        du: "machst"
+        er_sie_es: "macht"
+        wir: "machen"
+        ihr: "macht"
+        sie_Sie: "machen"
+      preterite:
+        ich: "machte"
+        du: "machtest"
+        er_sie_es: "machte"
+        wir: "machten"
+        ihr: "machtet"
+        sie_Sie: "machten"
+      perfect: "gemacht"
+
+# Mixed verbs (weak conjugation, strong preterite)
+mixed_verbs:
+  - infinitive: "bringen"
+    present:
+      ich: "bringe"
+      du: "bringst"
+      er_sie_es: "bringt"
+      wir: "bringen"
+      ihr: "bringt"
+      sie_Sie: "bringen"
+    preterite:
+      ich: "brachte"
+      du: "brachtest"
+      er_sie_es: "brachte"
+      wir: "brachten"
+      ihr: "brachtet"
+      sie_Sie: "brachten"
+    perfect: "gebracht"
+
+# Modal verbs
+modal_verbs:
+  - infinitive: "können"
+    present:
+      ich: "kann"
+      du: "kannst"
+      er_sie_es: "kann"
+      wir: "können"
+      ihr: "könnt"
+      sie_Sie: "können"
+    preterite:
+      ich: "konnte"
+      du: "konntest"
+      er_sie_es: "konnte"
+      wir: "konnten"
+      ihr: "konntet"
+      sie_Sie: "konnten"
+
+  - infinitive: "müssen"
+    present:
+      ich: "muß"
+      du: "mußt"
+      er_sie_es: "muß"
+      wir: "müssen"
+      ihr: "müßt"
+      sie_Sie: "müssen"
+    preterite:
+      ich: "mußte"
+      du: "mußtest"
+      er_sie_es: "mußte"
+      wir: "mußten"
+      ihr: "mußtet"
+      sie_Sie: "mußten"
+
+# Auxiliary verbs
+auxiliary_verbs:
+  haben:
+    present:
+      ich: "habe"
+      du: "hast"
+      er_sie_es: "hat"
+      wir: "haben"
+      ihr: "habt"
+      sie_Sie: "haben"
+    preterite:
+      ich: "hatte"
+      du: "hattest"
+      er_sie_es: "hatte"
+      wir: "hatten"
+      ihr: "hattet"
+      sie_Sie: "hatten"
+
+  sein:
+    present:
+      ich: "bin"
+      du: "bist"
+      er_sie_es: "ist"
+      wir: "sind"
+      ihr: "seid"
+      sie_Sie: "sind"
+    preterite:
+      ich: "war"
+      du: "warst"
+      er_sie_es: "war"
+      wir: "waren"
+      ihr: "wart"
+      sie_Sie: "waren"
+
+  werden:
+    present:
+      ich: "werde"
+      du: "wirst"
+      er_sie_es: "wird"
+      wir: "werden"
+      ihr: "werdet"
+      sie_Sie: "werden"
+    preterite:
+      ich: "wurde"
+      du: "wurdest"
+      er_sie_es: "wurde"
+      wir: "wurden"
+      ihr: "wurdet"
+      sie_Sie: "wurden"
+
+# Separable verbs
+separable_verbs:
+  - infinitive: "aufstehen"
+    prefix: "auf"
+    base: "stehen"
+    present:
+      ich: "stehe auf"
+      du: "stehst auf"
+      er_sie_es: "steht auf"
+      wir: "stehen auf"
+      ihr: "steht auf"
+      sie_Sie: "stehen auf"
+
+  - infinitive: "ausgehen"
+    prefix: "aus"
+    base: "gehen"
+    present:
+      ich: "gehe aus"
+      du: "gehst aus"
+      er_sie_es: "geht aus"
+      wir: "gehen aus"
+      ihr: "geht aus"
+      sie_Sie: "gehen aus"
+
+# Reflexive verbs
+reflexive_verbs:
+  - infinitive: "sich freuen"
+    present:
+      ich: "freue mich"
+      du: "freust dich"
+      er_sie_es: "freut sich"
+      wir: "freuen uns"
+      ihr: "freut euch"
+      sie_Sie: "freuen sich"
+
+  - infinitive: "sich setzen"
+    present:
+      ich: "setze mich"
+      du: "setzt dich"
+      er_sie_es: "setzt sich"
+      wir: "setzen uns"
+      ihr: "setzt euch"
+      sie_Sie: "setzen sich"

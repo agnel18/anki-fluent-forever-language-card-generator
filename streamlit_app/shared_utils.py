@@ -289,9 +289,13 @@ LANGUAGE_NAME_TO_CODE = {
     'chinese_traditional': 'zh',
     'hindi': 'hi',
     'spanish': 'es',
+    'Spanish': 'es',  # Capitalized version
     'french': 'fr',
+    'French': 'fr',  # Capitalized version
     'german': 'de',
+    'German': 'de',  # Capitalized version
     'italian': 'it',
+    'Italian': 'it',  # Capitalized version
     'portuguese': 'pt',
     'russian': 'ru',
     'japanese': 'ja',
