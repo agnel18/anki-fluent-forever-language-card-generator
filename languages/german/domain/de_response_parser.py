@@ -125,8 +125,18 @@ class DeResponseParser:
 
                 # Convert to standardized format if needed
                 if meaning_key == 'individual_meaning':
-                    # Create the standardized format: "word (role): meaning; role in sentence"
-                    word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
+                    # Check if AI already provided word (role) format
+                    if meaning.startswith(f"{word} ("):
+                        # AI provided detailed role, extract it and create proper format
+                        # Format: word (simple_role): (detailed_role): meaning; role in sentence
+                        if ': ' in meaning:
+                            detailed_part, rest = meaning.split(': ', 1)
+                            word_data['meaning'] = f"{word} ({role}): ({detailed_part[len(word)+2:]}): {rest}"
+                        else:
+                            word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
+                    else:
+                        # AI provided just the meaning part, add word and role
+                        word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
                 elif not re.match(r'^[^:]+ \([^)]+\): .+; .+$', meaning):
                     logger.warning(f"Meaning format incorrect: {meaning}")
 
@@ -256,11 +266,16 @@ class DeResponseParser:
                 # Try to match by position or use original
                 word = original_words[i] if i < len(original_words) else word
 
+            # Extract simplified grammatical role for coloring
+            detailed_role = word_data.get('grammatical_role', 'unknown')
+            simplified_role = self._extract_simplified_role(detailed_role)
+
             validated_word = {
                 'word': word,
                 'lemma': word_data.get('lemma', word),
                 'pos': self._normalize_pos(word_data.get('pos', 'unknown')),
-                'grammatical_role': word_data.get('grammatical_role', 'unknown'),
+                'grammatical_role': simplified_role,  # Use simplified role for coloring
+                'detailed_grammatical_role': detailed_role,  # Keep detailed role for explanations
                 'grammatical_case': self._normalize_case(word_data.get('grammatical_case') or word_data.get('case')),
                 'gender': self._normalize_gender(word_data.get('gender')),
                 'number': word_data.get('number'),
@@ -276,13 +291,14 @@ class DeResponseParser:
 
             # Format the meaning field for display, similar to Spanish analyzer
             individual_meaning = word_data.get('individual_meaning', '')
-            grammatical_role = validated_word['grammatical_role']
+            simplified_role = validated_word['grammatical_role']
+            detailed_role = word_data.get('grammatical_role', simplified_role)
             if individual_meaning:
-                # Create the standardized format: "word (role): meaning"
-                validated_word['meaning'] = f"{word} ({grammatical_role}): {individual_meaning}"
+                # Use the detailed role for the explanation text, but simplified role for coloring
+                validated_word['meaning'] = f"{word} ({simplified_role}): {individual_meaning}"
             else:
                 # Fallback format
-                validated_word['meaning'] = f"{word} ({grammatical_role}): {word}; word in sentence"
+                validated_word['meaning'] = f"{word} ({simplified_role}): {word}; word in sentence"
 
             validated_words.append(validated_word)
 
@@ -366,6 +382,31 @@ class DeResponseParser:
             'neutrum': 'neuter'
         }
         return gender_mapping.get(gender.lower())
+
+    def _extract_simplified_role(self, detailed_role: str) -> str:
+        """Extract simplified grammatical role for color mapping."""
+        detailed_lower = detailed_role.lower()
+
+        # Map detailed roles to simplified color scheme keys
+        role_mappings = {
+            'article': ['definite article', 'indefinite article', 'article'],
+            'noun': ['noun', 'substantiv', 'nomen'],
+            'verb': ['verb', 'copular verb', 'auxiliary verb', 'modal verb', 'transitive verb', 'intransitive verb', 'reflexive verb'],
+            'adjective': ['adjective', 'predicate adjective'],
+            'pronoun': ['pronoun', 'personal pronoun', 'reflexive pronoun', 'demonstrative pronoun', 'possessive pronoun', 'impersonal pronoun'],
+            'preposition': ['preposition', 'postposition'],
+            'conjunction': ['conjunction', 'subordinating conjunction', 'coordinating conjunction'],
+            'auxiliary': ['auxiliary', 'auxiliary verb'],
+            'modal': ['modal', 'modal verb'],
+            'particle': ['particle', 'separable particle']
+        }
+
+        for simplified_role, keywords in role_mappings.items():
+            if any(keyword in detailed_lower for keyword in keywords):
+                return simplified_role
+
+        # Default fallback
+        return 'other'
 
     def _calculate_overall_confidence(self, words: List[Dict], sentences: List[Dict]) -> float:
         """Calculate overall analysis confidence."""
