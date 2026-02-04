@@ -117,28 +117,25 @@ class DeResponseParser:
 
         # Ensure word explanations follow the required format
         for word_data in words:
-            meaning_key = 'individual_meaning' if 'individual_meaning' in word_data else 'meaning'
-            if meaning_key in word_data:
-                meaning = word_data[meaning_key]
-                word = word_data.get('word', '')
-                role = word_data.get('grammatical_role', '')
+            meaning = word_data.get('meaning', '')
+            word = word_data.get('word', '')
+            role = word_data.get('grammatical_role', '')
 
-                # Convert to standardized format if needed
-                if meaning_key == 'individual_meaning':
-                    # Check if AI already provided word (role) format
-                    if meaning.startswith(f"{word} ("):
-                        # AI provided detailed role, extract it and create proper format
-                        # Format: word (simple_role): (detailed_role): meaning; role in sentence
-                        if ': ' in meaning:
-                            detailed_part, rest = meaning.split(': ', 1)
-                            word_data['meaning'] = f"{word} ({role}): ({detailed_part[len(word)+2:]}): {rest}"
-                        else:
-                            word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
-                    else:
-                        # AI provided just the meaning part, add word and role
-                        word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
-                elif not re.match(r'^[^:]+ \([^)]+\): .+; .+$', meaning):
-                    logger.warning(f"Meaning format incorrect: {meaning}")
+            # Check if meaning has repetition (word appears twice) and fix it
+            if meaning.count(word) > 1 and f"{word} ({role}): {word} (" in meaning:
+                # Format is: word (role): word (detailed_role): meaning; explanation
+                # Extract the detailed role and reconstruct properly
+                if ': ' in meaning:
+                    parts = meaning.split(': ', 2)
+                    if len(parts) >= 3:
+                        ai_part = parts[1] + ': ' + parts[2]  # word (detailed_role): meaning; explanation
+                        if ai_part.startswith(f"{word} (") and '): ' in ai_part:
+                            detailed_start = ai_part.find('(')
+                            detailed_end = ai_part.find('): ')
+                            if detailed_start != -1 and detailed_end != -1:
+                                detailed_role = ai_part[detailed_start+1:detailed_end]
+                                meaning_part = ai_part[detailed_end+3:]
+                                word_data['meaning'] = f"{word} ({role}): ({detailed_role}): {meaning_part}"
 
         return {
             'words': words,
