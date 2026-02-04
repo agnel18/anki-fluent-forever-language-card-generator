@@ -50,7 +50,8 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
     # ... rest of implementation
 ```
 
-#### Issue 3: AI Providing Repeated Meanings
+#### Issue 3: AI Providing Repeated Meanings (UPDATED - Prevention-at-Source Solution)
+
 **Symptoms:**
 - All words of same grammatical role have identical meanings
 - "我 (pronoun): 我: I; me; 你: you; 這: this" for every pronoun
@@ -60,16 +61,45 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
 - AI prompt not emphasizing uniqueness
 - Missing "MANDATORY: Provide UNIQUE meanings" instruction
 
-**Solution:**
+**OLD Solution (Post-Processing - INEFFECTIVE):**
 ```python
-# ✅ ENHANCED PROMPT
-"CRITICAL: Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words."
-"individual_meaning: UNIQUE {native_language} translation/meaning SPECIFIC to this exact word only (MANDATORY)"
-
-# Example in prompt:
-{"word": "我", "individual_meaning": "I, me (first person singular pronoun)"},
-{"word": "你", "individual_meaning": "you (second person singular pronoun)"}
+# Complex duplicate detection and cleanup
+if len(meanings) != len(set(meanings)):
+    logger.warning("Duplicate meanings detected")
+    # Remove duplicates, add formatting, etc.
 ```
+
+**NEW Solution (Prevention-at-Source - RECOMMENDED):**
+```python
+# Prevention-at-Source Prompts (German & Spanish Innovation)
+'single': """
+For EACH word in the sentence, provide:
+- Its specific grammatical function and role in {language} grammar
+- How it contributes to the sentence meaning and structure
+- Relationships with adjacent words and grammatical agreement
+- {Language}-specific features ({key_features})
+
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word, explaining their specific functions and relationships in detail. Do NOT repeat word prefixes in the explanations.
+"""
+
+# Response Parser - Direct Preservation
+word_data['meaning'] = meaning  # Keep AI's detailed explanation as-is
+```
+
+**Prevention-at-Source Results:**
+```json
+// German Example
+"individual_meaning": "Serves as the subject of the sentence, representing the individual who performs the action. It is a common noun, inherently masculine in gender. Its nominative case indicates its function as the grammatical subject, the actor in the sentence."
+
+// Spanish Example  
+"individual_meaning": "Serves as the subject of the sentence, identifying the entity performing the action of 'ir' (to go). It is a masculine singular noun, agreeing in gender and number with its preceding determiner 'El'."
+```
+
+**Key Benefits:**
+- **No Repetition:** Each explanation is unique and contextual
+- **Educational Depth:** Shows grammatical relationships and language-specific features
+- **Maintainability:** Eliminates complex post-processing logic
+- **Superior Quality:** AI generates detailed explanations directly
 
 #### Issue 4: Generic Grammar Summaries
 **Symptoms:**

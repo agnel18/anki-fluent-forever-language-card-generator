@@ -144,39 +144,81 @@ class LanguageConfig:
         allowed_roles = self.complexity_role_filters.get(complexity, set())
         return role in allowed_roles or self.get_parent_role(role) in allowed_roles
 
-# 3. Role Processing in Response Parser
+# 3. Prevention-at-Source Word Explanations (German & Spanish Innovation)
+
+**Key Learning from German & Spanish Analyzers:** Prevention-at-source eliminates complex post-processing and produces superior educational explanations.
+
+**OLD Approach (Post-Processing - REMOVED):**
+```python
+# Complex role consistency processing
+if meaning and '(' in meaning and ')' in meaning:
+    # Regex parsing and role replacement
+    updated_meaning = f"{word_part} ({display_role}): {rest_meaning}"
+```
+
+**NEW Approach (Prevention-at-Source - RECOMMENDED):**
+```python
+# Direct preservation of AI's detailed explanations
+word_data['meaning'] = meaning  # No post-processing needed
+```
+
+### Response Parser - Prevention-at-Source Pattern
+
+**File:** `domain/{language}_response_parser.py`
+```python
 class LanguageResponseParser:
     def _process_word_explanations(self, words_data: List[Dict], complexity: str) -> List[List]:
-        # Apply complexity filtering
-        if not self.config.should_show_role(normalized_role, complexity):
-            display_role = self.config.get_parent_role(normalized_role)  # Use parent role
-        else:
-            display_role = normalized_role  # Use specific role
-        
-        # Color inheritance from parent role
-        parent_role = self.config.get_parent_role(normalized_role)
-        color = color_scheme.get(parent_role, color_scheme.get('other', '#708090'))
-        
-        # Ensure meaning text matches display role (CRITICAL)
-        if meaning and '(' in meaning and ')' in meaning:
-            role_pattern = r'^([^\s]+)\s*\(([^)]+)\):\s*(.+)$'
-            match = re.match(role_pattern, meaning.strip())
-            if match:
-                word_part, original_role, rest_meaning = match.groups()
-                # Replace with display_role to eliminate repetition
-                updated_meaning = f"{word_part} ({display_role}): {rest_meaning}"
-                meaning = updated_meaning
-        
-        return [word, role_display, color, meaning]
+        explanations = []
+
+        for word_data in words_data:
+            word = word_data.get('word', '')
+            grammatical_role = word_data.get('grammatical_role', '')
+            meaning = word_data.get('individual_meaning', word_data.get('meaning', ''))
+
+            # Apply complexity-based role filtering
+            normalized_role = self._normalize_grammatical_role(grammatical_role)
+            if not self.config.should_show_role(normalized_role, complexity):
+                display_role = self.config.get_parent_role(normalized_role)
+            else:
+                display_role = normalized_role
+
+            # Color inheritance from parent role
+            parent_role = self.config.get_parent_role(normalized_role)
+            color = color_scheme.get(parent_role, color_scheme.get('other', '#708090'))
+
+            # PREVENTION-AT-SOURCE: Keep AI's detailed explanation as-is
+            # No post-processing format addition or role consistency fixes needed
+
+            explanations.append([word, display_role, color, meaning])
+
+        return explanations
+```
+
+### Quality Results - Prevention-at-Source Examples
+
+**German Example:**
+```json
+"individual_meaning": "Serves as the subject of the sentence, representing the individual who performs the action. It is a common noun, inherently masculine in gender. Its nominative case indicates its function as the grammatical subject, the actor in the sentence. The singular form of the noun dictates that the verb 'geht' must be conjugated in the 3rd person singular. It forms the complete subject noun phrase 'Der Mann' in conjunction with its preceding definite article."
+```
+
+**Spanish Example:**
+```json
+"individual_meaning": "Serves as the subject of the sentence, identifying the entity performing the action of 'ir' (to go). It is a masculine singular noun, agreeing in gender and number with its preceding determiner 'El'. As the core of the subject noun phrase, it dictates the singular, third-person conjugation of the verb 'va', establishing the agent of the sentence."
+```
+
+**Benefits:**
+- **No Repetition:** Each explanation is unique and contextual
+- **Educational Depth:** Shows grammatical relationships and language-specific features
+- **Maintainability:** Eliminates complex post-processing logic
+- **Superior Quality:** AI generates detailed explanations directly
 ```
 
 **Critical Checklist:**
-- [ ] **Role Hierarchy Mapping**: Create `_create_role_hierarchy()` method mapping specific to parent roles
-- [ ] **Complexity Filters**: Implement `_create_complexity_filters()` with progressive role disclosure
-- [ ] **Role Filtering Logic**: Add `should_show_role()` method for complexity-based filtering
-- [ ] **Color Inheritance**: Use parent roles for color lookup to maintain visual consistency
-- [ ] **Meaning Consistency**: Update meaning text to match display role and eliminate repetition
-- [ ] **Arabic Word Combination Handling**: Properly split and color combined words like "والبطيخ"
+- [ ] **Prevention-at-Source Prompts:** Use descriptive prompts that generate detailed explanations directly (like German/Spanish analyzers)
+- [ ] **No Post-Processing:** Eliminate repetitive format addition in response parsers
+- [ ] **Unique Explanations:** Each word gets a distinct, contextual explanation
+- [ ] **Language-Specific Features:** Highlight grammar unique to each language
+- [ ] **Educational Depth:** Show grammatical relationships and contributions to sentence meaning
 
 #### 1.5 Critical: Sentence Generation Character Limits (UX Requirement)
 
