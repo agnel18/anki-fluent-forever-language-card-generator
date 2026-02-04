@@ -184,15 +184,15 @@ You are an expert linguist specializing in German grammar analysis.
 
 Analyze this German sentence: "{{sentence}}"
 Target word: "{{target_word}}"
+Complexity level: "{{complexity}}"
+
+For EACH word in the sentence, provide:
+- Its specific grammatical function and role in German grammar
+- How it contributes to the sentence meaning and structure
+- Relationships with adjacent words and grammatical agreement
+- German-specific features (case, gender, verb conjugations, word order)
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
-
-CRITICAL REQUIREMENTS:
-1. Analyze EVERY SINGLE WORD in the sentence, not just the target word.
-2. Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words.
-3. Each word must have a DISTINCT contextual meaning specific to this sentence.
-4. Use DETAILED grammatical roles that describe the specific function (e.g., "demonstrative determiner", "copular verb", "reflexive pronoun").
-5. For individual_meaning, provide: "English meaning; specific role/function in this sentence"
 
 REQUIRED JSON FORMAT:
 {% raw %}
@@ -200,10 +200,10 @@ REQUIRED JSON FORMAT:
   "words": [
     {
       "word": "exact_word",
-      "grammatical_role": "detailed role description (e.g., demonstrative determiner, copular verb, definite article, etc.)",
+      "grammatical_role": "detailed role description (e.g., definite article, transitive verb, reflexive pronoun)",
       "grammatical_case": "nominative|accusative|dative|genitive|null",
       "gender": "masculine|feminine|neuter|null",
-      "individual_meaning": "English meaning; specific grammatical function in this sentence"
+      "individual_meaning": "Detailed explanation of this word's function, relationships, and contribution to the sentence meaning"
     }
   ],
   "overall_analysis": {
@@ -213,6 +213,8 @@ REQUIRED JSON FORMAT:
 }
 {% endraw %}
 
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word, explaining their specific functions and relationships in detail. Do NOT repeat word prefixes in the explanations.
+
 Grammatical roles: {{grammatical_roles}}
 """,
             'batch': """
@@ -220,15 +222,15 @@ You are an expert linguist specializing in German grammar analysis.
 
 Sentences: {{sentences}}
 Target word: "{{target_word}}"
+Complexity level: "{{complexity}}"
+
+For EACH sentence, analyze EVERY word and provide:
+- Specific grammatical function and role in German grammar
+- How each word contributes to the sentence meaning and structure
+- Relationships with adjacent words and grammatical agreement
+- German-specific features (case, gender, verb conjugations, word order)
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
-
-CRITICAL REQUIREMENTS:
-1. For EACH sentence, analyze EVERY SINGLE WORD in that sentence.
-2. Provide UNIQUE, INDIVIDUAL meanings for EACH word in each sentence. Do NOT repeat meanings across words.
-3. Each word must have a DISTINCT contextual meaning specific to its sentence.
-4. Use DETAILED grammatical roles that describe the specific function (e.g., "demonstrative determiner", "copular verb", "reflexive pronoun").
-5. For individual_meaning, provide: "English meaning; specific role/function in this sentence"
 
 REQUIRED JSON FORMAT:
 {% raw %}
@@ -239,13 +241,25 @@ REQUIRED JSON FORMAT:
       "analysis": [
         {
           "word": "exact_word",
-          "grammatical_role": "detailed role description (e.g., demonstrative determiner, copular verb, definite article, etc.)",
+          "grammatical_role": "detailed role description (e.g., definite article, transitive verb, reflexive pronoun)",
           "grammatical_case": "nominative|accusative|dative|genitive|null",
           "gender": "masculine|feminine|neuter|null",
-          "individual_meaning": "English meaning; specific grammatical function in this sentence"
+          "individual_meaning": "Detailed explanation of this word's function, relationships, and contribution to the sentence meaning"
         }
       ],
       "explanations": {
+        "sentence_structure": "brief description of German sentence structure",
+        "key_features": "important German grammatical points"
+      }
+    }
+  ]
+}
+{% endraw %}
+
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word in each sentence, explaining their specific functions and relationships in detail. Do NOT repeat word prefixes in the explanations.
+
+Grammatical roles: {{grammatical_roles}}
+""",
         "overall_structure": "brief description of German sentence structure",
         "key_features": "important German grammatical points"
       }

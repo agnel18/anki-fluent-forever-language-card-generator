@@ -121,72 +121,7 @@ class DeResponseParser:
             word = word_data.get('word', '')
             role = word_data.get('grammatical_role', '')
 
-            # Check if meaning has repetition (word appears twice) and fix it
-            # Apply selective repetition removal based on grammatical role
-            if meaning.count(word) > 1:
-                if role == 'other':
-                    # For 'other' roles, keep detailed explanations but remove redundant prefixes
-                    # Look for pattern: "word (other): word (other): detailed explanation"
-                    # Convert to: "word (other): detailed explanation"
-                    other_pattern = f"{word} ({role}): {word} ({role}): "
-                    if other_pattern in meaning:
-                        parts = meaning.split(other_pattern, 1)
-                        if len(parts) == 2 and parts[1].strip():
-                            word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
-                    else:
-                        # Try alternative pattern: "word (other): word (article): explanation"
-                        alt_pattern = f"{word} ({role}): {word} "
-                        if alt_pattern in meaning:
-                            parts = meaning.split(alt_pattern, 1)
-                            if len(parts) == 2 and parts[1].strip():
-                                word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
-                else:
-                    # For standard roles, remove all repetition
-                    patterns_to_check = [
-                        f"{word} ({role}): {word} ({role}): ",  # exact match
-                        f"{word} ({role}): {word} ({role})",    # without trailing space
-                    ]
-
-                    for pattern in patterns_to_check:
-                        if pattern in meaning:
-                            # Split on the pattern and take everything after it
-                            parts = meaning.split(pattern, 1)
-                            if len(parts) == 2 and parts[1].strip():
-                                # Reconstruct as: word (role): explanation
-                                word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
-                                break
-
-                    # Additional check: if we still have repetition like "word (role): word (role): ..."
-                    # but with different formatting
-                    if meaning.count(word) > 1 and f"{word} ({role}):" in meaning:
-                        # Find all occurrences of the prefix
-                        prefix = f"{word} ({role}):"
-                        prefix_count = meaning.count(prefix)
-
-                        if prefix_count >= 2:
-                            # Split by the prefix and reconstruct
-                            parts = meaning.split(prefix, prefix_count)
-                            if len(parts) > 1:
-                                # Take the last part (the actual explanation)
-                                explanation = parts[-1].strip()
-                                if explanation and not explanation.startswith(f"{word} ("):
-                                    word_data['meaning'] = f"{word} ({role}): {explanation}"
-                        else:
-                            # Try to extract just the explanation part after the first occurrence
-                            first_occurrence = f"{word} ({role}): "
-                            if first_occurrence in meaning:
-                                parts = meaning.split(first_occurrence, 1)
-                                if len(parts) == 2 and parts[1].startswith(f"{word} ("):
-                                    # Find the second occurrence and take everything after it
-                                    second_pattern = f"{word} ("
-                                    second_pos = parts[1].find(second_pattern)
-                                    if second_pos != -1:
-                                        # Find the closing ): and take everything after
-                                        after_second = parts[1][second_pos:]
-                                        close_pos = after_second.find("): ")
-                                        if close_pos != -1:
-                                            explanation = after_second[close_pos + 3:]
-                                            word_data['meaning'] = f"{word} ({role}): {explanation}"
+            # No repetition removal needed - prompts are designed to prevent repetition
 
         return {
             'words': words,
@@ -335,7 +270,8 @@ class DeResponseParser:
                 'preposition_case': word_data.get('preposition_case'),
                 'confidence': float(word_data.get('confidence', 0.5)),
                 'features': word_data.get('features', {}),
-                'morphological_info': word_data.get('morphological_info', {})
+                'morphological_info': word_data.get('morphological_info', {}),
+                'individual_meaning': word_data.get('individual_meaning', '')  # Preserve original AI response
             }
 
             # Format the meaning field for display, similar to Spanish analyzer
