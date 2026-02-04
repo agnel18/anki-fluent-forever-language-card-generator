@@ -260,16 +260,7 @@ CRITICAL: Provide COMPREHENSIVE explanations for EVERY word in each sentence, ex
 
 Grammatical roles: {{grammatical_roles}}
 """,
-        "overall_structure": "brief description of German sentence structure",
-        "key_features": "important German grammatical points"
-      }
-    }
-  ]
-}
-{% endraw %}
 
-Grammatical roles: {{grammatical_roles}}
-"""
         }
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
