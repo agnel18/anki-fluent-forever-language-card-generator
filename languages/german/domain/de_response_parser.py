@@ -122,20 +122,71 @@ class DeResponseParser:
             role = word_data.get('grammatical_role', '')
 
             # Check if meaning has repetition (word appears twice) and fix it
-            if meaning.count(word) > 1 and f"{word} ({role}): {word} (" in meaning:
-                # Format is: word (role): word (detailed_role): meaning; explanation
-                # Extract the detailed role and reconstruct properly
-                if ': ' in meaning:
-                    parts = meaning.split(': ', 2)
-                    if len(parts) >= 3:
-                        ai_part = parts[1] + ': ' + parts[2]  # word (detailed_role): meaning; explanation
-                        if ai_part.startswith(f"{word} (") and '): ' in ai_part:
-                            detailed_start = ai_part.find('(')
-                            detailed_end = ai_part.find('): ')
-                            if detailed_start != -1 and detailed_end != -1:
-                                detailed_role = ai_part[detailed_start+1:detailed_end]
-                                meaning_part = ai_part[detailed_end+3:]
-                                word_data['meaning'] = f"{word} ({role}): ({detailed_role}): {meaning_part}"
+            # Apply selective repetition removal based on grammatical role
+            if meaning.count(word) > 1:
+                if role == 'other':
+                    # For 'other' roles, keep detailed explanations but remove redundant prefixes
+                    # Look for pattern: "word (other): word (other): detailed explanation"
+                    # Convert to: "word (other): detailed explanation"
+                    other_pattern = f"{word} ({role}): {word} ({role}): "
+                    if other_pattern in meaning:
+                        parts = meaning.split(other_pattern, 1)
+                        if len(parts) == 2 and parts[1].strip():
+                            word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
+                    else:
+                        # Try alternative pattern: "word (other): word (article): explanation"
+                        alt_pattern = f"{word} ({role}): {word} "
+                        if alt_pattern in meaning:
+                            parts = meaning.split(alt_pattern, 1)
+                            if len(parts) == 2 and parts[1].strip():
+                                word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
+                else:
+                    # For standard roles, remove all repetition
+                    patterns_to_check = [
+                        f"{word} ({role}): {word} ({role}): ",  # exact match
+                        f"{word} ({role}): {word} ({role})",    # without trailing space
+                    ]
+
+                    for pattern in patterns_to_check:
+                        if pattern in meaning:
+                            # Split on the pattern and take everything after it
+                            parts = meaning.split(pattern, 1)
+                            if len(parts) == 2 and parts[1].strip():
+                                # Reconstruct as: word (role): explanation
+                                word_data['meaning'] = f"{word} ({role}): {parts[1].strip()}"
+                                break
+
+                    # Additional check: if we still have repetition like "word (role): word (role): ..."
+                    # but with different formatting
+                    if meaning.count(word) > 1 and f"{word} ({role}):" in meaning:
+                        # Find all occurrences of the prefix
+                        prefix = f"{word} ({role}):"
+                        prefix_count = meaning.count(prefix)
+
+                        if prefix_count >= 2:
+                            # Split by the prefix and reconstruct
+                            parts = meaning.split(prefix, prefix_count)
+                            if len(parts) > 1:
+                                # Take the last part (the actual explanation)
+                                explanation = parts[-1].strip()
+                                if explanation and not explanation.startswith(f"{word} ("):
+                                    word_data['meaning'] = f"{word} ({role}): {explanation}"
+                        else:
+                            # Try to extract just the explanation part after the first occurrence
+                            first_occurrence = f"{word} ({role}): "
+                            if first_occurrence in meaning:
+                                parts = meaning.split(first_occurrence, 1)
+                                if len(parts) == 2 and parts[1].startswith(f"{word} ("):
+                                    # Find the second occurrence and take everything after it
+                                    second_pattern = f"{word} ("
+                                    second_pos = parts[1].find(second_pattern)
+                                    if second_pos != -1:
+                                        # Find the closing ): and take everything after
+                                        after_second = parts[1][second_pos:]
+                                        close_pos = after_second.find("): ")
+                                        if close_pos != -1:
+                                            explanation = after_second[close_pos + 3:]
+                                            word_data['meaning'] = f"{word} ({role}): {explanation}"
 
         return {
             'words': words,
@@ -265,7 +316,8 @@ class DeResponseParser:
 
             # Extract simplified grammatical role for coloring
             detailed_role = word_data.get('grammatical_role', 'unknown')
-            simplified_role = self._extract_simplified_role(detailed_role)
+            individual_meaning = word_data.get('individual_meaning', '')
+            simplified_role = self._extract_simplified_role(detailed_role, word, individual_meaning)
 
             validated_word = {
                 'word': word,
@@ -380,27 +432,42 @@ class DeResponseParser:
         }
         return gender_mapping.get(gender.lower())
 
-    def _extract_simplified_role(self, detailed_role: str) -> str:
+    def _extract_simplified_role(self, detailed_role: str, word: str = "", meaning: str = "") -> str:
         """Extract simplified grammatical role for color mapping."""
         detailed_lower = detailed_role.lower()
+        meaning_lower = meaning.lower() if meaning else ""
 
         # Map detailed roles to simplified color scheme keys
         role_mappings = {
-            'article': ['definite article', 'indefinite article', 'article'],
-            'noun': ['noun', 'substantiv', 'nomen'],
-            'verb': ['verb', 'copular verb', 'auxiliary verb', 'modal verb', 'transitive verb', 'intransitive verb', 'reflexive verb'],
-            'adjective': ['adjective', 'predicate adjective'],
-            'pronoun': ['pronoun', 'personal pronoun', 'reflexive pronoun', 'demonstrative pronoun', 'possessive pronoun', 'impersonal pronoun'],
-            'preposition': ['preposition', 'postposition'],
+            'article': ['definite article', 'indefinite article', 'article', 'demonstrative article'],
+            'noun': ['noun', 'substantiv', 'nomen', 'proper noun', 'common noun'],
+            'verb': ['verb', 'copular verb', 'auxiliary verb', 'modal verb', 'transitive verb', 'intransitive verb', 'reflexive verb', 'main verb'],
+            'adjective': ['adjective', 'predicate adjective', 'attributive adjective', 'comparative adjective', 'superlative adjective'],
+            'pronoun': ['pronoun', 'personal pronoun', 'reflexive pronoun', 'demonstrative pronoun', 'possessive pronoun', 'impersonal pronoun', 'relative pronoun'],
+            'preposition': ['preposition', 'postposition', 'two-way preposition', 'accusative preposition', 'dative preposition', 'genitive preposition'],
             'conjunction': ['conjunction', 'subordinating conjunction', 'coordinating conjunction'],
-            'auxiliary': ['auxiliary', 'auxiliary verb'],
-            'modal': ['modal', 'modal verb'],
-            'particle': ['particle', 'separable particle']
+            'auxiliary': ['auxiliary', 'auxiliary verb', 'perfect auxiliary', 'future auxiliary'],
+            'modal': ['modal', 'modal verb', 'modal auxiliary'],
+            'particle': ['particle', 'separable particle', 'infinitive particle', 'negation particle', 'adverbial particle'],
+            'adverb': ['adverb', 'negation adverb', 'sentence adverb', 'manner adverb', 'temporal adverb', 'local adverb']
         }
 
         for simplified_role, keywords in role_mappings.items():
             if any(keyword in detailed_lower for keyword in keywords):
                 return simplified_role
+
+        # Special case mappings based on meaning text analysis
+        word_lower = word.lower()
+        if word_lower == 'nicht' and ('adverb' in meaning_lower or 'negat' in meaning_lower):
+            return 'adverb'
+        if word_lower == 'zu' and ('particle' in meaning_lower or 'infinitive' in meaning_lower):
+            return 'particle'
+
+        # Additional meaning-based corrections
+        if 'adverb' in meaning_lower and 'negat' in meaning_lower:
+            return 'adverb'
+        if 'particle' in meaning_lower and ('infinitive' in meaning_lower or 'introducing' in meaning_lower):
+            return 'particle'
 
         # Default fallback
         return 'other'

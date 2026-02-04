@@ -125,36 +125,36 @@ class DeConfig:
         }
 
     def _load_color_schemes(self) -> Dict[str, Dict[str, str]]:
-        """Load color schemes for different complexity levels"""
+        """Load color schemes for different complexity levels - BRIGHTER AND MORE VIBRANT"""
         return {
             "beginner": {
-                "article": "#FF6B6B",      # Red
-                "noun": "#4ECDC4",        # Teal
-                "verb": "#45B7D1",        # Blue
-                "pronoun": "#FFA07A",     # Light Salmon
+                "article": "#FF4444",      # Bright Red
+                "noun": "#00FFCC",        # Bright Teal/Cyan
+                "verb": "#0088FF",        # Bright Blue
+                "pronoun": "#FF8800",     # Bright Orange
                 "default": "#666666"      # Gray
             },
             "intermediate": {
-                "article": "#FF6B6B",      # Red
-                "noun": "#4ECDC4",        # Teal
-                "verb": "#45B7D1",        # Blue
-                "adjective": "#F7DC6F",   # Yellow
-                "pronoun": "#FFA07A",     # Light Salmon
-                "preposition": "#BB8FCE", # Light Purple
-                "conjunction": "#85C1E9", # Light Blue
+                "article": "#FF4444",      # Bright Red
+                "noun": "#00FFCC",        # Bright Teal/Cyan
+                "verb": "#0088FF",        # Bright Blue
+                "adjective": "#FFFF00",   # Bright Yellow
+                "pronoun": "#FF8800",     # Bright Orange
+                "preposition": "#AA00FF", # Bright Purple
+                "conjunction": "#00AAFF", # Bright Sky Blue
                 "default": "#666666"      # Gray
             },
             "advanced": {
-                "article": "#FF6B6B",      # Red
-                "noun": "#4ECDC4",        # Teal
-                "verb": "#45B7D1",        # Blue
-                "adjective": "#F7DC6F",   # Yellow
-                "pronoun": "#FFA07A",     # Light Salmon
-                "preposition": "#BB8FCE", # Light Purple
-                "conjunction": "#85C1E9", # Light Blue
-                "auxiliary": "#82E0AA",   # Light Green
-                "modal": "#F8C471",       # Orange
-                "particle": "#D7BDE2",    # Light Lavender
+                "article": "#FF4444",      # Bright Red
+                "noun": "#00FFCC",        # Bright Teal/Cyan
+                "verb": "#0088FF",        # Bright Blue
+                "adjective": "#FFFF00",   # Bright Yellow
+                "pronoun": "#FF8800",     # Bright Orange
+                "preposition": "#AA00FF", # Bright Purple
+                "conjunction": "#00AAFF", # Bright Sky Blue
+                "auxiliary": "#00FF44",   # Bright Green
+                "modal": "#FFAA00",       # Bright Gold
+                "particle": "#FF00AA",    # Bright Magenta
                 "default": "#666666"      # Gray
             }
         }
