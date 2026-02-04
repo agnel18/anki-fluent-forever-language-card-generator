@@ -1559,7 +1559,664 @@ def test_analyzer_registration():
 3. **Monitoring Setup** - Add production monitoring and alerting
 4. **Documentation Update** - Update all relevant documentation
 
----
+## 🧪 **Comprehensive Quality Testing Framework**
+
+### Phase 5.8: Quality Assurance Testing Suite
+
+After implementation, all language analyzers must pass these **comprehensive quality tests** covering external configurations, AI generation quality, and linguistic accuracy.
+
+#### 5.8.1 YAML/JSON Configuration File Validation Tests
+
+**Critical:** External configuration files must be validated for structure, content, and consistency.
+
+**File:** `tests/test_{language}_config_files.py`
+
+```python
+import pytest
+import yaml
+import json
+from pathlib import Path
+from languages.{language}.domain.{language}_config import {Language}Config
+
+class Test{Language}ConfigFiles:
+    """Test YAML/JSON configuration file validation"""
+
+    @pytest.fixture
+    def config_dir(self):
+        """Get configuration directory path"""
+        return Path(__file__).parent.parent / "domain" / "config"
+
+    def test_yaml_files_exist(self, config_dir):
+        """Test all required YAML files exist"""
+        required_files = [
+            "{language}_grammatical_roles.yaml",
+            "{language}_analysis_patterns.yaml",
+            "{language}_color_schemes.yaml",
+            "{language}_prompt_templates.yaml"
+        ]
+
+        for filename in required_files:
+            filepath = config_dir / filename
+            assert filepath.exists(), f"Missing required file: {filename}"
+            assert filepath.stat().st_size > 0, f"Empty file: {filename}"
+
+    def test_json_files_exist(self, config_dir):
+        """Test all required JSON files exist"""
+        required_files = [
+            "{language}_word_meanings.json",
+            "{language}_exception_words.json",
+            "{language}_test_sentences.json"
+        ]
+
+        for filename in required_files:
+            filepath = config_dir / filename
+            assert filepath.exists(), f"Missing required file: {filename}"
+            assert filepath.stat().st_size > 0, f"Empty file: {filename}"
+
+    def test_yaml_file_structure(self, config_dir):
+        """Test YAML files have valid structure"""
+        yaml_files = list(config_dir.glob("*.yaml"))
+
+        for yaml_file in yaml_files:
+            with open(yaml_file, 'r', encoding='utf-8') as f:
+                try:
+                    data = yaml.safe_load(f)
+                    assert isinstance(data, (dict, list)), f"Invalid YAML structure in {yaml_file.name}"
+                    assert len(data) > 0, f"Empty YAML file: {yaml_file.name}"
+                except yaml.YAMLError as e:
+                    pytest.fail(f"YAML parsing error in {yaml_file.name}: {e}")
+
+    def test_json_file_structure(self, config_dir):
+        """Test JSON files have valid structure"""
+        json_files = list(config_dir.glob("*.json"))
+
+        for json_file in json_files:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                try:
+                    data = json.load(f)
+                    assert isinstance(data, (dict, list)), f"Invalid JSON structure in {json_file.name}"
+                    assert len(data) > 0, f"Empty JSON file: {json_file.name}"
+                except json.JSONDecodeError as e:
+                    pytest.fail(f"JSON parsing error in {json_file.name}: {e}")
+
+    def test_grammatical_roles_completeness(self, config_dir):
+        """Test grammatical roles YAML has all required categories"""
+        roles_file = config_dir / "{language}_grammatical_roles.yaml"
+
+        with open(roles_file, 'r', encoding='utf-8') as f:
+            roles = yaml.safe_load(f)
+
+        # Check for required complexity levels
+        assert 'beginner' in roles, "Missing beginner roles"
+        assert 'intermediate' in roles, "Missing intermediate roles"
+        assert 'advanced' in roles, "Missing advanced roles"
+
+        # Check each level has content
+        for level in ['beginner', 'intermediate', 'advanced']:
+            assert len(roles[level]) > 0, f"Empty {level} roles"
+
+        # Check for essential categories
+        beginner_roles = roles['beginner']
+        essential_roles = ['noun', 'verb', 'adjective']
+        for role in essential_roles:
+            assert role in beginner_roles, f"Missing essential role: {role}"
+
+    def test_word_meanings_completeness(self, config_dir):
+        """Test word meanings JSON has comprehensive coverage"""
+        meanings_file = config_dir / "{language}_word_meanings.json"
+
+        with open(meanings_file, 'r', encoding='utf-8') as f:
+            meanings = json.load(f)
+
+        # Should have meaningful content
+        assert len(meanings) > 50, "Insufficient word meanings coverage"
+
+        # Check structure of entries
+        for word, data in list(meanings.items())[:10]:  # Check first 10
+            assert 'meaning' in data, f"Missing meaning for word: {word}"
+            assert 'category' in data, f"Missing category for word: {word}"
+            assert len(data['meaning']) > 5, f"Meaning too short for word: {word}"
+
+    def test_color_scheme_consistency(self, config_dir):
+        """Test color schemes are valid and consistent"""
+        colors_file = config_dir / "{language}_color_schemes.yaml"
+
+        with open(colors_file, 'r', encoding='utf-8') as f:
+            schemes = yaml.safe_load(f)
+
+        # Check all complexity levels
+        for level in ['beginner', 'intermediate', 'advanced']:
+            assert level in schemes, f"Missing color scheme for {level}"
+
+            level_colors = schemes[level]
+            assert len(level_colors) > 0, f"Empty color scheme for {level}"
+
+            # Validate hex color format
+            for role, color in level_colors.items():
+                assert color.startswith('#'), f"Invalid color format for {role}: {color}"
+                assert len(color) == 7, f"Invalid color length for {role}: {color}"
+
+                # Check if it's a valid hex color
+                try:
+                    int(color[1:], 16)
+                except ValueError:
+                    pytest.fail(f"Invalid hex color for {role}: {color}")
+
+    def test_config_file_encoding(self, config_dir):
+        """Test all config files use UTF-8 encoding"""
+        all_files = list(config_dir.glob("*.yaml")) + list(config_dir.glob("*.json"))
+
+        for config_file in all_files:
+            # Try to read with UTF-8
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    assert len(content) > 0, f"Empty file: {config_file.name}"
+            except UnicodeDecodeError:
+                pytest.fail(f"File not UTF-8 encoded: {config_file.name}")
+
+    def test_config_consistency_with_code(self):
+        """Test configuration files match code expectations"""
+        config = {Language}Config()
+
+        # Test that config can load all its expected files
+        try:
+            # This should not raise exceptions if files are properly structured
+            roles = config.grammatical_roles
+            assert len(roles) > 0, "Config couldn't load grammatical roles"
+        except Exception as e:
+            pytest.fail(f"Config loading failed: {e}")
+```
+
+#### 5.8.2 AI Sentence Generation Quality Tests
+
+**Critical:** AI-generated sentences must meet character limits and quality standards.
+
+**File:** `tests/test_{language}_sentence_generation.py`
+
+```python
+import pytest
+from languages.{language}.{language}_analyzer import {Language}Analyzer
+
+class Test{Language}SentenceGeneration:
+    """Test AI sentence generation quality and constraints"""
+
+    @pytest.fixture
+    def analyzer(self):
+        return {Language}Analyzer()
+
+    def test_word_explanation_character_limits(self, analyzer):
+        """Test word explanations stay within character limits"""
+        test_sentences = [
+            "Simple sentence.",
+            "More complex sentence with multiple words.",
+            "Sentence with target word here."
+        ]
+
+        for sentence in test_sentences:
+            for complexity in ['beginner', 'intermediate', 'advanced']:
+                result = analyzer.analyze_grammar(sentence, "word", complexity, "mock_key")
+
+                if result.success and hasattr(result, 'word_explanations'):
+                    for word_exp in result.word_explanations:
+                        if len(word_exp) >= 4:  # Has meaning
+                            meaning = word_exp[3]  # Meaning is at index 3
+                            assert len(meaning) <= 75, f"Word explanation too long: '{meaning}' ({len(meaning)} chars)"
+
+    def test_grammar_summary_character_limits(self, analyzer):
+        """Test grammar summaries stay within character limits"""
+        test_sentences = [
+            "Simple sentence.",
+            "Complex sentence with grammar.",
+            "Very complex sentence requiring detailed analysis."
+        ]
+
+        for sentence in test_sentences:
+            for complexity in ['beginner', 'intermediate', 'advanced']:
+                result = analyzer.analyze_grammar(sentence, "word", complexity, "mock_key")
+
+                if result.success and hasattr(result, 'grammar_summary'):
+                    summary = result.grammar_summary
+                    assert len(summary) <= 60, f"Grammar summary too long: '{summary}' ({len(summary)} chars)"
+
+    def test_sentence_generation_completeness(self, analyzer):
+        """Test generated sentences have all required components"""
+        test_words = ["test", "word", "example"]
+
+        for word in test_words:
+            for complexity in ['beginner', 'intermediate', 'advanced']:
+                result = analyzer.generate_sentence(word, complexity, "mock_key")
+
+                assert result.success, f"Sentence generation failed for word: {word}"
+                assert hasattr(result, 'sentence'), "Missing sentence"
+                assert hasattr(result, 'word_explanations'), "Missing word explanations"
+                assert hasattr(result, 'grammar_summary'), "Missing grammar summary"
+
+                # Check sentence contains the target word
+                assert word.lower() in result.sentence.lower(), f"Target word '{word}' not in generated sentence"
+
+    def test_prevention_at_source_quality(self, analyzer):
+        """Test prevention-at-source eliminates repetitive explanations"""
+        # Test with German-style prevention-at-source prompts
+        test_words = ["noun_word", "verb_word", "adjective_word"]
+
+        for word in test_words:
+            result = analyzer.generate_sentence(word, "intermediate", "mock_key")
+
+            if result.success and result.word_explanations:
+                explanations = [exp[3] for exp in result.word_explanations if len(exp) >= 4]
+
+                # Check for prevention of repetitive patterns
+                repetitive_patterns = [
+                    f"{word} is a",
+                    f"{word} means",
+                    f"The word {word}",
+                    f"{word} functions as"
+                ]
+
+                for explanation in explanations:
+                    # Should not start with repetitive word + "is/means"
+                    for pattern in repetitive_patterns:
+                        assert not explanation.lower().startswith(pattern.lower()), \
+                            f"Repetitive explanation: '{explanation}'"
+
+    def test_educational_depth_by_complexity(self, analyzer):
+        """Test that complexity levels provide appropriate educational depth"""
+        word = "complex_word"
+
+        results = {}
+        for complexity in ['beginner', 'intermediate', 'advanced']:
+            result = analyzer.generate_sentence(word, complexity, "mock_key")
+            if result.success:
+                results[complexity] = result
+
+        # Beginner should be simplest
+        if 'beginner' in results and 'advanced' in results:
+            beginner_exp = results['beginner'].word_explanations
+            advanced_exp = results['advanced'].word_explanations
+
+            # Advanced should have more detailed explanations
+            if beginner_exp and advanced_exp:
+                beginner_len = len(beginner_exp[0][3]) if len(beginner_exp[0]) >= 4 else 0
+                advanced_len = len(advanced_exp[0][3]) if len(advanced_exp[0]) >= 4 else 0
+
+                # Advanced explanations should be more detailed (but still within limits)
+                assert advanced_len >= beginner_len, \
+                    "Advanced explanations should be at least as detailed as beginner"
+
+    def test_linguistic_accuracy_validation(self, analyzer):
+        """Test that generated content follows language-specific rules"""
+        # Language-specific validation rules
+        test_cases = [
+            ("test_noun", "beginner", "noun_rules"),
+            ("test_verb", "intermediate", "verb_rules"),
+            ("test_complex", "advanced", "complex_rules")
+        ]
+
+        for word, complexity, rule_type in test_cases:
+            result = analyzer.generate_sentence(word, complexity, "mock_key")
+
+            if result.success:
+                # Validate against language-specific rules
+                # This would be customized per language
+                self._validate_language_rules(result, rule_type)
+
+    def _validate_language_rules(self, result, rule_type):
+        """Language-specific validation (customize per language)"""
+        if rule_type == "noun_rules":
+            # Check noun-specific patterns
+            pass
+        elif rule_type == "verb_rules":
+            # Check verb-specific patterns
+            pass
+        # Add language-specific validations here
+```
+
+#### 5.8.3 Word Explanation Quality Tests (German Prevention-at-Source)
+
+**Critical:** Word explanations must follow prevention-at-source methodology like German/Spanish analyzers.
+
+**File:** `tests/test_{language}_word_explanations.py`
+
+```python
+import pytest
+from languages.{language}.{language}_analyzer import {Language}Analyzer
+
+class Test{Language}WordExplanations:
+    """Test word explanation quality using prevention-at-source methodology"""
+
+    @pytest.fixture
+    def analyzer(self):
+        return {Language}Analyzer()
+
+    def test_prevention_at_source_eliminates_repetition(self, analyzer):
+        """Test that explanations don't repeat grammatical role information"""
+        test_cases = [
+            ("house", "noun", "beginner"),
+            ("run", "verb", "intermediate"),
+            ("beautiful", "adjective", "advanced")
+        ]
+
+        for word, expected_role, complexity in test_cases:
+            result = analyzer.analyze_grammar(f"This is a {word}.", word, complexity, "mock_key")
+
+            if result.success and result.word_explanations:
+                for word_exp in result.word_explanations:
+                    if len(word_exp) >= 4 and word_exp[0].lower() == word.lower():
+                        explanation = word_exp[3]  # Meaning
+
+                        # Should NOT contain repetitive patterns
+                        forbidden_patterns = [
+                            f"{word} is a {expected_role}",
+                            f"{word} is an {expected_role}",
+                            f"{word} is the {expected_role}",
+                            f"The {expected_role} {word}",
+                            f"{word} functions as a {expected_role}",
+                            f"{word} serves as a {expected_role}"
+                        ]
+
+                        for pattern in forbidden_patterns:
+                            assert not explanation.lower().startswith(pattern.lower()), \
+                                f"Repetitive explanation avoided prevention-at-source: '{explanation}'"
+
+    def test_educational_context_provided(self, analyzer):
+        """Test that explanations provide educational context beyond basic definition"""
+        test_words = ["test_word", "complex_word", "technical_word"]
+
+        for word in test_words:
+            result = analyzer.analyze_grammar(f"Example with {word}.", word, "intermediate", "mock_key")
+
+            if result.success and result.word_explanations:
+                for word_exp in result.word_explanations:
+                    if len(word_exp) >= 4 and word_exp[0].lower() == word.lower():
+                        explanation = word_exp[3]
+
+                        # Should provide contextual/grammatical insight
+                        educational_indicators = [
+                            "serves as", "functions as", "indicates", "shows",
+                            "represents", "expresses", "demonstrates", "conveys",
+                            "establishes", "creates", "forms", "acts as"
+                        ]
+
+                        has_educational_content = any(indicator in explanation.lower()
+                                                    for indicator in educational_indicators)
+
+                        # Allow basic definitions for simple words, but check for educational depth
+                        if len(explanation) > 20:  # Longer explanations should be educational
+                            assert has_educational_content, \
+                                f"Long explanation lacks educational context: '{explanation}'"
+
+    def test_language_specific_features_highlighted(self, analyzer):
+        """Test that explanations highlight language-specific grammatical features"""
+        # Language-specific features to check for
+        language_features = self._get_language_specific_features()
+
+        test_sentences = [
+            "Complex sentence with grammar.",
+            "Another sentence with linguistic features.",
+            "Sentence demonstrating language patterns."
+        ]
+
+        for sentence in test_sentences:
+            result = analyzer.analyze_grammar(sentence, "grammar", "advanced", "mock_key")
+
+            if result.success and result.word_explanations:
+                all_explanations = " ".join([exp[3] for exp in result.word_explanations if len(exp) >= 4])
+
+                # Should mention at least some language-specific features
+                mentioned_features = [feature for feature in language_features
+                                    if feature.lower() in all_explanations.lower()]
+
+                # For advanced complexity, should demonstrate language knowledge
+                if len(all_explanations) > 100:  # Substantial analysis
+                    assert len(mentioned_features) > 0, \
+                        f"Advanced analysis should mention language features. Found: {mentioned_features}"
+
+    def test_explanation_uniqueness(self, analyzer):
+        """Test that each word gets a unique, contextual explanation"""
+        sentence = "The quick brown fox jumps over the lazy dog."
+
+        result = analyzer.analyze_grammar(sentence, "fox", "intermediate", "mock_key")
+
+        if result.success and result.word_explanations:
+            explanations = [exp[3] for exp in result.word_explanations if len(exp) >= 4]
+
+            # Check for duplicate explanations
+            unique_explanations = set(explanations)
+            assert len(unique_explanations) == len(explanations), \
+                f"Duplicate explanations found: {explanations}"
+
+            # Check that explanations are contextual (not generic)
+            generic_patterns = [
+                "is a word", "means", "refers to", "represents a",
+                "is an example of", "is a type of"
+            ]
+
+            for explanation in explanations:
+                is_generic = any(pattern in explanation.lower() for pattern in generic_patterns)
+                if len(explanation) < 30:  # Short explanations might be generic
+                    continue
+                assert not is_generic, f"Generic explanation: '{explanation}'"
+
+    def test_complexity_level_appropriate_depth(self, analyzer):
+        """Test that complexity levels provide appropriate explanation depth"""
+        word = "complex_word"
+        sentence = f"This is a {word} example."
+
+        results = {}
+        for complexity in ['beginner', 'intermediate', 'advanced']:
+            result = analyzer.analyze_grammar(sentence, word, complexity, "mock_key")
+            if result.success:
+                results[complexity] = result
+
+        if len(results) >= 2:
+            # Compare explanation lengths and complexity
+            beginner_exp = None
+            advanced_exp = None
+
+            for complexity, result in results.items():
+                if result.word_explanations:
+                    for exp in result.word_explanations:
+                        if len(exp) >= 4 and exp[0].lower() == word.lower():
+                            if complexity == 'beginner':
+                                beginner_exp = exp[3]
+                            elif complexity == 'advanced':
+                                advanced_exp = exp[3]
+
+            if beginner_exp and advanced_exp:
+                # Advanced should provide more detailed analysis
+                assert len(advanced_exp) >= len(beginner_exp), \
+                    f"Advanced explanation should be more detailed: beginner({len(beginner_exp)}) vs advanced({len(advanced_exp)})"
+
+    def _get_language_specific_features(self):
+        """Get list of language-specific features to check for in explanations"""
+        # Customize this for each language
+        return [
+            # Add language-specific grammatical features here
+            # e.g., for German: "case", "gender", "strong verb"
+            # e.g., for Spanish: "gender", "ser/estar", "subjunctive"
+            # e.g., for Turkish: "vowel harmony", "agglutination", "case"
+        ]
+
+    def test_grammatical_accuracy_validation(self, analyzer):
+        """Test that explanations accurately reflect grammatical analysis"""
+        # Test cases with known grammatical structures
+        test_cases = [
+            ("basic_noun_sentence", "noun", "subject"),
+            ("verb_sentence", "verb", "predicate"),
+            ("complex_structure", "multiple_roles", "various")
+        ]
+
+        for sentence_key, target_role, expected_function in test_cases:
+            # This would require predefined test sentences
+            # Implementation depends on language-specific test data
+            pass
+```
+
+#### 5.8.4 APKG Export Field Validation Tests
+
+**Critical:** Final field values exported to APKG must meet quality standards for bright poppy colors, parsing logic, HTML output, sentence coloring, word explanations, and gold standard compliance.
+
+**File:** `tests/test_{language}_apkg_export.py`
+
+```python
+import pytest
+import re
+from languages.{language}.{language}_analyzer import {Language}Analyzer
+from streamlit_app.deck_exporter import DeckExporter  # Assuming this handles APKG export
+
+class Test{Language}ApkgExportFields:
+    """Test APKG export field values for quality and compliance"""
+
+    @pytest.fixture
+    def analyzer(self):
+        return {Language}Analyzer()
+
+    @pytest.fixture
+    def deck_exporter(self):
+        return DeckExporter()
+
+    def test_bright_poppy_colors_applied(self, analyzer):
+        """Test that bright poppy colors are correctly applied to grammatical roles"""
+        result = analyzer.analyze_grammar("Test sentence", "test", "intermediate", "mock_key")
+        
+        # Check that HTML contains bright poppy color codes
+        bright_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE']
+        html_output = result.html_output
+        
+        # Verify at least one bright color is used
+        color_found = any(color in html_output for color in bright_colors)
+        assert color_found, f"No bright poppy colors found in HTML: {html_output}"
+
+    def test_parsing_logic_accuracy(self, analyzer):
+        """Test that parsing logic correctly extracts and structures data"""
+        result = analyzer.analyze_grammar("The quick brown fox jumps", "fox", "intermediate", "mock_key")
+        
+        # Verify word_explanations structure
+        assert hasattr(result, 'word_explanations')
+        assert isinstance(result.word_explanations, list)
+        assert len(result.word_explanations) > 0
+        
+        # Check each word explanation has required fields
+        for word_exp in result.word_explanations:
+            assert len(word_exp) >= 4, f"Word explanation incomplete: {word_exp}"
+            word, role, color, meaning = word_exp[:4]
+            assert isinstance(word, str) and word.strip()
+            assert isinstance(role, str) and role.strip()
+            assert isinstance(color, str) and color.startswith('#')
+            assert isinstance(meaning, str) and len(meaning.strip()) > 0
+
+    def test_html_output_structure(self, analyzer):
+        """Test that HTML output has proper structure and formatting"""
+        result = analyzer.analyze_grammar("Test sentence", "test", "intermediate", "mock_key")
+        html_output = result.html_output
+        
+        # Check for required HTML elements
+        assert '<span' in html_output, "HTML should contain span elements for coloring"
+        assert 'style=' in html_output, "HTML should contain style attributes"
+        assert '</span>' in html_output, "HTML should have closing span tags"
+        
+        # Verify no malformed HTML
+        span_count = html_output.count('<span')
+        close_count = html_output.count('</span>')
+        assert span_count == close_count, f"Mismatched span tags: {span_count} open, {close_count} close"
+
+    def test_sentence_coloring_consistency(self, analyzer):
+        """Test that sentence coloring is consistent and properly applied"""
+        result = analyzer.analyze_grammar("The cat sat on the mat", "cat", "intermediate", "mock_key")
+        html_output = result.html_output
+        
+        # Extract colors used in the sentence
+        color_pattern = r'color:#([A-Fa-f0-9]{6})'
+        colors_used = re.findall(color_pattern, html_output)
+        
+        # Verify colors are from the defined color scheme
+        color_scheme = analyzer.get_color_scheme("intermediate")
+        valid_colors = set(color_scheme.values())
+        
+        for color in colors_used:
+            full_color = f"#{color}"
+            assert full_color in valid_colors, f"Color {full_color} not in color scheme: {valid_colors}"
+
+    def test_word_explanations_quality(self, analyzer):
+        """Test that word explanations meet quality standards for APKG export"""
+        result = analyzer.analyze_grammar("The student reads the book", "reads", "intermediate", "mock_key")
+        
+        explanations = result.word_explanations
+        
+        for word_exp in explanations:
+            word, role, color, meaning = word_exp[:4]
+            
+            # Check character limits for APKG compatibility
+            assert len(meaning) <= 75, f"Word explanation too long: {len(meaning)} chars > 75 limit"
+            
+            # Verify no repetitive role information (prevention-at-source)
+            role_lower = role.lower()
+            meaning_lower = meaning.lower()
+            assert role_lower not in meaning_lower, f"Role '{role}' repeated in meaning: {meaning}"
+            
+            # Check for educational value
+            assert len(meaning.split()) >= 3, f"Explanation too brief: {meaning}"
+
+    def test_gold_standard_comparison(self, analyzer):
+        """Test that results compare favorably against gold standard analyzers"""
+        # Load gold standard results (Chinese Simplified as reference)
+        gold_standard_result = self._load_gold_standard_result("zh", "intermediate")
+        
+        # Run analysis on same sentence
+        result = analyzer.analyze_grammar(
+            gold_standard_result['sentence'], 
+            gold_standard_result['target_word'], 
+            "intermediate", 
+            "mock_key"
+        )
+        
+        # Compare key metrics
+        assert len(result.word_explanations) >= len(gold_standard_result['word_explanations']), \
+            "Fewer word explanations than gold standard"
+        
+        # Check confidence score meets minimum threshold
+        assert result.confidence_score >= gold_standard_result['min_confidence'], \
+            f"Confidence {result.confidence_score} below gold standard {gold_standard_result['min_confidence']}"
+        
+        # Verify HTML output quality
+        assert len(result.html_output) >= len(gold_standard_result['html_output']) * 0.8, \
+            "HTML output significantly shorter than gold standard"
+
+    def test_apkg_field_values_final_format(self, analyzer, deck_exporter):
+        """Test that final APKG field values are properly formatted"""
+        result = analyzer.analyze_grammar("Sample sentence for testing", "sample", "intermediate", "mock_key")
+        
+        # Simulate APKG field extraction
+        fields = deck_exporter.extract_apkg_fields(result)
+        
+        # Verify required fields exist
+        required_fields = ['sentence', 'word_explanations', 'html_output', 'confidence_score']
+        for field in required_fields:
+            assert field in fields, f"Missing required APKG field: {field}"
+            assert fields[field] is not None, f"APKG field {field} is None"
+        
+        # Check field value types and formats
+        assert isinstance(fields['sentence'], str)
+        assert isinstance(fields['word_explanations'], (list, str))
+        assert isinstance(fields['html_output'], str)
+        assert isinstance(fields['confidence_score'], (int, float))
+        
+        # Verify HTML field contains proper coloring
+        assert '<span' in fields['html_output'], "APKG HTML field missing span elements"
+
+    def _load_gold_standard_result(self, language_code: str, complexity: str) -> dict:
+        """Load gold standard result for comparison"""
+        # Implementation would load from test fixtures
+        # This is a placeholder for the actual implementation
+        return {
+            'sentence': 'Test sentence',
+            'target_word': 'test',
+            'word_explanations': [['test', 'noun', '#FF6B6B', 'A sample word']],
+            'html_output': '<span style="color:#FF6B6B">Test</span> sentence',
+            'min_confidence': 0.7
+        }
+```
 
 **🚀 Ready to start implementing?** Begin with Phase 1: Research Validation, then follow each phase sequentially. Remember: quality over speed - take time to do it right!
 
