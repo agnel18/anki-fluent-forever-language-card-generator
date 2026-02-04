@@ -199,14 +199,15 @@ You are an expert linguist specializing in Spanish grammar analysis.
 
 Analyze this Spanish sentence: "{{sentence}}"
 Target word: "{{target_word}}"
+Complexity level: "{{complexity}}"
+
+For EACH word in the sentence, provide:
+- Its specific grammatical function and role in Spanish grammar
+- How it contributes to the sentence meaning and structure
+- Relationships with adjacent words and grammatical agreement
+- Spanish-specific features (gender agreement, verb conjugations, preposition usage)
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
-
-CRITICAL REQUIREMENTS:
-1. Analyze EVERY SINGLE WORD in the sentence, not just the target word.
-2. Provide UNIQUE, INDIVIDUAL meanings for EACH word. Do NOT repeat meanings across words.
-3. Each word must have a DISTINCT contextual meaning specific to this sentence.
-4. Use the EXACT grammatical roles listed below.
 
 REQUIRED JSON FORMAT:
 {% raw %}
@@ -215,7 +216,7 @@ REQUIRED JSON FORMAT:
     {
       "word": "exact_word",
       "grammatical_role": "noun|verb|adjective|pronoun|preposition|conjunction|determiner|adverb|auxiliary|reflexive|clitic|subjunctive",
-      "individual_meaning": "UNIQUE contextual meaning specific to this word only"
+      "individual_meaning": "Detailed explanation of this word's function, relationships, and contribution to the sentence meaning"
     }
   ],
   "overall_analysis": {
@@ -225,6 +226,8 @@ REQUIRED JSON FORMAT:
 }
 {% endraw %}
 
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word, explaining their specific functions and relationships in detail. Do NOT repeat word prefixes in the explanations.
+
 Grammatical roles: {{grammatical_roles}}
 """,
             'batch': """
@@ -232,14 +235,15 @@ You are an expert linguist specializing in Spanish grammar analysis.
 
 Sentences: {{sentences}}
 Target word: "{{target_word}}"
+Complexity level: "{{complexity}}"
+
+For EACH sentence, analyze EVERY word and provide:
+- Specific grammatical function and role in Spanish grammar
+- How each word contributes to the sentence meaning and structure
+- Relationships with adjacent words and grammatical agreement
+- Spanish-specific features (gender agreement, verb conjugations, preposition usage)
 
 MANDATORY: Respond with VALID JSON only. No explanations, no markdown, no code blocks.
-
-CRITICAL REQUIREMENTS:
-1. For EACH sentence, analyze EVERY SINGLE WORD in that sentence.
-2. Provide UNIQUE, INDIVIDUAL meanings for EACH word in each sentence. Do NOT repeat meanings across words.
-3. Each word must have a DISTINCT contextual meaning specific to its sentence.
-4. Use the EXACT grammatical roles listed below.
 
 REQUIRED JSON FORMAT:
 {% raw %}
@@ -251,17 +255,19 @@ REQUIRED JSON FORMAT:
         {
           "word": "exact_word",
           "grammatical_role": "noun|verb|adjective|pronoun|preposition|conjunction|determiner|adverb|auxiliary|reflexive|clitic|subjunctive",
-          "individual_meaning": "UNIQUE contextual meaning specific to this word only"
+          "individual_meaning": "Detailed explanation of this word's function, relationships, and contribution to the sentence meaning"
         }
       ],
       "explanations": {
-        "overall_structure": "brief description of Spanish sentence structure",
+        "sentence_structure": "brief description of Spanish sentence structure",
         "key_features": "important Spanish grammatical points"
       }
     }
   ]
 }
 {% endraw %}
+
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word in each sentence, explaining their specific functions and relationships in detail. Do NOT repeat word prefixes in the explanations.
 
 Grammatical roles: {{grammatical_roles}}
 """

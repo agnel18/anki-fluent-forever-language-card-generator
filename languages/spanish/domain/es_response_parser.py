@@ -133,12 +133,8 @@ class EsResponseParser:
                     word = word_data.get('word', '')
                     role = word_data.get('grammatical_role', '')
 
-                    # Convert to standardized format if needed
-                    if meaning_key == 'individual_meaning':
-                        # Create the standardized format: "word (role): meaning; role in sentence"
-                        word_data['meaning'] = f"{word} ({role}): {meaning}; specific role in sentence"
-                    elif not re.match(r'^[^:]+ \([^)]+\): .+; .+$', meaning):
-                        logger.warning(f"Meaning format incorrect: {meaning}")
+                    # Keep the individual_meaning as-is without post-processing
+                    word_data['meaning'] = meaning
 
         return validated_data
 
