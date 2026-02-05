@@ -1,0 +1,31 @@
+# Turkish Suffixes Configuration
+
+case_suffixes:
+  nominative: {marker: "", description: "Subject case"}
+  accusative: {markers: ["i", "ı", "u", "ü"], description: "Direct object"}
+  dative: {markers: ["e", "a"], description: "Indirect object"}
+  locative: {markers: ["de", "da"], description: "Location"}
+  ablative: {markers: ["den", "dan"], description: "Source"}
+  genitive: {markers: ["in", "ın", "un", "ün"], description: "Possession"}
+
+possessive_suffixes:
+  "1sg": {markers: ["im", "ım", "um", "üm"], description: "My"}
+  "2sg": {markers: ["in", "ın", "un", "ün"], description: "Your (singular)"}
+  "3sg": {markers: ["i", "ı", "u", "ü"], description: "His/her/its"}
+  "1pl": {markers: ["imiz", "ımız", "umuz", "ümüz"], description: "Our"}
+  "2pl": {markers: ["iniz", "ınız", "unuz", "ünüz"], description: "Your (plural)"}
+  "3pl": {marker: "leri", description: "Their"}
+
+plural_suffix:
+  marker: "ler/lar"
+  description: "Plural marker"
+
+question_particle:
+  markers: ["mı", "mi", "mu", "mü"]
+  description: "Question particle"
+
+tense_suffixes:
+  present_continuous: {marker: "iyor", description: "Present continuous"}
+  simple_past: {marker: "di", description: "Simple past"}
+  future: {marker: "ecek", description: "Future"}
+  conditional: {marker: "se", description: "Conditional"}

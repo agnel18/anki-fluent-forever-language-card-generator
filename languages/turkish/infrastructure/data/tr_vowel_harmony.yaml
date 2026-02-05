@@ -1,0 +1,16 @@
+# Turkish Vowel Harmony Configuration
+
+enabled: true
+types: ["front_back", "rounded_unrounded"]
+
+back_vowels: ["a", "ı", "o", "u"]
+front_vowels: ["e", "i", "ö", "ü"]
+rounded_vowels: ["o", "ö", "u", "ü"]
+unrounded_vowels: ["a", "e", "ı", "i"]
+
+rules:
+  - "Suffix vowels harmonize with the last vowel of the root word"
+  - "Front/back harmony: a/ı/o/u (back) ↔ e/i/ö/ü (front)"
+  - "Rounded/unrounded harmony: a/o/u (rounded) ↔ e/i (unrounded)"
+  - "High vowels (i, ü, u, ı) trigger front harmony"
+  - "Low vowels (e, ö, o, a) can trigger either depending on context"

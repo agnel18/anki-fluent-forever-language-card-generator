@@ -460,3 +460,144 @@ class EsAnalyzer(BaseGrammarAnalyzer):
             logger.error(f"Batch analysis failed: {e}")
             # Return fallbacks for all sentences
             return [self._create_fallback_analysis(sentence, target_word, complexity) for sentence in sentences]
+
+    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                     enriched_meaning: str = "", min_length: int = 3,
+                                     max_length: int = 15, difficulty: str = "intermediate",
+                                     topics: Optional[List[str]] = None) -> Optional[str]:
+        """
+        Get Spanish-specific sentence generation prompt to ensure proper response formatting.
+        """
+        # Build context instruction based on topics
+        if topics:
+            context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
+        else:
+            context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
+
+        # Build meaning instruction based on enriched data
+        if enriched_meaning and enriched_meaning != 'N/A':
+            if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+                # Parse the enriched context format
+                context_lines = enriched_meaning[1:-1].split('\n')  # Remove {} and split
+                definitions = []
+                source = "Unknown"
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Source:'):
+                        source = line.replace('Source:', '').strip()
+                    elif line.startswith('Definition'):
+                        # Extract just the definition text
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        # Remove part of speech info
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+
+                if definitions:
+                    meaning_summary = '; '.join(definitions[:4])  # Use first 4 definitions
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings and provide a comprehensive meaning.'
+                else:
+                    enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning.'
+            else:
+                # Legacy format
+                enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this.'
+        else:
+            enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
+        # Custom prompt for Spanish to ensure proper formatting
+        prompt = f"""You are a native-level expert linguist in Spanish.
+
+Your task: Generate a complete learning package for the Spanish word "{word}" in ONE response.
+
+===========================
+STEP 1: WORD MEANING
+===========================
+{enriched_meaning_instruction}
+Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+===========================
+WORD-SPECIFIC RESTRICTIONS
+===========================
+Based on the meaning above, identify any grammatical constraints for "{word}".
+Examples: gender agreement (masculine/feminine), number agreement, verb conjugations.
+If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+
+===========================
+STEP 2: SENTENCES
+===========================
+Generate exactly {num_sentences} highly natural, idiomatic sentences in Spanish for the word "{word}".
+
+QUALITY RULES:
+- Every sentence must sound like native Spanish
+- Grammar, syntax, spelling, and agreement must be correct
+- The target word "{word}" MUST be used correctly according to restrictions
+- Each sentence must be no more than {max_length} words long
+- Difficulty: {difficulty}
+
+VARIETY REQUIREMENTS:
+- Use different verb tenses and moods if applicable
+- Use different sentence types: declarative, interrogative, imperative
+- Include appropriate gender and number agreement when applicable
+- Use different regional variations where appropriate
+{context_instruction}
+
+===========================
+STEP 3: ENGLISH TRANSLATIONS
+===========================
+For EACH sentence above, provide a natural, fluent English translation.
+- Translation should be natural English, not literal word-for-word
+
+===========================
+STEP 4: IPA TRANSCRIPTION
+===========================
+For EACH sentence above, provide simplified IPA transcription.
+- Use standard IPA symbols for Spanish pronunciation
+- Focus on the main pronunciation pattern
+
+===========================
+STEP 5: IMAGE KEYWORDS
+===========================
+For EACH sentence above, generate exactly 3 specific keywords for image search.
+- Keywords should be concrete and specific
+- Keywords in English only
+
+===========================
+OUTPUT FORMAT - FOLLOW EXACTLY
+===========================
+Return your response in this exact text format:
+
+MEANING: [brief English meaning]
+
+RESTRICTIONS: [grammatical restrictions]
+
+SENTENCES:
+1. [sentence 1 in Spanish]
+2. [sentence 2 in Spanish]
+3. [sentence 3 in Spanish]
+4. [sentence 4 in Spanish]
+
+TRANSLATIONS:
+1. [natural English translation for sentence 1]
+2. [natural English translation for sentence 2]
+3. [natural English translation for sentence 3]
+4. [natural English translation for sentence 4]
+
+IPA:
+1. [IPA for sentence 1]
+2. [IPA for sentence 2]
+3. [IPA for sentence 3]
+4. [IPA for sentence 4]
+
+KEYWORDS:
+1. [keyword1, keyword2, keyword3]
+2. [keyword1, keyword2, keyword3]
+3. [keyword1, keyword2, keyword3]
+4. [keyword1, keyword2, keyword3]
+
+IMPORTANT:
+- Return ONLY the formatted text, no extra explanation
+- Sentences must be in Spanish only
+- Ensure exactly {num_sentences} sentences, translations, IPA, and keywords"""
+
+        return prompt

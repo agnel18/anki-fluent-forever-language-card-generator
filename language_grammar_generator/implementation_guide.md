@@ -1056,6 +1056,749 @@ class {Language}Analyzer(BaseGrammarAnalyzer):
         )
 ```
 
+### Phase 4.5: Sentence Generation Prompt Implementation (2-4 hours)
+
+**CRITICAL:** All language analyzers must implement custom sentence generation prompts for optimal AI quality. Generic prompts produce lower-quality results for linguistically complex languages.
+
+#### 4.5.1 Add get_sentence_generation_prompt Method
+
+**File:** `{language}_analyzer.py`
+
+Add this method to the main analyzer class (after the existing methods):
+
+```python
+def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                 enriched_meaning: str = "", min_length: int = 3,
+                                 max_length: int = 15, difficulty: str = "intermediate",
+                                 topics: Optional[List[str]] = None) -> Optional[str]:
+    """
+    Get {Language}-specific sentence generation prompt to ensure proper response formatting.
+    """
+    # Build context instruction based on topics
+    if topics:
+        context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
+    else:
+        context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
+
+    # Build meaning instruction based on enriched data
+    if enriched_meaning and enriched_meaning != 'N/A':
+        if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+            # Parse the enriched context format
+            context_lines = enriched_meaning[1:-1].split('\n')  # Remove {} and split
+            definitions = []
+            source = "Unknown"
+            for line in context_lines:
+                line = line.strip()
+                if line.startswith('Source:'):
+                    source = line.replace('Source:', '').strip()
+                elif line.startswith('Definition'):
+                    # Extract just the definition text
+                    def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                    # Remove part of speech info
+                    def_text = def_text.split(' | ')[0].strip()
+                    definitions.append(def_text)
+
+            if definitions:
+                meaning_summary = '; '.join(definitions[:4])  # Use first 4 definitions
+                enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings and provide a comprehensive meaning.'
+            else:
+                enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning.'
+        else:
+            # Legacy format
+            enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this.'
+    else:
+        enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
+    # Custom prompt for {Language} to ensure proper formatting
+    prompt = f"""You are a native-level expert linguist in {self.config.language_name}.
+
+Your task: Generate a complete learning package for the {self.config.language_name} word "{word}" in ONE response.
+
+===========================
+STEP 1: WORD MEANING
+===========================
+{enriched_meaning_instruction}
+Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+===========================
+WORD-SPECIFIC RESTRICTIONS
+===========================
+Based on the meaning above, identify any grammatical constraints for "{word}".
+Examples: [Add language-specific examples here - e.g., case requirements, gender agreement, particles, etc.]
+If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+
+===========================
+STEP 2: SENTENCES
+===========================
+Generate exactly {num_sentences} highly natural, idiomatic sentences in {self.config.language_name} for the word "{word}".
+
+QUALITY RULES:
+- Every sentence must sound like native {self.config.language_name}
+- Grammar, syntax, spelling, and [language-specific features] must be correct
+- The target word "{word}" MUST be used correctly according to restrictions
+- Each sentence must be no more than {max_length} words long
+- Difficulty: {difficulty}
+
+VARIETY REQUIREMENTS:
+- Use different [language-specific grammar features] if applicable
+- Use different tenses and forms if applicable
+- Use different sentence types: declarative, interrogative, imperative
+[Add language-specific variety requirements here]
+{context_instruction}
+
+===========================
+STEP 3: ENGLISH TRANSLATIONS
+===========================
+For EACH sentence above, provide a natural, fluent English translation.
+- Translation should be natural English, not literal word-for-word
+
+===========================
+STEP 4: [LANGUAGE-SPECIFIC TRANSCRIPTION]
+===========================
+For EACH sentence above, provide [appropriate transcription method for the language].
+- [Add specific transcription instructions - IPA, Pinyin, Romanization, etc.]
+- [Add formatting requirements]
+
+===========================
+STEP 5: IMAGE KEYWORDS
+===========================
+For EACH sentence above, generate exactly 3 specific keywords for image search.
+- Keywords should be concrete and specific
+- Keywords in English only
+
+===========================
+OUTPUT FORMAT - FOLLOW EXACTLY
+===========================
+Return your response in this exact text format:
+
+MEANING: [brief English meaning]
+
+RESTRICTIONS: [grammatical restrictions]
+
+SENTENCES:
+1. [sentence 1 in {language}]
+2. [sentence 2 in {language}]
+3. [sentence 3 in {language}]
+4. [sentence 4 in {language}]
+
+TRANSLATIONS:
+1. [natural English translation for sentence 1]
+2. [natural English translation for sentence 2]
+3. [natural English translation for sentence 3]
+4. [natural English translation for sentence 4]
+
+[TRANSCRIPTION_SECTION]:
+1. [transcription for sentence 1]
+2. [transcription for sentence 2]
+3. [transcription for sentence 3]
+4. [transcription for sentence 4]
+
+KEYWORDS:
+1. [keyword1, keyword2, keyword3]
+2. [keyword1, keyword2, keyword3]
+3. [keyword1, keyword2, keyword3]
+4. [keyword1, keyword2, keyword3]
+
+IMPORTANT:
+- Return ONLY the formatted text, no extra explanation
+- Sentences must be in {language} only
+- Ensure exactly {num_sentences} sentences, translations, [transcription], and keywords"""
+
+    return prompt
+```
+
+#### 4.5.2 Language-Specific Customizations
+
+**For Each Language, Customize These Sections:**
+
+**Arabic (`ar_analyzer.py`):**
+- STEP 4: IPA TRANSCRIPTION (already implemented)
+- Language-specific features: root-based morphology, case marking (i'rab), verb forms (abwab)
+- Variety requirements: different verb forms, case usage, definite article assimilation
+
+**Chinese Traditional/Simplified (`zh_tw_analyzer.py`, `zh_analyzer.py`):**
+- STEP 4: PINYIN TRANSCRIPTION (already implemented)
+- Language-specific features: aspect particles (了, 着, 过), measure words, character-based restrictions
+- Variety requirements: different aspect markers, sentence structures
+
+**German (`de_analyzer.py`):**
+- STEP 4: IPA TRANSCRIPTION (already implemented)
+- Language-specific features: case system (nominative/accusative/dative/genitive), separable verbs, gender agreement
+- Variety requirements: different cases, verb forms, separable verbs
+
+**Hindi (`hi_analyzer.py`):**
+- STEP 4: ROMANIZATION (already implemented)
+- Language-specific features: postpositions (का, को, में, से), gender agreement, Devanagari script
+- Variety requirements: different postpositions, verb forms, gender agreement
+
+**Spanish (`es_analyzer.py`):**
+- STEP 4: IPA TRANSCRIPTION (already implemented)
+- Language-specific features: gender agreement, verb conjugations, regional variations
+- Variety requirements: different tenses, verb forms, regional variations
+
+#### 4.5.3 Import Requirements
+
+Add this import to the analyzer file if not already present:
+
+```python
+from typing import Optional
+```
+
+#### 4.5.4 Testing the Implementation
+
+```python
+# Test the method works
+analyzer = {Language}Analyzer()
+prompt = analyzer.get_sentence_generation_prompt('test_word', '{language_code}', 4)
+assert isinstance(prompt, str)
+assert len(prompt) > 1000  # Should be a substantial prompt
+print(f"Prompt length: {len(prompt)}")
+```
+
+#### 4.5.5 Quality Validation
+
+- [ ] Method returns valid string prompt
+- [ ] Prompt includes language-specific instructions
+- [ ] Output format matches expected structure
+- [ ] Transcription method appropriate for language
+- [ ] Language-specific grammatical features included
+
+### Phase 4.6: Voice Implementation Validation (1-2 hours)
+
+**CRITICAL:** All language analyzers must implement proper voice configurations that match Google Cloud Text-to-Speech voice availability and quality standards.
+
+#### 4.6.1 Voice Configuration Requirements
+
+**Reference Documentation:** [Google Cloud Text-to-Speech Voices](https://docs.cloud.google.com/text-to-speech/docs/list-voices-and-types)
+
+**File:** `domain/{language}_config.py`
+
+Add voice configuration to the language config:
+
+```python
+class {Language}Config:
+    """Configuration for {Language} analyzer"""
+
+    def __init__(self):
+        # ... existing config ...
+
+        # Voice configuration for Google Cloud Text-to-Speech
+        self.voice_config = {
+            'language_code': '{language_code}',  # e.g., 'ar', 'zh-CN', 'de', 'hi', 'es', 'zh-TW'
+            'primary_voice': {
+                'name': '{voice_name}',  # e.g., 'ar-XA-Wavenet-A', 'cmn-CN-Wavenet-A'
+                'ssml_gender': '{gender}',  # MALE, FEMALE, NEUTRAL
+                'natural_sample_rate_hertz': 24000
+            },
+            'fallback_voices': [
+                {'name': '{fallback_voice_1}', 'ssml_gender': '{gender_1}'},
+                {'name': '{fallback_voice_2}', 'ssml_gender': '{gender_2}'}
+            ],
+            'voice_quality': 'Wavenet',  # Standard, WaveNet, Neural2
+            'speaking_rate': 1.0,  # 0.25-4.0
+            'pitch': 0.0  # -20.0 to 20.0
+        }
+
+    def get_voice_config(self) -> Dict[str, Any]:
+        """Get voice configuration for text-to-speech"""
+        return self.voice_config.copy()
+
+    def get_primary_voice(self) -> Dict[str, Any]:
+        """Get primary voice for high-quality synthesis"""
+        return self.voice_config['primary_voice'].copy()
+
+    def get_fallback_voices(self) -> List[Dict[str, Any]]:
+        """Get fallback voices for error recovery"""
+        return self.voice_config['fallback_voices'].copy()
+```
+
+#### 4.6.2 Language-Specific Voice Configurations
+
+**Arabic (`ar_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'ar-XA',  # Arabic (Modern Standard)
+    'primary_voice': {
+        'name': 'ar-XA-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'ar-XA-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'ar-XA-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 0.9,  # Slightly slower for clarity
+    'pitch': 0.0
+}
+```
+
+**Chinese Traditional (`zh_tw_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'zh-TW',  # Chinese (Traditional)
+    'primary_voice': {
+        'name': 'zh-TW-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'zh-TW-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'zh-TW-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 1.0,
+    'pitch': 0.0
+}
+```
+
+**German (`de_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'de',  # German
+    'primary_voice': {
+        'name': 'de-DE-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'de-DE-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'de-DE-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 1.0,
+    'pitch': 0.0
+}
+```
+
+**Hindi (`hi_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'hi',  # Hindi
+    'primary_voice': {
+        'name': 'hi-IN-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'hi-IN-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'hi-IN-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 0.95,  # Slightly slower for Devanagari clarity
+    'pitch': 0.0
+}
+```
+
+**Spanish (`es_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'es',  # Spanish (Spain)
+    'primary_voice': {
+        'name': 'es-ES-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'es-ES-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'es-ES-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 1.0,
+    'pitch': 0.0
+}
+```
+
+**Chinese Simplified (`zh_config.py`):**
+```python
+self.voice_config = {
+    'language_code': 'zh-CN',  # Chinese (Simplified)
+    'primary_voice': {
+        'name': 'zh-CN-Wavenet-A',
+        'ssml_gender': 'FEMALE',
+        'natural_sample_rate_hertz': 24000
+    },
+    'fallback_voices': [
+        {'name': 'zh-CN-Wavenet-B', 'ssml_gender': 'MALE'},
+        {'name': 'zh-CN-Standard-A', 'ssml_gender': 'FEMALE'}
+    ],
+    'voice_quality': 'Wavenet',
+    'speaking_rate': 1.0,
+    'pitch': 0.0
+}
+```
+
+#### 4.6.3 Voice Validation Tests
+
+**File:** `tests/test_{language}_voice_config.py`
+
+```python
+import pytest
+from languages.{language}.domain.{language}_config import {Language}Config
+
+class Test{Language}VoiceConfig:
+    """Test voice configuration for Google Cloud Text-to-Speech"""
+
+    @pytest.fixture
+    def config(self):
+        return {Language}Config()
+
+    def test_voice_config_structure(self, config):
+        """Test voice configuration has required structure"""
+        voice_config = config.get_voice_config()
+
+        required_keys = ['language_code', 'primary_voice', 'fallback_voices', 'voice_quality', 'speaking_rate', 'pitch']
+        for key in required_keys:
+            assert key in voice_config, f"Missing voice config key: {key}"
+
+    def test_primary_voice_structure(self, config):
+        """Test primary voice has required attributes"""
+        primary_voice = config.get_primary_voice()
+
+        required_keys = ['name', 'ssml_gender', 'natural_sample_rate_hertz']
+        for key in required_keys:
+            assert key in primary_voice, f"Missing primary voice key: {key}"
+
+        # Validate voice name format
+        assert primary_voice['name'].startswith(config.voice_config['language_code']), \
+            f"Voice name {primary_voice['name']} doesn't match language code {config.voice_config['language_code']}"
+
+    def test_fallback_voices_available(self, config):
+        """Test fallback voices are configured"""
+        fallback_voices = config.get_fallback_voices()
+        assert len(fallback_voices) >= 1, "At least one fallback voice required"
+
+        for voice in fallback_voices:
+            assert 'name' in voice, "Fallback voice missing name"
+            assert 'ssml_gender' in voice, "Fallback voice missing gender"
+
+    def test_voice_quality_settings(self, config):
+        """Test voice quality parameters are valid"""
+        voice_config = config.get_voice_config()
+
+        # Speaking rate validation
+        speaking_rate = voice_config['speaking_rate']
+        assert 0.25 <= speaking_rate <= 4.0, f"Speaking rate {speaking_rate} out of range (0.25-4.0)"
+
+        # Pitch validation
+        pitch = voice_config['pitch']
+        assert -20.0 <= pitch <= 20.0, f"Pitch {pitch} out of range (-20.0 to 20.0)"
+
+        # Voice quality validation
+        quality = voice_config['voice_quality']
+        valid_qualities = ['Standard', 'WaveNet', 'Neural2']
+        assert quality in valid_qualities, f"Invalid voice quality: {quality}"
+
+    def test_voice_availability_check(self, config):
+        """Test that configured voices exist in Google TTS"""
+        # This would require API call to verify voice availability
+        # For now, check basic format validation
+        voice_config = config.get_voice_config()
+
+        # Basic voice name format check
+        import re
+        voice_pattern = r'^[a-z]{2,3}(-[A-Z]{2})?-Wavenet-[A-Z]$|^[a-z]{2,3}(-[A-Z]{2})?-Standard-[A-Z]$'
+        primary_voice = voice_config['primary_voice']['name']
+
+        assert re.match(voice_pattern, primary_voice), f"Invalid voice name format: {primary_voice}"
+
+        # Check fallback voices too
+        for voice in voice_config['fallback_voices']:
+            assert re.match(voice_pattern, voice['name']), f"Invalid fallback voice format: {voice['name']}"
+```
+
+#### 4.6.4 Voice Integration Testing
+
+**File:** `tests/test_{language}_voice_integration.py`
+
+```python
+import pytest
+from languages.{language}.{language}_analyzer import {Language}Analyzer
+from unittest.mock import patch, MagicMock
+
+class Test{Language}VoiceIntegration:
+    """Test voice integration with text-to-speech"""
+
+    @pytest.fixture
+    def analyzer(self):
+        return {Language}Analyzer()
+
+    def test_voice_config_accessible(self, analyzer):
+        """Test analyzer can access voice configuration"""
+        voice_config = analyzer.config.get_voice_config()
+        assert voice_config is not None
+        assert 'primary_voice' in voice_config
+
+    @patch('google.cloud.texttospeech.TextToSpeechClient')
+    def test_voice_synthesis_call(self, mock_tts_client, analyzer):
+        """Test voice synthesis API call structure"""
+        # Mock the TTS client
+        mock_client = MagicMock()
+        mock_tts_client.return_value = mock_client
+
+        mock_response = MagicMock()
+        mock_response.audio_content = b'fake_audio_data'
+        mock_client.synthesize_speech.return_value = mock_response
+
+        # Test voice synthesis (would need actual implementation)
+        voice_config = analyzer.config.get_primary_voice()
+
+        # Verify voice config is properly structured for API call
+        assert 'name' in voice_config
+        assert 'ssml_gender' in voice_config
+        assert voice_config['ssml_gender'] in ['MALE', 'FEMALE', 'NEUTRAL']
+
+    def test_voice_fallback_mechanism(self, analyzer):
+        """Test fallback voice selection works"""
+        primary_voice = analyzer.config.get_primary_voice()
+        fallback_voices = analyzer.config.get_fallback_voices()
+
+        # Ensure primary and fallback voices are different
+        assert primary_voice['name'] != fallback_voices[0]['name'], \
+            "Primary and fallback voices should be different"
+
+        # Ensure all voices have required attributes
+        all_voices = [primary_voice] + fallback_voices
+        for voice in all_voices:
+            assert 'name' in voice
+            assert 'ssml_gender' in voice
+```
+
+### Phase 4.7: Custom Sentence Generation Verification (30 minutes)
+
+**CRITICAL:** All language analyzers must implement custom sentence generation prompts instead of generic fallbacks.
+
+#### 4.7.1 Method Implementation Check
+
+**File:** `{language}_analyzer.py`
+
+Verify the `get_sentence_generation_prompt` method exists and is properly implemented:
+
+```python
+def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                 enriched_meaning: str = "", min_length: int = 3,
+                                 max_length: int = 15, difficulty: str = "intermediate",
+                                 topics: Optional[List[str]] = None) -> Optional[str]:
+    """Get {Language}-specific sentence generation prompt"""
+    # Implementation must include:
+    # 1. Language-specific prompt template
+    # 2. Appropriate transcription method (IPA, Pinyin, Romanization)
+    # 3. Language-specific grammatical constraints
+    # 4. Cultural context variety requirements
+    # 5. Structured output format
+    return prompt
+```
+
+#### 4.7.2 Implementation Validation Tests
+
+**File:** `tests/test_{language}_sentence_generation.py`
+
+```python
+import pytest
+from languages.{language}.{language}_analyzer import {Language}Analyzer
+
+class Test{Language}SentenceGeneration:
+    """Test custom sentence generation implementation"""
+
+    @pytest.fixture
+    def analyzer(self):
+        return {Language}Analyzer()
+
+    def test_method_exists(self, analyzer):
+        """Test get_sentence_generation_prompt method exists"""
+        assert hasattr(analyzer, 'get_sentence_generation_prompt'), \
+            "get_sentence_generation_prompt method missing"
+
+    def test_method_callable(self, analyzer):
+        """Test method is callable and returns string"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+        assert isinstance(prompt, str), "Method must return string"
+        assert len(prompt) > 1000, "Prompt should be substantial (>1000 chars)"
+
+    def test_language_specific_content(self, analyzer):
+        """Test prompt contains language-specific elements"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+
+        # Check for language name in prompt
+        language_name = analyzer.config.language_name
+        assert language_name.lower() in prompt.lower(), \
+            f"Prompt should mention language name: {language_name}"
+
+        # Check for structured output format
+        assert 'MEANING:' in prompt, "Prompt should have MEANING section"
+        assert 'SENTENCES:' in prompt, "Prompt should have SENTENCES section"
+        assert 'TRANSLATIONS:' in prompt, "Prompt should have TRANSLATIONS section"
+
+    def test_transcription_method_appropriate(self, analyzer):
+        """Test appropriate transcription method for language"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+
+        language_code = analyzer.config.language_code
+
+        # Language-specific transcription checks
+        if language_code in ['ar', 'de', 'es']:
+            assert 'IPA' in prompt, f"{language_code} should use IPA transcription"
+        elif language_code in ['zh', 'zh-tw']:
+            assert 'PINYIN' in prompt, f"{language_code} should use Pinyin transcription"
+        elif language_code == 'hi':
+            assert 'ROMANIZATION' in prompt, f"{language_code} should use Romanization"
+
+    def test_grammatical_constraints_included(self, analyzer):
+        """Test language-specific grammatical constraints are mentioned"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+
+        # Check for language-specific grammatical features
+        language_specific_terms = {
+            'ar': ['root', 'case', 'verb forms'],
+            'zh': ['aspect', 'particles', 'measure words'],
+            'zh-tw': ['aspect', 'particles', 'measure words'],
+            'de': ['case', 'separable', 'gender'],
+            'hi': ['postposition', 'gender', 'Devanagari'],
+            'es': ['gender', 'conjugation', 'regional']
+        }
+
+        language_code = analyzer.config.language_code
+        if language_code in language_specific_terms:
+            terms = language_specific_terms[language_code]
+            found_terms = [term for term in terms if term.lower() in prompt.lower()]
+            assert len(found_terms) > 0, \
+                f"Prompt should include language-specific terms: {terms}"
+
+    def test_output_format_validation(self, analyzer):
+        """Test output format is properly structured"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+
+        # Check for numbered output format
+        assert '1. [sentence 1' in prompt, "Should have numbered sentence format"
+        assert '1. [natural English translation' in prompt, "Should have numbered translation format"
+
+        # Check for keyword format
+        assert 'keyword1, keyword2, keyword3' in prompt, "Should have keyword format"
+
+    def test_parameter_handling(self, analyzer):
+        """Test method handles parameters correctly"""
+        # Test with topics
+        topics = ['food', 'travel']
+        prompt_with_topics = analyzer.get_sentence_generation_prompt('test', 'test', 4, topics=topics)
+
+        for topic in topics:
+            assert topic in prompt_with_topics, f"Topic {topic} should be in prompt"
+
+        # Test with enriched meaning
+        enriched_meaning = '{"definition": "test meaning"}'
+        prompt_with_meaning = analyzer.get_sentence_generation_prompt('test', 'test', 4, enriched_meaning=enriched_meaning)
+
+        assert 'test meaning' in prompt_with_meaning, "Enriched meaning should be processed"
+
+    def test_no_generic_fallback(self, analyzer):
+        """Test that custom prompt is used, not generic fallback"""
+        prompt = analyzer.get_sentence_generation_prompt('test', 'test', 4)
+
+        # Should not contain generic language references
+        assert 'language' not in prompt.lower() or analyzer.config.language_name.lower() in prompt.lower(), \
+            "Prompt should be language-specific, not generic"
+
+        # Should contain specific language name
+        assert analyzer.config.language_name.lower() in prompt.lower(), \
+            "Prompt should contain specific language name"
+```
+
+#### 4.7.3 Cross-Language Comparison Tests
+
+**File:** `tests/test_sentence_generation_comparison.py`
+
+```python
+import pytest
+from languages.arabic.ar_analyzer import ArAnalyzer
+from languages.chinese_traditional.zh_tw_analyzer import ZhTwAnalyzer
+from languages.german.de_analyzer import DeAnalyzer
+from languages.hindi.hi_analyzer import HiAnalyzer
+from languages.spanish.es_analyzer import EsAnalyzer
+from languages.zh.zh_analyzer import ZhAnalyzer
+
+class TestSentenceGenerationComparison:
+    """Compare sentence generation across all implemented languages"""
+
+    @pytest.fixture
+    def analyzers(self):
+        return {
+            'ar': ArAnalyzer(),
+            'zh-tw': ZhTwAnalyzer(),
+            'de': DeAnalyzer(),
+            'hi': HiAnalyzer(),
+            'es': EsAnalyzer(),
+            'zh': ZhAnalyzer()
+        }
+
+    def test_all_languages_have_custom_prompts(self, analyzers):
+        """Test all languages implement custom sentence generation"""
+        for lang_code, analyzer in analyzers.items():
+            assert hasattr(analyzer, 'get_sentence_generation_prompt'), \
+                f"{lang_code} missing get_sentence_generation_prompt method"
+
+            prompt = analyzer.get_sentence_generation_prompt('test', lang_code, 4)
+            assert isinstance(prompt, str), f"{lang_code} prompt should be string"
+            assert len(prompt) > 1000, f"{lang_code} prompt should be substantial"
+
+    def test_transcription_methods_vary_by_language(self, analyzers):
+        """Test different transcription methods used per language"""
+        transcription_methods = {
+            'ar': 'IPA',
+            'zh-tw': 'PINYIN',
+            'de': 'IPA',
+            'hi': 'ROMANIZATION',
+            'es': 'IPA',
+            'zh': 'PINYIN'
+        }
+
+        for lang_code, expected_transcription in transcription_methods.items():
+            analyzer = analyzers[lang_code]
+            prompt = analyzer.get_sentence_generation_prompt('test', lang_code, 4)
+            assert expected_transcription in prompt, \
+                f"{lang_code} should use {expected_transcription} transcription"
+
+    def test_language_names_in_prompts(self, analyzers):
+        """Test each prompt contains correct language name"""
+        expected_names = {
+            'ar': 'Arabic',
+            'zh-tw': 'Chinese Traditional',
+            'de': 'German',
+            'hi': 'Hindi',
+            'es': 'Spanish',
+            'zh': 'Chinese Simplified'
+        }
+
+        for lang_code, expected_name in expected_names.items():
+            analyzer = analyzers[lang_code]
+            prompt = analyzer.get_sentence_generation_prompt('test', lang_code, 4)
+            assert expected_name.lower() in prompt.lower(), \
+                f"{lang_code} prompt should contain '{expected_name}'"
+
+    def test_prompts_are_unique_per_language(self, analyzers):
+        """Test each language has unique prompt characteristics"""
+        prompts = {}
+        for lang_code, analyzer in analyzers.items():
+            prompt = analyzer.get_sentence_generation_prompt('test', lang_code, 4)
+            prompts[lang_code] = prompt
+
+        # Check that prompts are different (basic uniqueness test)
+        prompt_lengths = {lang: len(prompt) for lang, prompt in prompts.items()}
+        unique_lengths = len(set(prompt_lengths.values()))
+        assert unique_lengths >= 4, "Prompts should have varied lengths indicating customization"
+
+    def test_structured_output_format_consistent(self, analyzers):
+        """Test all prompts use consistent output format"""
+        required_sections = ['MEANING:', 'SENTENCES:', 'TRANSLATIONS:', 'KEYWORDS:']
+
+        for lang_code, analyzer in analyzers.items():
+            prompt = analyzer.get_sentence_generation_prompt('test', lang_code, 4)
+
+            for section in required_sections:
+                assert section in prompt, \
+                    f"{lang_code} prompt missing required section: {section}"
+
 ### Phase 5: Comprehensive Testing Implementation (1-2 weeks)
 
 **CRITICAL:** This phase prevents iterative failures by using automated validation and testing frameworks.
@@ -1730,12 +2473,13 @@ class Test{Language}ConfigFiles:
 
 #### 5.8.2 AI Sentence Generation Quality Tests
 
-**Critical:** AI-generated sentences must meet character limits and quality standards.
+**Critical:** AI-generated sentences must meet character limits and quality standards. **FINAL TEST REQUIREMENT:** Take a random word from the frequency list, generate 3 sentences 8-10 words long with a random topic from the list of topics.
 
 **File:** `tests/test_{language}_sentence_generation.py`
 
 ```python
 import pytest
+import random
 from languages.{language}.{language}_analyzer import {Language}Analyzer
 
 class Test{Language}SentenceGeneration:
@@ -1744,6 +2488,65 @@ class Test{Language}SentenceGeneration:
     @pytest.fixture
     def analyzer(self):
         return {Language}Analyzer()
+
+    @pytest.fixture
+    def frequency_list(self):
+        """Load frequency list for random word selection"""
+        # Assuming frequency list is available in the project
+        # This would load from 77 Languages Frequency Word Lists/ or similar
+        return ["house", "run", "book", "water", "friend", "school", "car", "food", "time", "work"]  # Example
+
+    @pytest.fixture
+    def topics_list(self):
+        """Load list of topics for random topic selection"""
+        # Assuming topics are defined in the project
+        return ["daily life", "education", "travel", "food", "family", "work", "sports", "nature", "technology", "health"]
+
+    def test_final_sentence_generation_test(self, analyzer, frequency_list, topics_list):
+        """FINAL TEST: Generate 3 sentences 8-10 words long with random word and topic"""
+        # Select random word from frequency list
+        random_word = random.choice(frequency_list)
+        
+        # Select random topic
+        random_topic = random.choice(topics_list)
+        
+        # Generate 3 sentences
+        num_sentences = 3
+        sentences = []
+        
+        for i in range(num_sentences):
+            result = analyzer.generate_sentences(
+                word=random_word,
+                language="{language_code}",
+                num_sentences=1,
+                topics=[random_topic],
+                min_length=8,
+                max_length=10,
+                difficulty="intermediate"
+            )
+            
+            assert result.success, f"Sentence generation {i+1} failed for word: {random_word}"
+            assert hasattr(result, 'sentences'), "Missing sentences in result"
+            assert len(result.sentences) == 1, "Should generate exactly 1 sentence per call"
+            
+            sentence = result.sentences[0]
+            sentences.append(sentence)
+            
+            # Check sentence length (8-10 words)
+            word_count = len(sentence.split())
+            assert 8 <= word_count <= 10, f"Sentence {i+1} has {word_count} words, should be 8-10: {sentence}"
+            
+            # Check that target word is included
+            assert random_word.lower() in sentence.lower(), f"Target word '{random_word}' not in sentence: {sentence}"
+            
+            # Check that sentence relates to the topic (basic check)
+            # This would require more sophisticated topic validation
+            # For now, just ensure sentence is not empty and contains the word
+        
+        # Store sentences for use in grammar analysis test
+        self.generated_sentences = sentences
+        self.test_word = random_word
+        self.test_topic = random_topic
 
     def test_word_explanation_character_limits(self, analyzer):
         """Test word explanations stay within character limits"""
@@ -2076,6 +2879,83 @@ class Test{Language}ApkgExportFields:
     def deck_exporter(self):
         return DeckExporter()
 
+    def test_final_grammar_analysis_apkg_test(self, analyzer, deck_exporter):
+        """FINAL TEST: Take 1 of the 3 generated sentences and check word-by-word analysis in APKG output"""
+        # This test depends on the sentence generation test having run first
+        # In practice, you might need to run the sentence generation test separately
+        # or mock the generated sentences
+        
+        # For this test, we'll simulate having generated sentences
+        # In real implementation, this would use sentences from test_final_sentence_generation_test
+        simulated_sentences = [
+            "The house on the hill is very beautiful and spacious.",
+            "She decided to run quickly to catch the early train.",
+            "Reading a good book can be quite relaxing after work."
+        ]
+        test_word = "house"  # From frequency list
+        test_sentence = simulated_sentences[0]  # Take first sentence
+        
+        # Perform grammar analysis on the selected sentence
+        result = analyzer.analyze_grammar(test_sentence, test_word, "intermediate", "real_api_key")
+        
+        assert result.success, f"Grammar analysis failed for sentence: {test_sentence}"
+        assert hasattr(result, 'word_explanations'), "Missing word explanations"
+        assert hasattr(result, 'html_output'), "Missing HTML output"
+        
+        # Check word-by-word analysis
+        word_explanations = result.word_explanations
+        assert len(word_explanations) > 0, "No word explanations generated"
+        
+        # Verify each word has proper analysis (word, role, color, meaning)
+        for word_exp in word_explanations:
+            assert len(word_exp) >= 4, f"Incomplete word explanation: {word_exp}"
+            word, role, color, meaning = word_exp[:4]
+            
+            # Validate word is present in sentence
+            assert word.lower() in test_sentence.lower(), f"Word '{word}' not found in sentence: {test_sentence}"
+            
+            # Validate role is not empty
+            assert role.strip(), f"Empty grammatical role for word '{word}'"
+            
+            # Validate color is a valid hex color
+            assert color.startswith('#') and len(color) == 7, f"Invalid color format: {color}"
+            
+            # Validate meaning is within character limits
+            assert len(meaning) <= 75, f"Word explanation too long: {len(meaning)} chars > 75 limit"
+            assert len(meaning.strip()) > 0, f"Empty meaning for word '{word}'"
+        
+        # Check HTML output has proper coloring and marking
+        html_output = result.html_output
+        assert '<span' in html_output, "HTML output missing span elements for coloring"
+        assert 'style=' in html_output, "HTML output missing style attributes"
+        
+        # Verify target word is properly highlighted
+        assert test_word.lower() in html_output.lower(), f"Target word '{test_word}' not highlighted in HTML"
+        
+        # Check for proper color application (at least one color from scheme)
+        color_scheme = analyzer.get_color_scheme("intermediate")
+        colors_used = set()
+        for color in color_scheme.values():
+            if color in html_output:
+                colors_used.add(color)
+        assert len(colors_used) > 0, f"No colors from scheme applied in HTML: {color_scheme}"
+        
+        # Simulate APKG export and verify final output
+        apkg_fields = deck_exporter.extract_apkg_fields(result)
+        
+        # Verify APKG fields contain the analyzed data
+        assert 'sentence' in apkg_fields, "APKG missing sentence field"
+        assert 'word_explanations' in apkg_fields, "APKG missing word_explanations field"
+        assert 'html_output' in apkg_fields, "APKG missing html_output field"
+        
+        # Verify the sentence in APKG matches the analyzed sentence
+        assert apkg_fields['sentence'] == test_sentence, "APKG sentence doesn't match analyzed sentence"
+        
+        # Verify HTML in APKG has proper formatting
+        apkg_html = apkg_fields['html_output']
+        assert '<span' in apkg_html, "APKG HTML missing span elements"
+        assert len(apkg_html) > len(test_sentence), "APKG HTML not properly formatted with colors"
+
     def test_bright_poppy_colors_applied(self, analyzer):
         """Test that bright poppy colors are correctly applied to grammatical roles"""
         result = analyzer.analyze_grammar("Test sentence", "test", "intermediate", "mock_key")
@@ -2216,6 +3096,99 @@ class Test{Language}ApkgExportFields:
             'html_output': '<span style="color:#FF6B6B">Test</span> sentence',
             'min_confidence': 0.7
         }
+
+**🎯 FINAL COMPREHENSIVE TEST COMPLETE**
+
+This concludes the comprehensive quality testing framework. The final test combines sentence generation (taking a random word from the frequency list and generating 3 sentences 8-10 words long with a random topic) with grammar analysis validation (checking word-by-word analysis, proper coloring, and marking in the final APKG output). All language analyzers must pass these tests to be considered production-ready and matching the quality standards of existing implementations.
+
+## 📊 **DETAILED REPORTING REQUIREMENT**
+
+**CRITICAL:** All final tests must provide detailed reporting of generated sentences with ALL available details. This ensures transparency and allows for quality assessment of AI-generated content.
+
+### **Required Reporting Format:**
+
+When running final tests, the output must include:
+
+1. **Random Word Selection Details:**
+   - Selected word from frequency list
+   - Word frequency rank (if available)
+   - Word category/classification
+
+2. **Random Topic Selection Details:**
+   - Selected topic from curated list
+   - Topic category (e.g., "daily life", "education", "nature")
+
+3. **Sentence Generation Results:**
+   - All 3 generated sentences (8-10 words each)
+   - Word count for each sentence
+   - Target word inclusion verification
+   - Topic relevance assessment (if available)
+   - API response status (success/fallback used)
+
+4. **Grammar Analysis Details (for APKG test):**
+   - Selected sentence for analysis
+   - Word-by-word breakdown with:
+     - Grammatical role
+     - Color code assigned
+     - Meaning/explanation
+     - Confidence score
+   - HTML output with coloring
+   - APKG field validation results
+
+5. **Quality Metrics:**
+   - Sentence length compliance (8-10 words)
+   - Word explanation character limits (< 75 chars)
+   - Color scheme validation
+   - Confidence score thresholds
+
+### **Example Detailed Report Output:**
+
+```
+=== FINAL COMPREHENSIVE TEST REPORT ===
+
+📝 Random Word Selection:
+- Word: "olur" (becomes/happens)
+- Frequency Rank: 45
+- Category: Verb
+
+🎯 Random Topic Selection:
+- Topic: "Science"
+- Category: Academic
+
+📚 Generated Sentences:
+1. "Bilimsel araştırmalar olur ve yeni keşifler getirir." (8 words) ✓
+   - Target word included: ✓
+   - Topic relevance: High
+
+2. "Teknolojik gelişmeler olur ve hayatımızı kolaylaştırır." (7 words) ⚠️ (slightly short)
+   - Target word included: ✓
+   - Topic relevance: Medium
+
+3. "İklim değişikliği olur ve doğal dengeyi bozar." (8 words) ✓
+   - Target word included: ✓
+   - Topic relevance: High
+
+🔍 Grammar Analysis (Sentence 1):
+Word-by-word breakdown:
+- Bilimsel: adjective, #45B7D1, "Scientific/related to science"
+- araştırmalar: noun, #FF6B6B, "Researches/studies"
+- olur: verb, #4ECDC4, "Happens/becomes"
+- ve: conjunction, #FFEAA7, "And"
+- yeni: adjective, #45B7D1, "New"
+- keşifler: noun, #FF6B6B, "Discoveries"
+- getirir: verb, #4ECDC4, "Brings"
+
+HTML Output: <span style="color:#FF6B6B">Bilimsel</span> <span style="color:#45B7D1">araştırmalar</span>...
+
+APKG Validation: ✓ All fields valid
+Confidence Score: 0.85
+
+✅ TEST PASSED - Production Ready
+```
+
+### **Implementation Requirement:**
+
+Update test methods to include detailed logging/printing of all generation and analysis details. Use structured output with clear sections and validation markers (✓/⚠️/❌).
 ```
 
 **🚀 Ready to start implementing?** Begin with Phase 1: Research Validation, then follow each phase sequentially. Remember: quality over speed - take time to do it right!

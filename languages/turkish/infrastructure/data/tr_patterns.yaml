@@ -1,0 +1,35 @@
+# Turkish Analysis Patterns
+
+morphological_patterns:
+  # Pattern for identifying case markers
+  case_marker_pattern: "(i|ı|u|ü|e|a|de|da|den|dan|in|ın|un|ün)$"
+
+  # Pattern for possessive suffixes
+  possessive_pattern: "(im|ım|um|üm|in|ın|un|ün|i|ı|u|ü|imiz|ımız|umuz|ümüz|iniz|ınız|unuz|ünüz|leri)$"
+
+  # Pattern for plural markers
+  plural_pattern: "(ler|lar)$"
+
+  # Pattern for question particles
+  question_pattern: "(mı|mi|mu|mü)$"
+
+  # Pattern for present continuous
+  present_continuous_pattern: "iyor$"
+
+word_patterns:
+  # Common Turkish word endings
+  noun_endings: ["lık", "lık", "luk", "lük", "ci", "cı", "cu", "cü", "çi", "çi", "çu", "çü"]
+  verb_endings: ["mak", "mak", "mek", "mek"]
+  adjective_endings: ["li", "lı", "lu", "lü", "siz", "sız", "suz", "süz"]
+
+validation_patterns:
+  # Vowel harmony validation
+  vowel_harmony_check: true
+
+  # Maximum morphemes per word
+  max_morphemes: 10
+
+  # Common exceptions
+  exceptions:
+    - "leri"  # Special plural form
+    - "mi"   # Question particle

@@ -1,0 +1,64 @@
+# Turkish Single Sentence Analysis Template
+# Used for analyzing individual Turkish sentences
+
+Analyze this Turkish sentence: {{sentence}}
+Target word: {{target_word}}
+Complexity level: {{complexity}}
+
+TURKISH GRAMMAR ANALYSIS REQUIREMENTS:
+
+MORPHOLOGICAL ANALYSIS:
+- Identify root words in agglutinated forms
+- Break down suffixes and their functions
+- Note vowel harmony patterns (back/front vowels)
+- Identify case markers and their grammatical functions
+
+GRAMMATICAL ROLES (use these exact categories):
+{{grammatical_roles_list}}
+
+CASE SYSTEM (6 cases in Turkish):
+- Nominative: subject case, no marker
+- Accusative: direct object, -(y)i marker
+- Dative: indirect object/direction, -(y)e marker
+- Locative: location, -(d)e marker
+- Ablative: source/origin, -(d)en marker
+- Genitive: possession, -(n)in marker
+
+VOWEL HARMONY RULES:
+- Back vowels: a, o, u
+- Front vowels: e, ö, ü
+- Suffix vowels must harmonize with root's last vowel
+- Exceptions: some foreign words, 3rd person plural possessives
+
+WORD ORDER:
+- Subject-Object-Verb (SOV) is normal
+- Flexible due to case markers
+- Question words at sentence beginning
+
+OUTPUT FORMAT:
+Return JSON with this exact structure:
+{
+  "analysis": [
+    {
+      "word": "word_text",
+      "grammatical_role": "exact_role_from_list",
+      "individual_meaning": "English translation with grammatical context",
+      "color": "#hex_color"
+    }
+  ],
+  "sentence_structure": "Brief description of sentence structure",
+  "linguistic_features": ["agglutination", "vowel_harmony", "case_system"],
+  "validation": {
+    "morphology_complete": true,
+    "harmony_checked": true,
+    "cases_identified": true
+  }
+}
+
+CRITICAL VALIDATION RULES:
+1. Use ONLY the grammatical roles listed above
+2. Include morphological notes in individual_meaning when relevant
+3. Colors must be valid hex codes
+4. Identify all case markers and their functions
+5. Note vowel harmony violations if any
+6. Explain agglutination structures clearly

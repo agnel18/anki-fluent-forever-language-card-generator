@@ -1,0 +1,19 @@
+# Turkish Grammatical Roles Configuration
+# Maps role names to standardized categories
+
+noun: "noun"
+verb: "verb"
+pronoun: "pronoun"
+adjective: "adjective"
+adverb: "adverb"
+numeral: "numeral"
+postposition: "postposition"
+conjunction: "conjunction"
+interjection: "interjection"
+case_marker: "case_marker"
+possessive_suffix: "possessive_suffix"
+tense_marker: "tense_marker"
+question_particle: "question_particle"
+negation: "negation"
+plural: "plural"
+other: "other"

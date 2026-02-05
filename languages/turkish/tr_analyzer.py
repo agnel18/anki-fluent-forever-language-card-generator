@@ -1,9 +1,9 @@
-# languages/zh/zh_analyzer.py
+# languages/turkish/tr_analyzer.py
 """
-Chinese Simplified Grammar Analyzer - Clean Architecture Facade
+Turkish Grammar Analyzer - Clean Architecture Facade
 
-GOLD STANDARD IMPLEMENTATION FOR CHINESE SIMPLIFIED:
-This file demonstrates the clean architecture pattern for Chinese analyzers.
+GOLD STANDARD IMPLEMENTATION FOR TURKISH:
+This file demonstrates the clean architecture pattern for Turkish analyzers.
 It serves as the main entry point (Facade) that orchestrates domain components.
 
 ARCHITECTURAL PATTERN:
@@ -19,10 +19,10 @@ KEY RESPONSIBILITIES:
 5. Provide legacy compatibility methods
 
 DOMAIN COMPONENTS USED:
-- ZhConfig: Language-specific configuration (colors, roles, patterns)
-- ZhPromptBuilder: Builds AI prompts using Jinja2 templates
-- ZhResponseParser: Parses AI responses, applies fallbacks, transforms data
-- ZhValidator: Validates results and calculates confidence scores
+- TrConfig: Language-specific configuration (colors, roles, patterns)
+- TrPromptBuilder: Builds AI prompts using Jinja2 templates
+- TrResponseParser: Parses AI responses, applies fallbacks, transforms data
+- TrValidator: Validates results and calculates confidence scores
 
 INTEGRATION POINTS:
 - Called by sentence_generator.py for Pass 3: Grammar Analysis
@@ -31,8 +31,8 @@ INTEGRATION POINTS:
 - Uses 2000 max_tokens for complete AI responses (prevents JSON truncation)
 
 INHERITANCE:
-- Inherits from BaseGrammarAnalyzer (Chinese is analytic, not Indo-European)
-- Can be adapted for other Sino-Tibetan languages by changing domain components
+- Inherits from BaseGrammarAnalyzer (Turkish is agglutinative, not analytic)
+- Can be adapted for other Turkic languages by changing domain components
 
 USAGE FOR NEW LANGUAGES:
 1. Create language-specific domain components (config, prompt_builder, etc.)
@@ -47,83 +47,84 @@ from pathlib import Path
 
 from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
 
-from .domain.zh_config import ZhConfig
-from .domain.zh_prompt_builder import ZhPromptBuilder
-from .domain.zh_response_parser import ZhResponseParser
-from .domain.zh_validator import ZhValidator
+from .domain.tr_config import TrConfig
+from .domain.tr_prompt_builder import TrPromptBuilder
+from .domain.tr_response_parser import TrResponseParser
+from .domain.tr_validator import TrValidator
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model
 
 logger = logging.getLogger(__name__)
 
-class ZhAnalyzer(BaseGrammarAnalyzer):
+class TrAnalyzer(BaseGrammarAnalyzer):
     """
-    Grammar analyzer for Chinese Simplified (简体中文) - Clean Architecture.
+    Grammar analyzer for Turkish (Türkçe) - Clean Architecture.
 
-    CHINESE-SPECIFIC FEATURES:
-    - Analytic Language: No inflection, relies on particles and word order
-    - Aspect System: 了 (completed), 着 (ongoing), 过 (experienced)
-    - Classifier System: Obligatory measure words for counting
-    - Topic-Comment Structure: Flexible word order
-    - Logographic Script: Character-based analysis with compound recognition
+    TURKISH-SPECIFIC FEATURES:
+    - Agglutinative Language: Words formed by adding suffixes to roots
+    - Vowel Harmony: Suffix vowels harmonize with root vowels
+    - SOV Word Order: Subject-Object-Verb sentence structure
+    - Case System: 6 grammatical cases (nominative, accusative, dative, locative, ablative, genitive)
+    - No Grammatical Gender: Unlike many Indo-European languages
 
-    Key Features: ['aspect_markers', 'classifiers', 'particles', 'topic_comment', 'no_inflection']
+    Key Features: ['agglutination', 'vowel_harmony', 'case_system', 'sov_order', 'no_gender']
     Complexity Levels: ['beginner', 'intermediate', 'advanced']
-    Script: Simplified Chinese characters (LTR), logographic writing system
+    Script: Latin alphabet (LTR), alphabetic writing system
     """
 
     VERSION = "1.0"
-    LANGUAGE_CODE = "zh"
-    LANGUAGE_NAME = "Chinese Simplified"
+    LANGUAGE_CODE = "tr"
+    LANGUAGE_NAME = "Turkish"
 
     def __init__(self):
         """
-        Initialize Chinese Simplified analyzer with domain components.
+        Initialize Turkish analyzer with domain components.
 
-        CHINESE-SPECIFIC INITIALIZATION:
+        TURKISH-SPECIFIC INITIALIZATION:
         1. Initialize domain components first (config, builders, parsers)
-        2. Create language config with Chinese metadata
+        2. Create language config with Turkish metadata
         3. Call parent constructor with config
         4. Set up logging and validation
 
         This pattern ensures all dependencies are available before analysis begins.
         """
-        logger.info("DEBUG: ZhAnalyzer __init__ called")
+        logger.info("DEBUG: TrAnalyzer __init__ called")
         # Initialize domain components first
-        self.zh_config = ZhConfig()
-        self.prompt_builder = ZhPromptBuilder(self.zh_config)
-        self.response_parser = ZhResponseParser(self.zh_config)
-        self.validator = ZhValidator(self.zh_config)
+        self.tr_config = TrConfig()
+        self.prompt_builder = TrPromptBuilder(self.tr_config)
+        self.response_parser = TrResponseParser(self.tr_config)
+        self.validator = TrValidator(self.tr_config)
 
         config = LanguageConfig(
-            code="zh",
-            name="Chinese Simplified",
-            native_name="简体中文",
-            family="Sino-Tibetan",
-            script_type="logographic",
-            complexity_rating="medium",
-            key_features=['aspect_markers', 'classifiers', 'particles', 'topic_comment', 'no_inflection'],
+            code="tr",
+            name="Turkish",
+            native_name="Türkçe",
+            family="Turkic",
+            script_type="alphabetic",
+            complexity_rating="high",
+            key_features=['agglutination', 'vowel_harmony', 'case_system', 'sov_order', 'no_gender'],
             supported_complexity_levels=['beginner', 'intermediate', 'advanced']
         )
+
         super().__init__(config)
 
     def analyze_grammar(self, sentence: str, target_word: str, complexity: str, gemini_api_key: str) -> GrammarAnalysis:
         """
         Analyze grammar for a single sentence.
 
-        CHINESE WORKFLOW:
-        1. Build AI prompt using prompt_builder (Chinese-specific templates)
+        TURKISH WORKFLOW:
+        1. Build AI prompt using prompt_builder (Turkish-specific templates)
         2. Call AI API with proper error handling
-        3. Parse response using response_parser (with Chinese fallbacks)
-        4. Validate results using validator (aspect particles, classifiers)
+        3. Parse response using response_parser (with Turkish fallbacks)
+        4. Validate results using validator (agglutination, vowel harmony)
         5. Generate HTML output for colored display
         6. Return GrammarAnalysis object
 
-        CHINESE FALLBACK HIERARCHY:
-        - Primary: AI-generated analysis with aspect/classifier validation
-        - Secondary: Pattern-based fallbacks for particles and compounds
-        - Tertiary: Basic rule-based fallbacks for character-based analysis
+        TURKISH FALLBACK HIERARCHY:
+        - Primary: AI-generated analysis with agglutination/vowel harmony validation
+        - Secondary: Pattern-based fallbacks for suffixes and cases
+        - Tertiary: Basic rule-based fallbacks for morphological analysis
 
         OUTPUT FORMAT:
         - word_explanations: [[word, role, color, meaning], ...]
@@ -188,18 +189,18 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         """
         Analyze grammar for multiple sentences.
 
-        CHINESE BATCH PROCESSING:
+        TURKISH BATCH PROCESSING:
         - Handles 8 sentences efficiently (prevents token overflow)
         - Uses single AI call for all sentences (cost-effective)
         - Applies per-result validation and fallbacks
         - Maintains sentence order in output
         - Provides partial fallbacks (some sentences may succeed even if others fail)
 
-        CHINESE BATCH SIZE CONSIDERATIONS:
+        TURKISH BATCH SIZE CONSIDERATIONS:
         - 8 sentences: Optimal balance of efficiency and response quality
         - Prevents JSON truncation with 2000 max_tokens
         - Allows meaningful error recovery per sentence
-        - Accounts for character-based analysis complexity
+        - Accounts for agglutinative analysis complexity
 
         ERROR HANDLING:
         - If entire batch fails: Return fallbacks for all sentences
@@ -256,17 +257,17 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         """
         Call Google Gemini AI for grammar analysis.
 
-        CHINESE AI INTEGRATION:
+        TURKISH AI INTEGRATION:
         - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
         - 2000 max_output_tokens prevents JSON truncation in batch responses
         - 30-second timeout for online environments
         - Comprehensive error handling with meaningful logging
         - Returns error response for fallback processing
 
-        CHINESE CONSIDERATIONS:
-        - Handles logographic script properly
-        - Accounts for compound word analysis
-        - Supports aspect marker and classifier validation
+        TURKISH CONSIDERATIONS:
+        - Handles agglutinative morphology properly
+        - Accounts for vowel harmony patterns
+        - Supports case system and suffix validation
         - Future-proof: Update model names as Google releases new versions
 
         ERROR HANDLING:
@@ -297,252 +298,29 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             logger.error(f"AI call failed: {e}")
             return '{"sentence": "error", "words": []}'  # Standardized error response
 
-    def _mock_batch_ai_response(self, sentences: List[str], complexity: str) -> str:
-        """Mock batch AI response for testing."""
-        results = []
-        for s in sentences:
-            words = s.split()
-            word_data = []
-            for word in words:
-                role = 'other'
-                if word in ['的', '了', '着', '过']:
-                    role = 'particle'
-                elif word in ['个', '本', '杯']:
-                    role = 'classifier'
-                word_data.append({
-                    'word': word,
-                    'grammatical_role': role,
-                    'individual_meaning': f'{role} in sentence'
-                })
-            results.append({"sentence": s, "words": word_data})
-        return '{"batch_results": ' + str(results).replace("'", '"') + '}'
-
-    def _mock_ai_response(self, sentence: str, complexity: str) -> str:
-        """Mock single AI response for testing."""
-        words = sentence.split()
-        word_data = []
-        for word in words:
-            role = 'other'
-            if word in ['的', '了', '着', '过']:
-                role = 'particle'
-            elif word in ['个', '本', '杯']:
-                role = 'classifier'
-            word_data.append({
-                'word': word,
-                'grammatical_role': role,
-                'individual_meaning': f'{role} in sentence'
-            })
-        return '{"sentence": "' + sentence + '", "words": ' + str(word_data).replace("'", '"') + '}'
-
-    # Legacy compatibility methods - delegate to new implementation
-    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """
-        Legacy method - use analyze_grammar instead.
-
-        DEPRECATED: This method is maintained for backward compatibility.
-        New code should use the analyze_grammar() method directly.
-        """
-        return self.prompt_builder.build_single_prompt(sentence, complexity, native_language)
-
-    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """
-        Return color scheme for Chinese Simplified grammatical elements.
-
-        COLOR CODING PHILOSOPHY:
-        - Consistent colors across complexity levels where possible
-        - Progressive disclosure: More roles distinguished at higher complexity
-        - Accessible colors: High contrast, colorblind-friendly
-        - Language-appropriate: Colors that make sense for Chinese grammar
-
-        CHINESE COMPLEXITY PROGRESSION:
-        - Beginner: Basic roles (noun, verb, adjective, particles)
-        - Intermediate: More distinctions (classifiers, aspect markers, pronouns)
-        - Advanced: Full granularity (all particle types, structural elements)
-        """
-        return self.zh_config.get_color_scheme(complexity)
-
-    # Abstract method implementations required by BaseGrammarAnalyzer
-
     def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
-        """Generate Chinese-specific AI prompt for grammar analysis with complexity-aware logic."""
-        if complexity == "beginner":
-            return self._get_beginner_prompt(sentence, target_word)
-        elif complexity == "intermediate":
-            return self._get_intermediate_prompt(sentence, target_word)
-        elif complexity == "advanced":
-            return self._get_advanced_prompt(sentence, target_word)
-        else:
-            return self._get_beginner_prompt(sentence, target_word)
+        """Generate AI prompt for grammar analysis"""
+        return self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
 
-    def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate beginner-level grammar analysis prompt for Chinese."""
-        return f"""Analyze this ENTIRE Chinese sentence WORD BY WORD: {sentence}
-
-For EACH AND EVERY INDIVIDUAL WORD/CHARACTER in the sentence, provide:
-- Its individual meaning and pronunciation (if applicable)
-- Its basic grammatical role (noun, verb, adjective, particle, etc.)
-- How it functions in this simple sentence
-- Basic relationships with other words
-
-Pay special attention to the target word: {target_word}
-
-Focus on basic Chinese features:
-- Basic particles (的, 了, 吗, etc.)
-- Simple subject-verb-object structure
-- Basic classifiers and measure words
-
-Return a JSON object with detailed word analysis for ALL words in the sentence:
-{{
-  "words": [
-    {{
-      "word": "example_word",
-      "individual_meaning": "translation/meaning",
-      "grammatical_role": "noun/verb/adjective/particle/etc",
-      "basic_function": "subject/object/modifier",
-      "importance": "learning significance"
-    }}
-  ],
-  "explanations": {{
-    "overall_structure": "Basic sentence structure explanation",
-    "key_features": "Simple Chinese grammatical features"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence, not just the target word! Provide COMPREHENSIVE explanations for basic Chinese grammar."""
-
-    def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate intermediate-level grammar analysis prompt for Chinese."""
-        return f"""Analyze this Chinese sentence with INTERMEDIATE grammar focus: {sentence}
-
-Provide detailed analysis including:
-- Aspect markers (了, 着, 过) and their functions
-- Classifier usage and selection
-- Pronoun systems and reference
-- Complex particle functions (把, 被, 给, etc.)
-- Topic-comment structure
-
-Pay special attention to the target word: {target_word}
-
-Return a JSON object with comprehensive analysis:
-{{
-  "words": [
-    {{
-      "word": "example",
-      "grammatical_role": "role",
-      "aspect_info": "aspect marking if applicable",
-      "classifier_info": "classifier usage",
-      "syntactic_role": "function in sentence"
-    }}
-  ],
-  "explanations": {{
-    "aspect_system": "aspect marker usage in sentence",
-    "classifier_usage": "classifier selection and function",
-    "complex_structures": "intermediate Chinese syntax"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for Chinese-specific features."""
-
-    def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate advanced-level grammar analysis prompt for Chinese."""
-        return f"""Perform advanced grammatical analysis of this Chinese sentence: {sentence}
-
-Analyze complex linguistic phenomena:
-- Multiple aspect markers and their interactions
-- Complex classifier systems and quantification
-- Discourse particles and pragmatic functions (呢, 吧, 啊, etc.)
-- Topic chains and information structure
-- Serial verb constructions
-- Resultative compounds and directional complements
-
-Pay special attention to the target word: {target_word}
-
-Return detailed JSON analysis with advanced Chinese linguistic features:
-{{
-  "words": [
-    {{
-      "word": "example",
-      "grammatical_role": "detailed_role",
-      "aspect_complexity": "multiple aspect interactions",
-      "discourse_function": "pragmatic particle usage",
-      "syntactic_complexity": "advanced structure analysis"
-    }}
-  ],
-  "explanations": {{
-    "aspect_interactions": "complex aspect marker combinations",
-    "discourse_structure": "information packaging and topic-comment",
-    "advanced_syntax": "serial verbs, compounds, complements"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for advanced Chinese grammar phenomena."""
-
-    def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
-        """Parse AI response into standardized Chinese grammar analysis format."""
-        return self.response_parser.parse_response(ai_response, complexity, sentence, None)
+    def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str, target_word: str = "") -> Dict[str, Any]:
+        """Parse AI response into standardized format"""
+        return self.response_parser.parse_response(ai_response, complexity, sentence, target_word)
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
-        """Validate Chinese analysis quality and return confidence score."""
-        return self.validator.validate_result(parsed_data, original_sentence)['confidence']
+        """Validate analysis and return confidence score"""
+        validated = self.validator.validate_result(parsed_data, original_sentence)
+        return validated.get('confidence', 0.5)
 
-    def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Chinese text with inline color styling for Anki compatibility"""
-        explanations = parsed_data.get('word_explanations', [])
-
-        print(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
-        print("DEBUG Chinese HTML Gen - Input sentence: '" + str(sentence) + "'")
-
-        # For Chinese (logographic script without spaces), use position-based replacement
-        color_scheme = self.get_color_scheme('intermediate')
-
-        # Sort explanations by position in sentence to avoid conflicts
-        sorted_explanations = sorted(explanations, key=lambda x: sentence.find(x[0]) if len(x) >= 3 else len(sentence))
-
-        # Build HTML by processing the sentence character by character
-        html_parts = []
-        i = 0
-        sentence_len = len(sentence)
-
-        while i < sentence_len:
-            # Check if current position matches any word explanation
-            matched = False
-            for exp in sorted_explanations:
-                if len(exp) >= 3:
-                    word = exp[0]
-                    word_len = len(word)
-
-                    # Check if word matches at current position
-                    if i + word_len <= sentence_len and sentence[i:i + word_len] == word:
-                        pos = exp[1]
-                        category = self._map_grammatical_role_to_category(pos)
-                        color = color_scheme.get(category, '#888888')
-
-                        # Escape curly braces in word to prevent f-string issues
-                        safe_word_display = word.replace('{', '{{').replace('}', '}}')
-                        colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
-                        html_parts.append(colored_word)
-
-                        print("DEBUG Chinese HTML Gen - Replaced '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
-
-                        i += word_len
-                        matched = True
-                        break
-
-            if not matched:
-                # No match, add character as-is
-                html_parts.append(sentence[i])
-                i += 1
-
-        html = ''.join(html_parts)
-        print("DEBUG Chinese HTML Gen - Final HTML result: " + html)
-        return html
+    def get_color_scheme(self, complexity: str) -> Dict[str, str]:
+        """Return color scheme for grammatical roles"""
+        return self.tr_config.get_color_scheme(complexity)
 
     def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
                                      enriched_meaning: str = "", min_length: int = 3,
                                      max_length: int = 15, difficulty: str = "intermediate",
                                      topics: Optional[List[str]] = None) -> Optional[str]:
         """
-        Get Chinese Simplified-specific sentence generation prompt to ensure proper response formatting.
+        Get Turkish-specific sentence generation prompt to ensure proper response formatting.
         """
         # Build context instruction based on topics
         if topics:
@@ -579,10 +357,10 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
         else:
             enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
 
-        # Custom prompt for Chinese Simplified to ensure proper formatting
-        prompt = f"""You are a native-level expert linguist in Simplified Chinese (简体中文).
+        # Custom prompt for Turkish to ensure proper formatting
+        prompt = f"""You are a native-level expert linguist in Turkish (Türkçe).
 
-Your task: Generate a complete learning package for the Simplified Chinese word "{word}" in ONE response.
+Your task: Generate a complete learning package for the Turkish word "{word}" in ONE response.
 
 ===========================
 STEP 1: WORD MEANING
@@ -595,26 +373,27 @@ IMPORTANT: Keep the entire meaning under 75 characters total.
 WORD-SPECIFIC RESTRICTIONS
 ===========================
 Based on the meaning above, identify any grammatical constraints for "{word}".
-Examples: particles only (的/了/吗), specific measure words required, character-based restrictions.
+Examples: case requirements, suffix harmony, agglutination patterns.
 If no restrictions apply, state "No specific grammatical restrictions."
 IMPORTANT: Keep the entire restrictions summary under 60 characters total.
 
 ===========================
 STEP 2: SENTENCES
 ===========================
-Generate exactly {num_sentences} highly natural, idiomatic sentences in Simplified Chinese for the word "{word}".
+Generate exactly {num_sentences} highly natural, idiomatic sentences in Turkish for the word "{word}".
 
 QUALITY RULES:
-- Every sentence must use proper Simplified Chinese characters (简体字)
-- Grammar, syntax, and character usage must be correct
+- Every sentence must use proper Turkish spelling and grammar
+- Vowel harmony must be correct in all suffixes
+- Case markers must be used appropriately
 - The target word "{word}" MUST be used correctly according to restrictions
 - Each sentence must be no more than {max_length} characters long
 - Difficulty: {difficulty}
 
 VARIETY REQUIREMENTS:
-- Use different aspect particles (了, 着, 过) and sentence structures if applicable
+- Use different cases (nominative, accusative, dative, locative, ablative, genitive)
 - Use different sentence types: declarative, interrogative, imperative
-- Include appropriate measure words/classifiers when needed
+- Include possessive suffixes and other agglutinative forms when appropriate
 {context_instruction}
 
 ===========================
@@ -624,11 +403,11 @@ For EACH sentence above, provide a natural, fluent English translation.
 - Translation should be natural English, not literal word-for-word
 
 ===========================
-STEP 4: PINYIN TRANSCRIPTION
+STEP 4: IPA TRANSCRIPTION
 ===========================
-For EACH sentence above, provide accurate Pinyin transcription with tone marks.
-- Use proper tone marks (ā, á, ǎ, à, ē, é, ě, è, etc.)
-- Include spaces between words for readability
+For EACH sentence above, provide accurate IPA transcription.
+- Use proper IPA symbols for Turkish sounds
+- Include syllable stress marks where appropriate
 
 ===========================
 STEP 5: IMAGE KEYWORDS
@@ -647,10 +426,10 @@ MEANING: [brief English meaning]
 RESTRICTIONS: [grammatical restrictions]
 
 SENTENCES:
-1. [sentence 1 in Simplified Chinese]
-2. [sentence 2 in Simplified Chinese]
-3. [sentence 3 in Simplified Chinese]
-4. [sentence 4 in Simplified Chinese]
+1. [sentence 1 in Turkish]
+2. [sentence 2 in Turkish]
+3. [sentence 3 in Turkish]
+4. [sentence 4 in Turkish]
 
 TRANSLATIONS:
 1. [natural English translation for sentence 1]
@@ -658,11 +437,11 @@ TRANSLATIONS:
 3. [natural English translation for sentence 3]
 4. [natural English translation for sentence 4]
 
-PINYIN:
-1. [Pinyin for sentence 1]
-2. [Pinyin for sentence 2]
-3. [Pinyin for sentence 3]
-4. [Pinyin for sentence 4]
+IPA:
+1. [IPA for sentence 1]
+2. [IPA for sentence 2]
+3. [IPA for sentence 3]
+4. [IPA for sentence 4]
 
 KEYWORDS:
 1. [keyword1, keyword2, keyword3]
@@ -672,29 +451,27 @@ KEYWORDS:
 
 IMPORTANT:
 - Return ONLY the formatted text, no extra explanation
-- Sentences must be in Simplified Chinese characters only
-- Ensure exactly {num_sentences} sentences, translations, Pinyin, and keywords"""
+- Sentences must be in proper Turkish with correct vowel harmony
+- Ensure exactly {num_sentences} sentences, translations, IPA, and keywords"""
 
         return prompt
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map Chinese grammatical roles to color scheme categories"""
+        """Map Turkish grammatical roles to color scheme categories"""
         role_mapping = {
             'noun': 'noun',
             'verb': 'verb',
             'adjective': 'adjective',
             'adverb': 'adverb',
             'pronoun': 'pronoun',
-            'preposition': 'preposition',
+            'postposition': 'postposition',
             'conjunction': 'conjunction',
             'interjection': 'interjection',
-            'particle': 'particle',
-            'classifier': 'classifier',
-            'aspect_marker': 'aspect_marker',
-            'modal_particle': 'modal_particle',
-            'structural_particle': 'structural_particle',
-            'measure_word': 'measure_word',
             'numeral': 'numeral',
+            'case_marker': 'case_marker',
+            'possessive_suffix': 'possessive_suffix',
+            'tense_marker': 'tense_marker',
+            'question_particle': 'question_particle',
             'other': 'other'
         }
         return role_mapping.get(grammatical_role, 'other')

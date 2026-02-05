@@ -1,0 +1,31 @@
+# Turkish Case Markers Configuration
+
+nominative:
+  marker: ""
+  function: "subject"
+  description: "Subject case, no marker"
+
+accusative:
+  markers: ["i", "ı", "u", "ü"]
+  function: "direct_object"
+  description: "Direct object case"
+
+dative:
+  markers: ["e", "a"]
+  function: "indirect_object"
+  description: "Indirect object case"
+
+locative:
+  markers: ["de", "da"]
+  function: "location"
+  description: "Location case ('in', 'at', 'on')"
+
+ablative:
+  markers: ["den", "dan"]
+  function: "source"
+  description: "Source case ('from')"
+
+genitive:
+  markers: ["in", "ın", "un", "ün"]
+  function: "possession"
+  description: "Possession case ('of')"
