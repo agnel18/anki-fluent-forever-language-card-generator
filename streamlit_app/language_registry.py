@@ -168,6 +168,16 @@ class LanguageRegistry:
             complexity='medium'
         ))
 
+        self._add_language(LanguageConfig(
+            iso_code='tr',
+            full_name='Turkish',
+            epitran_code='tur-Latn',
+            phonemizer_code='tr',
+            family='Turkic',
+            script_type='alphabetic',
+            complexity='medium'
+        ))
+
         logger.info(f"Loaded {len(self._languages)} language configurations")
 
     def _add_language(self, config: LanguageConfig, variant_names: List[str] = None):

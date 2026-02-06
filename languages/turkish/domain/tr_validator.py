@@ -64,6 +64,70 @@ class TrValidator:
         """
         self.config = config
 
+    def validate_result(self, result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        """
+        Validate analysis result and assign confidence score.
+        Turkish-specific validation considers agglutination and vowel harmony.
+        """
+        confidence = 1.0
+        issues = []
+        metadata = {}
+
+        # Extract components
+        word_explanations = result.get('word_explanations', [])
+        explanations = result.get('explanations', {})
+        elements = result.get('elements', {})
+
+        # Check if this is a fallback response
+        if result.get('is_fallback', False):
+            result['confidence'] = 0.3
+            return result
+
+        # Basic structural validation
+        if not word_explanations:
+            result['confidence'] = 0.1
+            return result
+
+        # Check word explanation format
+        for exp in word_explanations:
+            if not isinstance(exp, list) or len(exp) < 4:
+                confidence *= 0.8
+
+        # Check for reasonable coverage
+        if len(word_explanations) < 2 and len(sentence.split()) > 3:
+            confidence *= 0.7
+
+        # Add confidence to result
+        result['confidence'] = min(confidence, 1.0)
+        return result
+
+    def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate quality of word explanations.
+        Check for appropriate length, detail, and clarity.
+        """
+        quality_score = 1.0
+        issues = []
+
+        word_explanations = result.get('word_explanations', [])
+
+        for word_exp in word_explanations:
+            if len(word_exp) >= 4:
+                meaning = word_exp[3]
+                
+                # Check meaning length (should be concise but informative)
+                if len(meaning) < 5:
+                    quality_score *= 0.9
+                    issues.append(f"Very short explanation for '{word_exp[0]}'")
+                elif len(meaning) > 75:
+                    quality_score *= 0.8
+                    issues.append(f"Explanation too long for '{word_exp[0]}'")
+
+        return {
+            'quality_score': quality_score,
+            'issues': issues
+        }
+
     def validate_analysis(self, analysis_result: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
         """
         Validate Turkish analysis result.

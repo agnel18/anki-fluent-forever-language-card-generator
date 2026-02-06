@@ -66,7 +66,9 @@ class AnalyzerRegistry:
             'hindi': 'hi',
             'spanish': 'es',
             'chinese_traditional': 'zh-tw',
-            'german': 'de'
+            'german': 'de',
+            'turkish': 'tr',
+            'zh': 'zh'  # Chinese Simplified
         }
 
         # Look for language subdirectories

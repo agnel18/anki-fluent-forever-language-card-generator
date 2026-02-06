@@ -2,6 +2,7 @@
 
 import streamlit as st
 import logging
+import pandas as pd
 from constants import CURATED_TOPICS
 
 logger = logging.getLogger(__name__)
@@ -699,48 +700,34 @@ def render_sentence_settings_page():
 
         # Voice Cost Comparison Table - Full Width
 
-
         # Voice data for comparison table
         voice_comparison_data = {
-            "Voice Type": ["Standard", "Chirp3", "Chirp3 HD", "Wavenet", "Neural2"],
-            "Cost per Character": ["$0.000016", "$0.000004", "$0.00002", "$0.000032", "$0.000024"],
-            "Quality Level": ["Good", "Good", "Higher", "High", "Very High"],
-            "Best For": ["Default choice, cost-effective", "Budget-conscious users", "Premium audio, professional", "Natural speech, accessibility", "Most natural, immersive learning"],
+            "Voice Type": ["🔹 Standard", "🔸 Chirp3", "🔸 Chirp3 HD", "🔸 Wavenet", "🔸 Neural2"],
+            "Cost/Char": ["$0.000016", "$0.000004", "$0.00002", "$0.000032", "$0.000024"],
+            "Quality": ["⭐ Good", "⭐ Good", "⭐ Higher", "⭐ High", "⭐ Very High"],
+            "Best For": ["🎯 Default choice, cost-effective", "🎯 Budget-conscious users", "🎯 Premium audio, professional", "🎯 Natural speech, accessibility", "🎯 Most natural, immersive learning"],
             "Recommendation": ["✅ DEFAULT FOR ALL LANGUAGES", "Good alternative - lowest cost", "Optional - 25% quality improvement", "Premium option - 2x cost", "Luxury option - highest quality"]
         }
 
         # Always show comparison table
         st.markdown("**Voice Comparison Table:**")
 
-        # Create the comparison table
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.markdown("**Voice Type**")
-            for voice in voice_comparison_data["Voice Type"]:
-                if voice == "Standard":
-                    st.markdown(f"🔹 **{voice}**")
-                else:
-                    st.markdown(f"🔸 {voice}")
+        # Create DataFrame for scrollable table
+        df = pd.DataFrame(voice_comparison_data)
 
-        with col2:
-            st.markdown("**Cost/Char**")
-            for cost in voice_comparison_data["Cost per Character"]:
-                st.markdown(f"`{cost}`")
-
-        with col3:
-            st.markdown("**Quality**")
-            for quality in voice_comparison_data["Quality Level"]:
-                st.markdown(f"⭐ {quality}")
-
-        with col4:
-            st.markdown("**Best For**")
-            for use_case in voice_comparison_data["Best For"]:
-                st.markdown(f"🎯 {use_case}")
-
-        with col5:
-            st.markdown("**Recommendation**")
-            for rec in voice_comparison_data["Recommendation"]:
-                st.markdown(rec)
+        # Display as scrollable table
+        st.dataframe(
+            df,
+            width='stretch',
+            hide_index=True,
+            column_config={
+                "Voice Type": st.column_config.TextColumn("Voice Type", width="medium"),
+                "Cost/Char": st.column_config.TextColumn("Cost/Char", width="small"),
+                "Quality": st.column_config.TextColumn("Quality", width="small"),
+                "Best For": st.column_config.TextColumn("Best For", width="large"),
+                "Recommendation": st.column_config.TextColumn("Recommendation", width="large")
+            }
+        )
 
     with st.container():
         st.markdown("---")
