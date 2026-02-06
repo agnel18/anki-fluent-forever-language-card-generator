@@ -1799,6 +1799,394 @@ class TestSentenceGenerationComparison:
                 assert section in prompt, \
                     f"{lang_code} prompt missing required section: {section}"
 
+### Phase 4.8: Language Registry Integration (30 minutes - 1 hour)
+
+**CRITICAL:** The analyzer is not discoverable by the application until it's registered in the language registry system. This phase makes your implementation available to the application.
+
+**Why This Matters:** Without proper registration, the application will fall back to generic analysis even though your language-specific analyzer exists. The Turkish implementation discovered this issue in production - the analyzer was built correctly but not registered, causing grammar analysis to fail with "No analyzer available for language."
+
+#### 4.8.1 Language Registry Integration
+
+**File:** `streamlit_app/language_registry.py`
+
+Add your language to the central language registry. This is the source of truth for language metadata and ISO code mapping:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class LanguageConfig:
+    """Configuration for a language"""
+    iso_code: str                    # ISO 639-3 code (e.g., 'tr', 'ar', 'zh')
+    epitran_code: str                # Epitran transliteration code
+    phonemizer_code: str             # Festival/phonemizer language code
+    family: str                       # Language family
+    script_type: str                 # Writing system
+    complexity: str                  # 'easy', 'intermediate', 'hard'
+
+def get_language_registry():
+    """Initialize and return language registry"""
+    registry = {}
+
+    # ... existing languages ...
+
+    # ADD YOUR LANGUAGE HERE:
+    registry['Turkish'] = LanguageConfig(
+        iso_code='tr',                          # Critical: Turkish ISO code
+        epitran_code='tur-Latn',                # Epitran transliteration code
+        phonemizer_code='tr',                   # Festival/phonemizer code
+        family='Altaic',                        # Language family
+        script_type='Latin',                    # Writing system
+        complexity='intermediate'               # Learning complexity
+    )
+
+    return registry
+```
+
+**Critical Details:**
+- **`iso_code`**: MUST match the analyzer filename and folder name (e.g., 'tr' for `tr_analyzer.py`)
+- **`epitran_code`**: Required for IPA transliteration (https://epitran.readthedocs.io/)
+- **`phonemizer_code`**: Required for pronunciation (https://github.com/bootphon/phonemizer)
+- **`script_type`**: Used for sentence processing ('Latin', 'Arabic', 'Devanagari', 'Han', etc.)
+
+#### 4.8.2 Analyzer Registry Folder Mapping
+
+**File:** `streamlit_app/language_analyzers/analyzer_registry.py`
+
+Add your language code to the folder-to-code mapping. This enables auto-discovery of your analyzer:
+
+```python
+def get_analyzer(language_code: str) -> Optional[BaseGrammarAnalyzer]:
+    """Get analyzer for specified language code"""
+    
+    # Folder name to language code mapping
+    folder_to_code = {
+        'arabic': 'ar',
+        'chinese_traditional': 'zh-tw',
+        'german': 'de',
+        'hindi': 'hi',
+        'spanish': 'es',
+        'zh': 'zh',
+        'turkish': 'tr',              # ADD YOUR LANGUAGE HERE
+    }
+    
+    # Rest of implementation...
+```
+
+**Critical Details:**
+- **folder name**: Must match the folder in `languages/` directory (e.g., `languages/turkish/`)
+- **language_code**: Must match the ISO code in language_registry.py (e.g., 'tr')
+
+#### 4.8.3 Required Validator Interface Methods
+
+**File:** `languages/{language}/{language_code}_validator.py`
+
+The validator MUST implement these two methods for the analyzer to function correctly:
+
+```python
+class {Language}Validator(BaseDomainValidator):
+    """Validator for {Language} grammar analysis"""
+
+    def validate_result(self, result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        """
+        Validate and score grammar analysis result
+        
+        REQUIRED: This method is called by the analyzer to validate results
+        
+        Args:
+            result: Grammar analysis result from response parser
+            sentence: Original sentence being analyzed
+            
+        Returns:
+            Validated result dict with:
+            - confidence_score (0.0-1.0): Accuracy confidence
+            - is_fallback (bool): Whether using fallback analysis
+            - word_explanations (list): List of word explanation objects
+            
+        Example:
+            {
+                'confidence_score': 0.85,
+                'is_fallback': False,
+                'word_explanations': [
+                    {'word': 'the', 'explanation': '...', 'role': 'article'},
+                    ...
+                ]
+            }
+        """
+        # 1. Check if result is from fallback analysis
+        is_fallback = result.get('is_fallback', False)
+        
+        # 2. Validate word_explanations format
+        word_explanations = result.get('word_explanations', [])
+        if not isinstance(word_explanations, list):
+            word_explanations = []
+        
+        # 3. Calculate confidence score
+        if is_fallback:
+            confidence_score = 0.1  # Low confidence for fallback
+        elif not word_explanations:
+            confidence_score = 0.2  # Low confidence if no explanations
+        else:
+            # Score based on explanation quality
+            valid_explanations = [
+                w for w in word_explanations 
+                if isinstance(w, dict) and 'explanation' in w
+            ]
+            confidence_score = min(0.95, len(valid_explanations) / len(word_explanations))
+        
+        # 4. Return validated result
+        result['confidence_score'] = confidence_score
+        result['is_fallback'] = is_fallback
+        result['word_explanations'] = word_explanations
+        
+        return result
+
+    def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate explanation quality metrics
+        
+        REQUIRED: This method ensures explanation quality meets standards
+        
+        Args:
+            result: Grammar analysis result after validate_result
+            
+        Returns:
+            Enhanced result dict with quality metrics:
+            - explanation_quality (str): 'poor', 'fair', 'good', 'excellent'
+            - quality_score (0.0-1.0): Quality metric
+            - improvement_areas (list): List of areas to improve
+            
+        Example:
+            {
+                ...
+                'explanation_quality': 'good',
+                'quality_score': 0.82,
+                'improvement_areas': []
+            }
+        """
+        word_explanations = result.get('word_explanations', [])
+        
+        if not word_explanations:
+            result['explanation_quality'] = 'poor'
+            result['quality_score'] = 0.0
+            result['improvement_areas'] = ['No explanations found']
+            return result
+        
+        # Calculate quality metrics
+        explanations_with_detail = sum(
+            1 for w in word_explanations 
+            if isinstance(w, dict) and len(w.get('explanation', '')) > 50
+        )
+        
+        explanations_with_role = sum(
+            1 for w in word_explanations 
+            if isinstance(w, dict) and 'role' in w
+        )
+        
+        quality_ratio = (explanations_with_detail + explanations_with_role) / (2 * len(word_explanations))
+        
+        # Determine quality level
+        if quality_ratio >= 0.9:
+            quality_level = 'excellent'
+        elif quality_ratio >= 0.75:
+            quality_level = 'good'
+        elif quality_ratio >= 0.5:
+            quality_level = 'fair'
+        else:
+            quality_level = 'poor'
+        
+        result['explanation_quality'] = quality_level
+        result['quality_score'] = quality_ratio
+        result['improvement_areas'] = []
+        
+        if explanations_with_detail < len(word_explanations):
+            result['improvement_areas'].append('Add more detailed explanations')
+        
+        if explanations_with_role < len(word_explanations):
+            result['improvement_areas'].append('Add grammatical roles')
+        
+        return result
+```
+
+#### 4.8.4 Verification Commands
+
+Run these commands to verify language registry integration before testing:
+
+```bash
+# 1. Verify language appears in registry
+python -c "from streamlit_app.language_registry import get_language_registry; r = get_language_registry(); print('Turkish ISO code:', r.get_iso_code('Turkish'))"
+
+# Expected output: Turkish ISO code: tr
+
+# 2. Verify analyzer is discoverable
+python -c "from streamlit_app.language_analyzers.analyzer_registry import get_analyzer; analyzer = get_analyzer('tr'); print('Turkish analyzer:', analyzer)"
+
+# Expected output: Turkish analyzer: <languages.turkish.tr_analyzer.TrAnalyzer object at ...>
+
+# 3. Verify analyzer methods exist
+python -c "
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+analyzer = get_analyzer('tr')
+print('Has analyze_grammar:', hasattr(analyzer, 'analyze_grammar'))
+print('Has get_sentence_generation_prompt:', hasattr(analyzer, 'get_sentence_generation_prompt'))
+print('Has config:', hasattr(analyzer, 'config'))
+"
+
+# Expected output:
+# Has analyze_grammar: True
+# Has get_sentence_generation_prompt: True
+# Has config: True
+
+# 4. Verify analyzer can be instantiated and used
+python -c "
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+analyzer = get_analyzer('tr')
+result = analyzer.analyze_grammar('Bunu yapmalısın.', 'Bunu yapmalısın.')
+print('Analysis type:', type(result).__name__)
+print('Has word_explanations:', hasattr(result, 'word_explanations'))
+print('Has html_output:', hasattr(result, 'html_output'))
+"
+
+# Expected output:
+# Analysis type: GrammarAnalysis
+# Has word_explanations: True
+# Has html_output: True
+```
+
+#### 4.8.5 Language Registry Integration Checklist
+
+**Use this checklist to ensure your language is properly registered:**
+
+```
+Language Registration Checklist for {Language}:
+
+☐ LANGUAGE REGISTRY (streamlit_app/language_registry.py)
+  ☐ Added language to get_language_registry() function
+  ☐ Set correct iso_code (matches analyzer filename)
+  ☐ Set correct epitran_code (for IPA transliteration)
+  ☐ Set correct phonemizer_code (for pronunciation)
+  ☐ Set language family
+  ☐ Set script_type correctly
+  ☐ Set complexity level
+  ☐ Verified: registry.get_iso_code('Language') returns correct code
+
+☐ ANALYZER REGISTRY (streamlit_app/language_analyzers/analyzer_registry.py)
+  ☐ Added folder name to folder_to_code mapping
+  ☐ Folder name matches languages/ subdirectory
+  ☐ Language code matches iso_code in language_registry
+  ☐ Verified: get_analyzer('{language_code}') returns analyzer instance
+
+☐ VALIDATOR METHODS (languages/{language}/{language_code}_validator.py)
+  ☐ Implemented validate_result() method
+  ☐ Implemented validate_explanation_quality() method
+  ☐ Both methods handle edge cases (empty input, fallback analysis)
+  ☐ validate_result() returns dict with confidence_score, is_fallback, word_explanations
+  ☐ validate_explanation_quality() returns dict with quality metrics
+
+☐ ANALYZER CLASS (languages/{language}/{language_code}_analyzer.py)
+  ☐ Inherits from BaseGrammarAnalyzer
+  ☐ Calls self.validator.validate_result() in analyze_grammar()
+  ☐ Calls self.validator.validate_explanation_quality() in analyze_grammar()
+  ☐ Returns GrammarAnalysis object with valid structure
+
+☐ FILESYSTEM STRUCTURE
+  ☐ Folder: languages/{language}/
+  ☐ File: languages/{language}/{language_code}_config.py
+  ☐ File: languages/{language}/{language_code}_prompt_builder.py
+  ☐ File: languages/{language}/{language_code}_response_parser.py
+  ☐ File: languages/{language}/{language_code}_validator.py
+  ☐ File: languages/{language}/{language_code}_analyzer.py
+  ☐ File: languages/{language}/prompt_sentences_{language_code}.txt
+  ☐ File: languages/{language}/tests/
+
+☐ VERIFICATION
+  ☐ Run: registry.get_iso_code('Language') returns correct code
+  ☐ Run: get_analyzer('{language_code}') returns TrAnalyzer instance
+  ☐ Run: analyzer.analyze_grammar() returns GrammarAnalysis with word_explanations
+  ☐ Run: Full test suite passes (Phase 5)
+  ☐ Run: Compare with gold standard (Phase 5.3)
+  ☐ Test in Streamlit app: Grammar analysis uses language-specific analyzer
+```
+
+#### 4.8.6 Troubleshooting - Analyzer Not Found
+
+If you see "No analyzer available for language" error:
+
+**Step 1: Verify Language Registry**
+```bash
+python << 'EOF'
+from streamlit_app.language_registry import get_language_registry
+registry = get_language_registry()
+
+language_name = 'Turkish'  # Change to your language
+iso_code = registry.get_iso_code(language_name)
+print(f"Step 1 - Language Registry Check:")
+print(f"  Language '{language_name}' registered: {iso_code is not None}")
+print(f"  ISO code: {iso_code}")
+
+if iso_code is None:
+    print("  FIX: Add language to streamlit_app/language_registry.py")
+EOF
+```
+
+**Step 2: Verify Analyzer Registry**
+```bash
+python << 'EOF'
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+language_code = 'tr'  # Change to your language code
+analyzer = get_analyzer(language_code)
+print(f"Step 2 - Analyzer Registry Check:")
+print(f"  Analyzer found: {analyzer is not None}")
+print(f"  Analyzer type: {type(analyzer).__name__}")
+
+if analyzer is None:
+    print("  FIX: Check analyzer_registry.py folder_to_code mapping")
+    print("  FIX: Verify languages/{language}/_{language_code}_analyzer.py exists")
+EOF
+```
+
+**Step 3: Verify Analyzer Class**
+```bash
+python << 'EOF'
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+analyzer = get_analyzer('tr')  # Change to your language code
+if analyzer:
+    print(f"Step 3 - Analyzer Class Check:")
+    print(f"  Config exists: {hasattr(analyzer, 'config')}")
+    print(f"  analyze_grammar exists: {hasattr(analyzer, 'analyze_grammar')}")
+    print(f"  Validator exists: {hasattr(analyzer, 'validator')}")
+    
+    if hasattr(analyzer, 'validator'):
+        validator = analyzer.validator
+        print(f"  Validator.validate_result exists: {hasattr(validator, 'validate_result')}")
+        print(f"  Validator.validate_explanation_quality exists: {hasattr(validator, 'validate_explanation_quality')}")
+else:
+    print("Analyzer not found - check previous steps")
+EOF
+```
+
+**Step 4: Verify Grammar Analysis**
+```bash
+python << 'EOF'
+from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
+
+analyzer = get_analyzer('tr')  # Change to your language code
+if analyzer:
+    try:
+        result = analyzer.analyze_grammar('Test sentence', 'Test sentence')
+        print(f"Step 4 - Grammar Analysis Check:")
+        print(f"  Analysis result type: {type(result).__name__}")
+        print(f"  Has word_explanations: {hasattr(result, 'word_explanations')}")
+        print(f"  Has html_output: {hasattr(result, 'html_output')}")
+        print(f"  Classification: {'Success!' if hasattr(result, 'html_output') else 'Failed'}")
+    except Exception as e:
+        print(f"  Error during analysis: {e}")
+        print("  FIX: Check analyzer.analyze_grammar() implementation")
+EOF
+```
+
 ### Phase 5: Comprehensive Testing Implementation (1-2 weeks)
 
 **CRITICAL:** This phase prevents iterative failures by using automated validation and testing frameworks.
@@ -2282,7 +2670,9 @@ def test_analyzer_registration():
 - **Phase 1:** Research Validation - 1-2 days
 - **Phase 2:** Directory Setup - 2-4 hours
 - **Phase 3:** Domain Components - 1-2 weeks
-- **Phase 4:** Main Analyzer - 4-6 hours
+- **Phase 4:** Main Analyzer & Integration - 5-7 hours
+  - 4.1-4.7: Analyzer Implementation (4-6 hours)
+  - **4.8: Language Registry Integration (30 mins - 1 hour)** ⚠️ **CRITICAL FOR DISCOVERY**
 - **Phase 5:** Testing - 1-2 weeks
 - **Phase 6:** Integration - 2-4 hours
 
