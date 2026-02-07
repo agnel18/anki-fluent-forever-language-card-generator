@@ -106,6 +106,11 @@ class TrConfig:
         """
         # Set language name for templates
         self.language_name = "Turkish"
+        self.complexity_levels = [
+            ComplexityLevel.BEGINNER.value,
+            ComplexityLevel.INTERMEDIATE.value,
+            ComplexityLevel.ADVANCED.value
+        ]
         
         config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
         self.grammatical_roles = self._load_yaml(config_dir / "tr_grammatical_roles.yaml")
@@ -134,6 +139,10 @@ class TrConfig:
             'speaking_rate': 1.0,
             'pitch': 0.0
         }
+
+    def get_categories_for_complexity(self, complexity: str) -> List[str]:
+        """Return grammatical categories for the requested complexity."""
+        return list(self.get_color_scheme(complexity).keys())
 
     def _load_yaml(self, path: Path) -> Dict[str, Any]:
         try:

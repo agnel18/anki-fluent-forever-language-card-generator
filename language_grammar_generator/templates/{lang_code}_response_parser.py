@@ -69,7 +69,7 @@ class LanguageResponseParser:
         self.json_pattern = re.compile(r'\{.*\}', re.DOTALL)
         self.array_pattern = re.compile(r'\[.*\]', re.DOTALL)
 
-    def parse_response(self, response_text: str, sentence: str, complexity: str) -> Dict[str, Any]:
+    def parse_response(self, response_text: str, complexity: str, sentence: str, target_word: str = None) -> Dict[str, Any]:
         """
         Parse AI response into standardized format.
 
@@ -99,6 +99,63 @@ class LanguageResponseParser:
         except Exception as e:
             # Ultimate fallback: Basic word analysis
             return self._emergency_fallback(sentence, complexity, str(e))
+
+    def parse_batch_response(self, response_text: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response into per-sentence standardized format with fallbacks.
+
+        Args:
+            response_text: Raw AI batch response text
+            sentences: Original sentences being analyzed
+            complexity: Analysis complexity level
+            target_word: Optional target word for analysis
+
+        Returns:
+            List of standardized analysis results
+        """
+        try:
+            parsed_data = self._extract_json(response_text)
+
+            if not parsed_data:
+                raise ValueError("No JSON found in batch response")
+
+            if isinstance(parsed_data, list):
+                batch_results = parsed_data
+            else:
+                batch_results = parsed_data.get('batch_results', [])
+
+            if not batch_results:
+                raise ValueError("No batch_results found in response")
+
+            results = []
+            for i, item in enumerate(batch_results):
+                if i < len(sentences):
+                    try:
+                        results.append(self._parse_batch_item(item, sentences[i], complexity, target_word))
+                    except Exception:
+                        results.append(self._emergency_fallback(sentences[i], complexity, "Batch item parse error"))
+                else:
+                    results.append(self._emergency_fallback(sentences[i], complexity, "Missing batch item"))
+
+            while len(results) < len(sentences):
+                results.append(self._emergency_fallback(sentences[len(results)], complexity, "Missing batch item"))
+
+            return results
+        except Exception as e:
+            return [self._emergency_fallback(sentence, complexity, str(e)) for sentence in sentences]
+
+    def _parse_batch_item(self, item: Dict[str, Any], sentence: str, complexity: str, target_word: str = None) -> Dict[str, Any]:
+        """Parse a single batch item into standardized format."""
+        if 'batch_results' in item and item['batch_results']:
+            item = item['batch_results'][0]
+
+        if 'word_explanations' in item:
+            return self._process_word_explanations_format(item, sentence, complexity)
+
+        if 'words' in item:
+            return self._process_words_format(item, sentence, complexity)
+
+        return self._emergency_fallback(sentence, complexity, "Unknown batch item format")
 
     def _extract_json(self, response_text: str) -> Optional[Dict[str, Any]]:
         """Extract and parse JSON from response text"""

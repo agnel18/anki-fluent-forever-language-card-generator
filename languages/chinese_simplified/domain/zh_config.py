@@ -1,4 +1,4 @@
-# languages/zh/domain/zh_config.py
+﻿# languages/chinese_simplified/domain/zh_config.py
 """
 Chinese Simplified Configuration - Domain Component
 
@@ -81,7 +81,7 @@ class ZhConfig:
     - Modularity: Separate concerns (roles, colors, patterns)
 
     CONFIGURATION PHILOSOPHY:
-    - Complexity progression: Beginner → Intermediate → Advanced
+    - Complexity progression: Beginner â†’ Intermediate â†’ Advanced
     - Inclusive design: Support different learning levels
     - Maintainability: Easy to modify without code changes
     """
@@ -229,7 +229,7 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
                 "adverb": "#44FFFF",        # Cyan - manner
                 "pronoun": "#FF4444",       # Red - replacements
                 "particle": "#AA44FF",      # Purple - grammatical particles
-                "aspect_marker": "#8A2BE2", # Purple - aspect particles (了, 着, 过)
+                "aspect_marker": "#8A2BE2", # Purple - aspect particles (äº†, ç€, è¿‡)
                 "numeral": "#FFD700",       # Gold - numbers
                 "classifier": "#FF8C00",    # Dark orange - measure words
                 "preposition": "#4444FF",   # Blue - relationships
@@ -265,9 +265,9 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
                 "demonstrative_pronoun": "#FF4444",
                 "interrogative_pronoun": "#FF4444",
                 "particle": "#AA44FF",
-                "aspect_marker": "#8A2BE2", # Purple - 了, 着, 过
-                "modal_particle": "#DA70D6", # Plum - 吗, 呢, 吧, 啊
-                "structural_particle": "#9013FE", # Violet - 的, 地, 得
+                "aspect_marker": "#8A2BE2", # Purple - äº†, ç€, è¿‡
+                "modal_particle": "#DA70D6", # Plum - å—, å‘¢, å§, å•Š
+                "structural_particle": "#9013FE", # Violet - çš„, åœ°, å¾—
                 "numeral": "#FFD700",
                 "classifier": "#FF8C00",
                 "preposition": "#4444FF",

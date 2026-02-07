@@ -1,35 +1,35 @@
-# zh_analyzer_documentation.md - Chinese Simplified Analyzer Technical Documentation
+﻿# zh_analyzer_documentation.md - Chinese Simplified Analyzer Technical Documentation
 # Version: 2026-01-19 (Following Hindi Gold Standard Template)
 
 ## Overview
-The Chinese Simplified Grammar Analyzer (`ZhAnalyzer`) implements comprehensive grammar analysis for Chinese Simplified (简体中文) following domain-driven design principles. It serves as the gold standard implementation for analytic languages and provides detailed grammatical breakdown for language learning applications.
+The Chinese Simplified Grammar Analyzer (`ZhAnalyzer`) implements comprehensive grammar analysis for Chinese Simplified (ç®€ä½“ä¸­æ–‡) following domain-driven design principles. It serves as the gold standard implementation for analytic languages and provides detailed grammatical breakdown for language learning applications.
 
 ## Architecture
 
 ### Clean Architecture Implementation
 ```
-languages/zh/
-├── zh_analyzer.py              # Main Facade (Clean Architecture entry point)
-├── zh_grammar_concepts.md      # Linguistic research documentation
-├── zh_analyzer_documentation.md # Technical implementation details
-├── domain/                     # Domain layer (business logic)
-│   ├── zh_config.py           # Configuration management
-│   ├── zh_prompt_builder.py   # AI prompt generation
-│   ├── zh_response_parser.py  # Response parsing and fallbacks
-│   ├── zh_validator.py        # Quality validation
-│   ├── zh_fallbacks.py        # Rule-based error recovery
-│   └── zh_patterns.py         # Linguistic pattern recognition
-├── infrastructure/            # Infrastructure layer (external concerns)
-│   └── data/                  # Configuration files
-│       ├── zh_grammatical_roles.yaml
-│       ├── zh_common_classifiers.yaml
-│       ├── zh_aspect_markers.yaml
-│       ├── zh_structural_particles.yaml
-│       ├── zh_modal_particles.yaml
-│       ├── zh_word_meanings.json
-│       └── zh_patterns.yaml
-└── tests/                     # Test layer
-    └── test_zh_analyzer.py    # Comprehensive test suite
+languages/chinese_simplified/
+â”œâ”€â”€ zh_analyzer.py              # Main Facade (Clean Architecture entry point)
+â”œâ”€â”€ zh_grammar_concepts.md      # Linguistic research documentation
+â”œâ”€â”€ zh_analyzer_documentation.md # Technical implementation details
+â”œâ”€â”€ domain/                     # Domain layer (business logic)
+â”‚   â”œâ”€â”€ zh_config.py           # Configuration management
+â”‚   â”œâ”€â”€ zh_prompt_builder.py   # AI prompt generation
+â”‚   â”œâ”€â”€ zh_response_parser.py  # Response parsing and fallbacks
+â”‚   â”œâ”€â”€ zh_validator.py        # Quality validation
+â”‚   â”œâ”€â”€ zh_fallbacks.py        # Rule-based error recovery
+â”‚   â””â”€â”€ zh_patterns.py         # Linguistic pattern recognition
+â”œâ”€â”€ infrastructure/            # Infrastructure layer (external concerns)
+â”‚   â””â”€â”€ data/                  # Configuration files
+â”‚       â”œâ”€â”€ zh_grammatical_roles.yaml
+â”‚       â”œâ”€â”€ zh_common_classifiers.yaml
+â”‚       â”œâ”€â”€ zh_aspect_markers.yaml
+â”‚       â”œâ”€â”€ zh_structural_particles.yaml
+â”‚       â”œâ”€â”€ zh_modal_particles.yaml
+â”‚       â”œâ”€â”€ zh_word_meanings.json
+â”‚       â””â”€â”€ zh_patterns.yaml
+â””â”€â”€ tests/                     # Test layer
+    â””â”€â”€ test_zh_analyzer.py    # Comprehensive test suite
 ```
 
 ### Key Design Patterns
@@ -126,10 +126,10 @@ languages/zh/
 **Location**: `domain/zh_patterns.py`
 **Purpose**: Regex-based linguistic pattern recognition
 **Pattern Categories**:
-- Aspect markers (了, 着, 过)
-- Modal particles (吗, 呢, 吧)
-- Structural particles (的, 地, 得)
-- Classifiers (个, 本, 杯)
+- Aspect markers (äº†, ç€, è¿‡)
+- Modal particles (å—, å‘¢, å§)
+- Structural particles (çš„, åœ°, å¾—)
+- Classifiers (ä¸ª, æœ¬, æ¯)
 - Han character validation
 
 ## Chinese-Specific Features
@@ -142,28 +142,28 @@ Unlike Indo-European languages, Chinese lacks inflectional morphology:
 
 ### Aspect System
 Chinese uses particles for aspect rather than tense:
-- **了 (le)**: Perfective aspect (completed action)
-- **着 (zhe)**: Progressive/durative aspect (ongoing action)
-- **过 (guo)**: Experiential aspect (experienced action)
+- **äº† (le)**: Perfective aspect (completed action)
+- **ç€ (zhe)**: Progressive/durative aspect (ongoing action)
+- **è¿‡ (guo)**: Experiential aspect (experienced action)
 
 ### Classifier System
 Obligatory measure words categorize nouns:
-- **个 (gè)**: General classifier
-- **本 (běn)**: For books, bound objects
-- **杯 (bēi)**: For containers
-- **只 (zhī)**: For animals, one of a pair
+- **ä¸ª (gÃ¨)**: General classifier
+- **æœ¬ (bÄ›n)**: For books, bound objects
+- **æ¯ (bÄ“i)**: For containers
+- **åª (zhÄ«)**: For animals, one of a pair
 
 ### Particle System
 Complex particle usage for grammatical functions:
-- **Structural Particles**: 的 (possessive), 地 (adverbial), 得 (complement)
-- **Modal Particles**: 吗 (question), 呢 (continuation), 吧 (suggestion)
-- **Aspect Particles**: 了, 着, 过
+- **Structural Particles**: çš„ (possessive), åœ° (adverbial), å¾— (complement)
+- **Modal Particles**: å— (question), å‘¢ (continuation), å§ (suggestion)
+- **Aspect Particles**: äº†, ç€, è¿‡
 
 ### Topic-Comment Structure
 Primary sentence pattern differs from SVO:
 - **Topic**: What the sentence is about
 - **Comment**: What is said about the topic
-- Example: 这本书很有意思 (This book is very interesting)
+- Example: è¿™æœ¬ä¹¦å¾ˆæœ‰æ„æ€ (This book is very interesting)
 
 ## Integration with Main Application
 
@@ -208,7 +208,7 @@ The analyzer integrates with the 6-step language learning pipeline:
 
 ### Quality Gates
 - **Linguistic Accuracy**: Respects Chinese analytic structure
-- **Aspect Correctness**: Proper 了/着/过 validation
+- **Aspect Correctness**: Proper äº†/ç€/è¿‡ validation
 - **Classifier Appropriateness**: Correct measure word usage
 - **Word Order**: LTR explanations matching sentence order
 - **Particle Recognition**: Accurate particle classification

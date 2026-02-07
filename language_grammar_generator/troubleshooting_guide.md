@@ -1,13 +1,87 @@
-# Troubleshooting Guide
+﻿# Troubleshooting Guide
 ## Solutions for Common Language Analyzer Issues
 
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)  
+**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
 **Critical:** Compare with gold standards - no artificial confidence boosting  
 **Prerequisites:** Study gold standards before troubleshooting  
 **Purpose:** Systematic debugging following proven patterns  
 **Time Estimate:** Varies by issue complexity
 
-## 📚 LESSONS LEARNED FROM RECENT FIXES
+## ðŸ“š LESSONS LEARNED FROM RECENT FIXES
+
+### Critical Issue: Analyzer Not Found (Registry Integration Missing)
+**Symptoms:**
+- "No analyzer available for language: tu"
+- "No analyzer available for Turkish (tu), using generic prompt"
+- Language-specific analyzer exists but app falls back to generic analysis
+
+**Root Cause:**
+- Language not registered in `streamlit_app/language_registry.py`
+- Missing folder-to-code mapping in `streamlit_app/language_analyzers/analyzer_registry.py`
+- Legacy language name mapping missing (falls back to first two letters)
+
+**Solution:**
+```python
+# âœ… FIX 1: Register language metadata
+# File: streamlit_app/language_registry.py
+registry['Turkish'] = LanguageConfig(
+    iso_code='tr',
+    epitran_code='tur-Latn',
+    phonemizer_code='tr',
+    family='Altaic',
+    script_type='Latin',
+    complexity='intermediate'
+)
+
+# âœ… FIX 2: Add folder mapping for analyzer discovery
+# File: streamlit_app/language_analyzers/analyzer_registry.py
+folder_to_code = {
+    # ... existing mappings ...
+    'turkish': 'tr'
+}
+
+# âœ… FIX 3: Update legacy language name mapping
+# File: streamlit_app/shared_utils.py
+LANGUAGE_NAME_TO_CODE = {
+    # ... existing mappings ...
+    'turkish': 'tr',
+    'Turkish': 'tr'
+}
+```
+
+**Verification:**
+```bash
+python -c "from streamlit_app.language_registry import get_language_registry; r = get_language_registry(); print(r.get_iso_code('Turkish'))"
+python -c "from streamlit_app.language_analyzers.analyzer_registry import get_analyzer; print(get_analyzer('tr'))"
+```
+
+### Critical Issue: Batch Analysis Fallbacks (Missing parse_batch_response)
+**Symptoms:**
+- "Batch analysis failed: 'ResponseParser' object has no attribute 'parse_batch_response'"
+- All batch sentences fall back to generic analysis
+
+**Root Cause:**
+- Response parser implements `parse_response` but not `parse_batch_response`
+
+**Solution:**
+```python
+# âœ… FIX: Implement parse_batch_response
+def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None):
+    json_data = self._extract_json(ai_response)
+    batch_results = json_data.get('batch_results', [])
+
+    results = []
+    for i, item in enumerate(batch_results):
+        if i < len(sentences):
+            results.append(self._parse_batch_item(item, sentences[i], complexity, target_word))
+        else:
+            results.append(self.fallbacks.create_fallback(sentences[i], complexity))
+
+    while len(results) < len(sentences):
+        results.append(self.fallbacks.create_fallback(sentences[len(results)], complexity))
+
+    return results
+```
 
 ### Critical Issues Fixed in Chinese Traditional Analyzer
 
@@ -23,10 +97,10 @@
 
 **Solution:**
 ```python
-# ❌ BROKEN - Nested f-strings
+# âŒ BROKEN - Nested f-strings
 f"Sentence with {', '.join([f'{count} {role}{"s" if count > 1 else ""}' for role, count in role_counts.items()])}"
 
-# ✅ FIXED - String concatenation
+# âœ… FIXED - String concatenation
 f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for role, count in role_counts.items()])}"
 ```
 
@@ -42,7 +116,7 @@ f"Sentence with {', '.join([f'{count} {role}' + ('s' if count > 1 else '') for r
 
 **Solution:**
 ```python
-# ✅ FIXED - Direct component usage
+# âœ… FIXED - Direct component usage
 def analyze_grammar(self, sentence, target_word, complexity, api_key):
     prompt = self.prompt_builder.build_single_sentence_prompt(sentence, target_word, complexity)
     ai_response = self._call_ai_model(prompt, api_key)
@@ -54,7 +128,7 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
 
 **Symptoms:**
 - All words of same grammatical role have identical meanings
-- "我 (pronoun): 我: I; me; 你: you; 這: this" for every pronoun
+- "æˆ‘ (pronoun): æˆ‘: I; me; ä½ : you; é€™: this" for every pronoun
 - Generic role-based explanations instead of word-specific
 
 **Root Cause:**
@@ -113,7 +187,7 @@ word_data['meaning'] = meaning  # Keep AI's detailed explanation as-is
 
 **Solution:**
 ```python
-# ✅ FALLBACK SUMMARY GENERATION
+# âœ… FALLBACK SUMMARY GENERATION
 def _transform_to_standard_format(self, data, complexity, target_word=None):
     # ... existing code ...
     
@@ -140,7 +214,7 @@ def _transform_to_standard_format(self, data, complexity, target_word=None):
 
 **Solution:**
 ```python
-# ✅ LANGUAGE CODE MAPPING
+# âœ… LANGUAGE CODE MAPPING
 tts_language_map = {
     "zh-TW": "cmn-CN",  # Chinese Traditional uses same voices as Simplified
     "zh-tw": "cmn-CN",
@@ -149,7 +223,7 @@ if language_code and language_code in tts_language_map:
     language_code = tts_language_map[language_code]
 ```
 
-#### Issue 6: Missing Base Class Inheritance ✅ RESOLVED
+#### Issue 6: Missing Base Class Inheritance âœ… RESOLVED
 **Symptoms:**
 - "Class ZhTwAnalyzer does not inherit from BaseGrammarAnalyzer"
 - "No analyzer available for language: zh-tw"
@@ -163,16 +237,16 @@ if language_code and language_code in tts_language_map:
 
 **Solution Applied:**
 ```python
-# ✅ FIXED - Add inheritance and implement abstract methods
+# âœ… FIXED - Add inheritance and implement abstract methods
 from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, LanguageConfig, GrammarAnalysis
 
-class ZhTwAnalyzer(BaseGrammarAnalyzer):  # ← Added inheritance
+class ZhTwAnalyzer(BaseGrammarAnalyzer):  # â† Added inheritance
     def __init__(self):
         # Create language config
         language_config = LanguageConfig(
             code="zh-tw",
             name="Chinese (Traditional)",
-            native_name="繁體中文",
+            native_name="ç¹é«”ä¸­æ–‡",
             family="Sino-Tibetan",
             script_type="logographic",
             complexity_rating="intermediate",
@@ -243,7 +317,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):  # ← Added inheritance
         return results
 ```
 
-**Resolution Status:** ✅ **FULLY RESOLVED AND ENHANCED**
+**Resolution Status:** âœ… **FULLY RESOLVED AND ENHANCED**
 - Analyzer now properly inherits from BaseGrammarAnalyzer
 - All abstract methods implemented with Chinese Traditional-specific logic
 - Registry successfully discovers zh-tw analyzer
@@ -265,12 +339,12 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):  # ← Added inheritance
 4. **Robust Fallbacks:** Always provide meaningful fallbacks when AI fails
 5. **Language Code Mapping:** Map incompatible codes to supported equivalents
 6. **Component Architecture:** Use modular components directly, not through undefined base methods
-7. **Base Class Inheritance:** Always inherit from BaseGrammarAnalyzer and implement all abstract methods ✅
-8. **Data Structure Conversion:** Convert between domain objects and expected API formats ✅
-9. **Attribute Name Matching:** Use correct attribute names when converting between domain objects (grammatical_role vs role, individual_meaning vs meaning) ✅
-10. **Complete Feature Parity:** Ensure new analyzers match gold standard feature sets, including AI integration, complexity handling, and fallback mechanisms ✅
+7. **Base Class Inheritance:** Always inherit from BaseGrammarAnalyzer and implement all abstract methods âœ…
+8. **Data Structure Conversion:** Convert between domain objects and expected API formats âœ…
+9. **Attribute Name Matching:** Use correct attribute names when converting between domain objects (grammatical_role vs role, individual_meaning vs meaning) âœ…
+10. **Complete Feature Parity:** Ensure new analyzers match gold standard feature sets, including AI integration, complexity handling, and fallback mechanisms âœ…
 
-## 📚 LESSONS LEARNED FROM CHINESE TRADITIONAL CONTENT GENERATION FIXES
+## ðŸ“š LESSONS LEARNED FROM CHINESE TRADITIONAL CONTENT GENERATION FIXES
 
 ### Issue: AI Response Truncation for Chinese Traditional
 
@@ -283,7 +357,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):  # ← Added inheritance
 **Root Cause:**
 - AI not recognizing "Chinese (Traditional)" language name properly
 - Response truncated after RESTRICTIONS section
-- Parsing fails → fallback sentences → fallback keywords → identical images
+- Parsing fails â†’ fallback sentences â†’ fallback keywords â†’ identical images
 
 **Solution - Language Name Mapping:**
 ```python
@@ -303,11 +377,11 @@ result = content_generator.generate_word_meaning_sentences_and_keywords(
 
 **Before vs After:**
 ```python
-# ❌ BEFORE - AI truncates response for "Chinese (Traditional)"
+# âŒ BEFORE - AI truncates response for "Chinese (Traditional)"
 Parsed: sentences=0, translations=0, pinyin=0, keywords=0
 Images: all identical (fallback keywords)
 
-# ✅ AFTER - AI recognizes "Traditional Chinese" 
+# âœ… AFTER - AI recognizes "Traditional Chinese" 
 Parsed: sentences=4, translations=4, pinyin=4, keywords=4
 Images: unique per sentence (proper keywords)
 ```
@@ -316,7 +390,7 @@ Images: unique per sentence (proper keywords)
 
 **Symptoms:**
 - All generated images are the same
-- Pixabay searches use identical queries: "不, language, learning"
+- Pixabay searches use identical queries: "ä¸, language, learning"
 - Sentence-specific keywords not generated
 
 **Root Cause:**
@@ -332,29 +406,29 @@ Images: unique per sentence (proper keywords)
 - Monitor AI response lengths for truncation detection
 - Implement language-specific AI prompt optimizations
 
-## 🔍 Systematic Debugging Approach - Gold Standard Method
+## ðŸ” Systematic Debugging Approach - Gold Standard Method
 
-## 🔍 Systematic Debugging Approach - Gold Standard Method
+## ðŸ” Systematic Debugging Approach - Gold Standard Method
 
 ### 1. Issue Classification Framework - Compare with Gold Standards
 ```
-ISSUE TYPE → COMPARE WITH GOLD STANDARDS → SOLUTION STRATEGY
+ISSUE TYPE â†’ COMPARE WITH GOLD STANDARDS â†’ SOLUTION STRATEGY
 
 1. Analysis Quality Issues
-   ↓
-   Compare with Hindi/Chinese Simplified → Match gold standard patterns → Fix deviations
+   â†“
+   Compare with Hindi/Chinese Simplified â†’ Match gold standard patterns â†’ Fix deviations
 
 2. Performance Problems
-   ↓
-   Benchmark against gold standards → Identify bottlenecks → Apply gold standard optimizations
+   â†“
+   Benchmark against gold standards â†’ Identify bottlenecks â†’ Apply gold standard optimizations
 
 3. System Reliability Issues
-   ↓
-   Check gold standard error handling → Implement matching patterns → Test thoroughly
+   â†“
+   Check gold standard error handling â†’ Implement matching patterns â†’ Test thoroughly
 
 4. Deployment & Infrastructure Issues
-   ↓
-   Verify gold standard deployment → Match configuration → Deploy consistently
+   â†“
+   Verify gold standard deployment â†’ Match configuration â†’ Deploy consistently
 ```
 
 ### 2. Diagnostic Checklist - Gold Standard Verification
@@ -365,7 +439,7 @@ ISSUE TYPE → COMPARE WITH GOLD STANDARDS → SOLUTION STRATEGY
 - [ ] **AI Integration:** Using allowed models (gemini-2.5-flash, gemini-3-flash-preview only)
 - [ ] **Component Isolation:** Each component has single responsibility like gold standards?
 
-## 🧪 Analysis Quality Issues - Compare with Gold Standards
+## ðŸ§ª Analysis Quality Issues - Compare with Gold Standards
 
 ### Issue 1: Inconsistent Quality vs Gold Standards
 
@@ -390,7 +464,7 @@ def compare_with_gold_standard(result, gold_standard_result):
 
 **Root Causes & Solutions:**
 
-#### ❌ Artificial Confidence Boosting (REMOVED from all implementations)
+#### âŒ Artificial Confidence Boosting (REMOVED from all implementations)
 ```python
 # WRONG - This pattern was removed from Chinese Traditional
 def bad_validate_result(self, result, sentence):
@@ -613,17 +687,17 @@ class LanguageAnalyzer(BaseGrammarAnalyzer):
 
 **Before vs After:**
 ```python
-# ❌ BEFORE - Basic grammatical roles only
+# âŒ BEFORE - Basic grammatical roles only
 "noun in zh-tw grammar"
 "verb in zh-tw grammar"
 
-# ✅ AFTER - Rich explanations with meanings
-"我 (I, me - first person singular pronoun)"
-"喜歡 (to like, to be fond of - verb expressing preference)"
-"吃 (to eat, to consume - verb of consumption)"
+# âœ… AFTER - Rich explanations with meanings
+"æˆ‘ (I, me - first person singular pronoun)"
+"å–œæ­¡ (to like, to be fond of - verb expressing preference)"
+"åƒ (to eat, to consume - verb of consumption)"
 ```
 
-## ⚡ Performance Issues - Benchmark Against Gold Standards
+## âš¡ Performance Issues - Benchmark Against Gold Standards
 
 ### Issue 5: Slow Response Times
 
@@ -664,7 +738,7 @@ class PromptBuilder:
         return prompt
 ```
 
-## 🔧 System Reliability Issues - Match Gold Standard Error Handling
+## ðŸ”§ System Reliability Issues - Match Gold Standard Error Handling
 
 ### Issue 6: Frequent Failures
 
@@ -714,7 +788,7 @@ class LanguageAnalyzer:
             return self._create_error_response(e, sentence)
 ```
 
-## 🚀 Deployment Issues - Match Gold Standard Deployment
+## ðŸš€ Deployment Issues - Match Gold Standard Deployment
 
 ### Issue 7: Deployment Failures
 
@@ -740,24 +814,24 @@ def deployment_check():
 **Solution - Match Gold Standard Deployment:**
 ```python
 # requirements.txt - Like gold standards
-google-generativeai==0.5.0
+google-genai>=1.0.0
 pyyaml==6.0.1
 jinja2==3.1.3
 pytest==7.4.3
 
 # Directory structure - Like gold standards
 languages/
-├── hindi/
-│   ├── hi_analyzer.py
-│   ├── hi_config.py
-│   └── ...
-└── zh/
-    ├── zh_analyzer.py
-    ├── zh_config.py
-    └── ...
+â”œâ”€â”€ hindi/
+â”‚   â”œâ”€â”€ hi_analyzer.py
+â”‚   â”œâ”€â”€ hi_config.py
+â”‚   â””â”€â”€ ...
+â””â”€â”€ zh/
+    â”œâ”€â”€ zh_analyzer.py
+    â”œâ”€â”€ zh_config.py
+    â””â”€â”€ ...
 ```
 
-## 🧪 Testing Issues - Follow Gold Standard Testing
+## ðŸ§ª Testing Issues - Follow Gold Standard Testing
 
 ### Issue 8: Test Failures
 
@@ -799,7 +873,7 @@ class TestLanguageAnalyzer:
         assert "analysis" in result
 ```
 
-## 📊 Monitoring & Metrics - Gold Standard Observability
+## ðŸ“Š Monitoring & Metrics - Gold Standard Observability
 
 ### Issue 9: Lack of Visibility
 
@@ -840,11 +914,11 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
         raise
 ```
 
-## 🎯 Quick Reference - Gold Standard Checklist
+## ðŸŽ¯ Quick Reference - Gold Standard Checklist
 
 ### Pre-Troubleshooting Checklist
 - [ ] Studied [Hindi analyzer](languages/hindi/hi_analyzer.py) thoroughly?
-- [ ] Studied [Chinese Simplified analyzer](languages/zh/zh_analyzer.py) thoroughly?
+- [ ] Studied [Chinese Simplified analyzer](languages/chinese_simplified/zh_analyzer.py) thoroughly?
 - [ ] Removed all artificial confidence boosting?
 - [ ] Implemented facade pattern like gold standards?
 - [ ] Using allowed AI models only?
@@ -871,7 +945,7 @@ def emergency_fix():
 
 ---
 
-**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
 ```python
 # Check confidence scoring
 def diagnose_confidence_issues(sentence, complexity):
@@ -918,7 +992,7 @@ def verify_model_selection():
 
     for sentence, complexity in test_cases:
         model = router.select_model(sentence, complexity)
-        print(f"'{sentence}' ({complexity}) → {model}")
+        print(f"'{sentence}' ({complexity}) â†’ {model}")
 
         # Verify model appropriateness
         if complexity == "advanced" and "gemini-2.5-flash" not in model:
@@ -1189,7 +1263,7 @@ def create_diverse_test_suite():
     }
 ```
 
-## ⚡ Performance Issues
+## âš¡ Performance Issues
 
 ### Issue 3: Slow Response Times (> 5 seconds)
 
@@ -1407,7 +1481,7 @@ def optimize_response_size():
     parser._create_standard_format = create_compact_response
 ```
 
-## 🔧 System Reliability Issues
+## ðŸ”§ System Reliability Issues
 
 ### Issue 5: Circuit Breaker Activation
 
@@ -1523,7 +1597,7 @@ def analyze_cache_effectiveness():
     for sentence in test_sentences:
         key = cache.get_semantic_key(sentence, "", "beginner")
         keys.append(key)
-        print(f"'{sentence}' → {key[:16]}...")
+        print(f"'{sentence}' â†’ {key[:16]}...")
 
     # Check key uniqueness
     unique_keys = len(set(keys))
@@ -1598,7 +1672,7 @@ def implement_cache_eviction():
     cache.smart_set = smart_cache_set
 ```
 
-## 🚀 Deployment Issues
+## ðŸš€ Deployment Issues
 
 ### Issue 7: Container Startup Failures
 
@@ -1645,7 +1719,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir \
     streamlit \
-    google-generativeai \
+    google-genai \
     jinja2 \
     redis \
     prometheus_client \
@@ -1707,7 +1781,7 @@ def validate_deployment_config():
     except Exception as e:
         raise ValueError(f"AI service connection failed: {e}")
 
-    print("✅ All configuration validated successfully")
+    print("âœ… All configuration validated successfully")
 ```
 
 ### Issue 8: High Error Rates in Production
@@ -1786,7 +1860,7 @@ def create_resilient_redis_connection():
     )
 ```
 
-## 📊 Monitoring and Alerting Issues
+## ðŸ“Š Monitoring and Alerting Issues
 
 ### Issue 9: Missing Metrics or Alerts
 
@@ -1921,7 +1995,7 @@ groups:
           description: "Memory usage is {{ $value | printf \"%.2f\" }}%"
 ```
 
-## 🎯 Quick Reference Solutions
+## ðŸŽ¯ Quick Reference Solutions
 
 ### Most Common Issues & Fixes
 
@@ -1985,7 +2059,7 @@ def diagnose_word_meanings():
 
 def test_fallback_provides_rich_meanings():
     """Test that fallbacks provide specific meanings, not generic roles"""
-    test_words = ["三", "如果", "答案"]  # Chinese numerals and compound words
+    test_words = ["ä¸‰", "å¦‚æžœ", "ç­”æ¡ˆ"]  # Chinese numerals and compound words
     for word in test_words:
         result = fallbacks._analyze_word(word)
         if "in grammar" in result['individual_meaning']:  # Generic fallback
@@ -1998,13 +2072,13 @@ def test_fallback_provides_rich_meanings():
 # 1. Create word meanings JSON file
 # File: infrastructure/data/{language}_word_meanings.json
 {
-  "一": "one (numeral)",
-  "二": "two (numeral)",
-  "三": "three (numeral)",
-  "如果": "if (conjunction)",
-  "因為": "because (conjunction)",
-  "答案": "answer, solution (noun)",
-  "等於": "equals, equal to (verb/mathematical term)"
+  "ä¸€": "one (numeral)",
+  "äºŒ": "two (numeral)",
+  "ä¸‰": "three (numeral)",
+  "å¦‚æžœ": "if (conjunction)",
+  "å› ç‚º": "because (conjunction)",
+  "ç­”æ¡ˆ": "answer, solution (noun)",
+  "ç­‰æ–¼": "equals, equal to (verb/mathematical term)"
 }
 
 # 2. Load in config (like Chinese Traditional)
@@ -2048,15 +2122,15 @@ class LanguageFallbacks:
 
 **Before vs After:**
 ```python
-# ❌ BEFORE - Generic grammatical roles
-"三": "numeral in zh-tw grammar"
-"如果": "conjunction in zh-tw grammar"
-"答案": "noun in zh-tw grammar"
+# âŒ BEFORE - Generic grammatical roles
+"ä¸‰": "numeral in zh-tw grammar"
+"å¦‚æžœ": "conjunction in zh-tw grammar"
+"ç­”æ¡ˆ": "noun in zh-tw grammar"
 
-# ✅ AFTER - Rich word meanings
-"三": "three (numeral)"
-"如果": "if (conjunction)"
-"答案": "answer, solution (noun)"
+# âœ… AFTER - Rich word meanings
+"ä¸‰": "three (numeral)"
+"å¦‚æžœ": "if (conjunction)"
+"ç­”æ¡ˆ": "answer, solution (noun)"
 ```
 
 **Solution Steps:**
@@ -2095,7 +2169,7 @@ def diagnose_word_meanings():
 def test_fallback_provides_rich_meanings():
     """Test that fallbacks provide specific meanings, not generic roles"""
     analyzer = LanguageAnalyzer()
-    result = analyzer.analyze_grammar("我爱你", "爱", "intermediate", "api_key")
+    result = analyzer.analyze_grammar("æˆ‘çˆ±ä½ ", "çˆ±", "intermediate", "api_key")
     
     generic_count = 0
     for word, role, color, meaning in result.word_explanations:
@@ -2110,22 +2184,22 @@ def test_fallback_provides_rich_meanings():
 # 1. Create word meanings JSON file
 # File: infrastructure/data/{language}_word_meanings.json
 {
-  "我": "I, me (first person singular pronoun)",
-  "你": "you (second person singular pronoun)",
-  "他": "he, him (third person masculine singular pronoun)",
-  "是": "to be, is, am, are (copula verb)",
-  "的": "possessive/attributive particle (links attribute to noun)",
-  "了": "particle indicating completed action (perfective aspect marker)",
-  "吗": "question particle (interrogative modal particle)",
-  "不": "not (negation adverb)",
-  "很": "very (degree adverb)",
-  "在": "at, in, on (preposition/locative)",
-  "有": "to have, there is/are (existential verb)",
-  "这": "this (demonstrative pronoun)",
-  "那": "that (demonstrative pronoun)",
-  "一": "one (numeral)",
-  "二": "two (numeral)",
-  "三": "three (numeral)"
+  "æˆ‘": "I, me (first person singular pronoun)",
+  "ä½ ": "you (second person singular pronoun)",
+  "ä»–": "he, him (third person masculine singular pronoun)",
+  "æ˜¯": "to be, is, am, are (copula verb)",
+  "çš„": "possessive/attributive particle (links attribute to noun)",
+  "äº†": "particle indicating completed action (perfective aspect marker)",
+  "å—": "question particle (interrogative modal particle)",
+  "ä¸": "not (negation adverb)",
+  "å¾ˆ": "very (degree adverb)",
+  "åœ¨": "at, in, on (preposition/locative)",
+  "æœ‰": "to have, there is/are (existential verb)",
+  "è¿™": "this (demonstrative pronoun)",
+  "é‚£": "that (demonstrative pronoun)",
+  "ä¸€": "one (numeral)",
+  "äºŒ": "two (numeral)",
+  "ä¸‰": "three (numeral)"
 }
 
 # 2. Load in config (like Chinese Traditional)
@@ -2177,23 +2251,23 @@ CRITICAL REQUIREMENTS:
 
 **Before vs After:**
 ```python
-# ❌ BEFORE - Generic grammatical roles
-"媽": "adjective in zh-tw grammar"
-"教": "adjective in zh-tw grammar"  
-"我": "other"
-"怎麼": "interjection"
-"麼": "adjective in zh-tw grammar"
-"煮": "adjective in zh-tw grammar"
-"飯": "noun"
+# âŒ BEFORE - Generic grammatical roles
+"åª½": "adjective in zh-tw grammar"
+"æ•™": "adjective in zh-tw grammar"  
+"æˆ‘": "other"
+"æ€Žéº¼": "interjection"
+"éº¼": "adjective in zh-tw grammar"
+"ç…®": "adjective in zh-tw grammar"
+"é£¯": "noun"
 
-# ✅ AFTER - Rich word meanings
-"媽": "mother, mom (noun)"
-"教": "to teach (verb)"
-"我": "I, me (first person singular pronoun)"
-"怎麼": "how (interrogative pronoun)"
-"麼": "question particle (interrogative modal particle)"
-"煮": "to cook, to boil (verb)"
-"飯": "meal, rice, food (noun)"
+# âœ… AFTER - Rich word meanings
+"åª½": "mother, mom (noun)"
+"æ•™": "to teach (verb)"
+"æˆ‘": "I, me (first person singular pronoun)"
+"æ€Žéº¼": "how (interrogative pronoun)"
+"éº¼": "question particle (interrogative modal particle)"
+"ç…®": "to cook, to boil (verb)"
+"é£¯": "meal, rice, food (noun)"
 ```
 
 **Solution Steps:**
@@ -2367,19 +2441,19 @@ def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], c
 
 **Before vs After:**
 ```python
-# ❌ BEFORE - Method missing, batch processor falls back to generic parsing
+# âŒ BEFORE - Method missing, batch processor falls back to generic parsing
 "DEBUG Chinese Traditional HTML Gen - Input explanations count: 0"
 "Generated 0 word explanations"
 
-# ✅ AFTER - Method present, proper parsing and coloring
+# âœ… AFTER - Method present, proper parsing and coloring
 "DEBUG Chinese Traditional HTML Gen - Input explanations count: 6"
 "Generated 6 word explanations"
-<span style="color: #FF4444">的</span> (structural particle - possessive, attributive, modifying)
+<span style="color: #FF4444">çš„</span> (structural particle - possessive, attributive, modifying)
 ```
 
 ---
 
-**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
 
 ---
 
@@ -2390,10 +2464,10 @@ def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], c
 ### 1. F-String Syntax Validation
 **Problem:** Nested f-strings causing syntax errors that prevent analyzer loading
 ```python
-# ❌ BROKEN - Nested f-strings
+# âŒ BROKEN - Nested f-strings
 f"Error in {f'processing {word}'}"
 
-# ✅ FIXED - Single f-string
+# âœ… FIXED - Single f-string
 f"Error in processing {word}"
 ```
 
@@ -2402,12 +2476,12 @@ f"Error in processing {word}"
 ### 2. Complete Method Implementation
 **Problem:** Missing `parse_response` method in response parser, causing analyzer to fail
 ```python
-# ❌ MISSING - Method not implemented
+# âŒ MISSING - Method not implemented
 class ZhTwResponseParser:
     # parse_response method missing!
     pass
 
-# ✅ FIXED - Complete implementation
+# âœ… FIXED - Complete implementation
 class ZhTwResponseParser:
     def parse_response(self, response: str) -> Dict[str, Any]:
         # Full implementation here
@@ -2419,10 +2493,10 @@ class ZhTwResponseParser:
 ### 3. AI Prompt Engineering for Uniqueness
 **Problem:** AI providing repeated generic meanings instead of unique individual explanations
 ```python
-# ❌ WEAK PROMPT - Leads to repetition
+# âŒ WEAK PROMPT - Leads to repetition
 "Analyze this Chinese Traditional word"
 
-# ✅ STRONG PROMPT - Enforces uniqueness
+# âœ… STRONG PROMPT - Enforces uniqueness
 "Provide UNIQUE, INDIVIDUAL meanings for each word. Each word must have its own specific meaning, not generic category labels."
 ```
 
@@ -2431,11 +2505,11 @@ class ZhTwResponseParser:
 ### 4. Fallback Summary Generation
 **Problem:** Generic "Grammar analysis for ZH-TW" summaries instead of rich sentence structure analysis
 ```python
-# ❌ GENERIC - No real content
+# âŒ GENERIC - No real content
 "Grammar analysis for ZH-TW"
 
-# ✅ RICH - Generated from word data
-"Subject-Verb-Object structure with time adverbial '昨天' (yesterday) modifying the verb phrase '去學校' (go to school)"
+# âœ… RICH - Generated from word data
+"Subject-Verb-Object structure with time adverbial 'æ˜¨å¤©' (yesterday) modifying the verb phrase 'åŽ»å­¸æ ¡' (go to school)"
 ```
 
 **Prevention:** Implement `_transform_to_standard_format()` to generate `overall_structure` from `word_explanations` when AI response lacks it.
@@ -2443,10 +2517,10 @@ class ZhTwResponseParser:
 ### 5. TTS Language Code Mapping
 **Problem:** TTS voice loading failures for "zh-TW" due to incompatible language codes
 ```python
-# ❌ FAILS - zh-TW not supported
+# âŒ FAILS - zh-TW not supported
 voice = get_voice_for_language("zh-TW")
 
-# ✅ WORKS - Map to compatible code
+# âœ… WORKS - Map to compatible code
 language_map = {"zh-TW": "cmn-CN"}
 voice = get_voice_for_language(language_map.get(lang, lang))
 ```
@@ -2456,10 +2530,10 @@ voice = get_voice_for_language(language_map.get(lang, lang))
 ### 6. Component Isolation Pattern
 **Problem:** Analyzer calling undefined base methods instead of using modular components
 ```python
-# ❌ WRONG - Calling undefined methods
+# âŒ WRONG - Calling undefined methods
 self.build_single_sentence_prompt()  # Method doesn't exist!
 
-# ✅ CORRECT - Use component directly
+# âœ… CORRECT - Use component directly
 self.prompt_builder.build_single_sentence_prompt()
 ```
 
@@ -2468,12 +2542,12 @@ self.prompt_builder.build_single_sentence_prompt()
 ### 8. Base Class Inheritance
 **Problem:** ZhTwAnalyzer not inheriting from BaseGrammarAnalyzer, preventing analyzer discovery
 ```python
-# ❌ BROKEN - Missing inheritance
+# âŒ BROKEN - Missing inheritance
 class ZhTwAnalyzer:
     # Not discovered by registry, falls back to generic analysis
     pass
 
-# ✅ FIXED - Proper inheritance with abstract methods
+# âœ… FIXED - Proper inheritance with abstract methods
 from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, LanguageConfig
 
 class ZhTwAnalyzer(BaseGrammarAnalyzer):
@@ -2505,7 +2579,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 ### 9. Batch Parsing Data Structure Mismatch
 **Problem:** parse_batch_grammar_response trying to access non-existent attributes on ParsedSentence objects
 ```python
-# ❌ BROKEN - ParsedSentence has no .elements attribute
+# âŒ BROKEN - ParsedSentence has no .elements attribute
 parsed_sentence = parse_result.sentences[i]
 result = {
     'elements': parsed_sentence.elements,  # AttributeError!
@@ -2513,7 +2587,7 @@ result = {
     'word_explanations': parsed_sentence.word_explanations
 }
 
-# ✅ FIXED - Convert ParsedSentence to expected dict format
+# âœ… FIXED - Convert ParsedSentence to expected dict format
 word_explanations = [[w.word, w.role, w.color, w.meaning] for w in parsed_sentence.words]
 elements = {}
 for word_data in word_explanations:
@@ -2536,13 +2610,13 @@ result = {
 
 ### 7. Syntax Error Prevention
 ```python
-# ❌ BROKEN - Duplicate try statements
+# âŒ BROKEN - Duplicate try statements
 try:
     # code
 try:  # Second try without except/finally
     # more code
 
-# ✅ FIXED - Proper structure
+# âœ… FIXED - Proper structure
 try:
     # code
 except Exception as e:
@@ -2577,17 +2651,17 @@ These fixes resolved: repeated word meanings, generic grammar summaries, TTS voi
 
 **Solution - Language Name Mapping:**
 ```python
-# ✅ LANGUAGE NAME MAPPING in shared_utils.py
+# âœ… LANGUAGE NAME MAPPING in shared_utils.py
 CONTENT_LANGUAGE_MAP = {
     "Chinese (Traditional)": "Traditional Chinese",
     "Chinese (Simplified)": "Simplified Chinese"
 }
 
-# ✅ USAGE in content_generator.py
+# âœ… USAGE in content_generator.py
 ai_language = CONTENT_LANGUAGE_MAP.get(language, language)
 prompt = f"You are a native-level expert linguist in {ai_language}..."
 
-# ✅ PRESERVE USER-FACING NAMES
+# âœ… PRESERVE USER-FACING NAMES
 # Display name remains "Chinese (Traditional)" for users
 # AI prompts use "Traditional Chinese" for compatibility
 ```

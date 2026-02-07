@@ -1,4 +1,4 @@
-
+﻿
 """
 Gold standard comparison tests for arabic analyzer.
 
@@ -10,7 +10,7 @@ import pytest
 import os
 from dotenv import load_dotenv
 from languages.arabic.ar_analyzer import ArAnalyzer
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 from languages.hindi.hi_analyzer import HiAnalyzer
 
 # Load environment variables
@@ -80,3 +80,4 @@ class TestArAnalyzerGoldStandardComparison:
         # All results should have explanations
         for result in results:
             assert hasattr(result, 'word_explanations')
+

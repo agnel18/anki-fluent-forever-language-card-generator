@@ -8,10 +8,10 @@ import time
 import warnings
 from typing import List, Dict
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
+from google import genai
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model

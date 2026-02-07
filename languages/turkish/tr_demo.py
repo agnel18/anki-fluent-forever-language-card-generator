@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from languages.turkish import TurkishAnalyzer
+from languages.turkish import TrAnalyzer
 
 
 def demonstrate_turkish_analyzer():
@@ -23,21 +23,18 @@ def demonstrate_turkish_analyzer():
 
     # Initialize analyzer
     try:
-        analyzer = TurkishAnalyzer()
+        analyzer = TrAnalyzer()
         print("✓ Turkish analyzer initialized successfully")
     except Exception as e:
         print(f"✗ Failed to initialize analyzer: {e}")
         return
 
-    # Validate setup
-    validation = analyzer.validate_setup()
-    if validation['overall_valid']:
-        print("✓ Analyzer setup validation passed")
-    else:
-        print("✗ Setup validation failed:")
-        for error in validation['config_errors'] + validation['infrastructure_errors']:
-            print(f"  - {error}")
-        return
+    api_key = None
+    try:
+        import os
+        api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+    except Exception:
+        api_key = None
 
     # Sample sentences for different complexity levels
     samples = {
@@ -66,24 +63,17 @@ def demonstrate_turkish_analyzer():
         for sentence in sentences:
             print(f"\nSentence: {sentence}")
             try:
-                result = analyzer.analyze(sentence, complexity=complexity)
+                if not api_key:
+                    print("⚠️  GEMINI_API_KEY not set; skipping analysis")
+                    continue
 
-                if result.success and result.analysis:
-                    # Show formatted result
-                    formatted = analyzer.format_analysis_result(result, 'simple')
-                    print(formatted)
+                target_word = sentence.split()[0] if sentence.split() else ""
+                result = analyzer.analyze_grammar(sentence, target_word, complexity, api_key)
 
-                    # Show validation summary
-                    if result.metadata and 'validation_summary' in result.metadata:
-                        summary = result.metadata['validation_summary']
-                        error_rate = summary.get('error_rate', 0)
-                        if error_rate > 0:
-                            print(f"⚠️  Validation issues: {summary.get('errors', 0)} errors")
-                        else:
-                            print("✓ Analysis validated successfully")
-
+                if result and getattr(result, 'word_explanations', None):
+                    print(f"✓ Word explanations: {len(result.word_explanations)}")
                 else:
-                    print(f"✗ Analysis failed: {result.error_message}")
+                    print("✗ Analysis returned no word explanations")
 
             except Exception as e:
                 print(f"✗ Error during analysis: {e}")
@@ -91,11 +81,7 @@ def demonstrate_turkish_analyzer():
     # Show analyzer capabilities
     print("\n🔧 Analyzer Capabilities")
     print("-" * 30)
-    print(f"Supported complexities: {analyzer.get_supported_complexities()}")
-    print(f"Grammatical categories (beginner): {analyzer.get_grammatical_categories('beginner')}")
-    print(f"Case markers: {analyzer.get_case_markers()}")
-    print(f"Vowel harmony rules: Back={analyzer.get_vowel_harmony_rules()['back_vowels']}, Front={analyzer.get_vowel_harmony_rules()['front_vowels']}")
-    print(f"Word order: {analyzer.get_word_order_info()}")
+    print(f"Supported complexities: {analyzer.config.supported_complexity_levels}")
 
 
 if __name__ == "__main__":

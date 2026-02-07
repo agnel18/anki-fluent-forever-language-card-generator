@@ -7,17 +7,16 @@ Extracted from sentence_generator.py for better separation of concerns.
 
 import json
 import logging
+import re
 import time
 import warnings
 from typing import Optional, List, Dict, Any, Tuple, Union
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
-
 # Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, cached_api_call, retry_with_exponential_backoff, with_fallback, get_gemini_api
 
 from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE, CONTENT_LANGUAGE_MAP
 from streamlit_app.language_analyzers.analyzer_registry import get_analyzer
@@ -35,9 +34,10 @@ class ContentGenerator:
         self.client = None
 
     def _get_client(self, api_key: str):
-        """Configure Google Generative AI client."""
-        genai.configure(api_key=api_key)
-        return genai
+        """Configure Google GenAI client wrapper."""
+        api = get_gemini_api()
+        api.configure(api_key=api_key)
+        return api
 
     def generate_word_meaning_sentences_and_keywords(
         self,
@@ -210,7 +210,7 @@ QUALITY RULES (STRICT):
 - Avoid rare or archaic vocabulary (unless difficulty="advanced")
 - All sentences must be semantically meaningful (no filler templates)
 - No repeated sentence structures or patterns — each sentence must be unique
-- Each sentence must be no more than {max_length} words long. COUNT words precisely; if >{max_length}, it's INVALID – regenerate internally
+- Each sentence must be between {min_length} and {max_length} words long. COUNT words precisely; if outside the range, it's INVALID – regenerate internally
 - Difficulty: {difficulty}
   - beginner: Use only simple vocabulary and grammar, mostly present tense
   - intermediate: Use mixed tenses, richer but still natural language
@@ -285,10 +285,10 @@ IMPORTANT:
             for model_name in models_to_try:
                 try:
                     logger.info(f"Attempting API call with model: {model_name}")
-                    model = client.GenerativeModel(model_name)
-                    response = model.generate_content(
-                        prompt,
-                        generation_config=genai.types.GenerationConfig(
+                    response = client.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=client.genai.types.GenerateContentConfig(
                             temperature=0.7,  # Creativity for sentence variety
                             max_output_tokens=4000,  # Increased for Arabic and complex responses
                         )
@@ -309,7 +309,7 @@ IMPORTANT:
             logger.debug(f"Content generation raw response: {response_text[:500]}...")
 
             # Parse the response
-            result = self._parse_generation_response(response_text, word, language, num_sentences, max_length)
+            result = self._parse_generation_response(response_text, word, language, num_sentences, min_length, max_length)
             
             # Debug: log parsing results
             parsed_sentences = len(result.get('sentences', []))
@@ -342,7 +342,7 @@ IMPORTANT:
             # Return fallback structure with error indication
             return self._create_fallback_response(word, num_sentences)
 
-    def _parse_generation_response(self, response_text: str, word: str, language: str, num_sentences: int, max_length: int) -> Dict[str, Any]:
+    def _parse_generation_response(self, response_text: str, word: str, language: str, num_sentences: int, min_length: int, max_length: int) -> Dict[str, Any]:
         """Parse the AI response into structured data."""
         meaning = ""
         restrictions = ""
@@ -432,7 +432,7 @@ IMPORTANT:
 
         # Validate and create fallbacks
         validated_sentences, validated_translations, validated_ipa, validated_keywords = self._validate_and_create_fallbacks(
-            sentences, translations, ipa_list, keywords, word, restrictions, num_sentences, max_length
+            sentences, translations, ipa_list, keywords, word, restrictions, num_sentences, min_length, max_length
         )
 
         return {
@@ -445,7 +445,7 @@ IMPORTANT:
         }
 
     def _validate_and_create_fallbacks(self, sentences: List[str], translations: List[str], ipa_list: List[str], keywords: List[str],
-                                      word: str, restrictions: str, num_sentences: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str]]:
+                                      word: str, restrictions: str, num_sentences: int, min_length: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str]]:
         """Validate content and create fallbacks for invalid items."""
 
         # Create fallback templates based on restrictions
@@ -488,10 +488,10 @@ IMPORTANT:
                 f"Review this sentence with {word}."
             ]
             fallback_keywords = [
-                f"{word}, demonstration, context",
-                f"{word}, illustration, usage",
+                f"{word}, example, usage",
+                f"{word}, illustration, scene",
                 f"{word}, instance, application",
-                f"{word}, case, study",
+                f"{word}, scenario, situation",
                 f"{word}, model, sentence",
                 f"{word}, pattern, structure",
                 f"{word}, template, form",
@@ -505,16 +505,39 @@ IMPORTANT:
         validated_ipa = []
         validated_keywords = []
 
-        for i, sentence in enumerate(sentences[:num_sentences]):
-            word_count = len(sentence.split())
+        generic_terms = ['language', 'learning', 'word', 'text', 'communication', 'study']
 
-            if word_count <= max_length:
+        def strip_arabic_diacritics(text: str) -> str:
+            return re.sub(r"[\u064B-\u065F\u0670\u06D6-\u06ED]", "", text)
+
+        for i, sentence in enumerate(sentences[:num_sentences]):
+            normalized_sentence = sentence
+            if any('\u0600' <= ch <= '\u06FF' for ch in word):
+                if word not in sentence:
+                    stripped = strip_arabic_diacritics(sentence)
+                    if word in stripped:
+                        normalized_sentence = stripped
+
+            sentence = normalized_sentence
+            word_missing = word not in sentence
+            if word_missing:
+                logger.warning(f"Sentence {i+1} missing target word '{word}'. Using fallback.")
+
+            word_count = self._count_sentence_units(sentence)
+
+            if not word_missing and min_length <= word_count <= max_length:
                 validated_sentences.append(sentence)
                 validated_translations.append(translations[i] if i < len(translations) and translations[i] else f"This is a sample sentence with {word}.")
                 validated_ipa.append(ipa_list[i] if i < len(ipa_list) else "")
-                validated_keywords.append(keywords[i] if i < len(keywords) else fallback_keywords[i % len(fallback_keywords)])
+                candidate_keywords = keywords[i] if i < len(keywords) else fallback_keywords[i % len(fallback_keywords)]
+                keyword_items = [kw.strip().lower() for kw in candidate_keywords.split(',')]
+                if any(any(term in kw for term in generic_terms) for kw in keyword_items):
+                    candidate_keywords = fallback_keywords[i % len(fallback_keywords)]
+                validated_keywords.append(candidate_keywords)
             else:
-                logger.warning(f"Sentence {i+1} has {word_count} words, exceeds maximum {max_length}. Using fallback.")
+                logger.warning(
+                    f"Sentence {i+1} has {word_count} words, outside {min_length}-{max_length}. Using fallback."
+                )
                 fallback_idx = i % len(fallback_templates)
                 validated_sentences.append(fallback_templates[fallback_idx])
                 validated_translations.append(f"This is a sample sentence with {word}.")
@@ -529,9 +552,25 @@ IMPORTANT:
         while len(validated_ipa) < len(validated_sentences):
             validated_ipa.append("")
         while len(validated_keywords) < len(validated_sentences):
-            validated_keywords.append(f"{word}, language, learning")
+            validated_keywords.append(f"{word}, daily life, scene")
 
         return validated_sentences[:num_sentences], validated_translations[:num_sentences], validated_ipa[:num_sentences], validated_keywords[:num_sentences]
+
+    def _count_sentence_units(self, sentence: str) -> int:
+        """Count words or character units for scripts that do not use spaces."""
+        tokens = [t for t in sentence.split() if t]
+        if len(tokens) > 1:
+            return len(tokens)
+
+        cjk_count = sum(1 for ch in sentence if '\u4e00' <= ch <= '\u9fff')
+        kana_count = sum(1 for ch in sentence if '\u3040' <= ch <= '\u309f' or '\u30a0' <= ch <= '\u30ff' or '\u31f0' <= ch <= '\u31ff')
+        hangul_count = sum(1 for ch in sentence if '\uac00' <= ch <= '\ud7af')
+        thai_count = sum(1 for ch in sentence if '\u0e00' <= ch <= '\u0e7f')
+
+        if cjk_count or kana_count or hangul_count or thai_count:
+            return cjk_count + kana_count + hangul_count + thai_count
+
+        return len(tokens)
 
     def _create_fallback_response(self, word: str, num_sentences: int) -> Dict[str, Any]:
         """Create fallback response when generation fails."""

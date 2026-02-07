@@ -1,55 +1,55 @@
-# Architecture Guide
+﻿# Architecture Guide
 ## Domain-Driven Design for Language Analyzers
 
 **Principles:** Clean Architecture, Domain-Driven Design, Separation of Concerns  
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture with external configuration  
+**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture with external configuration  
 **Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
 **Pattern:** Clean Architecture with integrated domain components  
 **Critical:** Follow Chinese Simplified patterns - external configuration, integrated fallbacks, no artificial confidence boosting
 
-## 🏗️ Architectural Overview
+## ðŸ—ï¸ Architectural Overview
 
 ### Core Principles
 
 #### 1. Clean Architecture - PRIMARY GOLD STANDARD (Chinese Simplified)
 **Dependency Inversion** - Domain layer contains all business logic, external layers adapt to domain
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Frameworks & Drivers (External APIs, File Systems, etc.)   │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│  Interface Adapters (Infrastructure Layer)                  │
-│  - File I/O, API calls, external service integrations       │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│  Application Layer (Use Cases)                             │
-│  - Application-specific business rules                     │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│  Domain Layer (Entities & Core Business Logic) ◄── GOLD    │
-│  - Language-specific grammar rules & patterns              │
-│  - External configuration files (YAML/JSON)                │
-│  - Integrated fallback systems                             │
-│  - Natural validation without artificial boosting          │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Frameworks & Drivers (External APIs, File Systems, etc.)   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                      â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Interface Adapters (Infrastructure Layer)                  â”‚
+â”‚  - File I/O, API calls, external service integrations       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                      â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Application Layer (Use Cases)                             â”‚
+â”‚  - Application-specific business rules                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                      â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Domain Layer (Entities & Core Business Logic) â—„â”€â”€ GOLD    â”‚
+â”‚  - Language-specific grammar rules & patterns              â”‚
+â”‚  - External configuration files (YAML/JSON)                â”‚
+â”‚  - Integrated fallback systems                             â”‚
+â”‚  - Natural validation without artificial boosting          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### 2. Domain-Driven Design (DDD) - Chinese Simplified Pattern
 **Business Logic First** - Domain components contain all linguistic knowledge and rules
 ```
 Domain Layer (Core Business Logic) - CHINESE SIMPLIFIED GOLD STANDARD
-├── Config: External YAML/JSON configuration files (zh_config.py loads external files)
-│   ├── Word Meanings: External JSON dictionary with specific meanings
-│   ├── Grammatical Roles: Color schemes and role definitions from YAML
-│   └── Language Patterns: Scripts, character sets, segmentation rules from config
-├── Prompt Builder: Jinja2 template-based AI prompt generation (zh_prompt_builder.py)
-├── Response Parser: AI output processing with integrated fallbacks (zh_response_parser.py)
-├── Validator: Quality assessment with natural confidence scoring (zh_validator.py)
-├── Fallbacks: Error recovery integrated within response parser (zh_fallbacks.py)
-└── Patterns: Linguistic pattern recognition (zh_patterns.py)
+â”œâ”€â”€ Config: External YAML/JSON configuration files (zh_config.py loads external files)
+â”‚   â”œâ”€â”€ Word Meanings: External JSON dictionary with specific meanings
+â”‚   â”œâ”€â”€ Grammatical Roles: Color schemes and role definitions from YAML
+â”‚   â””â”€â”€ Language Patterns: Scripts, character sets, segmentation rules from config
+â”œâ”€â”€ Prompt Builder: Jinja2 template-based AI prompt generation (zh_prompt_builder.py)
+â”œâ”€â”€ Response Parser: AI output processing with integrated fallbacks (zh_response_parser.py)
+â”œâ”€â”€ Validator: Quality assessment with natural confidence scoring (zh_validator.py)
+â”œâ”€â”€ Fallbacks: Error recovery integrated within response parser (zh_fallbacks.py)
+â””â”€â”€ Patterns: Linguistic pattern recognition (zh_patterns.py)
 ```
 
 #### 3. Separation of Concerns - Chinese Simplified Implementation
@@ -136,34 +136,34 @@ class ZhValidator:
 #### External Configuration Files - CHINESE SIMPLIFIED PATTERN
 ```
 infrastructure/data/                    # Minimal infrastructure
-├── zh_grammatical_roles.yaml         # Grammatical role definitions
-├── zh_common_classifiers.yaml        # Classifier lists
-├── zh_aspect_markers.yaml           # Aspect particle patterns
-├── zh_structural_particles.yaml     # Particle system rules
-├── zh_modal_particles.yaml          # Modal particle patterns
-├── zh_word_meanings.json            # Pre-defined word meanings
-└── zh_patterns.yaml                 # Regex patterns and validation rules
+â”œâ”€â”€ zh_grammatical_roles.yaml         # Grammatical role definitions
+â”œâ”€â”€ zh_common_classifiers.yaml        # Classifier lists
+â”œâ”€â”€ zh_aspect_markers.yaml           # Aspect particle patterns
+â”œâ”€â”€ zh_structural_particles.yaml     # Particle system rules
+â”œâ”€â”€ zh_modal_particles.yaml          # Modal particle patterns
+â”œâ”€â”€ zh_word_meanings.json            # Pre-defined word meanings
+â””â”€â”€ zh_patterns.yaml                 # Regex patterns and validation rules
 ```
 
-**❌ Anti-Pattern (Separate Infrastructure Layer):**
+**âŒ Anti-Pattern (Separate Infrastructure Layer):**
 ```
 infrastructure/                       # AVOID THIS COMPLEXITY
-├── zh_tw_fallbacks.py              # Separate component (breaks Clean Architecture)
-└── data/
+â”œâ”€â”€ zh_tw_fallbacks.py              # Separate component (breaks Clean Architecture)
+â””â”€â”€ data/
 ```
 
 ### Implementation Guidelines - Follow Chinese Simplified
 
 #### 1. Configuration Management - EXTERNAL FILES (Chinese Simplified Pattern)
 ```python
-# ✅ CORRECT: External configuration files
+# âœ… CORRECT: External configuration files
 class ZhConfig:
     def __init__(self):
         config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
         self.grammatical_roles = self._load_yaml(config_dir / "zh_grammatical_roles.yaml")
         self.word_meanings = self._load_json(config_dir / "zh_word_meanings.json")
 
-# ❌ AVOID: Hardcoded configurations
+# âŒ AVOID: Hardcoded configurations
 class LanguageConfig:
     def __init__(self):
         self.grammatical_roles = {
@@ -175,7 +175,7 @@ class LanguageConfig:
 
 #### 2. Fallback Integration - WITHIN DOMAIN (Chinese Simplified Pattern)
 ```python
-# ✅ CORRECT: Integrated fallbacks in response parser
+# âœ… CORRECT: Integrated fallbacks in response parser
 class ZhResponseParser:
     def __init__(self, config: ZhConfig):
         self.config = config
@@ -187,7 +187,7 @@ class ZhResponseParser:
         except:
             return self.fallbacks.create_fallback(sentence, complexity)
 
-# ❌ AVOID: Separate infrastructure fallbacks
+# âŒ AVOID: Separate infrastructure fallbacks
 class LanguageAnalyzer:
     def __init__(self):
         self.fallbacks = LanguageFallbacks()  # Infrastructure component
@@ -195,7 +195,7 @@ class LanguageAnalyzer:
 
 #### 3. Prompt Engineering - JINJA2 TEMPLATES (Chinese Simplified Pattern)
 ```python
-# ✅ CORRECT: Template-based prompts
+# âœ… CORRECT: Template-based prompts
 class ZhPromptBuilder:
     def __init__(self, config: ZhConfig):
         self.config = config
@@ -211,7 +211,7 @@ class ZhPromptBuilder:
             complexity=complexity
         )
 
-# ❌ AVOID: Hardcoded string prompts
+# âŒ AVOID: Hardcoded string prompts
 class LanguagePromptBuilder:
     def build_prompt(self, sentence, complexity):
         return f"You are a linguist... Analyze: {sentence}"  # Hardcoded
@@ -260,23 +260,23 @@ class LanguagePromptBuilder:
 #### Critical: Rich Explanations Pattern (Chinese Gold Standard)
 **Key Learning:** Base analyzers provide grammatical roles only, but gold standard analyzers provide rich explanations with individual word meanings.
 
-**❌ Anti-Pattern (Base Analyzer):**
+**âŒ Anti-Pattern (Base Analyzer):**
 ```python
 # Only grammatical roles - insufficient for learning
 "noun in zh-tw grammar"
 "verb in zh-tw grammar"
 ```
 
-**✅ Gold Standard Pattern (Chinese Analyzers):**
+**âœ… Gold Standard Pattern (Chinese Analyzers):**
 ```python
 # Rich explanations with individual meanings
-"我 (I, me - first person singular pronoun)"
-"喜歡 (to like, to be fond of - verb expressing preference)"
-"吃 (to eat, to consume - verb of consumption)"
+"æˆ‘ (I, me - first person singular pronoun)"
+"å–œæ­¡ (to like, to be fond of - verb expressing preference)"
+"åƒ (to eat, to consume - verb of consumption)"
 ```
 
 **Implementation Requirements:**
-- **analyze_grammar method**: AI workflow → parsing → HTML generation → GrammarAnalysis return
+- **analyze_grammar method**: AI workflow â†’ parsing â†’ HTML generation â†’ GrammarAnalysis return
 - **_generate_html_output method**: Position-based character/word coloring with meanings
 - **Word explanations format**: `[word, role, color, meaning]` tuples for each analyzed element
 - **Individual meaning extraction**: Parse `individual_meaning` from AI responses
@@ -591,31 +591,31 @@ class TestIntegration:
 
 ### Implementation Checklist - Gold Standard Compliance
 
-#### ✅ Pre-Implementation
+#### âœ… Pre-Implementation
 - [ ] Study [Hindi analyzer](languages/hindi/hi_analyzer.py) thoroughly
-- [ ] Study [Chinese Simplified analyzer](languages/zh/zh_analyzer.py) thoroughly
+- [ ] Study [Chinese Simplified analyzer](languages/chinese_simplified/zh_analyzer.py) thoroughly
 - [ ] Understand facade pattern orchestration
 - [ ] Review natural validation patterns (NO artificial boosting)
 
-#### ✅ Domain Components
+#### âœ… Domain Components
 - [ ] Config component loads from external files (like gold standards)
 - [ ] Prompt builder uses templates (like gold standards)
 - [ ] Response parser handles JSON/normalization (like gold standards)
 - [ ] Validator uses NATURAL confidence scoring (NO artificial boosting)
 
-#### ✅ Main Analyzer
+#### âœ… Main Analyzer
 - [ ] Facade pattern implementation (like gold standards)
 - [ ] Component orchestration (like gold standards)
 - [ ] Error handling with fallbacks (like gold standards)
 - [ ] AI integration with circuit breaker (like gold standards)
 
-#### ✅ Testing
+#### âœ… Testing
 - [ ] Unit tests for each component (like gold standards)
 - [ ] Integration tests for workflow (like gold standards)
 - [ ] NO confidence boosting tests (removed like gold standards)
 - [ ] Natural validation tests only
 
-#### ✅ Documentation
+#### âœ… Documentation
 - [ ] Component responsibilities documented
 - [ ] API contracts specified
 - [ ] Error handling documented
@@ -623,7 +623,7 @@ class TestIntegration:
 
 ### Common Pitfalls - Avoid These
 
-#### ❌ Artificial Confidence Boosting
+#### âŒ Artificial Confidence Boosting
 ```python
 # WRONG - Artificial boosting (removed from all implementations)
 def validate_result(self, result, sentence):
@@ -638,7 +638,7 @@ def validate_result(self, result, sentence):
     return self._calculate_natural_confidence(checks)  # NATURAL - GOOD
 ```
 
-#### ❌ Mixed Concerns
+#### âŒ Mixed Concerns
 ```python
 # WRONG - Config doing validation
 class LanguageConfig:
@@ -656,7 +656,7 @@ class Validator:
         # Validation logic here - GOOD
 ```
 
-#### ❌ Tight Coupling
+#### âŒ Tight Coupling
 ```python
 # WRONG - Direct AI calls in domain
 class PromptBuilder:
@@ -779,7 +779,7 @@ logger.info("Analysis completed", extra={
 
 ---
 
-**Remember:** Always study the gold standard implementations ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)) before implementing new analyzers. Follow their patterns exactly - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** Always study the gold standard implementations ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)) before implementing new analyzers. Follow their patterns exactly - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
     def get_prompt_template(self) -> str: pass
     def get_validation_rules(self) -> Dict: pass
 
@@ -833,21 +833,21 @@ class GrammarAnalysisBuilder:
         return self.analysis
 ```
 
-## 🧩 Component Interactions
+## ðŸ§© Component Interactions
 
 ### Data Flow Architecture
 ```
 Input Sentence
-    ↓
-Prompt Builder → AI Prompt
-    ↓
-AI API Call → AI Response
-    ↓
-Response Parser → Structured Data
-    ↓
-Validator → Quality Assessed Data
-    ↓
-Output Generator → HTML + Metadata
+    â†“
+Prompt Builder â†’ AI Prompt
+    â†“
+AI API Call â†’ AI Response
+    â†“
+Response Parser â†’ Structured Data
+    â†“
+Validator â†’ Quality Assessed Data
+    â†“
+Output Generator â†’ HTML + Metadata
 ```
 
 ### Error Handling Strategy
@@ -876,19 +876,19 @@ class ErrorHandlingStrategy:
         return self._create_error_response(error, context)
 ```
 
-## 🔧 Implementation Guidelines
+## ðŸ”§ Implementation Guidelines
 
 ### 1. Component Isolation
 **Rule:** Components should be independently testable
 ```python
-# ✅ Good: Testable in isolation
+# âœ… Good: Testable in isolation
 def test_prompt_builder():
     config = MockConfig()
     builder = PromptBuilder(config)
     prompt = builder.build_single_prompt("Hello world", "world", "beginner")
     assert "Hello world" in prompt
 
-# ❌ Bad: Coupled components
+# âŒ Bad: Coupled components
 def test_analyzer_with_real_api():
     analyzer = LanguageAnalyzer()
     result = analyzer.analyze_grammar("Hello", "world", "beginner", REAL_API_KEY)
@@ -898,14 +898,14 @@ def test_analyzer_with_real_api():
 ### 2. Dependency Injection
 **Rule:** Inject dependencies, don't create them
 ```python
-# ✅ Good: Injectable dependencies
+# âœ… Good: Injectable dependencies
 class LanguageAnalyzer:
     def __init__(self, config=None, prompt_builder=None, parser=None, validator=None):
         self.config = config or LanguageConfig()
         self.prompt_builder = prompt_builder or PromptBuilder(self.config)
         # ...
 
-# ❌ Bad: Hard-coded dependencies
+# âŒ Bad: Hard-coded dependencies
 class LanguageAnalyzer:
     def __init__(self):
         self.config = LanguageConfig()  # Can't mock or replace
@@ -915,7 +915,7 @@ class LanguageAnalyzer:
 ### 3. Interface Segregation
 **Rule:** Clients depend only on methods they use
 ```python
-# ✅ Good: Focused interfaces
+# âœ… Good: Focused interfaces
 class PromptBuilderInterface:
     def build_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str: pass
     def build_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str: pass
@@ -924,7 +924,7 @@ class ValidatorInterface:
     def validate_result(self, result: Dict, sentence: str) -> Dict: pass
     def calculate_confidence(self, result: Dict, sentence: str) -> float: pass
 
-# ❌ Bad: Monolithic interface
+# âŒ Bad: Monolithic interface
 class LanguageProcessorInterface:
     def build_prompt(self, *args, **kwargs) -> str: pass
     def parse_response(self, *args, **kwargs) -> Dict: pass
@@ -936,7 +936,7 @@ class LanguageProcessorInterface:
 ### 4. Configuration as Code
 **Rule:** Use code for configuration, not external files for core logic
 ```python
-# ✅ Good: Configuration in code
+# âœ… Good: Configuration in code
 class SpanishConfig:
     grammatical_roles = {
         'sustantivo': 'noun',
@@ -953,7 +953,7 @@ class SpanishConfig:
         }
     }
 
-# ❌ Bad: Configuration in external files
+# âŒ Bad: Configuration in external files
 # spanish_config.yaml
 # grammatical_roles:
 #   sustantivo: noun
@@ -961,7 +961,7 @@ class SpanishConfig:
 # Leads to runtime errors, hard to debug, version control issues
 ```
 
-## 🧪 Testing Architecture
+## ðŸ§ª Testing Architecture
 
 ### Unit Testing Strategy
 ```python
@@ -1010,7 +1010,7 @@ class TestLanguageAnalyzerIntegration:
         pass
 ```
 
-## 📊 Quality Metrics
+## ðŸ“Š Quality Metrics
 
 ### Code Quality
 - **Cyclomatic Complexity:** < 10 per method
@@ -1030,12 +1030,12 @@ class TestLanguageAnalyzerIntegration:
 - **Error Rate:** < 5% across all operations
 - **Cache Hit Rate:** > 70% for repeated analyses
 
-## 🚨 Common Architectural Mistakes
+## ðŸš¨ Common Architectural Mistakes
 
 ### 1. God Classes
 **Problem:** Single class doing too many things
 ```python
-# ❌ Bad: Everything in one class
+# âŒ Bad: Everything in one class
 class LanguageAnalyzer:
     def __init__(self): pass
     def build_prompt(self): pass      # Should be in PromptBuilder
@@ -1048,12 +1048,12 @@ class LanguageAnalyzer:
 ### 2. Tight Coupling
 **Problem:** Components depend on concrete implementations
 ```python
-# ❌ Bad: Tight coupling
+# âŒ Bad: Tight coupling
 class Analyzer:
     def __init__(self):
         self.parser = JsonResponseParser()  # Can't change easily
 
-# ✅ Good: Loose coupling
+# âœ… Good: Loose coupling
 class Analyzer:
     def __init__(self, parser: ResponseParserInterface):
         self.parser = parser  # Can inject any implementation
@@ -1062,13 +1062,13 @@ class Analyzer:
 ### 3. Mixed Concerns
 **Problem:** Business logic mixed with infrastructure
 ```python
-# ❌ Bad: Mixed concerns
+# âŒ Bad: Mixed concerns
 class PromptBuilder:
     def build_prompt(self, sentence):
         # Business logic
         prompt = f"Analyze: {sentence}"
 
-        # Infrastructure concern ❌
+        # Infrastructure concern âŒ
         api_key = os.getenv('API_KEY')
         response = requests.post('https://api.example.com', json={'prompt': prompt})
 
@@ -1078,7 +1078,7 @@ class PromptBuilder:
 ### 4. Configuration in Code
 **Problem:** Hard-coded values scattered throughout
 ```python
-# ❌ Bad: Magic numbers everywhere
+# âŒ Bad: Magic numbers everywhere
 class Analyzer:
     def __init__(self):
         self.max_tokens = 2000  # Magic number
@@ -1089,7 +1089,7 @@ class Analyzer:
         }
 ```
 
-## 🎯 Implementation Levels
+## ðŸŽ¯ Implementation Levels
 
 ### Level 1: Basic Architecture
 - Simple component structure
@@ -1111,4 +1111,4 @@ class Analyzer:
 
 ---
 
-**Remember:** Always study the gold standard implementations ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)) before implementing new analyzers. Follow their patterns exactly - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** Always study the gold standard implementations ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)) before implementing new analyzers. Follow their patterns exactly - no artificial confidence boosting, clean facade orchestration, natural validation scoring.

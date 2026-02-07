@@ -366,10 +366,13 @@ def render_settings_page():
             if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
                 with st.spinner("Testing Google Cloud API connection..."):
                     try:
-                        import google.generativeai as genai
-                        genai.configure(api_key=test_key)
-                        model = genai.GenerativeModel(get_gemini_model())
-                        response = model.generate_content("Hello")
+                        from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
+                        api = get_gemini_api()
+                        api.configure(api_key=test_key)
+                        response = api.generate_content(
+                            model=get_gemini_model(),
+                            contents="Hello"
+                        )
                         st.success("✅ Google Cloud API connection successful!")
                         st.info("🎉 You can now generate AI content with Gemini and audio with Text-to-Speech!")
                     except Exception as e:

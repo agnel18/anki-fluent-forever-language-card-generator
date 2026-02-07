@@ -1,4 +1,4 @@
-# languages/zh/domain/zh_validator.py
+﻿# languages/chinese_simplified/domain/zh_validator.py
 """
 Chinese Simplified Validator - Domain Component
 

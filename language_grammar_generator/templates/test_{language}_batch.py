@@ -36,7 +36,6 @@ logging.basicConfig(
 
 # Placeholder for analyzer import - replace with actual import when using template
 LANGUAGE_NAME_PLACEHOLDERAnalyzer = None
-LANGUAGE_NAME_PLACEHOLDERConfig = None
 
 # Try to load API key from multiple possible locations
 def load_api_key():
@@ -84,22 +83,23 @@ def test_LANGUAGE_PLACEHOLDER_batch_processing():
     if not api_key:
         return False
 
-    # Configure Google AI with the API key
+    # Configure Gemini API with the API key
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        print("✓ Google AI configured successfully")
+        from streamlit_app.shared_utils import get_gemini_api, get_gemini_model
+        api = get_gemini_api()
+        api.configure(api_key=api_key)
+        api.generate_content(model=get_gemini_model(), contents="Hello")
+        print("✓ Gemini API configured successfully")
     except Exception as e:
-        print(f"✗ Failed to configure Google AI: {e}")
+        print(f"✗ Failed to configure Gemini API: {e}")
         return False
 
     # Initialize analyzer
     try:
-        if LANGUAGE_NAME_PLACEHOLDERAnalyzer is None or LANGUAGE_NAME_PLACEHOLDERConfig is None:
+        if LANGUAGE_NAME_PLACEHOLDERAnalyzer is None:
             print("✗ LANGUAGE_NAME_PLACEHOLDERAnalyzer not imported - update template with actual import")
             return False
-        config = LANGUAGE_NAME_PLACEHOLDERConfig()
-        analyzer = LANGUAGE_NAME_PLACEHOLDERAnalyzer(config)
+        analyzer = LANGUAGE_NAME_PLACEHOLDERAnalyzer()
         print("✓ LANGUAGE_NAME_PLACEHOLDERAnalyzer initialized successfully")
     except Exception as e:
         print(f"✗ Failed to initialize LANGUAGE_NAME_PLACEHOLDERAnalyzer: {e}")

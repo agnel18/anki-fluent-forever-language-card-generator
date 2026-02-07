@@ -1,4 +1,4 @@
-# languages/zh/__init__.py
+﻿# languages/chinese_simplified/__init__.py
 """
 Chinese Simplified Grammar Analyzer Package
 
@@ -24,12 +24,13 @@ ARCHITECTURE:
 - Error Recovery: Comprehensive fallbacks ensure user experience
 
 USAGE:
-    from languages.zh.zh_analyzer import ZhAnalyzer
+    from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 
     analyzer = ZhAnalyzer()
-    result = analyzer.analyze_grammar("我吃了一个苹果", "苹果", "intermediate", api_key)
+    result = analyzer.analyze_grammar("æˆ‘åƒäº†ä¸€ä¸ªè‹¹æžœ", "è‹¹æžœ", "intermediate", api_key)
 """
 
 from .zh_analyzer import ZhAnalyzer
 
 __all__ = ['ZhAnalyzer']
+

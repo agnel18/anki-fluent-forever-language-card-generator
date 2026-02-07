@@ -46,7 +46,7 @@ from .domain.zh_tw_patterns import ZhTwPatterns
 from .domain.zh_tw_fallbacks import ZhTwFallbacks
 
 # Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
 
 logger = logging.getLogger(__name__)
 
@@ -309,18 +309,22 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
         """
         logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=gemini_api_key)
+            api = get_gemini_api()
+            api.configure(api_key=gemini_api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel(get_gemini_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
             except Exception as primary_error:
                 logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel(get_gemini_fallback_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_fallback_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")
             logger.info(f"AI response received: {ai_response[:500]}...")
@@ -1023,7 +1027,8 @@ QUALITY RULES:
 - Every sentence must use proper Traditional Chinese characters (繁體字)
 - Grammar, syntax, and character usage must be correct
 - The target word "{word}" MUST be used correctly according to restrictions
-- Each sentence must be no more than {max_length} characters long
+- Each sentence must be between {min_length} and {max_length} words long; if no spaces, treat characters as words
+- COUNT precisely; if outside the range, regenerate internally
 - Difficulty: {difficulty}
 
 VARIETY REQUIREMENTS:

@@ -6,7 +6,7 @@ import time
 import warnings
 from typing import Optional, Dict, Any
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress noisy FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Use unified Gemini API wrapper with fallbacks
@@ -43,16 +43,10 @@ class APIClient:
             Exception: If all retry attempts fail
         """
         # Configure generation parameters
-        if self.api.api_type == 'new':
-            config = self.api.genai.types.GenerateContentConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-            )
-        else:
-            config = self.api.genai.types.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-            )
+        config = self.api.genai.types.GenerateContentConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+        )
 
         response = self.api.generate_content(
             model=get_gemini_model(),

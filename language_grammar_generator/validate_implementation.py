@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Language Grammar Generator - Pre-Implementation Validation Script
 
@@ -35,12 +35,19 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 import yaml
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 class ImplementationValidator:
     """Comprehensive validator for language analyzer implementations."""
 
     def __init__(self, language_code: str):
         self.language_code = language_code
-        self.base_path = Path("languages") / language_code
+        self.directory_name = self._get_directory_name(language_code)
+        self.file_name = self._get_file_name(language_code)
+        self.class_prefix = self._get_class_prefix(language_code)
+        self.base_path = Path("languages") / self.directory_name
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.successes: List[str] = []
@@ -54,18 +61,21 @@ class ImplementationValidator:
 
     def validate_all(self) -> bool:
         """Run all validation checks."""
-        print(f"\n🔍 VALIDATING {self.language_code.upper()} ANALYZER IMPLEMENTATION")
+        print(f"\nðŸ” VALIDATING {self.language_code.upper()} ANALYZER IMPLEMENTATION")
         print("=" * 60)
 
         checks = [
             self.validate_file_structure,
             self.validate_method_completeness,
             self.validate_interface_compliance,
+            self.validate_response_parser_batch_support,
+            self.validate_validator_interface,
             self.validate_configuration_loading,
             self.validate_component_integration,
             self.validate_gold_standard_comparison,
             self.validate_error_handling,
-            self.validate_performance_requirements
+            self.validate_performance_requirements,
+            self.validate_registry_integration
         ]
 
         all_passed = True
@@ -82,24 +92,24 @@ class ImplementationValidator:
 
     def validate_file_structure(self) -> bool:
         """Check that all required files are present."""
-        print("\n📁 Checking File Structure...")
+        print("\nðŸ“ Checking File Structure...")
 
         required_files = [
-            f"{self.language_code}_analyzer.py",
+            f"{self.file_name}_analyzer.py",
             f"{self.language_code}_grammar_concepts.md",
             "domain/__init__.py",
-            f"domain/{self.language_code}_config.py",
-            f"domain/{self.language_code}_prompt_builder.py",
-            f"domain/{self.language_code}_response_parser.py",
-            f"domain/{self.language_code}_validator.py",
+            f"domain/{self.file_name}_config.py",
+            f"domain/{self.file_name}_prompt_builder.py",
+            f"domain/{self.file_name}_response_parser.py",
+            f"domain/{self.file_name}_validator.py",
             "infrastructure/__init__.py",
-            f"infrastructure/{self.language_code}_fallbacks.py",
+            f"infrastructure/{self.file_name}_fallbacks.py",
             "tests/__init__.py",
-            f"tests/test_{self.language_code}_analyzer.py",
-            f"tests/test_{self.language_code}_config.py",
-            f"tests/test_{self.language_code}_prompt_builder.py",
-            f"tests/test_{self.language_code}_response_parser.py",
-            f"tests/test_{self.language_code}_validator.py",
+            f"tests/test_{self.file_name}_analyzer.py",
+            f"tests/test_{self.file_name}_config.py",
+            f"tests/test_{self.file_name}_prompt_builder.py",
+            f"tests/test_{self.file_name}_response_parser.py",
+            f"tests/test_{self.file_name}_validator.py",
             "tests/test_integration.py",
             "tests/conftest.py"
         ]
@@ -119,12 +129,14 @@ class ImplementationValidator:
 
     def validate_method_completeness(self) -> bool:
         """Check that all required methods are implemented."""
-        print("\n🔧 Checking Method Completeness...")
+        print("\nðŸ”§ Checking Method Completeness...")
 
         try:
             # Import the analyzer module
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             # Required methods for main analyzer
             required_methods = [
@@ -132,6 +144,7 @@ class ImplementationValidator:
                 'batch_analyze_grammar',
                 '_call_ai',
                 '_generate_html_output',
+                'get_sentence_generation_prompt',
                 '__init__'
             ]
 
@@ -144,10 +157,16 @@ class ImplementationValidator:
                 self.errors.append(f"Missing methods in analyzer: {missing_methods}")
                 return False
 
-            # Check domain components
-            domain_components = ['Config', 'PromptBuilder', 'ResponseParser', 'Validator']
-            for component in domain_components:
-                component_class = getattr(analyzer_module, f"{self.language_code.title()}{component}")
+            # Check domain components are instantiable
+            domain_components = {
+                'Config': f"languages.{self.directory_name}.domain.{self.file_name}_config",
+                'PromptBuilder': f"languages.{self.directory_name}.domain.{self.file_name}_prompt_builder",
+                'ResponseParser': f"languages.{self.directory_name}.domain.{self.file_name}_response_parser",
+                'Validator': f"languages.{self.directory_name}.domain.{self.file_name}_validator"
+            }
+            for component, module_path in domain_components.items():
+                component_module = importlib.import_module(module_path)
+                component_class = getattr(component_module, f"{self.class_prefix}{component}")
                 if not hasattr(component_class, '__init__'):
                     self.errors.append(f"Domain component {component} missing __init__")
                     return False
@@ -161,15 +180,17 @@ class ImplementationValidator:
 
     def validate_interface_compliance(self) -> bool:
         """Check that interfaces match gold standards."""
-        print("\n🔗 Checking Interface Compliance...")
+        print("\nðŸ”— Checking Interface Compliance...")
 
         try:
             # Compare with Chinese Simplified analyzer
-            zh_analyzer = importlib.import_module("languages.zh.zh_analyzer")
+            zh_analyzer = importlib.import_module("languages.chinese_simplified.zh_analyzer")
             zh_class = zh_analyzer.ZhAnalyzer
 
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             # Check method signatures match
             zh_methods = [m for m in dir(zh_class) if not m.startswith('_') and callable(getattr(zh_class, m))]
@@ -189,20 +210,22 @@ class ImplementationValidator:
 
     def validate_configuration_loading(self) -> bool:
         """Check that external configuration files load correctly."""
-        print("\n⚙️ Checking Configuration Loading...")
+        print("\nâš™ï¸ Checking Configuration Loading...")
 
         try:
-            config_module = importlib.import_module(f"languages.{self.language_code}.domain.{self.language_code}_config")
-            config_class = getattr(config_module, f"{self.language_code.title()}Config")
+            config_module = importlib.import_module(
+                f"languages.{self.directory_name}.domain.{self.file_name}_config"
+            )
+            config_class = getattr(config_module, f"{self.class_prefix}Config")
 
             config_instance = config_class()
 
             # Check for required attributes (compare with zh_config)
-            zh_config = importlib.import_module("languages.zh.domain.zh_config")
+            zh_config = importlib.import_module("languages.chinese_simplified.domain.zh_config")
             zh_config_class = zh_config.ZhConfig
             zh_instance = zh_config_class()
 
-            required_attrs = ['grammatical_roles', 'color_mapping']
+            required_attrs = ['grammatical_roles', 'get_color_scheme']
             for attr in required_attrs:
                 if not hasattr(config_instance, attr):
                     self.errors.append(f"Config missing required attribute: {attr}")
@@ -217,11 +240,13 @@ class ImplementationValidator:
 
     def validate_component_integration(self) -> bool:
         """Check that all domain components work together."""
-        print("\n🔄 Checking Component Integration...")
+        print("\nðŸ”„ Checking Component Integration...")
 
         try:
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             # Try to instantiate analyzer
             analyzer = analyzer_class()
@@ -242,20 +267,22 @@ class ImplementationValidator:
 
     def validate_gold_standard_comparison(self) -> bool:
         """Compare results with gold standard analyzers."""
-        print("\n🏆 Checking Gold Standard Comparison...")
+        print("\nðŸ† Checking Gold Standard Comparison...")
 
         try:
             # This would require actual test sentences and comparison logic
             # For now, just check that the analyzer can process basic sentences
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             analyzer = analyzer_class()
 
             # Basic functionality test
             test_sentence = "Hello world"
             try:
-                result = analyzer.analyze_grammar(test_sentence, "world", "intermediate", "test_key")
+                result = self._call_analyzer(analyzer, test_sentence, "world", "intermediate", "test_key")
                 if not result:
                     self.errors.append("Analyzer failed basic functionality test")
                     return False
@@ -272,17 +299,19 @@ class ImplementationValidator:
 
     def validate_error_handling(self) -> bool:
         """Check error handling and fallback mechanisms."""
-        print("\n🛡️ Checking Error Handling...")
+        print("\nðŸ›¡ï¸ Checking Error Handling...")
 
         try:
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             analyzer = analyzer_class()
 
             # Test with invalid input
             try:
-                result = analyzer.analyze_grammar("", "", "intermediate", "")
+                result = self._call_analyzer(analyzer, "", "", "intermediate", "")
                 # Should handle gracefully
             except Exception as e:
                 if "gracefully" not in str(e).lower():
@@ -298,18 +327,20 @@ class ImplementationValidator:
 
     def validate_performance_requirements(self) -> bool:
         """Check performance requirements are met."""
-        print("\n⚡ Checking Performance Requirements...")
+        print("\nâš¡ Checking Performance Requirements...")
 
         try:
             import time
-            analyzer_module = importlib.import_module(f"languages.{self.language_code}.{self.language_code}_analyzer")
-            analyzer_class = getattr(analyzer_module, f"{self.language_code.title()}Analyzer")
+            analyzer_module = importlib.import_module(
+                f"languages.{self.directory_name}.{self.file_name}_analyzer"
+            )
+            analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             analyzer = analyzer_class()
 
             # Performance test
             start_time = time.time()
-            result = analyzer.analyze_grammar("Test sentence", "test", "intermediate", "test_key")
+            result = self._call_analyzer(analyzer, "Test sentence", "test", "intermediate", "test_key")
             end_time = time.time()
 
             duration = end_time - start_time
@@ -331,24 +362,158 @@ class ImplementationValidator:
         print("=" * 60)
 
         if self.successes:
-            print(f"\n✅ SUCCESS ({len(self.successes)} checks passed):")
+            print(f"\nâœ… SUCCESS ({len(self.successes)} checks passed):")
             for success in self.successes:
-                print(f"   ✓ {success}")
+                print(f"   âœ“ {success}")
 
         if self.warnings:
-            print(f"\n⚠️ WARNINGS ({len(self.warnings)}):")
+            print(f"\nâš ï¸ WARNINGS ({len(self.warnings)}):")
             for warning in self.warnings:
                 print(f"   ! {warning}")
 
         if self.errors:
-            print(f"\n❌ ERRORS ({len(self.errors)} checks failed):")
+            print(f"\nâŒ ERRORS ({len(self.errors)} checks failed):")
             for error in self.errors:
-                print(f"   ✗ {error}")
+                print(f"   âœ— {error}")
 
         if not self.errors:
-            print(f"\n🎉 ALL CHECKS PASSED! {self.language_code.upper()} analyzer is ready for production.")
+            print(f"\nðŸŽ‰ ALL CHECKS PASSED! {self.language_code.upper()} analyzer is ready for production.")
         else:
-            print(f"\n💥 VALIDATION FAILED! Fix the {len(self.errors)} errors before deploying.")
+            print(f"\nðŸ’¥ VALIDATION FAILED! Fix the {len(self.errors)} errors before deploying.")
+
+    def validate_response_parser_batch_support(self) -> bool:
+        """Check that response parser supports batch parsing."""
+        print("\nðŸ§© Checking Response Parser Batch Support...")
+
+        try:
+            parser_module = importlib.import_module(
+                f"languages.{self.directory_name}.domain.{self.file_name}_response_parser"
+            )
+            parser_class = getattr(parser_module, f"{self.class_prefix}ResponseParser")
+
+            if not hasattr(parser_class, 'parse_batch_response'):
+                self.errors.append("Response parser missing parse_batch_response")
+                return False
+
+            self.successes.append("Response parser supports batch parsing")
+            return True
+        except Exception as e:
+            self.errors.append(f"Response parser batch support check failed: {e}")
+            return False
+
+    def validate_validator_interface(self) -> bool:
+        """Check that validator implements required interface methods."""
+        print("\nðŸ§ª Checking Validator Interface...")
+
+        try:
+            validator_module = importlib.import_module(
+                f"languages.{self.directory_name}.domain.{self.file_name}_validator"
+            )
+            validator_class = getattr(validator_module, f"{self.class_prefix}Validator")
+
+            required_methods = ['validate_result', 'validate_explanation_quality']
+            missing = [m for m in required_methods if not hasattr(validator_class, m)]
+            if missing:
+                self.errors.append(f"Validator missing methods: {missing}")
+                return False
+
+            self.successes.append("Validator interface methods present")
+            return True
+        except Exception as e:
+            self.errors.append(f"Validator interface check failed: {e}")
+            return False
+
+    def validate_registry_integration(self) -> bool:
+        """Check for language registry integration in app configuration."""
+        print("\nðŸ§­ Checking Language Registry Integration...")
+
+        registry_path = Path("streamlit_app") / "language_registry.py"
+        analyzer_registry_path = Path("streamlit_app") / "language_analyzers" / "analyzer_registry.py"
+
+        registry_ok = None
+        analyzer_registry_ok = None
+
+        if registry_path.exists():
+            registry_text = registry_path.read_text(encoding="utf-8")
+            registry_ok = (
+                f"iso_code='{self.language_code}'" in registry_text
+                or f"iso_code=\"{self.language_code}\"" in registry_text
+            )
+
+        if analyzer_registry_path.exists():
+            analyzer_registry_text = analyzer_registry_path.read_text(encoding="utf-8")
+            analyzer_registry_ok = (
+                f"'{self.language_code}'" in analyzer_registry_text
+                or f"\"{self.language_code}\"" in analyzer_registry_text
+            )
+
+        if registry_ok is False:
+            self.warnings.append(
+                f"Language registry missing iso_code='{self.language_code}' in streamlit_app/language_registry.py"
+            )
+        if analyzer_registry_ok is False:
+            self.warnings.append(
+                f"Analyzer registry missing '{self.language_code}' mapping in streamlit_app/language_analyzers/analyzer_registry.py"
+            )
+
+        if registry_ok is None and analyzer_registry_ok is None:
+            self.warnings.append("Registry files not found - skipping language registry integration check")
+            return True
+
+        if registry_ok is False or analyzer_registry_ok is False:
+            return False
+
+        self.successes.append("Language registry integration present")
+        return True
+
+    def _get_directory_name(self, language_code: str) -> str:
+        """Map language code to directory name."""
+        mapping = {
+            "zh_tw": "chinese_traditional",
+            "zh": "chinese_simplified",
+            "hi": "hindi",
+            "es": "spanish",
+            "ar": "arabic",
+            "de": "german",
+            "tr": "turkish"
+        }
+        return mapping.get(language_code, language_code)
+
+    def _get_file_name(self, language_code: str) -> str:
+        """Map language code to analyzer file name."""
+        mapping = {
+            "zh_tw": "zh_tw",
+            "zh": "zh",
+            "hi": "hi",
+            "es": "es",
+            "ar": "ar",
+            "de": "de",
+            "tr": "tr"
+        }
+        return mapping.get(language_code, language_code)
+
+    def _get_class_prefix(self, language_code: str) -> str:
+        """Map language code to class name prefix."""
+        mapping = {
+            "zh_tw": "ZhTw",
+            "zh": "Zh",
+            "hi": "Hi",
+            "es": "Es",
+            "ar": "Ar",
+            "de": "De",
+            "tr": "Tr"
+        }
+        return mapping.get(language_code, language_code.title())
+
+    def _call_analyzer(self, analyzer, sentence: str, target_word: str, complexity: str, api_key: str):
+        """Call analyzer.analyze_grammar with flexible signatures."""
+        try:
+            return analyzer.analyze_grammar(sentence, target_word, complexity, api_key)
+        except TypeError:
+            try:
+                return analyzer.analyze_grammar(sentence, target_word, complexity)
+            except TypeError:
+                return analyzer.analyze_grammar(sentence, target_word)
 
 
 def main():
@@ -377,9 +542,9 @@ def main():
         failed = [lang for lang, result in results.items() if not result]
 
         if passed:
-            print(f"\n✅ PASSED ({len(passed)}): {', '.join(passed)}")
+            print(f"\nâœ… PASSED ({len(passed)}): {', '.join(passed)}")
         if failed:
-            print(f"\n❌ FAILED ({len(failed)}): {', '.join(failed)}")
+            print(f"\nâŒ FAILED ({len(failed)}): {', '.join(failed)}")
 
     else:
         validator = ImplementationValidator(args.language)

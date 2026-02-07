@@ -160,21 +160,18 @@ class LanguageAIService:
             API response text
         """
         try:
-            import google.generativeai as genai
+            from google import genai
 
-            # Configure API
-            genai.configure(api_key=api_key)
-
-            # Initialize model
-            model = genai.GenerativeModel(self.model)
-
-            # Make API call
-            response = model.generate_content(prompt)
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
 
             return response.text
 
         except ImportError:
-            raise ImportError("google-generativeai package not installed. Install with: pip install google-generativeai")
+            raise ImportError("google-genai package not installed. Install with: pip install google-genai")
         except Exception as e:
             raise Exception(f"Gemini API error: {str(e)}")
 

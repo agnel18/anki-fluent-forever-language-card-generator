@@ -29,7 +29,7 @@ class DataTransformer:
         "Japanese": "ja",
         "Korean": "ko",
         "Chinese (Simplified)": "zh",
-        "Chinese (Traditional)": "zh",
+        "Chinese (Traditional)": "zh-tw",
         "Arabic": "ar",
         "Hindi": "hi",
         "Bengali": "bn",

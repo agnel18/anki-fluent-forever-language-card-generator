@@ -375,19 +375,23 @@ IMPORTANT:
     def _call_ai_model(self, prompt: str, api_key: str) -> str:
         """Call Google Gemini AI model with the generated prompt"""
         try:
-            import google.generativeai as genai
-
-            genai.configure(api_key=api_key)
+            from streamlit_app.shared_utils import get_gemini_api
+            api = get_gemini_api()
+            api.configure(api_key=api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel(get_gemini_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_model(),
+                    contents=prompt
+                )
                 return response.text.strip()
             except Exception as primary_error:
                 logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel(get_gemini_fallback_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_fallback_model(),
+                    contents=prompt
+                )
                 return response.text.strip()
 
         except Exception as e:

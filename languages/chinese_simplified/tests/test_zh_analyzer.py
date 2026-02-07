@@ -1,4 +1,4 @@
-# languages/zh/tests/test_zh_analyzer.py
+﻿# languages/chinese_simplified/tests/test_zh_analyzer.py
 """
 Tests for Chinese Simplified Grammar Analyzer
 
@@ -31,13 +31,13 @@ USAGE FOR NEW LANGUAGES:
 import pytest
 import time
 from unittest.mock import Mock, patch
-from languages.zh.zh_analyzer import ZhAnalyzer
-from languages.zh.domain.zh_config import ZhConfig
-from languages.zh.domain.zh_prompt_builder import ZhPromptBuilder
-from languages.zh.domain.zh_response_parser import ZhResponseParser
-from languages.zh.domain.zh_validator import ZhValidator
-from languages.zh.domain.zh_fallbacks import ZhFallbacks
-from languages.zh.domain.zh_patterns import ZhPatterns
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.domain.zh_config import ZhConfig
+from languages.chinese_simplified.domain.zh_prompt_builder import ZhPromptBuilder
+from languages.chinese_simplified.domain.zh_response_parser import ZhResponseParser
+from languages.chinese_simplified.domain.zh_validator import ZhValidator
+from languages.chinese_simplified.domain.zh_fallbacks import ZhFallbacks
+from languages.chinese_simplified.domain.zh_patterns import ZhPatterns
 
 
 class TestZhAnalyzer:
@@ -60,24 +60,24 @@ class TestZhAnalyzer:
 
     def test_single_sentence_analysis(self):
         """Test single sentence grammar analysis."""
-        sentence = "我吃了一个苹果"
-        target_word = "苹果"
+        sentence = "æˆ‘åƒäº†ä¸€ä¸ªè‹¹æžœ"
+        target_word = "è‹¹æžœ"
 
         # Mock the AI call
         with patch.object(self.analyzer, '_call_ai') as mock_ai:
             mock_ai.return_value = '''
             {
-              "sentence": "我吃了一个苹果",
+              "sentence": "æˆ‘åƒäº†ä¸€ä¸ªè‹¹æžœ",
               "words": [
-                {"word": "我", "grammatical_role": "pronoun", "individual_meaning": "I, the speaker"},
-                {"word": "吃", "grammatical_role": "verb", "individual_meaning": "to eat, consume"},
-                {"word": "了", "grammatical_role": "aspect_marker", "individual_meaning": "perfective aspect, completed action"},
-                {"word": "一个", "grammatical_role": "classifier", "individual_meaning": "one (with general classifier 个)"},
-                {"word": "苹果", "grammatical_role": "noun", "individual_meaning": "apple, a type of fruit"}
+                {"word": "æˆ‘", "grammatical_role": "pronoun", "individual_meaning": "I, the speaker"},
+                {"word": "åƒ", "grammatical_role": "verb", "individual_meaning": "to eat, consume"},
+                {"word": "äº†", "grammatical_role": "aspect_marker", "individual_meaning": "perfective aspect, completed action"},
+                {"word": "ä¸€ä¸ª", "grammatical_role": "classifier", "individual_meaning": "one (with general classifier ä¸ª)"},
+                {"word": "è‹¹æžœ", "grammatical_role": "noun", "individual_meaning": "apple, a type of fruit"}
               ],
               "explanations": {
                 "overall_structure": "Subject-Verb-Object sentence with aspect marker and classifier",
-                "key_features": "Uses perfective aspect 了 and classifier construction 一个"
+                "key_features": "Uses perfective aspect äº† and classifier construction ä¸€ä¸ª"
               }
             }
             '''
@@ -93,7 +93,7 @@ class TestZhAnalyzer:
 
     def test_batch_analysis(self):
         """Test batch sentence analysis."""
-        sentences = ["我吃饭", "你喝水", "他睡觉"]
+        sentences = ["æˆ‘åƒé¥­", "ä½ å–æ°´", "ä»–ç¡è§‰"]
         target_word = ""
 
         with patch.object(self.analyzer, '_call_ai') as mock_ai:
@@ -101,26 +101,26 @@ class TestZhAnalyzer:
             {
               "batch_results": [
                 {
-                  "sentence": "我吃饭",
+                  "sentence": "æˆ‘åƒé¥­",
                   "words": [
-                    {"word": "我", "grammatical_role": "pronoun", "individual_meaning": "I"},
-                    {"word": "吃饭", "grammatical_role": "verb", "individual_meaning": "to eat (rice/meal)"}
+                    {"word": "æˆ‘", "grammatical_role": "pronoun", "individual_meaning": "I"},
+                    {"word": "åƒé¥­", "grammatical_role": "verb", "individual_meaning": "to eat (rice/meal)"}
                   ],
                   "explanations": {"overall_structure": "Simple SVO sentence"}
                 },
                 {
-                  "sentence": "你喝水",
+                  "sentence": "ä½ å–æ°´",
                   "words": [
-                    {"word": "你", "grammatical_role": "pronoun", "individual_meaning": "you"},
-                    {"word": "喝水", "grammatical_role": "verb", "individual_meaning": "to drink water"}
+                    {"word": "ä½ ", "grammatical_role": "pronoun", "individual_meaning": "you"},
+                    {"word": "å–æ°´", "grammatical_role": "verb", "individual_meaning": "to drink water"}
                   ],
                   "explanations": {"overall_structure": "Simple SVO sentence"}
                 },
                 {
-                  "sentence": "他睡觉",
+                  "sentence": "ä»–ç¡è§‰",
                   "words": [
-                    {"word": "他", "grammatical_role": "pronoun", "individual_meaning": "he"},
-                    {"word": "睡觉", "grammatical_role": "verb", "individual_meaning": "to sleep"}
+                    {"word": "ä»–", "grammatical_role": "pronoun", "individual_meaning": "he"},
+                    {"word": "ç¡è§‰", "grammatical_role": "verb", "individual_meaning": "to sleep"}
                   ],
                   "explanations": {"overall_structure": "Simple SVO sentence"}
                 }
@@ -137,7 +137,7 @@ class TestZhAnalyzer:
 
     def test_fallback_analysis(self):
         """Test fallback analysis when AI fails."""
-        sentence = "测试句子"
+        sentence = "æµ‹è¯•å¥å­"
         target_word = ""
 
         # Mock AI to fail
@@ -173,18 +173,18 @@ class TestZhAnalyzer:
 
     def test_performance(self):
         """Test performance requirements."""
-        sentence = "这是一个测试句子"
+        sentence = "è¿™æ˜¯ä¸€ä¸ªæµ‹è¯•å¥å­"
 
         with patch.object(self.analyzer, '_call_ai') as mock_ai:
             mock_ai.return_value = '''
             {
-              "sentence": "这是一个测试句子",
+              "sentence": "è¿™æ˜¯ä¸€ä¸ªæµ‹è¯•å¥å­",
               "words": [
-                {"word": "这", "grammatical_role": "pronoun", "individual_meaning": "this"},
-                {"word": "是", "grammatical_role": "verb", "individual_meaning": "to be"},
-                {"word": "一个", "grammatical_role": "classifier", "individual_meaning": "one (with classifier)"},
-                {"word": "测试", "grammatical_role": "noun", "individual_meaning": "test"},
-                {"word": "句子", "grammatical_role": "noun", "individual_meaning": "sentence"}
+                {"word": "è¿™", "grammatical_role": "pronoun", "individual_meaning": "this"},
+                {"word": "æ˜¯", "grammatical_role": "verb", "individual_meaning": "to be"},
+                {"word": "ä¸€ä¸ª", "grammatical_role": "classifier", "individual_meaning": "one (with classifier)"},
+                {"word": "æµ‹è¯•", "grammatical_role": "noun", "individual_meaning": "test"},
+                {"word": "å¥å­", "grammatical_role": "noun", "individual_meaning": "sentence"}
               ],
               "explanations": {"overall_structure": "Topic-comment sentence"}
             }
@@ -239,36 +239,36 @@ class TestZhPatterns:
         patterns = ZhPatterns(config)
 
         # Test aspect markers
-        assert patterns.is_aspect_marker("了")
-        assert patterns.is_aspect_marker("着")
-        assert patterns.is_aspect_marker("过")
-        assert not patterns.is_aspect_marker("的")
+        assert patterns.is_aspect_marker("äº†")
+        assert patterns.is_aspect_marker("ç€")
+        assert patterns.is_aspect_marker("è¿‡")
+        assert not patterns.is_aspect_marker("çš„")
 
         # Test particles
-        assert patterns.is_particle("吗")
-        assert patterns.is_particle("呢")
-        assert patterns.is_particle("的")
-        assert not patterns.is_particle("苹果")
+        assert patterns.is_particle("å—")
+        assert patterns.is_particle("å‘¢")
+        assert patterns.is_particle("çš„")
+        assert not patterns.is_particle("è‹¹æžœ")
 
     def test_classifier_recognition(self):
         """Test classifier pattern matching."""
         config = ZhConfig()
         patterns = ZhPatterns(config)
 
-        assert patterns.is_classifier("个")
-        assert patterns.is_classifier("本")
-        assert patterns.is_classifier("杯")
-        assert not patterns.is_classifier("苹果")
+        assert patterns.is_classifier("ä¸ª")
+        assert patterns.is_classifier("æœ¬")
+        assert patterns.is_classifier("æ¯")
+        assert not patterns.is_classifier("è‹¹æžœ")
 
     def test_han_character_validation(self):
         """Test Han character detection."""
         config = ZhConfig()
         patterns = ZhPatterns(config)
 
-        assert patterns.is_han_character("苹果")
-        assert patterns.is_han_character("你好")
+        assert patterns.is_han_character("è‹¹æžœ")
+        assert patterns.is_han_character("ä½ å¥½")
         assert not patterns.is_han_character("hello")
-        assert patterns.is_han_character("hello世界")  # Mixed
+        assert patterns.is_han_character("helloä¸–ç•Œ")  # Mixed
 
 
 class TestZhFallbacks:
@@ -279,7 +279,7 @@ class TestZhFallbacks:
         config = ZhConfig()
         fallbacks = ZhFallbacks(config)
 
-        sentence = "我吃苹果"
+        sentence = "æˆ‘åƒè‹¹æžœ"
         result = fallbacks.create_fallback(sentence, "intermediate")
 
         assert result is not None
@@ -294,12 +294,13 @@ class TestZhFallbacks:
         fallbacks = ZhFallbacks(config)
 
         # Test various words
-        assert fallbacks._guess_role("我") == "pronoun"
-        assert fallbacks._guess_role("了") == "aspect_marker"
-        assert fallbacks._guess_role("个") == "classifier"
-        assert fallbacks._guess_role("吗") == "modal_particle"
-        assert fallbacks._guess_role("苹果") == "noun"  # Default
+        assert fallbacks._guess_role("æˆ‘") == "pronoun"
+        assert fallbacks._guess_role("äº†") == "aspect_marker"
+        assert fallbacks._guess_role("ä¸ª") == "classifier"
+        assert fallbacks._guess_role("å—") == "modal_particle"
+        assert fallbacks._guess_role("è‹¹æžœ") == "noun"  # Default
 
 
 if __name__ == "__main__":
     pytest.main([__file__])
+

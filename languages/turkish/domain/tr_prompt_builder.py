@@ -137,6 +137,7 @@ class TrPromptBuilder:
                 'complexity': complexity,
                 'language_name': self.config.language_name,
                 'sentence_count': len(sentences),
+                'grammatical_roles_list': self._get_grammatical_roles_list(complexity),
             }
 
             prompt = template.render(**context)
@@ -201,18 +202,6 @@ TURKISH GRAMMAR ANALYSIS REQUIREMENTS:
 - Use consistent grammatical roles: {{grammatical_roles_list}}
 
 Return JSON with batch_results array containing analysis for each sentence."""
-        """Create basic fallback prompt for single sentence."""
-        return f"""Analyze this {self.config.language_name} sentence: {sentence}
-Target word: {target_word}
-Complexity: {complexity}
-
-CRITICAL TURKISH RULES:
-- Identify morphological structure (root + suffixes)
-- Note vowel harmony patterns
-- Identify case markers and their functions
-- Explain agglutination where present
-
-Return JSON with words array containing grammatical_role and individual_meaning for each word."""
 
     def _create_fallback_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str:
         """Create basic fallback prompt for batch sentences."""
@@ -229,99 +218,6 @@ CRITICAL TURKISH RULES:
 - Explain agglutination where present
 
 Return JSON with batch_results array."""
-        return """
-You are a Turkish language analysis expert. Analyze the following Turkish text with {{ complexity }} complexity level.
-
-CRITICAL TURKISH LINGUISTIC RULES (PREVENTION-AT-SOURCE):
-========================================================
-
-1. AGGLUTINATION HANDLING:
-   - Turkish uses agglutination: words are formed by adding suffixes to roots
-   - Each suffix carries specific grammatical meaning
-   - NEVER analyze compound words as single units without morphological breakdown
-   - Example: "evimdeki" = ev(im)(de)(ki) = house(my)(at)(that_is_in)
-
-2. VOWEL HARMONY (MANDATORY):
-   - Suffix vowels harmonize with the last vowel of the root
-   - BACK VOWELS: a, ı, o, u → suffixes use: a, ı, u (for back harmony)
-   - FRONT VOWELS: e, i, ö, ü → suffixes use: e, i, ü (for front harmony)
-   - Example: "ev" (back) + "de" (back) = "evde" (at home)
-
-3. CASE SYSTEM (REQUIRED ANALYSIS):
-   - Nominative: subject (no marker) - "ev" (house)
-   - Accusative: direct object - "ev-i" (house-ACC)
-   - Dative: indirect object - "ev-e" (house-DAT)
-   - Locative: location - "ev-de" (house-LOC)
-   - Ablative: source - "ev-den" (house-ABL)
-   - Genitive: possession - "ev-in" (house-GEN)
-
-4. POSSESSIVE SUFFIXES:
-   - 1SG: -im/ım/um/üm (benim evim = my house)
-   - 2SG: -in/ın/un/ün (senin evin = your house)
-   - 3SG: -i/ı/u/ü (onun evi = his/her house)
-   - 1PL: -imiz/ımız/umuz/ümüz (bizim evimiz = our house)
-   - 2PL: -iniz/ınız/unuz/ünüz (sizin eviniz = your house)
-   - 3PL: -leri (onların evleri = their house)
-
-5. WORD ORDER: Subject-Object-Verb (SOV)
-   - "Ben kitap okuyorum." = I book read-PRES-1SG = "I am reading a book."
-   - Case markers clarify roles, word order can vary for emphasis
-
-6. QUESTION FORMATION:
-   - Question particle "mı/mi/mu/mü" follows vowel harmony
-   - Added to focused element: "Kitap mı okuyorsun?" (Are you reading a book?)
-
-ANALYSIS REQUIREMENTS:
-=====================
-
-Text to analyze: "{{ text }}"
-
-Complexity Level: {{ complexity }}
-
-For each word in the text:
-1. MORPHOLOGICAL BREAKDOWN: Show root + suffixes with meanings
-2. GRAMMATICAL CATEGORY: Use only these categories:
-   {% for category in categories %}
-   - {{ category }}
-   {% endfor %}
-3. SYNTACTIC ROLE: Subject, object, modifier, etc.
-4. VOWEL HARMONY: Explain harmony rules applied
-5. COLOR CODE: Use provided color scheme
-
-Output Format (JSON):
-{
-  "analysis": [
-    {
-      "word": "original_word",
-      "morphology": {
-        "root": "root_word",
-        "suffixes": [
-          {"form": "suffix", "meaning": "grammatical_meaning", "harmony": "harmony_rule"}
-        ]
-      },
-      "category": "grammatical_category",
-      "role": "syntactic_role",
-      "color": "hex_color_code",
-      "complexity": "{{ complexity }}"
-    }
-  ],
-  "sentence_structure": "brief_description",
-  "linguistic_features": ["feature1", "feature2"],
-  "validation": {
-    "vowel_harmony_correct": true/false,
-    "morphology_complete": true/false,
-    "case_system_applied": true/false
-  }
-}
-
-PREVENTION RULES:
-================
-- NEVER skip morphological analysis for agglutinated words
-- ALWAYS explain vowel harmony applications
-- ALWAYS identify case markers and their functions
-- NEVER confuse word order with grammatical roles (cases clarify)
-- ALWAYS validate harmony rules are followed correctly
-"""
 
     def _create_fallback_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str:
         """Create basic fallback prompt for single sentence."""

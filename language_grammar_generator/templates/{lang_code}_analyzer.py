@@ -109,13 +109,16 @@ class LanguageAnalyzer:
             response_text = self._call_ai_service(prompt, api_key)
 
             # Parse response
-            parsed_result = self.response_parser.parse_response(response_text, sentence, complexity)
+            parsed_result = self.response_parser.parse_response(
+                response_text, complexity, sentence, target_word
+            )
 
-            # Validate result
-            validation_result = self.validator.validate_analysis(parsed_result)
+            # Validate result and explanation quality
+            validated_result = self.validator.validate_result(parsed_result, sentence)
+            quality_result = self.validator.validate_explanation_quality(validated_result)
 
             # Combine results
-            final_result = self._combine_results(parsed_result, validation_result)
+            final_result = self._combine_results(validated_result, quality_result)
 
             # Record analysis completion
             if self._performance_monitor:
@@ -133,8 +136,8 @@ class LanguageAnalyzer:
 
             return self._create_error_result(error_msg, sentence, complexity)
 
-    def analyze_batch(self, sentences: List[str], target_word: Optional[str] = None,
-                     complexity: str = 'intermediate', api_key: Optional[str] = None) -> List[Dict[str, Any]]:
+    def batch_analyze_grammar(self, sentences: List[str], target_word: Optional[str] = None,
+                              complexity: str = 'intermediate', api_key: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Analyze multiple LANGUAGE_NAME_PLACEHOLDER sentences in batch.
 
@@ -147,17 +150,30 @@ class LanguageAnalyzer:
         Returns:
             List of analysis results
         """
-        results = []
+        if not sentences:
+            return []
 
-        for sentence in sentences:
-            try:
-                result = self.analyze_grammar(sentence, target_word, complexity, api_key)
-                results.append(result)
-            except Exception as e:
-                error_result = self._create_error_result(f"Batch analysis error: {str(e)}", sentence, complexity)
-                results.append(error_result)
+        try:
+            prompt = self.prompt_builder.build_batch_prompt(sentences, target_word or "", complexity)
+            response_text = self._call_ai_service(prompt, api_key)
+            parsed_results = self.response_parser.parse_batch_response(
+                response_text, sentences, complexity, target_word
+            )
+        except Exception as e:
+            return [self._create_error_result(f"Batch analysis error: {str(e)}", s, complexity) for s in sentences]
+
+        results = []
+        for parsed_result, sentence in zip(parsed_results, sentences):
+            validated_result = self.validator.validate_result(parsed_result, sentence)
+            quality_result = self.validator.validate_explanation_quality(validated_result)
+            results.append(self._combine_results(validated_result, quality_result))
 
         return results
+
+    def analyze_batch(self, sentences: List[str], target_word: Optional[str] = None,
+                     complexity: str = 'intermediate', api_key: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Backward-compatible batch analysis wrapper."""
+        return self.batch_analyze_grammar(sentences, target_word, complexity, api_key)
 
     def get_supported_complexities(self) -> List[str]:
         """Get list of supported complexity levels"""
@@ -236,23 +252,17 @@ class LanguageAnalyzer:
         # This should be implemented in infrastructure layer
         raise NotImplementedError("Direct API call not implemented. Use AIService.")
 
-    def _combine_results(self, parsed_result: Dict[str, Any], validation_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Combine parsed and validation results"""
+    def _combine_results(self, parsed_result: Dict[str, Any], quality_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Combine parsed results with quality metrics."""
         combined = parsed_result.copy()
 
-        # Add validation information
-        combined['validation'] = validation_result
+        # Attach quality metrics
+        combined['explanation_quality'] = quality_result
 
-        # Use adjusted confidence from validation
-        if 'adjusted_confidence' in validation_result:
-            combined['confidence_score'] = validation_result['adjusted_confidence']
-
-        # Add quality indicators
-        combined['quality_indicators'] = {
-            'validation_passed': validation_result.get('is_valid', False),
-            'issue_count': len(validation_result.get('issues', [])),
-            'quality_metrics': validation_result.get('quality_metrics', {})
-        }
+        # Adjust confidence based on explanation quality
+        base_confidence = combined.get('confidence_score', 0.0)
+        quality_score = quality_result.get('quality_score', 1.0)
+        combined['confidence_score'] = min(base_confidence * quality_score, 1.0)
 
         return combined
 

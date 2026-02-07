@@ -6,6 +6,20 @@ This is a Clean Architecture implementation of a LANGUAGE_NAME_PLACEHOLDER gramm
 
 ## Critical Requirements
 
+### Language Registry Integration (Required)
+
+**CRITICAL:** Your analyzer will not be discoverable in the app until the language is registered.
+
+Update these files when implementing a new language:
+- `streamlit_app/language_registry.py`: add LanguageConfig with correct `iso_code`
+- `streamlit_app/language_analyzers/analyzer_registry.py`: add folder-to-code mapping
+
+Verify registration:
+```bash
+python -c "from streamlit_app.language_registry import get_language_registry; r = get_language_registry(); print(r.get_iso_code('LANGUAGE_NAME_PLACEHOLDER'))"
+python -c "from streamlit_app.language_analyzers.analyzer_registry import get_analyzer; print(get_analyzer('LANG_CODE_PLACEHOLDER'))"
+```
+
 ### Sentence Generation Character Limits (UX Requirement)
 
 **MANDATORY:** All sentence generation prompts must enforce strict character limits to prevent overwhelming users with verbose explanations.

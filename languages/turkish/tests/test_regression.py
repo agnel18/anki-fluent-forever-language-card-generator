@@ -1,6 +1,6 @@
 
 """
-Regression tests for zh analyzer.
+Regression tests for tr analyzer.
 
 These tests prevent reintroduction of previously fixed bugs.
 """
@@ -8,19 +8,19 @@ These tests prevent reintroduction of previously fixed bugs.
 import pytest
 import os
 from dotenv import load_dotenv
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.turkish.tr_analyzer import TrAnalyzer
 
 # Load environment variables
 load_dotenv()
 
 
-class TestZhAnalyzerRegression:
+class TestTrAnalyzerRegression:
     """Regression tests for known issues."""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer for testing."""
-        return ZhAnalyzer()
+        return TrAnalyzer()
 
     def test_api_key_validation(self, analyzer):
         """Test that API key validation works correctly."""

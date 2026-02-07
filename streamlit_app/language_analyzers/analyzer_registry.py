@@ -65,10 +65,11 @@ class AnalyzerRegistry:
             'arabic': 'ar',
             'hindi': 'hi',
             'spanish': 'es',
+            'chinese_simplified': 'zh',
             'chinese_traditional': 'zh-tw',
             'german': 'de',
             'turkish': 'tr',
-            'zh': 'zh'  # Chinese Simplified
+            'zh': 'zh'  # Backward compatibility
         }
 
         # Look for language subdirectories

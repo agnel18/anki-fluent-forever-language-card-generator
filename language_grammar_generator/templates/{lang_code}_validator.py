@@ -63,6 +63,71 @@ class LanguageValidator:
         self.max_word_coverage_penalty = 0.8
         self.invalid_role_penalty = 0.9
 
+    def validate_result(self, result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        """
+        Validate and score grammar analysis result.
+
+        REQUIRED BY ANALYZER:
+        - Adds confidence_score
+        - Ensures word_explanations format
+        - Flags fallback status
+        """
+        word_explanations = result.get('word_explanations', [])
+        is_fallback = result.get('is_fallback', False)
+
+        if not isinstance(word_explanations, list):
+            word_explanations = []
+
+        if is_fallback:
+            confidence_score = 0.1
+        elif not word_explanations:
+            confidence_score = 0.2
+        else:
+            coverage_score = min(1.0, len(word_explanations) / max(1, len(sentence.split())))
+            confidence_score = max(0.3, coverage_score)
+
+        result['word_explanations'] = word_explanations
+        result['confidence_score'] = confidence_score
+        result['is_fallback'] = is_fallback
+        return result
+
+    def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate explanation quality metrics.
+
+        REQUIRED BY ANALYZER:
+        - Returns quality_score and issues
+        - Highlights missing or overly long explanations
+        """
+        word_explanations = result.get('word_explanations', [])
+        issues = []
+
+        if not word_explanations:
+            return {
+                'quality_score': 0.0,
+                'issues': ['No explanations found']
+            }
+
+        total = len(word_explanations)
+        detailed_count = 0
+        for exp in word_explanations:
+            if not isinstance(exp, list) or len(exp) < 4:
+                issues.append("Missing explanation fields")
+                continue
+            meaning = exp[3]
+            if len(meaning) < 5:
+                issues.append(f"Very short explanation for '{exp[0]}'")
+            elif len(meaning) > 75:
+                issues.append(f"Explanation too long for '{exp[0]}'")
+            else:
+                detailed_count += 1
+
+        quality_score = detailed_count / max(1, total)
+        return {
+            'quality_score': quality_score,
+            'issues': issues
+        }
+
     def validate_analysis(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate analysis result for LANGUAGE_NAME_PLACEHOLDER.

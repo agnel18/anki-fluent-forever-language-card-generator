@@ -1,4 +1,4 @@
-# languages/zh/domain/__init__.py
+﻿# languages/chinese_simplified/domain/__init__.py
 """
 Chinese Simplified Domain Components Package
 

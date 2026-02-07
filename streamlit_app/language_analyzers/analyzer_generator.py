@@ -7,7 +7,7 @@ import re
 import warnings
 from typing import Dict, Any, Optional
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress noisy FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Use unified Gemini API wrapper with fallbacks

@@ -62,13 +62,15 @@ def test_LANGUAGE_PLACEHOLDER_analyzer_quality():
     if not api_key:
         return False
 
-    # Configure Google AI with the API key
+    # Configure Gemini API with the API key
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        print("✓ Google AI configured successfully")
+        from streamlit_app.shared_utils import get_gemini_api, get_gemini_model
+        api = get_gemini_api()
+        api.configure(api_key=api_key)
+        api.generate_content(model=get_gemini_model(), contents="Hello")
+        print("✓ Gemini API configured successfully")
     except Exception as e:
-        print(f"✗ Failed to configure Google AI: {e}")
+        print(f"✗ Failed to configure Gemini API: {e}")
         return False
 
     # Initialize analyzer
@@ -110,7 +112,7 @@ def test_LANGUAGE_PLACEHOLDER_analyzer_quality():
 
         try:
             # Analyze the sentence with the API key
-            result = analyzer.analyze_grammar(sentence, target_word, gemini_api_key=api_key)
+            result = analyzer.analyze_grammar(sentence, target_word, "intermediate", api_key)
             print("✓ Analysis completed successfully")
 
             # Debug: Show raw AI response if available

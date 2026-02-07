@@ -1,14 +1,14 @@
-# Testing Guide
+﻿# Testing Guide
 ## Comprehensive Testing Strategy Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark
+**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture benchmark
 **Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)
 **Critical:** Test against Chinese Simplified gold standard - external configuration, integrated fallbacks, natural validation
 **Prerequisites:** Study Chinese Simplified Clean Architecture before testing
 **Architecture:** Follow [Architecture Guide](architecture_guide.md) with Chinese Simplified compliance
 **Time Estimate:** 1-2 weeks for gold standard compliant test suite
 
-## 🎯 Testing Philosophy - Chinese Simplified Gold Standard Compliance
+## ðŸŽ¯ Testing Philosophy - Chinese Simplified Gold Standard Compliance
 
 ### Quality Assurance Principles - Match Chinese Simplified
 - **Gold Standard Comparison:** All tests compare with Chinese Simplified Clean Architecture results
@@ -21,19 +21,19 @@
 
 ### Testing Pyramid - Chinese Simplified Validation
 ```
-┌─────────────────┐  (Few tests, high value)
-│ Gold Standard   │  Compare with Chinese Simplified
-│ Compliance      │  Clean Architecture validation
-├─────────────────┤
-│ System Tests    │  End-to-end facade workflow
-│ Integration     │  Domain component orchestration
-├─────────────────┤
-│ Unit Tests      │  Individual domain components
-│                 │  (Many tests, fast)
-└─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  (Few tests, high value)
+â”‚ Gold Standard   â”‚  Compare with Chinese Simplified
+â”‚ Compliance      â”‚  Clean Architecture validation
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ System Tests    â”‚  End-to-end facade workflow
+â”‚ Integration     â”‚  Domain component orchestration
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Unit Tests      â”‚  Individual domain components
+â”‚                 â”‚  (Many tests, fast)
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-## 🚀 Automated Testing Framework
+## ðŸš€ Automated Testing Framework
 
 ### Pre-Implementation Validation
 ```bash
@@ -62,27 +62,27 @@ python language_grammar_generator/compare_with_gold_standard.py --language {lang
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
 ```
 
-## 🧪 Testing Framework Setup - Chinese Simplified Structure
+## ðŸ§ª Testing Framework Setup - Chinese Simplified Structure
 
 ### 1. Directory Structure - Like Chinese Simplified
 ```
 languages/{language}/tests/
-├── __init__.py
-├── conftest.py                    # Pytest configuration
-├── test_{language}_analyzer.py    # Main facade tests (Clean Architecture)
-├── test_{language}_config.py      # External config loading tests (YAML/JSON)
-├── test_{language}_prompt_builder.py  # Jinja2 template tests
-├── test_{language}_response_parser.py # Response parsing with integrated fallbacks
-├── test_{language}_validator.py   # NATURAL validation tests (NO boosting)
-├── test_{language}_integration.py # Facade orchestration tests
-├── test_{language}_performance.py # Performance vs Chinese Simplified
-├── test_gold_standard_comparison.py # Compare with Chinese Simplified
-├── fixtures/
-│   ├── sample_sentences.json     # Test sentences
-│   ├── expected_outputs.json     # Expected results like gold standards
-│   └── mock_responses.json       # Mock AI responses
-└── utils/
-    └── test_helpers.py           # Gold standard test helpers
+â”œâ”€â”€ __init__.py
+â”œâ”€â”€ conftest.py                    # Pytest configuration
+â”œâ”€â”€ test_{language}_analyzer.py    # Main facade tests (Clean Architecture)
+â”œâ”€â”€ test_{language}_config.py      # External config loading tests (YAML/JSON)
+â”œâ”€â”€ test_{language}_prompt_builder.py  # Jinja2 template tests
+â”œâ”€â”€ test_{language}_response_parser.py # Response parsing with integrated fallbacks
+â”œâ”€â”€ test_{language}_validator.py   # NATURAL validation tests (NO boosting)
+â”œâ”€â”€ test_{language}_integration.py # Facade orchestration tests
+â”œâ”€â”€ test_{language}_performance.py # Performance vs Chinese Simplified
+â”œâ”€â”€ test_gold_standard_comparison.py # Compare with Chinese Simplified
+â”œâ”€â”€ fixtures/
+â”‚   â”œâ”€â”€ sample_sentences.json     # Test sentences
+â”‚   â”œâ”€â”€ expected_outputs.json     # Expected results like gold standards
+â”‚   â””â”€â”€ mock_responses.json       # Mock AI responses
+â””â”€â”€ utils/
+    â””â”€â”€ test_helpers.py           # Gold standard test helpers
 ```
 
 ### 2. Configuration - Gold Standard Test Setup
@@ -114,8 +114,8 @@ def gold_standard_results():
     with open("tests/fixtures/gold_standard_results.json") as f:
         return json.load(f)
 ```
-    ├── test_helpers.py           # Test utilities
-    └── linguistic_validators.py  # Linguistic validation helpers
+    â”œâ”€â”€ test_helpers.py           # Test utilities
+    â””â”€â”€ linguistic_validators.py  # Linguistic validation helpers
 ```
 
 ### 2. Pytest Configuration
@@ -235,7 +235,7 @@ def config():
 }
 ```
 
-## 🧩 Unit Testing
+## ðŸ§© Unit Testing
 
 ### 1. Configuration Tests
 
@@ -718,7 +718,7 @@ class Test{Language}Validator:
         assert 'validation_timestamp' in metadata
 ```
 
-## 🔗 Integration Testing
+## ðŸ”— Integration Testing
 
 ### 1. End-to-End Workflow Tests
 
@@ -858,7 +858,7 @@ class Test{Language}Integration:
         assert duration < 1.0  # Less than 1 second
 ```
 
-## 🧠 Linguistic Accuracy Testing
+## ðŸ§  Linguistic Accuracy Testing
 
 ### 1. Linguistic Validation Framework
 
@@ -1098,7 +1098,7 @@ class Test{Language}LinguisticAccuracy:
         # (This is a simplified test - real validation would be more sophisticated)
 ```
 
-## ⚡ Performance Testing
+## âš¡ Performance Testing
 
 ### 1. Performance Benchmarks
 
@@ -1249,7 +1249,7 @@ class Test{Language}Performance:
         assert large_time < small_time * 5, "Performance degradation too steep"
 ```
 
-## 🎯 Content Generation Testing - Critical Addition
+## ðŸŽ¯ Content Generation Testing - Critical Addition
 
 ### Overview - Why This Was Missing
 Content generation testing was not included in the original comprehensive test suite, which led to Arabic sentence generation falling back to English samples. This section adds the missing test coverage for:
@@ -1262,11 +1262,11 @@ Content generation testing was not included in the original comprehensive test s
 ### 1. Content Generation Test Structure
 ```
 languages/{language}/tests/
-├── test_content_generation.py      # Language-specific content generation
-├── test_content_integration.py     # Content generator + analyzer integration
-└── fixtures/
-    ├── content_generation_samples.json
-    └── content_generation_expected.json
+â”œâ”€â”€ test_content_generation.py      # Language-specific content generation
+â”œâ”€â”€ test_content_integration.py     # Content generator + analyzer integration
+â””â”€â”€ fixtures/
+    â”œâ”€â”€ content_generation_samples.json
+    â””â”€â”€ content_generation_expected.json
 ```
 
 ### 2. Language-Specific Content Generation Tests
@@ -1465,7 +1465,7 @@ KEYWORDS:
         assert analyzer is not None, "Arabic analyzer should be available"
 
         prompt = analyzer.get_sentence_generation_prompt(
-            word="كتاب",
+            word="ÙƒØªØ§Ø¨",
             language="Arabic",
             num_sentences=3
         )
@@ -1609,7 +1609,7 @@ class TestFallbackMechanisms:
             mock_client.generate_content.return_value = mock_response
 
             result = content_generator.generate_word_meaning_sentences_and_keywords(
-                word="كتاب",
+                word="ÙƒØªØ§Ø¨",
                 language="Arabic",
                 num_sentences=3,
                 gemini_api_key="test_key"
@@ -1622,7 +1622,7 @@ class TestFallbackMechanisms:
 
             # Check that fallback sentences contain the word
             for sentence in result['sentences']:
-                assert "كتاب" in sentence, "Fallback sentences should contain target word"
+                assert "ÙƒØªØ§Ø¨" in sentence, "Fallback sentences should contain target word"
 
     def test_fallback_keywords_generation(self, content_generator):
         """Test fallback keyword generation"""
@@ -1687,7 +1687,7 @@ This is not properly formatted sentence data
             mock_client.generate_content.return_value = mock_response
 
             result = content_generator.generate_word_meaning_sentences_and_keywords(
-                word="كتاب",
+                word="ÙƒØªØ§Ø¨",
                 language="Arabic",
                 num_sentences=1,
                 gemini_api_key="test_key"
@@ -1695,7 +1695,7 @@ This is not properly formatted sentence data
 
             # The word should still appear in Arabic script in fallback
             sentence = result['sentences'][0]
-            assert "كتاب" in sentence, "Fallback should preserve Arabic word"
+            assert "ÙƒØªØ§Ø¨" in sentence, "Fallback should preserve Arabic word"
 
 ### 5. Content Generation Performance Tests
 
@@ -1778,13 +1778,13 @@ KEYWORDS:
   "arabic": {
     "words": [
       {
-        "word": "كتاب",
+        "word": "ÙƒØªØ§Ø¨",
         "meaning": "book (a written work)",
         "expected_sentences": 3,
         "language_features": ["RTL", "Arabic script", "sun letters"]
       },
       {
-        "word": "مدرسة",
+        "word": "Ù…Ø¯Ø±Ø³Ø©",
         "meaning": "school (place of learning)",
         "expected_sentences": 4,
         "language_features": ["feminine noun", "case marking"]
@@ -1794,7 +1794,7 @@ KEYWORDS:
   "hindi": {
     "words": [
       {
-        "word": "किताब",
+        "word": "à¤•à¤¿à¤¤à¤¾à¤¬",
         "meaning": "book (written material)",
         "expected_sentences": 3,
         "language_features": ["Devanagari", "gender agreement"]
@@ -1807,7 +1807,7 @@ KEYWORDS:
 **File:** `tests/fixtures/content_generation_expected.json`
 ```json
 {
-  "arabic_كتاب": {
+  "arabic_ÙƒØªØ§Ø¨": {
     "meaning": "book (a written work)",
     "sentences_should_contain_arabic": true,
     "sentences_should_not_contain": ["This is a sample sentence"],
@@ -1837,7 +1837,7 @@ def run_content_generation_tests(language_code: str):
             run_pytest_file(test_file)
 ```
 
-## 🚀 CI/CD Integration
+## ðŸš€ CI/CD Integration
 
 ### 1. Automated Test Pipeline
 
@@ -1949,7 +1949,7 @@ markers =
     linguistic: marks tests as linguistic accuracy tests
 ```
 
-## 📊 Test Results Analysis
+## ðŸ“Š Test Results Analysis
 
 ### 1. Coverage Analysis Script
 
@@ -2016,7 +2016,7 @@ def generate_coverage_report(analysis: Dict[str, Any]) -> str:
         report += f"- **{filename}**: {data['percentage']:.1f}% ({data['covered']}/{data['lines']} lines)\n"
 
     if not analysis['uncovered_files']:
-        report += "🎉 All files meet coverage requirements!\n"
+        report += "ðŸŽ‰ All files meet coverage requirements!\n"
 
     return report
 
@@ -2036,12 +2036,12 @@ if __name__ == "__main__":
 
 ---
 
-**Remember:** All tests must follow gold standard patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py). Focus on natural validation testing, component isolation, and gold standard comparison - no artificial confidence boosting tests.
+**Remember:** All tests must follow gold standard patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py). Focus on natural validation testing, component isolation, and gold standard comparison - no artificial confidence boosting tests.
 - [ ] **Mock Management:** Proper mocking of external dependencies
 - [ ] **Flaky Test Detection:** Automated detection of unreliable tests
 - [ ] **Test Documentation:** Clear test naming and documentation
 
-## 🚨 Common Testing Pitfalls
+## ðŸš¨ Common Testing Pitfalls
 
 ### 1. Insufficient Mocking
 **Problem:** Tests depend on external APIs
@@ -2063,7 +2063,7 @@ if __name__ == "__main__":
 **Problem:** Tests don't reflect real usage
 **Prevention:** Use realistic, diverse test data
 
-## 🧪 Word Meanings Dictionary Testing (Sino-Tibetan Languages)
+## ðŸ§ª Word Meanings Dictionary Testing (Sino-Tibetan Languages)
 
 ### Word Meanings Quality Tests
 
@@ -2097,7 +2097,7 @@ class TestWordMeanings:
             word_meanings = json.load(f)
         
         # Test essential vocabulary has rich meanings
-        essential_words = ["一", "二", "三", "如果", "因為", "答案"]  # Adapt for language
+        essential_words = ["ä¸€", "äºŒ", "ä¸‰", "å¦‚æžœ", "å› ç‚º", "ç­”æ¡ˆ"]  # Adapt for language
         
         for word in essential_words:
             if word in word_meanings:
@@ -2118,9 +2118,9 @@ class TestWordMeanings:
         """Test that fallbacks prioritize word meanings over generic explanations"""
         # Test with words that should have rich meanings
         test_cases = [
-            ("三", "three (numeral)"),  # Numeral
-            ("如果", "if (conjunction)"),  # Conjunction
-            ("答案", "answer, solution (noun)"),  # Compound noun
+            ("ä¸‰", "three (numeral)"),  # Numeral
+            ("å¦‚æžœ", "if (conjunction)"),  # Conjunction
+            ("ç­”æ¡ˆ", "answer, solution (noun)"),  # Compound noun
         ]
         
         for word, expected_meaning in test_cases:
@@ -2144,9 +2144,9 @@ class TestWordMeanings:
         assert result['confidence'] == 'low', f"'{fake_word}' should have low confidence for generic fallback"
 
     @pytest.mark.parametrize("word,expected_contains", [
-        ("三", "numeral"),  # Should identify as numeral
-        ("如果", "conjunction"),  # Should identify as conjunction
-        ("答案", "noun"),  # Should identify as noun
+        ("ä¸‰", "numeral"),  # Should identify as numeral
+        ("å¦‚æžœ", "conjunction"),  # Should identify as conjunction
+        ("ç­”æ¡ˆ", "noun"),  # Should identify as noun
     ])
     def test_word_meanings_grammatical_roles(self, fallbacks, word, expected_contains):
         """Test that word meanings provide correct grammatical role identification"""
@@ -2158,9 +2158,9 @@ class TestWordMeanings:
 
 ---
 
-**🎯 Ready to start testing?** Begin with unit tests for individual components, then progress to integration and performance testing. Remember: comprehensive testing prevents production issues!
+**ðŸŽ¯ Ready to start testing?** Begin with unit tests for individual components, then progress to integration and performance testing. Remember: comprehensive testing prevents production issues!
 
 **Need help with testing?** Refer to the [Troubleshooting Guide](troubleshooting_guide.md) for common test issues, or the [Architecture Guide](architecture_guide.md) for component interaction patterns.
 
-**📊 Pro tip:** Aim for 80%+ test coverage and <500ms response times for optimal user experience.</content>
+**ðŸ“Š Pro tip:** Aim for 80%+ test coverage and <500ms response times for optimal user experience.</content>
 <parameter name="filePath">d:\Language Learning\LanguagLearning\language_grammar_generator\testing_guide.md

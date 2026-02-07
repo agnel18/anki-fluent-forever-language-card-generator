@@ -16,23 +16,23 @@ Following gold standard patterns from German/Spanish analyzers.
 
 from .tr_config import TrConfig
 from .tr_prompt_builder import TrPromptBuilder
-from .tr_response_parser import TrResponseParser
+from .tr_response_parser import TrResponseParser, TurkishAnalysisResult
 from .tr_validator import TrValidator
 
+# Backward-compatible aliases
+TurkishConfig = TrConfig
+TurkishPromptBuilder = TrPromptBuilder
+TurkishResponseParser = TrResponseParser
+TurkishValidator = TrValidator
+
 __all__ = [
-    # Configuration
-    'TurkishConfig',
-
-    # Prompt Building
-    'TurkishPromptBuilder',
-
-    # Response Parsing
-    'TurkishResponseParser',
-    'TurkishSentenceAnalysis',
+    'TrConfig',
+    'TrPromptBuilder',
+    'TrResponseParser',
     'TurkishAnalysisResult',
-
-    # Validation
+    'TrValidator',
+    'TurkishConfig',
+    'TurkishPromptBuilder',
+    'TurkishResponseParser',
     'TurkishValidator',
-    'ValidationResult',
-    'ValidationIssue',
 ]

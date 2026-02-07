@@ -15,6 +15,7 @@ except ImportError:
     pass  # dotenv not available, use environment variables
 
 from languages.arabic.ar_analyzer import ArAnalyzer
+from streamlit_app.shared_utils import get_gemini_api, get_gemini_model
 
 def test_arabic_output():
     """Test Arabic analyzer with a simple sentence"""
@@ -66,10 +67,12 @@ def test_arabic_output():
         print("RAW AI RESPONSE:")
         print("-" * 16)
         # We need to call the AI directly to see the raw response
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(prompt)
+        api = get_gemini_api()
+        api.configure(api_key=api_key)
+        response = api.generate_content(
+            model=get_gemini_model(),
+            contents=prompt
+        )
         raw_ai_response = response.text
         print(raw_ai_response)
         print()

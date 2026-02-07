@@ -284,10 +284,19 @@ def with_fallback(*fallback_funcs: Callable) -> Callable:
 # Language code mappings
 LANGUAGE_NAME_TO_CODE = {
     'arabic': 'ar',
+    'Arabic': 'ar',
     'Modern Standard Arabic': 'ar',
     'chinese_simplified': 'zh',
-    'chinese_traditional': 'zh',
+    'chinese_traditional': 'zh-tw',
+    'chinese (simplified)': 'zh',
+    'chinese (traditional)': 'zh-tw',
+    'Chinese (Simplified)': 'zh',
+    'Chinese (Traditional)': 'zh-tw',
+    'Chinese': 'zh',
+    'Chinese Simplified': 'zh',
+    'Chinese Traditional': 'zh-tw',
     'hindi': 'hi',
+    'Hindi': 'hi',
     'spanish': 'es',
     'Spanish': 'es',  # Capitalized version
     'french': 'fr',
@@ -297,9 +306,15 @@ LANGUAGE_NAME_TO_CODE = {
     'italian': 'it',
     'Italian': 'it',  # Capitalized version
     'portuguese': 'pt',
+    'Portuguese': 'pt',
     'russian': 'ru',
+    'Russian': 'ru',
     'japanese': 'ja',
-    'korean': 'ko'
+    'Japanese': 'ja',
+    'korean': 'ko',
+    'Korean': 'ko',
+    'turkish': 'tr',
+    'Turkish': 'tr'
 }
 
 LANGUAGE_CODE_TO_NAME = {v: k for k, v in LANGUAGE_NAME_TO_CODE.items()}
@@ -383,22 +398,13 @@ class GeminiAPI:
             self.genai = genai
             logger.info("Using new Google GenAI API")
         except ImportError:
-            # Fall back to old API
-            try:
-                import google.generativeai as genai
-                self.api_type = 'old'
-                self.genai = genai
-                logger.info("Using fallback Google GenerativeAI API")
-            except ImportError:
-                logger.warning("No Google Gemini API available - using mock responses")
-                self.api_type = 'mock'
+            logger.warning("No Google GenAI API available - using mock responses")
+            self.api_type = 'mock'
 
     def configure(self, api_key: str):
         """Configure the API with the provided key."""
         if self.api_type == 'new':
             self.client = self.genai.Client(api_key=api_key)
-        elif self.api_type == 'old':
-            self.genai.configure(api_key=api_key)
         else:
             logger.warning("Mock API - no real configuration needed")
 
@@ -410,9 +416,6 @@ class GeminiAPI:
                 contents=contents,
                 **kwargs
             )
-        elif self.api_type == 'old':
-            model_obj = self.genai.GenerativeModel(model)
-            return model_obj.generate_content(contents, **kwargs)
         else:
             # Mock response
             class MockResponse:

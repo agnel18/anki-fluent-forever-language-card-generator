@@ -49,6 +49,12 @@ INTEGRATION:
 - Configuration drives all language-specific behavior including role hierarchy
 - Validation ensures analysis quality and consistency
 - Response parser ensures role consistency in explanations
+
+REGISTRY INTEGRATION (CRITICAL):
+- Register language in streamlit_app/language_registry.py (iso_code)
+- Map folder name in streamlit_app/language_analyzers/analyzer_registry.py
+- Ensure validator implements validate_result() and validate_explanation_quality()
+- Ensure response parser implements parse_batch_response()
 """
 
 # Example usage and integration pattern

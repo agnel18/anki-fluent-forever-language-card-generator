@@ -1,14 +1,14 @@
-# Deployment Guide
+﻿# Deployment Guide
 ## Production Deployment Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture benchmark  
+**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture benchmark  
 **Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
 **Critical:** Deploy only implementations matching Chinese Simplified Clean Architecture patterns  
 **Prerequisites:** Study gold standards, complete implementation following their patterns  
 **Architecture:** Follow [Architecture Guide](architecture_guide.md) with gold standard compliance  
 **Time Estimate:** 2-4 weeks for full production deployment
 
-## 🎯 Deployment Philosophy - Gold Standard Compliance
+## ðŸŽ¯ Deployment Philosophy - Gold Standard Compliance
 
 ### Production Readiness Principles - Match Gold Standards
 - **Gold Standard Verification:** All deployments must match Hindi/Chinese Simplified patterns
@@ -25,29 +25,29 @@
 - **AI Integration Check:** Verify allowed models and circuit breaker implementation
 - **Automated Rollback:** Instant recovery if gold standard compliance fails
 
-## 🏗️ Infrastructure Setup - Gold Standard Structure
+## ðŸ—ï¸ Infrastructure Setup - Gold Standard Structure
 
 ### 1. Directory Structure Matching Gold Standards
 ```
 languages/{language}/
-├── {language}_analyzer.py          # Main facade like hi_analyzer.py/zh_analyzer.py
-├── {language}_config.py            # External config loading like gold standards
-├── {language}_prompt_builder.py    # Prompt generation like gold standards
-├── {language}_response_parser.py   # Response parsing like gold standards
-├── {language}_validator.py         # NATURAL validation like gold standards (NO boosting)
-├── config/                         # External config files like gold standards
-│   ├── grammatical_roles.yaml
-│   ├── color_schemes.yaml
-│   └── prompt_templates.yaml
-├── tests/                          # Tests matching gold standard patterns
-│   ├── test_{language}_analyzer.py
-│   └── test_natural_validation.py  # NO confidence boosting tests
-└── deployment/                     # Deployment configs
-    ├── Dockerfile                  # Container matching gold standard deployment
-    ├── docker-compose.yml
-    └── kubernetes/
-        ├── deployment.yaml
-        └── service.yaml
+â”œâ”€â”€ {language}_analyzer.py          # Main facade like hi_analyzer.py/zh_analyzer.py
+â”œâ”€â”€ {language}_config.py            # External config loading like gold standards
+â”œâ”€â”€ {language}_prompt_builder.py    # Prompt generation like gold standards
+â”œâ”€â”€ {language}_response_parser.py   # Response parsing like gold standards
+â”œâ”€â”€ {language}_validator.py         # NATURAL validation like gold standards (NO boosting)
+â”œâ”€â”€ config/                         # External config files like gold standards
+â”‚   â”œâ”€â”€ grammatical_roles.yaml
+â”‚   â”œâ”€â”€ color_schemes.yaml
+â”‚   â””â”€â”€ prompt_templates.yaml
+â”œâ”€â”€ tests/                          # Tests matching gold standard patterns
+â”‚   â”œâ”€â”€ test_{language}_analyzer.py
+â”‚   â””â”€â”€ test_natural_validation.py  # NO confidence boosting tests
+â””â”€â”€ deployment/                     # Deployment configs
+    â”œâ”€â”€ Dockerfile                  # Container matching gold standard deployment
+    â”œâ”€â”€ docker-compose.yml
+    â””â”€â”€ kubernetes/
+        â”œâ”€â”€ deployment.yaml
+        â””â”€â”€ service.yaml
 ```
 
 ### 2. Pre-Deployment Gold Standard Verification
@@ -56,12 +56,12 @@ languages/{language}/
 ./verify_gold_standard_compliance.sh {language_code}
 
 # Checks performed:
-# - Facade pattern implementation ✓
-# - Natural validation (no artificial boosting) ✓
-# - External config loading ✓
-# - AI model restrictions ✓
-# - Component isolation ✓
-# - Test coverage matching gold standards ✓
+# - Facade pattern implementation âœ“
+# - Natural validation (no artificial boosting) âœ“
+# - External config loading âœ“
+# - AI model restrictions âœ“
+# - Component isolation âœ“
+# - Test coverage matching gold standards âœ“
 ```
 
 ### 3. Containerization - Gold Standard Docker
@@ -84,7 +84,7 @@ EXPOSE 8000
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-## 🚀 Deployment Process - Gold Standard Validation
+## ðŸš€ Deployment Process - Gold Standard Validation
 
 ### Phase 1: Pre-Deployment Verification
 ```bash
@@ -125,7 +125,7 @@ verify_production_gold_standards.sh ${LANGUAGE_CODE}
 shift_traffic_with_monitoring.sh ${LANGUAGE_CODE}
 ```
 
-## 📊 Monitoring & Observability - Gold Standard Metrics
+## ðŸ“Š Monitoring & Observability - Gold Standard Metrics
 
 ### Gold Standard Compliance Metrics
 ```python
@@ -185,7 +185,7 @@ groups:
           summary: "Tight component coupling detected - should match gold standard loose coupling"
 ```
 
-## 🔒 Security - Gold Standard Security
+## ðŸ”’ Security - Gold Standard Security
 
 ### API Key Management - Like Gold Standards
 ```python
@@ -222,7 +222,7 @@ def validate_production_input(sentence, target_word, complexity, api_key):
     return True
 ```
 
-## 🔄 Rollback Strategy - Gold Standard Recovery
+## ðŸ”„ Rollback Strategy - Gold Standard Recovery
 
 ### Automated Rollback Triggers
 ```python
@@ -249,7 +249,7 @@ rollback_to_gold_standard.sh ${LANGUAGE_CODE}
 # 5. Monitor recovery metrics
 ```
 
-## 📈 Scaling Strategy - Gold Standard Performance
+## ðŸ“ˆ Scaling Strategy - Gold Standard Performance
 
 ### Horizontal Scaling - Match Gold Standards
 ```yaml
@@ -305,7 +305,7 @@ class GoldStandardCache:
         return result
 ```
 
-## 🧪 Testing in Production - Gold Standard Validation
+## ðŸ§ª Testing in Production - Gold Standard Validation
 
 ### Production Testing Strategy
 ```python
@@ -345,7 +345,7 @@ def ab_test_against_gold_standards(new_version, gold_standard_version):
     return "CONSIDER_NEW_VERSION"
 ```
 
-## 📋 Deployment Checklist - Gold Standard Compliance
+## ðŸ“‹ Deployment Checklist - Gold Standard Compliance
 
 ### Pre-Deployment
 - [ ] **Gold Standard Study:** Thoroughly studied Hindi and Chinese Simplified analyzers?
@@ -378,19 +378,19 @@ def ab_test_against_gold_standards(new_version, gold_standard_version):
 
 ---
 
-**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
-│   │   └── rules.yml
-│   ├── grafana/
-│   │   └── dashboards/
-│   │       └── language_analyzer.json
-│   └── alerts/
-│       └── alert_rules.yml
-└── security/
-    ├── secrets/
-    │   ├── api_keys.enc
-    │   └── certificates/
-    └── policies/
-        └── security_policy.md
+**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+â”‚   â”‚   â””â”€â”€ rules.yml
+â”‚   â”œâ”€â”€ grafana/
+â”‚   â”‚   â””â”€â”€ dashboards/
+â”‚   â”‚       â””â”€â”€ language_analyzer.json
+â”‚   â””â”€â”€ alerts/
+â”‚       â””â”€â”€ alert_rules.yml
+â””â”€â”€ security/
+    â”œâ”€â”€ secrets/
+    â”‚   â”œâ”€â”€ api_keys.enc
+    â”‚   â””â”€â”€ certificates/
+    â””â”€â”€ policies/
+        â””â”€â”€ security_policy.md
 ```
 
 ### 2. Docker Configuration
@@ -662,7 +662,7 @@ spec:
               number: 8501
 ```
 
-## 📊 Monitoring and Observability
+## ðŸ“Š Monitoring and Observability
 
 ### 1. Prometheus Configuration
 
@@ -1036,7 +1036,7 @@ def init_metrics():
 }
 ```
 
-## 🔒 Security Implementation
+## ðŸ”’ Security Implementation
 
 ### 1. Secret Management
 
@@ -1226,7 +1226,7 @@ def require_security_check(func):
     return wrapper
 ```
 
-## 🚀 Deployment Automation
+## ðŸš€ Deployment Automation
 
 ### 1. CI/CD Pipeline
 
@@ -1304,7 +1304,7 @@ jobs:
 
 ---
 
-**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
         # Wait for service to be ready
         kubectl wait --for=condition=available --timeout=300s deployment/language-analyzer
 
@@ -1324,7 +1324,7 @@ jobs:
 #!/bin/bash
 set -e
 
-echo "🚀 Starting deployment..."
+echo "ðŸš€ Starting deployment..."
 
 # Configuration
 ENVIRONMENT=${1:-production}
@@ -1332,39 +1332,39 @@ VERSION=$(git rev-parse --short HEAD)
 REGISTRY=${DOCKER_REGISTRY:-your-registry.com}
 
 # Build and push Docker image
-echo "📦 Building Docker image..."
+echo "ðŸ“¦ Building Docker image..."
 docker build -f deployment/docker/Dockerfile -t language-analyzer:$VERSION .
 docker tag language-analyzer:$VERSION $REGISTRY/language-analyzer:$VERSION
 docker push $REGISTRY/language-analyzer:$VERSION
 
 # Update Kubernetes deployment
-echo "⚙️ Updating Kubernetes deployment..."
+echo "âš™ï¸ Updating Kubernetes deployment..."
 sed -i "s|image:.*|image: $REGISTRY/language-analyzer:$VERSION|g" deployment/kubernetes/deployment.yaml
 
 # Apply Kubernetes manifests
-echo "🚢 Applying Kubernetes manifests..."
+echo "ðŸš¢ Applying Kubernetes manifests..."
 kubectl apply -f deployment/kubernetes/
 
 # Wait for rollout
-echo "⏳ Waiting for rollout to complete..."
+echo "â³ Waiting for rollout to complete..."
 kubectl rollout status deployment/language-analyzer --timeout=300s
 
 # Run health checks
-echo "🔍 Running health checks..."
+echo "ðŸ” Running health checks..."
 bash deployment/scripts/health_check.sh
 
 # Clean up old images
-echo "🧹 Cleaning up old images..."
+echo "ðŸ§¹ Cleaning up old images..."
 docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
 
-echo "✅ Deployment completed successfully!"
+echo "âœ… Deployment completed successfully!"
 ```
 
 **File:** `deployment/scripts/health_check.sh`
 ```bash
 #!/bin/bash
 
-echo "🔍 Running health checks..."
+echo "ðŸ” Running health checks..."
 
 # Configuration
 SERVICE_URL=${SERVICE_URL:-http://localhost:8501}
@@ -1380,10 +1380,10 @@ check_endpoint() {
     local response=$(curl -s -o /dev/null -w "%{http_code}" --max-time $TIMEOUT $url)
 
     if [ "$response" -eq "$expected_status" ]; then
-        echo "✅ $url is healthy"
+        echo "âœ… $url is healthy"
         return 0
     else
-        echo "❌ $url returned status $response (expected $expected_status)"
+        echo "âŒ $url returned status $response (expected $expected_status)"
         return 1
     fi
 }
@@ -1405,10 +1405,10 @@ fi
 # Add more checks as needed
 
 if [ $failures -eq 0 ]; then
-    echo "🎉 All health checks passed!"
+    echo "ðŸŽ‰ All health checks passed!"
     exit 0
 else
-    echo "💥 $failures health check(s) failed!"
+    echo "ðŸ’¥ $failures health check(s) failed!"
     exit 1
 fi
 ```
@@ -1417,7 +1417,7 @@ fi
 ```bash
 #!/bin/bash
 
-echo "🔄 Rolling back deployment..."
+echo "ðŸ”„ Rolling back deployment..."
 
 # Get previous deployment
 PREVIOUS_IMAGE=$(kubectl get deployment language-analyzer -o jsonpath='{.spec.template.spec.containers[0].image}')
@@ -1428,22 +1428,22 @@ echo "Previous image: $PREVIOUS_IMAGE"
 kubectl rollout undo deployment/language-analyzer
 
 # Wait for rollback to complete
-echo "⏳ Waiting for rollback to complete..."
+echo "â³ Waiting for rollback to complete..."
 kubectl rollout status deployment/language-analyzer --timeout=300s
 
 # Run health checks
-echo "🔍 Running health checks after rollback..."
+echo "ðŸ” Running health checks after rollback..."
 bash deployment/scripts/health_check.sh
 
 if [ $? -eq 0 ]; then
-    echo "✅ Rollback completed successfully!"
+    echo "âœ… Rollback completed successfully!"
 else
-    echo "💥 Rollback completed but health checks failed!"
+    echo "ðŸ’¥ Rollback completed but health checks failed!"
     exit 1
 fi
 ```
 
-## 📈 Performance Optimization
+## ðŸ“ˆ Performance Optimization
 
 ### 1. Caching Strategy
 
@@ -1573,7 +1573,7 @@ spec:
         periodSeconds: 60
 ```
 
-## ✅ Success Criteria
+## âœ… Success Criteria
 
 ### Infrastructure Readiness
 - [ ] **Containerization:** Docker image builds successfully and runs in isolation
@@ -1605,7 +1605,7 @@ spec:
 - [ ] **Health Checks:** Automated verification of deployment success
 - [ ] **Rollback:** One-click rollback to previous version
 
-## 🚨 Common Deployment Pitfalls
+## ðŸš¨ Common Deployment Pitfalls
 
 ### 1. Resource Constraints
 **Problem:** Pods crash due to insufficient memory/CPU
@@ -1629,9 +1629,9 @@ spec:
 
 ---
 
-**🎯 Ready for production deployment?** Start with Docker Compose for initial testing, then progress to Kubernetes for scalability. Remember: monitor everything, automate everything, and have rollback plans!
+**ðŸŽ¯ Ready for production deployment?** Start with Docker Compose for initial testing, then progress to Kubernetes for scalability. Remember: monitor everything, automate everything, and have rollback plans!
 
 **Need help with deployment?** Refer to the [Troubleshooting Guide](troubleshooting_guide.md) for common deployment issues, or check the [AI Prompting Guide](ai_prompting_guide.md) for performance optimization.
 
-**📊 Pro tip:** Implement comprehensive monitoring before going to production - you can't fix what you can't see!</content>
+**ðŸ“Š Pro tip:** Implement comprehensive monitoring before going to production - you can't fix what you can't see!</content>
 <parameter name="filePath">d:\Language Learning\LanguagLearning\language_grammar_generator\deployment_guide.md

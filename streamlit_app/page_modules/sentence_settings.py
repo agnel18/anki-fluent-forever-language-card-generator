@@ -627,6 +627,11 @@ def render_sentence_settings_page():
                     disabled=not (GOOGLE_TTS_AVAILABLE and is_google_tts_configured())
                 )
 
+                if is_fallback:
+                    st.warning(
+                        "Only default voices are available. Check your Google TTS API key and rotate it if needed."
+                    )
+
                 # Store both display name and actual voice name
                 st.session_state.selected_voice_display = selected_voice_display
                 st.session_state.selected_voice = voice_display_map.get(selected_voice_display, "en-US-Standard-D")

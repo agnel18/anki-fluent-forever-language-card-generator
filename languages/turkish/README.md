@@ -174,7 +174,7 @@ Following the gold standard from German/Spanish analyzers:
 
 ## Dependencies
 
-- `google-generativeai`: For AI analysis
+- `google-genai`: For AI analysis
 - `jinja2`: For prompt templating
 - `dataclasses`: For structured data
 - `pathlib`: For file operations

@@ -69,36 +69,16 @@ class TrValidator:
         Validate analysis result and assign confidence score.
         Turkish-specific validation considers agglutination and vowel harmony.
         """
-        confidence = 1.0
-        issues = []
-        metadata = {}
-
-        # Extract components
-        word_explanations = result.get('word_explanations', [])
-        explanations = result.get('explanations', {})
-        elements = result.get('elements', {})
-
-        # Check if this is a fallback response
         if result.get('is_fallback', False):
             result['confidence'] = 0.3
             return result
 
-        # Basic structural validation
-        if not word_explanations:
-            result['confidence'] = 0.1
-            return result
+        confidence = self._calculate_confidence(result, sentence)
+        result['confidence'] = confidence
 
-        # Check word explanation format
-        for exp in word_explanations:
-            if not isinstance(exp, list) or len(exp) < 4:
-                confidence *= 0.8
+        if confidence < 0.5:
+            logger.warning(f"Low confidence ({confidence}) for sentence: {sentence}")
 
-        # Check for reasonable coverage
-        if len(word_explanations) < 2 and len(sentence.split()) > 3:
-            confidence *= 0.7
-
-        # Add confidence to result
-        result['confidence'] = min(confidence, 1.0)
         return result
 
     def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
@@ -110,6 +90,7 @@ class TrValidator:
         issues = []
 
         word_explanations = result.get('word_explanations', [])
+        explanations = result.get('explanations', {})
 
         for word_exp in word_explanations:
             if len(word_exp) >= 4:
@@ -122,11 +103,96 @@ class TrValidator:
                 elif len(meaning) > 75:
                     quality_score *= 0.8
                     issues.append(f"Explanation too long for '{word_exp[0]}'")
+            else:
+                quality_score *= 0.8
+                issues.append("Word explanation missing required fields")
+
+        if not explanations:
+            quality_score *= 0.7
+            issues.append("Missing overall explanations section")
+        else:
+            overall_structure = explanations.get('overall_structure', '')
+            key_features = explanations.get('key_features', '')
+
+            if len(overall_structure.strip()) < 20:
+                quality_score *= 0.9
+                issues.append("Overall structure explanation too brief")
+
+            if len(key_features.strip()) < 15:
+                quality_score *= 0.9
+                issues.append("Key features explanation too brief")
+
+            turkish_features = ['vowel harmony', 'case', 'agglutination', 'suffix', 'sov']
+            combined = f"{overall_structure} {key_features}".lower()
+            if not any(feature in combined for feature in turkish_features):
+                quality_score *= 0.9
+                issues.append("Explanations lack Turkish-specific grammatical features")
+
+        quality_score = min(max(quality_score, 0.0), 1.0)
 
         return {
             'quality_score': quality_score,
-            'issues': issues
+            'issues': issues,
+            'recommendations': self._generate_quality_recommendations(issues)
         }
+
+    def _calculate_confidence(self, result: Dict[str, Any], sentence: str) -> float:
+        """Calculate confidence score using Turkish-specific heuristics."""
+        score = 1.0
+        word_explanations = result.get('word_explanations', [])
+        if not word_explanations:
+            return 0.0
+
+        roles = [item[1] for item in word_explanations if isinstance(item, list) and len(item) > 1]
+        if not roles:
+            return 0.0
+
+        other_count = roles.count('other')
+        if other_count / len(roles) > 0.5:
+            score *= 0.7
+
+        if self._has_valid_patterns(roles):
+            score *= 1.1
+        else:
+            score *= 0.9
+
+        has_case_markers = any(role in ['case_marker', 'possessive_suffix'] for role in roles)
+        has_question = 'question_particle' in roles
+        has_tense = 'tense_marker' in roles
+
+        if has_case_markers or has_question or has_tense:
+            score *= 1.05
+
+        word_count = len(sentence.split()) if sentence else 0
+        if word_count > 0 and len(word_explanations) / word_count < 0.5:
+            score *= 0.8
+
+        return min(max(score, 0.0), 1.0)
+
+    def _has_valid_patterns(self, roles: List[str]) -> bool:
+        """Check for basic Turkish grammatical patterns."""
+        has_noun = any(role in ['noun', 'pronoun'] for role in roles)
+        has_verb = 'verb' in roles
+        has_case_or_suffix = any(role in ['case_marker', 'possessive_suffix', 'tense_marker'] for role in roles)
+        return has_noun and (has_verb or has_case_or_suffix)
+
+    def _generate_quality_recommendations(self, issues: List[str]) -> List[str]:
+        """Generate recommendations based on quality issues."""
+        recommendations = []
+
+        if any('brief' in issue.lower() for issue in issues):
+            recommendations.append("Expand explanations to clarify grammatical function and relationships")
+
+        if any('missing' in issue.lower() for issue in issues):
+            recommendations.append("Ensure explanations include overall structure and key features")
+
+        if any('turkish-specific' in issue.lower() for issue in issues):
+            recommendations.append("Emphasize vowel harmony, case markers, and agglutination in summaries")
+
+        if not recommendations:
+            recommendations.append("Analysis quality is good; consider adding more advanced Turkish details")
+
+        return recommendations
 
     def validate_analysis(self, analysis_result: Dict[str, Any], complexity: str = 'beginner') -> Dict[str, Any]:
         """
@@ -455,63 +521,3 @@ class TrValidator:
             recommendations.append("Fix critical errors before using analysis results")
 
         return recommendations
-        return {
-            'morphology': {
-                'require_decomposition': True,
-                'max_suffixes': self.config.morphological_features['agglutination']['max_suffixes'],
-                'min_root_length': 1,
-                'forbid_empty_suffixes': True,
-            },
-            'vowel_harmony': {
-                'strict_checking': True,
-                'allow_exceptions': ['3pl_possessive'],  # 3rd plural possessive doesn't harmonize
-                'check_all_suffixes': True,
-            },
-            'case_system': {
-                'require_case_identification': True,
-                'validate_markers': True,
-                'check_function_consistency': True,
-            },
-            'grammatical_categories': {
-                'strict_matching': True,
-                'allow_unknown': False,
-                'validate_by_complexity': True,
-            },
-            'color_coding': {
-                'require_hex_format': True,
-                'validate_category_colors': True,
-                'check_consistency': True,
-            },
-            'syntactic_roles': {
-                'validate_case_role_consistency': True,
-                'check_word_order_flexibility': True,
-            }
-        }
-
-    def validate_analysis(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform comprehensive validation of Turkish analysis."""
-
-        issues = []
-        issues.extend(self._validate_morphology(analysis))
-        issues.extend(self._validate_vowel_harmony(analysis))
-        issues.extend(self._validate_case_system(analysis))
-        issues.extend(self._validate_grammatical_categories(analysis))
-        issues.extend(self._validate_color_coding(analysis))
-        issues.extend(self._validate_syntactic_roles(analysis))
-        issues.extend(self._validate_sentence_structure(analysis))
-
-        # Calculate summary
-        summary = self._calculate_validation_summary(issues, analysis)
-
-        # Generate recommendations
-        recommendations = self._generate_recommendations(issues)
-
-        # Determine overall validity
-        is_valid = self._determine_overall_validity(issues)
-
-        return {
-            'is_valid': is_valid,
-            'issues': issues,
-            'summary': summary,
-            'recommendations': recommendations
-        }

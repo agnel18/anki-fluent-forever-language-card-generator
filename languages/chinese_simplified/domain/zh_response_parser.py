@@ -1,4 +1,4 @@
-# languages/zh/domain/zh_response_parser.py
+﻿# languages/chinese_simplified/domain/zh_response_parser.py
 """
 Chinese Simplified Response Parser - Domain Component
 

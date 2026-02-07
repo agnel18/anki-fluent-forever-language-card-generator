@@ -3,18 +3,18 @@ sys.path.append('.')
 import json
 import warnings
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress noisy FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
-from shared_utils import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
 
 # Test the generic grammar analysis prompt with Arabic
 sentence = 'الكلب في الحديقة'
 word = 'في'
 
 # Configure Gemini
-genai.configure(api_key='AIzaSyCGUy...uzWXORse0U')  # Using the key from logs
+api = get_gemini_api()
+api.configure(api_key='AIzaSyCGUy...uzWXORse0U')  # Using the key from logs
 
 prompt = f'''You are a linguistics expert specializing in Arabic grammar analysis for language learners.
 
@@ -59,13 +59,14 @@ IMPORTANT:
 - Each word_explanations entry must have exactly 4 elements: [word, pos, color, explanation]'''
 
 try:
-    model = genai.GenerativeModel(get_gemini_model())
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(
-            temperature=0.3,
-            max_output_tokens=1500,
-        )
+    config = api.genai.types.GenerateContentConfig(
+        temperature=0.3,
+        max_output_tokens=1500,
+    )
+    response = api.generate_content(
+        model=get_gemini_model(),
+        contents=prompt,
+        config=config
     )
 
     response_text = response.text.strip()

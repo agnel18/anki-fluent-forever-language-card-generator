@@ -141,6 +141,23 @@ class TestLanguageAnalyzer:
                 assert isinstance(result['confidence_score'], (int, float))
                 assert 0.0 <= result['confidence_score'] <= 1.0
 
+    def test_response_parser_batch_support(self, analyzer):
+        """Test response parser implements parse_batch_response"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        assert hasattr(analyzer, 'response_parser')
+        assert hasattr(analyzer.response_parser, 'parse_batch_response')
+
+    def test_validator_interface_methods(self, analyzer):
+        """Test validator implements required interface methods"""
+        if analyzer is None:
+            pytest.skip("Analyzer not implemented yet")
+
+        assert hasattr(analyzer, 'validator')
+        assert hasattr(analyzer.validator, 'validate_result')
+        assert hasattr(analyzer.validator, 'validate_explanation_quality')
+
     def test_error_handling_invalid_api_key(self, analyzer):
         """Test error handling with invalid API key"""
         if analyzer is None:
@@ -1646,9 +1663,9 @@ class TestLanguageLinguisticAccuracy:
         complexity = "intermediate"
 
         # Mock the AI call to return batch results
-        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
-            mock_gen = Mock()
-            mock_gen_class.return_value = mock_gen
+        with patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.get_gemini_api') as mock_get_api:
+            mock_api = Mock()
+            mock_get_api.return_value = mock_api
 
             # Mock batch response with detailed grammatical analysis
             mock_response = Mock()
@@ -1674,7 +1691,7 @@ class TestLanguageLinguisticAccuracy:
     }
   ]
 }'''
-            mock_gen.generate_content.return_value = mock_response
+            mock_api.generate_content.return_value = mock_response
 
             # Test batch analysis
             results = analyzer.batch_analyze_grammar(sentences, target_word, complexity, "test_api_key")
@@ -1706,14 +1723,14 @@ class TestLanguageLinguisticAccuracy:
         target_word = "{target_word}"
         complexity = "intermediate"
 
-        with patch('google.generativeai.GenerativeModel') as mock_gen_class:
-            mock_gen = Mock()
-            mock_gen_class.return_value = mock_gen
+        with patch('languages.LANGUAGE_PLACEHOLDER.LANGUAGE_PLACEHOLDER_analyzer.get_gemini_api') as mock_get_api:
+            mock_api = Mock()
+            mock_get_api.return_value = mock_api
 
             # Mock successful batch response
             mock_response = Mock()
             mock_response.text = '{"batch_results": []}'
-            mock_gen.generate_content.return_value = mock_response
+            mock_api.generate_content.return_value = mock_response
 
             # Time batch processing
             import time

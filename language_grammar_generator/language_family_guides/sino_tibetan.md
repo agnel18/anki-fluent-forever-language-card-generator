@@ -1,12 +1,12 @@
-# Sino-Tibetan Language Family Guide
+﻿# Sino-Tibetan Language Family Guide
 ## Chinese, Tibetan, Burmese Language Analyzers
 
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Clean Architecture with external configuration  
+**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture with external configuration  
 **Secondary Reference:** [Chinese Traditional](languages/chinese_traditional/zh_tw_analyzer.py) - Should follow Chinese Simplified patterns  
 **Key Characteristics:** Analytic languages, logographic scripts, rich character-based analysis  
 **Critical Pattern:** External word meanings dictionary and Clean Architecture (Chinese Simplified model)
 
-## 🎯 Sino-Tibetan Language Characteristics
+## ðŸŽ¯ Sino-Tibetan Language Characteristics
 
 ### Core Features
 - **Analytic Structure**: No morphological inflection, word order determines grammar
@@ -21,29 +21,29 @@
 - **Rich Explanations**: Detailed explanations beyond basic grammatical roles
 - **External Configuration**: Word meanings and grammatical roles in YAML/JSON files (Chinese Simplified pattern)
 
-## 📚 Word Meanings Dictionary Pattern (Chinese Simplified Gold Standard)
+## ðŸ“š Word Meanings Dictionary Pattern (Chinese Simplified Gold Standard)
 
 ### Why External Word Meanings Dictionary is Required
 
 **Problem:** Without an external word meanings dictionary, Sino-Tibetan analyzers fall back to generic explanations that don't help learners understand specific word meanings.
 
-**❌ Anti-Pattern (Hardcoded or Generic Fallbacks):**
+**âŒ Anti-Pattern (Hardcoded or Generic Fallbacks):**
 ```json
 "numeral in zh-tw grammar"
 "conjunction in zh-tw grammar"
 "verb in zh-tw grammar"
 ```
 
-**✅ Gold Standard Pattern (Chinese Simplified - External Dictionary):**
+**âœ… Gold Standard Pattern (Chinese Simplified - External Dictionary):**
 ```json
 // infrastructure/data/zh_word_meanings.json
 {
-  "一": "one (numeral)",
-  "二": "two (numeral)",
-  "三": "three (numeral)",
-  "是": "to be, is, are (verb of existence)",
-  "和": "and (conjunction), harmony (noun)",
-  "在": "at, in, on (preposition), to be (verb)"
+  "ä¸€": "one (numeral)",
+  "äºŒ": "two (numeral)",
+  "ä¸‰": "three (numeral)",
+  "æ˜¯": "to be, is, are (verb of existence)",
+  "å’Œ": "and (conjunction), harmony (noun)",
+  "åœ¨": "at, in, on (preposition), to be (verb)"
 }
 ```
 
@@ -54,18 +54,18 @@
 **Used by:** Response parser and fallback systems
 ```json
 {
-  "一": "one (numeral)",
-  "二": "two (numeral)",
-  "三": "three (numeral)",
-  "如果": "if (conjunction)",
-  "因為": "because (conjunction)",
-  "所以": "so, therefore (conjunction)",
-  "我": "I, me (first person singular pronoun)",
-  "你": "you (second person singular pronoun)",
-  "是": "is, am, are (verb)",
-  "有": "have, there is (verb)",
-  "等於": "equals, equal to (verb/mathematical term)",
-  "答案": "answer, solution (noun)"
+  "ä¸€": "one (numeral)",
+  "äºŒ": "two (numeral)",
+  "ä¸‰": "three (numeral)",
+  "å¦‚æžœ": "if (conjunction)",
+  "å› ç‚º": "because (conjunction)",
+  "æ‰€ä»¥": "so, therefore (conjunction)",
+  "æˆ‘": "I, me (first person singular pronoun)",
+  "ä½ ": "you (second person singular pronoun)",
+  "æ˜¯": "is, am, are (verb)",
+  "æœ‰": "have, there is (verb)",
+  "ç­‰æ–¼": "equals, equal to (verb/mathematical term)",
+  "ç­”æ¡ˆ": "answer, solution (noun)"
 }
 ```
 
@@ -116,7 +116,7 @@ class LanguageFallbacks:
         }
 ```
 
-## 🏗️ Gold Standard Architecture
+## ðŸ—ï¸ Gold Standard Architecture
 
 ### Chinese Simplified Analyzer (Reference Implementation)
 ```python
@@ -207,7 +207,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
         )
 ```
 
-## 📋 Implementation Checklist
+## ðŸ“‹ Implementation Checklist
 
 ### Phase 1: Core Architecture Setup
 - [ ] **Inherit from BaseGrammarAnalyzer** (not IndoEuropeanAnalyzer)
@@ -223,7 +223,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 - [ ] **Validate rich explanations**: Ensure fallbacks use dictionary meanings over generic roles
 
 ### Phase 3: Rich Explanation Implementation
-- [ ] **analyze_grammar method**: AI workflow → parsing → HTML generation
+- [ ] **analyze_grammar method**: AI workflow â†’ parsing â†’ HTML generation
 - [ ] **_generate_html_output method**: Position-based character coloring with meanings
 - [ ] **Word explanations format**: `[word, role, color, meaning]` tuples
 - [ ] **Individual meanings**: Extract `individual_meaning` from AI responses
@@ -241,20 +241,20 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 - [ ] **Word meanings testing**: Validate dictionary provides rich explanations
 - [ ] **Cross-validation**: Compare with Chinese Simplified/Traditional gold standards
 
-## 🔧 Key Patterns Learned
+## ðŸ”§ Key Patterns Learned
 
 ### 1. Rich vs Basic Explanations
-**❌ Before (Chinese Traditional):**
+**âŒ Before (Chinese Traditional):**
 ```
 "pronoun in zh-tw grammar"
 "verb in zh-tw grammar"
 ```
 
-**✅ After (Gold Standard):**
+**âœ… After (Gold Standard):**
 ```
-"我 (I, me - first person singular pronoun)"
-"喜歡 (to like, to be fond of - verb expressing preference)"
-"吃 (to eat, to consume - verb of consumption)"
+"æˆ‘ (I, me - first person singular pronoun)"
+"å–œæ­¡ (to like, to be fond of - verb expressing preference)"
+"åƒ (to eat, to consume - verb of consumption)"
 ```
 
 ### 2. Word Meanings Dictionary (Critical Pattern)
@@ -265,10 +265,10 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 **Pattern:**
 ```json
 {
-  "三": "three (numeral)",
-  "如果": "if (conjunction)",
-  "答案": "answer, solution (noun)",
-  "等於": "equals, equal to (verb/mathematical term)"
+  "ä¸‰": "three (numeral)",
+  "å¦‚æžœ": "if (conjunction)",
+  "ç­”æ¡ˆ": "answer, solution (noun)",
+  "ç­‰æ–¼": "equals, equal to (verb/mathematical term)"
 }
 ```
 
@@ -296,7 +296,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 - **Quality Validation**: Natural confidence scoring without artificial boosting
 - **Fallback Handling**: Graceful degradation when AI calls fail
 
-## 🎖️ Success Criteria
+## ðŸŽ–ï¸ Success Criteria
 
 ### Rich Explanation Quality
 - [ ] Each word has detailed meaning explanation (not just grammatical role)
@@ -316,7 +316,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 - [ ] Memory usage remains bounded for large texts
 - [ ] Caching works effectively for repeated analyses
 
-## 🚀 Advanced Optimizations
+## ðŸš€ Advanced Optimizations
 
 ### Batch Processing
 ```python
@@ -337,7 +337,7 @@ def analyze_batch_response(self, ai_response: str, sentences: List[str], complex
 - **Color Consistency**: Ensure grammatical roles map to consistent colors
 - **User Feedback Integration**: Learn from user corrections and preferences
 
-## 📚 Related Resources
+## ðŸ“š Related Resources
 
 - **[Chinese Simplified Analyzer](../zh/zh_analyzer.py)** - Primary gold standard
 - **[Chinese Traditional Analyzer](../chinese_traditional/zh_tw_analyzer.py)** - Variant implementation

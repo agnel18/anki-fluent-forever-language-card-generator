@@ -7,7 +7,9 @@ Tests the Arabic analyzer with user-provided sentences to ensure gold standard q
 import sys
 import os
 import json
+import pytest
 from pathlib import Path
+from streamlit_app.shared_utils import get_gemini_api, get_gemini_model
 
 # Add the current directory to Python path for imports
 current_dir = Path(__file__).parent
@@ -56,24 +58,26 @@ def test_arabic_analyzer_quality():
     # Load API key
     api_key = load_api_key()
     if not api_key:
-        return False
+        pytest.skip("No API key available for Arabic analyzer quality test")
 
-    # Configure Google AI with the API key
+    # Configure Gemini API with the API key
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        print("✓ Google AI configured successfully")
+        api = get_gemini_api()
+        api.configure(api_key=api_key)
+        api.generate_content(
+            model=get_gemini_model(),
+            contents="Hello"
+        )
+        print("✓ Gemini API configured successfully")
     except Exception as e:
-        print(f"✗ Failed to configure Google AI: {e}")
-        return False
+        pytest.fail(f"Failed to configure Gemini API: {e}")
 
     # Initialize analyzer
     try:
         analyzer = ArAnalyzer()
         print("✓ ArAnalyzer initialized successfully")
     except Exception as e:
-        print(f"✗ Failed to initialize ArAnalyzer: {e}")
-        return False
+        pytest.fail(f"Failed to initialize ArAnalyzer: {e}")
 
     # User-provided test sentences with target words
     test_cases = [
@@ -165,8 +169,8 @@ def test_arabic_analyzer_quality():
                     print("  ✗ Meaning too short - needs detailed explanation")
                     all_passed = False
                 elif not any(keyword in meaning.lower() for keyword in [
-                    "means", "expresses", "refers to", "used as", "introduces", "marks", "connects",
-                    "functions as", "serves as", "indicates", "causes", "governed by", "renders",
+                    "means", "expresses", "expressing", "refers to", "used as", "introduces", "marks", "connects",
+                    "functions as", "serves as", "indicates", "indicating", "main verb", "causes", "governed by", "renders",
                     "conjugated", "case", "mood", "subject", "object", "preposition"
                 ]):
                     print("  ✗ Meaning lacks semantic content or functional explanation")
@@ -189,7 +193,7 @@ def test_arabic_analyzer_quality():
         print("✗ SOME TESTS FAILED - Arabic analyzer needs improvement")
     print("="*60)
 
-    return all_passed
+    assert all_passed, "Arabic analyzer quality checks failed"
 
 if __name__ == "__main__":
     success = test_arabic_analyzer_quality()

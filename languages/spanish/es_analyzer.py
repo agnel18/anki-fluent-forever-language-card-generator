@@ -25,7 +25,7 @@ except ImportError:
     try:
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
         from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-        from shared_utils import get_gemini_model, get_gemini_fallback_model
+        from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
     except ImportError:
         # Fallback - define minimal classes if import fails
         @dataclass
@@ -180,21 +180,24 @@ class EsAnalyzer(BaseGrammarAnalyzer):
                 logger.warning("No API key provided")
                 return None
 
-            import google.generativeai as genai
-
             # Configure API
-            genai.configure(api_key=api_key)
+            api = get_gemini_api()
+            api.configure(api_key=api_key)
 
             # Try primary model first
             try:
-                model = genai.GenerativeModel(get_gemini_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
             except Exception as primary_error:
                 logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel(get_gemini_fallback_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_fallback_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
 
             # Store for debugging
@@ -532,7 +535,8 @@ QUALITY RULES:
 - Every sentence must sound like native Spanish
 - Grammar, syntax, spelling, and agreement must be correct
 - The target word "{word}" MUST be used correctly according to restrictions
-- Each sentence must be no more than {max_length} words long
+- Each sentence must be between {min_length} and {max_length} words long
+- COUNT words precisely; if outside the range, regenerate internally
 - Difficulty: {difficulty}
 
 VARIETY REQUIREMENTS:

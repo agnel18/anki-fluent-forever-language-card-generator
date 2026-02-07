@@ -13,14 +13,13 @@ import time
 from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 from dataclasses import dataclass
-import google.generativeai as genai
+from streamlit_app.shared_utils import get_gemini_api
 
 from ..domain import (
-    TurkishConfig,
-    TurkishPromptBuilder,
-    TurkishResponseParser,
-    TurkishValidator,
-    TurkishSentenceAnalysis
+    TrConfig,
+    TrPromptBuilder,
+    TrResponseParser,
+    TrValidator
 )
 
 
@@ -36,7 +35,7 @@ class AnalysisRequest:
 class AnalysisResponse:
     """Response from Turkish language analysis."""
     success: bool
-    analysis: Optional[TurkishSentenceAnalysis] = None
+    analysis: Optional[Dict[str, Any]] = None
     error_message: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
@@ -44,11 +43,11 @@ class AnalysisResponse:
 class TurkishAnalyzerInfrastructure:
     """Infrastructure layer for Turkish language analysis."""
 
-    def __init__(self, config: TurkishConfig):
+    def __init__(self, config: TrConfig):
         self.config = config
-        self.prompt_builder = TurkishPromptBuilder(config)
-        self.response_parser = TurkishResponseParser(config)
-        self.validator = TurkishValidator(config)
+        self.prompt_builder = TrPromptBuilder(config)
+        self.response_parser = TrResponseParser(config)
+        self.validator = TrValidator(config)
 
         # Initialize AI client
         self._initialize_ai_client()
@@ -64,15 +63,12 @@ class TurkishAnalyzerInfrastructure:
             if not api_key:
                 raise ValueError("Google AI API key not found")
 
-            genai.configure(api_key=api_key)
-
-            # Configure model
-            self.model = genai.GenerativeModel(
-                model_name=self.config.ai_model_settings['model'],
-                generation_config={
-                    'temperature': self.config.ai_model_settings['temperature'],
-                    'max_output_tokens': self.config.ai_model_settings['max_tokens'],
-                }
+            self.api = get_gemini_api()
+            self.api.configure(api_key=api_key)
+            self.model_name = self.config.ai_model_settings['model']
+            self.generation_config = self.api.genai.types.GenerateContentConfig(
+                temperature=self.config.ai_model_settings['temperature'],
+                max_output_tokens=self.config.ai_model_settings['max_tokens'],
             )
 
         except Exception as e:
@@ -138,16 +134,18 @@ class TurkishAnalyzerInfrastructure:
             # Parse response
             analysis = self.response_parser.parse_response(
                 ai_response,
-                request.complexity
+                request.complexity,
+                request.text,
+                ""
             )
 
             # Validate analysis
-            validation_result = self.validator.validate_analysis(analysis)
+            validation_result = self.validator.validate_analysis(analysis, request.complexity)
 
             # Prepare metadata
             metadata = {
                 'complexity': request.complexity,
-                'validation_summary': validation_result.summary,
+                'validation_summary': validation_result.get('summary', {}),
                 'processing_time': time.time(),
                 'model_used': self.config.ai_model_settings['model'],
                 'prompt_tokens': self._estimate_tokens(prompt),
@@ -155,7 +153,7 @@ class TurkishAnalyzerInfrastructure:
             }
 
             # Check if analysis is valid enough to return
-            if validation_result.is_valid or self._is_analysis_usable(validation_result):
+            if validation_result.get('is_valid') or self._is_analysis_usable(validation_result):
                 return AnalysisResponse(
                     success=True,
                     analysis=analysis,
@@ -167,7 +165,7 @@ class TurkishAnalyzerInfrastructure:
                     error_message="Analysis failed validation",
                     metadata={
                         **metadata,
-                        'validation_issues': [issue.message for issue in validation_result.issues]
+                        'validation_issues': validation_result.get('issues', [])
                     }
                 )
 
@@ -181,7 +179,11 @@ class TurkishAnalyzerInfrastructure:
     def _call_ai_model(self, prompt: str) -> str:
         """Call Google Gemini AI model."""
         try:
-            response = self.model.generate_content(prompt)
+            response = self.api.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=self.generation_config
+            )
 
             if not response or not response.text:
                 raise ValueError("Empty response from AI model")
@@ -198,30 +200,30 @@ class TurkishAnalyzerInfrastructure:
 
     def _is_analysis_usable(self, validation_result) -> bool:
         """Determine if analysis is usable despite validation issues."""
-        summary = validation_result.summary
+        summary = validation_result.get('summary', {})
 
         # Allow if error rate is below threshold
         return summary.get('error_rate', 1.0) < 0.5
 
     def get_supported_complexities(self) -> List[str]:
         """Get list of supported complexity levels."""
-        return self.config.complexity_levels
+        return ['beginner', 'intermediate', 'advanced']
 
     def validate_configuration(self) -> List[str]:
         """Validate infrastructure configuration."""
         errors = []
 
         # Check AI client
-        if not hasattr(self, 'model'):
-            errors.append("AI model not initialized")
+        if not hasattr(self, 'api') or not hasattr(self, 'model_name'):
+            errors.append("AI client not initialized")
 
         # Check API key
         if not self._get_api_key():
             errors.append("Google AI API key not configured")
 
         # Check config validity
-        config_errors = self.config.validate_configuration()
-        errors.extend(config_errors)
+        if hasattr(self.config, 'validate_configuration'):
+            errors.extend(self.config.validate_configuration())
 
         return errors
 
@@ -239,7 +241,7 @@ class TurkishAnalyzerInfrastructure:
             'ai_client': hasattr(self, 'model'),
             'api_key_configured': bool(self._get_api_key()),
             'external_configs_loaded': bool(self.external_configs),
-            'config_valid': len(self.config.validate_configuration()) == 0
+            'config_valid': len(self.config.validate_configuration()) == 0 if hasattr(self.config, 'validate_configuration') else True
         }
 
         status['overall_healthy'] = all(status.values())

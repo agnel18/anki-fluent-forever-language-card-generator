@@ -8,7 +8,7 @@ from typing import Dict, Optional, Tuple
 from utils import persist_api_keys
 
 # Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
 
 
 class APIKeyManager:
@@ -153,10 +153,12 @@ class APIKeyManager:
         try:
             if service.lower() == 'gemini':
                 # Test Gemini API key with a simple generation
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel(get_gemini_model())
-                response = model.generate_content("Hello")
+                api = get_gemini_api()
+                api.configure(api_key=api_key)
+                response = api.generate_content(
+                    model=get_gemini_model(),
+                    contents="Hello"
+                )
                 if response.text and len(response.text.strip()) > 0:
                     return True, "✅ Gemini API key is valid"
                 else:

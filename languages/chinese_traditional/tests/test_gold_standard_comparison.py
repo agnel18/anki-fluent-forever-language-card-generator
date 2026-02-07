@@ -1,4 +1,4 @@
-
+﻿
 """
 Gold standard comparison tests for zh_tw analyzer.
 
@@ -10,7 +10,7 @@ import pytest
 import os
 from dotenv import load_dotenv
 from languages.chinese_traditional.zh_tw_analyzer import ZhTwAnalyzer
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 from languages.hindi.hi_analyzer import HiAnalyzer
 
 # Load environment variables
@@ -80,3 +80,4 @@ class TestZhTwAnalyzerGoldStandardComparison:
         # All results should have explanations
         for result in results:
             assert hasattr(result, 'word_explanations')
+

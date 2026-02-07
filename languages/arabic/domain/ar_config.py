@@ -316,6 +316,7 @@ class ArConfig:
             'single': """
 Analyze this Arabic sentence for language learning: "{sentence}"
 Target word: "{target_word}"
+Complexity level: {complexity}
 
 For each word, provide a detailed explanation that combines grammatical role, meaning, and function in this EXACT format:
 

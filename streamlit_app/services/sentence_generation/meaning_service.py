@@ -6,7 +6,7 @@ import time
 import warnings
 from typing import Optional
 
-# Suppress FutureWarnings (including google.generativeai deprecation)
+# Suppress noisy FutureWarnings from dependencies
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Use unified Gemini API wrapper with fallbacks
@@ -57,16 +57,10 @@ Example: \"house (a building where people live)\" or \"he (male pronoun, used as
 
 IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanation, no JSON."""
 
-        if api.api_type == 'new':
-            config = api.genai.types.GenerateContentConfig(
-                temperature=0.3,  # Lower temperature for consistency
-                max_output_tokens=100,
-            )
-        else:
-            config = api.genai.types.GenerationConfig(
-                temperature=0.3,  # Lower temperature for consistency
-                max_output_tokens=100,
-            )
+        config = api.genai.types.GenerateContentConfig(
+            temperature=0.3,  # Lower temperature for consistency
+            max_output_tokens=100,
+        )
 
         response = api.generate_content(
             model=get_gemini_model(),

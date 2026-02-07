@@ -1,14 +1,14 @@
-# AI Prompting Guide
+﻿# AI Prompting Guide
 ## AI Integration Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/zh/zh_analyzer.py) - Jinja2 templates, external configuration  
+**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Jinja2 templates, external configuration  
 **Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
 **Critical:** Use Chinese Simplified Clean Architecture patterns - Jinja2 templates, external config, no artificial confidence boosting  
 **Prerequisites:** Study Chinese Simplified template system before AI integration  
 **Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like Chinese Simplified)  
 **Time Estimate:** 2-3 weeks for gold standard compliant optimization
 
-## 🎯 AI Integration Philosophy - Chinese Simplified Gold Standard Compliance
+## ðŸŽ¯ AI Integration Philosophy - Chinese Simplified Gold Standard Compliance
 
 ### Model Selection Strategy - Match Chinese Simplified
 - **gemini-2.5-flash:** Complex linguistic analysis (like Chinese Simplified analyzer)
@@ -30,7 +30,7 @@
 - **Performance Monitoring:** Track natural confidence distributions
 - **Role Consistency:** Ensure meaning text matches display role to eliminate grammatical repetition
 
-## 📝 Prompt Template Architecture - Chinese Simplified Gold Standard Structure
+## ðŸ“ Prompt Template Architecture - Chinese Simplified Gold Standard Structure
 
 ### 1. Base Prompt Structure - Like Chinese Simplified
 
@@ -232,7 +232,7 @@ class {Language}Validator:
         return min(base_score, 1.0)  # NATURAL scoring, no artificial boost
 ```
 
-## 🔧 Implementation Steps - Gold Standard Compliance
+## ðŸ”§ Implementation Steps - Gold Standard Compliance
 
 ### Phase 1: Study Gold Standards Thoroughly
 1. **Read Hindi Analyzer:** Study `hi_analyzer.py`, `hi_prompt_builder.py`, `hi_response_parser.py`
@@ -258,7 +258,7 @@ class {Language}Validator:
 3. **Error Recovery:** Test fallback mechanisms
 4. **Production Readiness:** Verify gold standard compliance
 
-## 📊 Quality Metrics - Gold Standard Benchmarks
+## ðŸ“Š Quality Metrics - Gold Standard Benchmarks
 
 ### AI Response Quality - Compare with Gold Standards
 ```python
@@ -297,7 +297,7 @@ def benchmark_against_gold_standards():
     }
 ```
 
-## 🎯 Prevention-at-Source Approach - German & Spanish Analyzer Innovation
+## ðŸŽ¯ Prevention-at-Source Approach - German & Spanish Analyzer Innovation
 
 ### Key Learning: Prevention > Post-Processing
 
@@ -397,7 +397,7 @@ word_data['meaning'] = meaning  # Keep AI's detailed explanation as-is
 2. Skip complex post-processing entirely
 3. Focus on prompt quality over parser complexity
 
-## �🚨 Common AI Issues - Gold Standard Solutions
+## ï¿½ðŸš¨ Common AI Issues - Gold Standard Solutions
 
 ### Issue 1: Artificial Confidence Boosting Detected
 **Symptoms:** Confidence scores manipulated beyond natural AI output
@@ -449,7 +449,7 @@ class LanguageAnalyzer:
         response = self.ai_service.call_ai(prompt, api_key)  # Orchestrated
 ```
 
-## 🔄 Optimization Strategies - Gold Standard Performance
+## ðŸ”„ Optimization Strategies - Gold Standard Performance
 
 ### Prompt Optimization - Like Gold Standards
 ```python
@@ -509,7 +509,7 @@ class CircuitBreaker:
             self.failure_count = 0  # Reset on success
 ```
 
-## 📋 AI Integration Checklist - Gold Standard Compliance
+## ðŸ“‹ AI Integration Checklist - Gold Standard Compliance
 
 ### Pre-Implementation
 - [ ] **Gold Standard Study:** Thoroughly studied Hindi and Chinese Simplified AI integration?
@@ -538,7 +538,7 @@ class CircuitBreaker:
 
 ---
 
-**Remember:** Always follow the gold standard AI integration patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py). They represent the proven working approaches - natural confidence scoring, clean component separation, strict model restrictions.
+**Remember:** Always follow the gold standard AI integration patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py). They represent the proven working approaches - natural confidence scoring, clean component separation, strict model restrictions.
             'validation_prompt': Template(self._get_validation_template()),
             'error_recovery': Template(self._get_error_recovery_template())
         }
@@ -820,7 +820,7 @@ class {Language}PromptBuilder(ZhPromptBuilder):
         }
 ```
 
-## 🤖 Model Selection and Optimization
+## ðŸ¤– Model Selection and Optimization
 
 ### 1. Model Router
 
@@ -1065,7 +1065,7 @@ class {Language}AIService:
         return metrics
 ```
 
-## 🔄 Response Processing and Validation
+## ðŸ”„ Response Processing and Validation
 
 ### 1. Advanced Response Parser
 
@@ -1233,7 +1233,7 @@ class {Language}ResponseParser(ZhResponseParser):
 
 ---
 
-**Remember:** Always follow the gold standard AI integration patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/zh/zh_analyzer.py). They represent the proven working approaches - natural confidence scoring, clean component separation, strict model restrictions.
+**Remember:** Always follow the gold standard AI integration patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py). They represent the proven working approaches - natural confidence scoring, clean component separation, strict model restrictions.
             ]
 
         return transformed
@@ -1329,7 +1329,7 @@ class {Language}ResponseParser(ZhResponseParser):
         return stats
 ```
 
-## 📊 Performance Monitoring and Optimization
+## ðŸ“Š Performance Monitoring and Optimization
 
 ### 1. AI Performance Monitor
 
@@ -1447,7 +1447,7 @@ class {Language}PerformanceMonitor:
         self.error_counts.clear()
 ```
 
-## 🔧 Error Recovery and Circuit Breaker
+## ðŸ”§ Error Recovery and Circuit Breaker
 
 ### 1. Circuit Breaker Pattern
 
@@ -1539,7 +1539,7 @@ class CircuitBreakerOpenException(Exception):
     pass
 ```
 
-## ✅ Success Criteria
+## âœ… Success Criteria
 
 ### AI Integration Quality
 - [ ] **Model Compliance:** Only `gemini-2.5-flash` and `gemini-3-flash-preview` used
@@ -1566,7 +1566,7 @@ class CircuitBreakerOpenException(Exception):
 - [ ] **Error Recovery:** Multiple parsing strategies
 - [ ] **Validation Loops:** Result quality assurance
 
-## 🚨 Common AI Integration Pitfalls
+## ðŸš¨ Common AI Integration Pitfalls
 
 ### 1. Model Selection Errors
 **Problem:** Using wrong model for task complexity
@@ -1586,17 +1586,17 @@ class CircuitBreakerOpenException(Exception):
 
 **Common AI Response Formats That Break Basic Parsing:**
 ```json
-// ❌ FAILS: AI explanatory text before JSON
+// âŒ FAILS: AI explanatory text before JSON
 "Here's the analysis for the Arabic sentence: {\"words\": [...]}"
 
-// ❌ FAILS: Markdown code blocks
+// âŒ FAILS: Markdown code blocks
 "```json\n{\"words\": [...]}\n```"
 
-// ❌ FAILS: Mixed explanatory content
+// âŒ FAILS: Mixed explanatory content
 "The grammatical analysis shows: {\"words\": [...]} This indicates..."
 ```
 
-**✅ SOLUTION: Robust JSON Extraction**
+**âœ… SOLUTION: Robust JSON Extraction**
 ```python
 def _extract_json(self, ai_response: str) -> Dict:
     """Extract JSON from AI response with multiple fallback methods"""
@@ -1636,9 +1636,9 @@ def _extract_json(self, ai_response: str) -> Dict:
 
 ---
 
-**🎯 Ready to implement AI integration?** Start with basic prompt templates, then add optimization layers progressively. Remember: quality over speed - focus on accurate analysis first!
+**ðŸŽ¯ Ready to implement AI integration?** Start with basic prompt templates, then add optimization layers progressively. Remember: quality over speed - focus on accurate analysis first!
 
 **Need help with AI integration?** Refer to the [Troubleshooting Guide](troubleshooting_guide.md) for common AI issues, or the [Testing Guide](testing_guide.md) for validation strategies.
 
-**📊 Pro tip:** Monitor your AI performance metrics continuously and adjust prompts based on real usage patterns for optimal results.</content>
+**ðŸ“Š Pro tip:** Monitor your AI performance metrics continuously and adjust prompts based on real usage patterns for optimal results.</content>
 <parameter name="filePath">d:\Language Learning\LanguagLearning\language_grammar_generator\ai_prompting_guide.md

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Comprehensive Test Suite for ZhAnalyzer (Chinese Simplified Grammar Analyzer)
 Phase 4: Tests + Documentation
@@ -21,7 +21,7 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'streamlit_app'))
 
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 
 
 class TestZhAnalyzer:
@@ -36,11 +36,11 @@ class TestZhAnalyzer:
     def sample_sentences(self):
         """Sample Chinese sentences for testing"""
         return [
-            "我吃了三个苹果。",  # I ate three apples.
-            "他在图书馆学习。",  # He is studying in the library.
-            "你去过北京吗？",   # Have you been to Beijing?
-            "这本书很好看。",   # This book is very interesting.
-            "我们一起吃饭吧。",  # Let's eat together.
+            "æˆ‘åƒäº†ä¸‰ä¸ªè‹¹æžœã€‚",  # I ate three apples.
+            "ä»–åœ¨å›¾ä¹¦é¦†å­¦ä¹ ã€‚",  # He is studying in the library.
+            "ä½ åŽ»è¿‡åŒ—äº¬å—ï¼Ÿ",   # Have you been to Beijing?
+            "è¿™æœ¬ä¹¦å¾ˆå¥½çœ‹ã€‚",   # This book is very interesting.
+            "æˆ‘ä»¬ä¸€èµ·åƒé¥­å§ã€‚",  # Let's eat together.
         ]
 
     @pytest.fixture
@@ -51,22 +51,22 @@ class TestZhAnalyzer:
                 {
                     "sentence_index": 0,
                     "analysis": [
-                        {"word": "我", "role": "pronoun", "pinyin": "wǒ"},
-                        {"word": "吃", "role": "verb", "pinyin": "chī"},
-                        {"word": "了", "role": "aspect_particle", "pinyin": "le"},
-                        {"word": "三", "role": "numeral", "pinyin": "sān"},
-                        {"word": "个", "role": "measure_word", "pinyin": "gè"},
-                        {"word": "苹果", "role": "noun", "pinyin": "píngguǒ"}
+                        {"word": "æˆ‘", "role": "pronoun", "pinyin": "wÇ’"},
+                        {"word": "åƒ", "role": "verb", "pinyin": "chÄ«"},
+                        {"word": "äº†", "role": "aspect_particle", "pinyin": "le"},
+                        {"word": "ä¸‰", "role": "numeral", "pinyin": "sÄn"},
+                        {"word": "ä¸ª", "role": "measure_word", "pinyin": "gÃ¨"},
+                        {"word": "è‹¹æžœ", "role": "noun", "pinyin": "pÃ­ngguÇ’"}
                     ],
                     "confidence": 0.95
                 },
                 {
                     "sentence_index": 1,
                     "analysis": [
-                        {"word": "他", "role": "pronoun", "pinyin": "tā"},
-                        {"word": "在", "role": "preposition", "pinyin": "zài"},
-                        {"word": "图书馆", "role": "noun", "pinyin": "túshūguǎn"},
-                        {"word": "学习", "role": "verb", "pinyin": "xuéxí"}
+                        {"word": "ä»–", "role": "pronoun", "pinyin": "tÄ"},
+                        {"word": "åœ¨", "role": "preposition", "pinyin": "zÃ i"},
+                        {"word": "å›¾ä¹¦é¦†", "role": "noun", "pinyin": "tÃºshÅ«guÇŽn"},
+                        {"word": "å­¦ä¹ ", "role": "verb", "pinyin": "xuÃ©xÃ­"}
                     ],
                     "confidence": 0.92
                 }
@@ -94,9 +94,9 @@ class TestZhAnalyzer:
 
         # Verify aspect particles pattern
         aspect_pattern = patterns['aspect_particles']
-        assert '了' in aspect_pattern.pattern
-        assert '着' in aspect_pattern.pattern
-        assert '过' in aspect_pattern.pattern
+        assert 'äº†' in aspect_pattern.pattern
+        assert 'ç€' in aspect_pattern.pattern
+        assert 'è¿‡' in aspect_pattern.pattern
 
     def test_grammatical_roles_mapping(self, analyzer):
         """Test grammatical role color mapping"""
@@ -119,10 +119,10 @@ class TestZhAnalyzer:
 
         # Verify prompt structure
         assert "Chinese Simplified" in prompt
-        assert "实词/虚词" in prompt  # Content/function word distinction
-        assert "体词" in prompt       # Aspect particles
-        assert "语气词" in prompt     # Modal particles
-        assert "量词" in prompt       # Measure words
+        assert "å®žè¯/è™šè¯" in prompt  # Content/function word distinction
+        assert "ä½“è¯" in prompt       # Aspect particles
+        assert "è¯­æ°”è¯" in prompt     # Modal particles
+        assert "é‡è¯" in prompt       # Measure words
 
         # Check sentence inclusion
         for sentence in sample_sentences:
@@ -152,17 +152,17 @@ class TestZhAnalyzer:
         # Verify analysis structure
         analysis = result1['analysis']
         assert len(analysis) == 6  # 6 words in first sentence
-        assert analysis[0]['word'] == '我'
+        assert analysis[0]['word'] == 'æˆ‘'
         assert analysis[0]['role'] == 'pronoun'
 
     def test_validation_logic(self, analyzer):
         """Test validation checks"""
         # Valid analysis
         valid_analysis = [
-            {"word": "我", "role": "pronoun", "pinyin": "wǒ"},
-            {"word": "吃", "role": "verb", "pinyin": "chī"},
-            {"word": "了", "role": "aspect_particle", "pinyin": "le"},
-            {"word": "苹果", "role": "noun", "pinyin": "píngguǒ"}
+            {"word": "æˆ‘", "role": "pronoun", "pinyin": "wÇ’"},
+            {"word": "åƒ", "role": "verb", "pinyin": "chÄ«"},
+            {"word": "äº†", "role": "aspect_particle", "pinyin": "le"},
+            {"word": "è‹¹æžœ", "role": "noun", "pinyin": "pÃ­ngguÇ’"}
         ]
 
         is_valid, confidence, issues = analyzer.validate_analysis(valid_analysis)
@@ -171,9 +171,9 @@ class TestZhAnalyzer:
 
         # Invalid analysis (missing required particles)
         invalid_analysis = [
-            {"word": "我", "role": "pronoun", "pinyin": "wǒ"},
-            {"word": "吃", "role": "verb", "pinyin": "chī"},
-            {"word": "苹果", "role": "noun", "pinyin": "píngguǒ"}
+            {"word": "æˆ‘", "role": "pronoun", "pinyin": "wÇ’"},
+            {"word": "åƒ", "role": "verb", "pinyin": "chÄ«"},
+            {"word": "è‹¹æžœ", "role": "noun", "pinyin": "pÃ­ngguÇ’"}
         ]
 
         is_valid, confidence, issues = analyzer.validate_analysis(invalid_analysis)
@@ -182,20 +182,20 @@ class TestZhAnalyzer:
     def test_html_generation(self, analyzer):
         """Test HTML output generation"""
         analysis = [
-            {"word": "我", "role": "pronoun", "pinyin": "wǒ"},
-            {"word": "吃", "role": "verb", "pinyin": "chī"},
-            {"word": "了", "role": "aspect_particle", "pinyin": "le"},
-            {"word": "苹果", "role": "noun", "pinyin": "píngguǒ"}
+            {"word": "æˆ‘", "role": "pronoun", "pinyin": "wÇ’"},
+            {"word": "åƒ", "role": "verb", "pinyin": "chÄ«"},
+            {"word": "äº†", "role": "aspect_particle", "pinyin": "le"},
+            {"word": "è‹¹æžœ", "role": "noun", "pinyin": "pÃ­ngguÇ’"}
         ]
 
-        html = analyzer.generate_html_output(analysis, "我吃了苹果。")
+        html = analyzer.generate_html_output(analysis, "æˆ‘åƒäº†è‹¹æžœã€‚")
 
         # Check HTML structure
         assert "<span" in html
         assert "style=" in html
-        assert "我" in html
-        assert "吃了" in html
-        assert "苹果" in html
+        assert "æˆ‘" in html
+        assert "åƒäº†" in html
+        assert "è‹¹æžœ" in html
 
         # Check color coding
         assert "#FF4444" in html  # Red for pronoun
@@ -206,7 +206,7 @@ class TestZhAnalyzer:
     def test_character_validation(self, analyzer):
         """Test Han character validation"""
         # Valid Chinese characters
-        valid_text = "我吃了三个苹果。"
+        valid_text = "æˆ‘åƒäº†ä¸‰ä¸ªè‹¹æžœã€‚"
         assert analyzer._validate_characters(valid_text)
 
         # Invalid characters (contains English)
@@ -214,23 +214,23 @@ class TestZhAnalyzer:
         assert not analyzer._validate_characters(invalid_text)
 
         # Mixed valid/invalid
-        mixed_text = "我吃了three个苹果。"
+        mixed_text = "æˆ‘åƒäº†threeä¸ªè‹¹æžœã€‚"
         assert not analyzer._validate_characters(mixed_text)
 
     def test_measure_word_validation(self, analyzer):
         """Test measure word agreement validation"""
         # Valid: numeral + measure word + noun
         valid_analysis = [
-            {"word": "三", "role": "numeral"},
-            {"word": "个", "role": "measure_word"},
-            {"word": "苹果", "role": "noun"}
+            {"word": "ä¸‰", "role": "numeral"},
+            {"word": "ä¸ª", "role": "measure_word"},
+            {"word": "è‹¹æžœ", "role": "noun"}
         ]
         assert analyzer._validate_measure_words(valid_analysis)
 
         # Invalid: missing measure word
         invalid_analysis = [
-            {"word": "三", "role": "numeral"},
-            {"word": "苹果", "role": "noun"}
+            {"word": "ä¸‰", "role": "numeral"},
+            {"word": "è‹¹æžœ", "role": "noun"}
         ]
         assert not analyzer._validate_measure_words(invalid_analysis)
 
@@ -238,15 +238,15 @@ class TestZhAnalyzer:
         """Test particle position validation"""
         # Valid: aspect particle after verb
         valid_analysis = [
-            {"word": "吃", "role": "verb"},
-            {"word": "了", "role": "aspect_particle"}
+            {"word": "åƒ", "role": "verb"},
+            {"word": "äº†", "role": "aspect_particle"}
         ]
         assert analyzer._validate_particle_positions(valid_analysis)
 
         # Invalid: aspect particle before verb
         invalid_analysis = [
-            {"word": "了", "role": "aspect_particle"},
-            {"word": "吃", "role": "verb"}
+            {"word": "äº†", "role": "aspect_particle"},
+            {"word": "åƒ", "role": "verb"}
         ]
         assert not analyzer._validate_particle_positions(invalid_analysis)
 
@@ -254,16 +254,16 @@ class TestZhAnalyzer:
         """Test Pinyin romanization validation"""
         # Valid Pinyin with tone marks
         valid_analysis = [
-            {"word": "我", "pinyin": "wǒ"},
-            {"word": "吃", "pinyin": "chī"},
-            {"word": "了", "pinyin": "le"}
+            {"word": "æˆ‘", "pinyin": "wÇ’"},
+            {"word": "åƒ", "pinyin": "chÄ«"},
+            {"word": "äº†", "pinyin": "le"}
         ]
         assert analyzer._validate_pinyin(valid_analysis)
 
         # Invalid: missing tone marks
         invalid_analysis = [
-            {"word": "我", "pinyin": "wo"},
-            {"word": "吃", "pinyin": "chi"}
+            {"word": "æˆ‘", "pinyin": "wo"},
+            {"word": "åƒ", "pinyin": "chi"}
         ]
         assert not analyzer._validate_pinyin(invalid_analysis)
 
@@ -297,7 +297,7 @@ class TestZhAnalyzer:
                         "sentence_index": i,
                         "analysis": [
                             {"word": word, "role": "noun", "pinyin": "test"}
-                            for word in sentence.replace("。", "").replace("？", "").replace("！", "")
+                            for word in sentence.replace("ã€‚", "").replace("ï¼Ÿ", "").replace("ï¼", "")
                         ],
                         "confidence": 0.9
                     } for i, sentence in enumerate(sample_sentences)
@@ -317,10 +317,10 @@ class TestZhAnalyzer:
         """Test confidence score calculation"""
         # High confidence analysis
         high_conf_analysis = [
-            {"word": "我", "role": "pronoun", "pinyin": "wǒ"},
-            {"word": "吃", "role": "verb", "pinyin": "chī"},
-            {"word": "了", "role": "aspect_particle", "pinyin": "le"},
-            {"word": "苹果", "role": "noun", "pinyin": "píngguǒ"}
+            {"word": "æˆ‘", "role": "pronoun", "pinyin": "wÇ’"},
+            {"word": "åƒ", "role": "verb", "pinyin": "chÄ«"},
+            {"word": "äº†", "role": "aspect_particle", "pinyin": "le"},
+            {"word": "è‹¹æžœ", "role": "noun", "pinyin": "pÃ­ngguÇ’"}
         ]
 
         is_valid, confidence, issues = analyzer.validate_analysis(high_conf_analysis)
@@ -328,9 +328,9 @@ class TestZhAnalyzer:
 
         # Low confidence analysis (missing particles)
         low_conf_analysis = [
-            {"word": "我", "role": "noun"},  # Wrong role
-            {"word": "吃", "role": "verb"},
-            {"word": "苹果", "role": "noun"}
+            {"word": "æˆ‘", "role": "noun"},  # Wrong role
+            {"word": "åƒ", "role": "verb"},
+            {"word": "è‹¹æžœ", "role": "noun"}
         ]
 
         is_valid, confidence, issues = analyzer.validate_analysis(low_conf_analysis)

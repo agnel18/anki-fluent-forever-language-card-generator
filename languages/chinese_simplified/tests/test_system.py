@@ -1,4 +1,4 @@
-
+﻿
 """
 System tests for zh analyzer - End-to-end testing.
 """
@@ -6,7 +6,7 @@ System tests for zh analyzer - End-to-end testing.
 import pytest
 import os
 from dotenv import load_dotenv
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 
 # Load environment variables
 load_dotenv()
@@ -55,3 +55,4 @@ class TestZhAnalyzerSystem:
         except Exception:
             # Should not crash completely
             pass
+

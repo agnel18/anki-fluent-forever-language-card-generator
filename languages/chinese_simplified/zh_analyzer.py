@@ -1,4 +1,4 @@
-# languages/zh/zh_analyzer.py
+﻿# languages/chinese_simplified/zh_analyzer.py
 """
 Chinese Simplified Grammar Analyzer - Clean Architecture Facade
 
@@ -53,17 +53,17 @@ from .domain.zh_response_parser import ZhResponseParser
 from .domain.zh_validator import ZhValidator
 
 # Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
 
 logger = logging.getLogger(__name__)
 
 class ZhAnalyzer(BaseGrammarAnalyzer):
     """
-    Grammar analyzer for Chinese Simplified (简体中文) - Clean Architecture.
+    Grammar analyzer for Chinese Simplified (ç®€ä½“ä¸­æ–‡) - Clean Architecture.
 
     CHINESE-SPECIFIC FEATURES:
     - Analytic Language: No inflection, relies on particles and word order
-    - Aspect System: 了 (completed), 着 (ongoing), 过 (experienced)
+    - Aspect System: äº† (completed), ç€ (ongoing), è¿‡ (experienced)
     - Classifier System: Obligatory measure words for counting
     - Topic-Comment Structure: Flexible word order
     - Logographic Script: Character-based analysis with compound recognition
@@ -99,7 +99,7 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         config = LanguageConfig(
             code="zh",
             name="Chinese Simplified",
-            native_name="简体中文",
+            native_name="ç®€ä½“ä¸­æ–‡",
             family="Sino-Tibetan",
             script_type="logographic",
             complexity_rating="medium",
@@ -276,18 +276,22 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         """
         logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=gemini_api_key)
+            api = get_gemini_api()
+            api.configure(api_key=gemini_api_key)
             # Try primary model first
             try:
-                model = genai.GenerativeModel(get_gemini_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
             except Exception as primary_error:
                 logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
                 # Fallback to preview model
-                model = genai.GenerativeModel(get_gemini_fallback_model())
-                response = model.generate_content(prompt)
+                response = api.generate_content(
+                    model=get_gemini_fallback_model(),
+                    contents=prompt
+                )
                 ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")
             logger.info(f"AI response received: {ai_response[:500]}...")
@@ -305,9 +309,9 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             word_data = []
             for word in words:
                 role = 'other'
-                if word in ['的', '了', '着', '过']:
+                if word in ['çš„', 'äº†', 'ç€', 'è¿‡']:
                     role = 'particle'
-                elif word in ['个', '本', '杯']:
+                elif word in ['ä¸ª', 'æœ¬', 'æ¯']:
                     role = 'classifier'
                 word_data.append({
                     'word': word,
@@ -323,9 +327,9 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         word_data = []
         for word in words:
             role = 'other'
-            if word in ['的', '了', '着', '过']:
+            if word in ['çš„', 'äº†', 'ç€', 'è¿‡']:
                 role = 'particle'
-            elif word in ['个', '本', '杯']:
+            elif word in ['ä¸ª', 'æœ¬', 'æ¯']:
                 role = 'classifier'
             word_data.append({
                 'word': word,
@@ -387,7 +391,7 @@ For EACH AND EVERY INDIVIDUAL WORD/CHARACTER in the sentence, provide:
 Pay special attention to the target word: {target_word}
 
 Focus on basic Chinese features:
-- Basic particles (的, 了, 吗, etc.)
+- Basic particles (çš„, äº†, å—, etc.)
 - Simple subject-verb-object structure
 - Basic classifiers and measure words
 
@@ -415,10 +419,10 @@ CRITICAL: Analyze EVERY word in the sentence, not just the target word! Provide 
         return f"""Analyze this Chinese sentence with INTERMEDIATE grammar focus: {sentence}
 
 Provide detailed analysis including:
-- Aspect markers (了, 着, 过) and their functions
+- Aspect markers (äº†, ç€, è¿‡) and their functions
 - Classifier usage and selection
 - Pronoun systems and reference
-- Complex particle functions (把, 被, 给, etc.)
+- Complex particle functions (æŠŠ, è¢«, ç»™, etc.)
 - Topic-comment structure
 
 Pay special attention to the target word: {target_word}
@@ -450,7 +454,7 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
 Analyze complex linguistic phenomena:
 - Multiple aspect markers and their interactions
 - Complex classifier systems and quantification
-- Discourse particles and pragmatic functions (呢, 吧, 啊, etc.)
+- Discourse particles and pragmatic functions (å‘¢, å§, å•Š, etc.)
 - Topic chains and information structure
 - Serial verb constructions
 - Resultative compounds and directional complements
@@ -580,7 +584,7 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
             enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
 
         # Custom prompt for Chinese Simplified to ensure proper formatting
-        prompt = f"""You are a native-level expert linguist in Simplified Chinese (简体中文).
+        prompt = f"""You are a native-level expert linguist in Simplified Chinese (ç®€ä½“ä¸­æ–‡).
 
 Your task: Generate a complete learning package for the Simplified Chinese word "{word}" in ONE response.
 
@@ -595,7 +599,7 @@ IMPORTANT: Keep the entire meaning under 75 characters total.
 WORD-SPECIFIC RESTRICTIONS
 ===========================
 Based on the meaning above, identify any grammatical constraints for "{word}".
-Examples: particles only (的/了/吗), specific measure words required, character-based restrictions.
+Examples: particles only (çš„/äº†/å—), specific measure words required, character-based restrictions.
 If no restrictions apply, state "No specific grammatical restrictions."
 IMPORTANT: Keep the entire restrictions summary under 60 characters total.
 
@@ -605,14 +609,15 @@ STEP 2: SENTENCES
 Generate exactly {num_sentences} highly natural, idiomatic sentences in Simplified Chinese for the word "{word}".
 
 QUALITY RULES:
-- Every sentence must use proper Simplified Chinese characters (简体字)
+- Every sentence must use proper Simplified Chinese characters (ç®€ä½“å­—)
 - Grammar, syntax, and character usage must be correct
 - The target word "{word}" MUST be used correctly according to restrictions
-- Each sentence must be no more than {max_length} characters long
+- Each sentence must be between {min_length} and {max_length} words long; if no spaces, treat characters as words
+- COUNT precisely; if outside the range, regenerate internally
 - Difficulty: {difficulty}
 
 VARIETY REQUIREMENTS:
-- Use different aspect particles (了, 着, 过) and sentence structures if applicable
+- Use different aspect particles (äº†, ç€, è¿‡) and sentence structures if applicable
 - Use different sentence types: declarative, interrogative, imperative
 - Include appropriate measure words/classifiers when needed
 {context_instruction}
@@ -627,7 +632,7 @@ For EACH sentence above, provide a natural, fluent English translation.
 STEP 4: PINYIN TRANSCRIPTION
 ===========================
 For EACH sentence above, provide accurate Pinyin transcription with tone marks.
-- Use proper tone marks (ā, á, ǎ, à, ē, é, ě, è, etc.)
+- Use proper tone marks (Ä, Ã¡, ÇŽ, Ã , Ä“, Ã©, Ä›, Ã¨, etc.)
 - Include spaces between words for readability
 
 ===========================

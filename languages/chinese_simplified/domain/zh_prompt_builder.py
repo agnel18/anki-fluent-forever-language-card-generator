@@ -1,4 +1,4 @@
-# languages/zh/domain/zh_prompt_builder.py
+﻿# languages/chinese_simplified/domain/zh_prompt_builder.py
 """
 Chinese Simplified Prompt Builder - Domain Component
 

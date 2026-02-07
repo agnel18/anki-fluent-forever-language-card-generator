@@ -1,4 +1,4 @@
-# languages/zh/domain/zh_fallbacks.py
+﻿# languages/chinese_simplified/domain/zh_fallbacks.py
 """
 Chinese Simplified Fallbacks - Domain Component
 
@@ -104,23 +104,24 @@ class ZhFallbacks:
 
     def _guess_role(self, word: str) -> str:
         """Guess grammatical role based on word characteristics."""
+        word = self._normalize_text(word)
         # Clean the word
-        clean_word = word.strip('。！？，、；："''（）【】{}')
+        clean_word = word.strip("\u3002\uff01\uff1f\uff0c\u3001\uff1b\uff1a\"'\uff08\uff09\u3010\u3011{}")
 
         # Aspect markers (very important in Chinese)
-        if clean_word in ['了', '着', '过']:
+        if clean_word in ['\u4e86', '\u7740', '\u8fc7']:
             return 'aspect_marker'
 
         # Modal particles
-        if clean_word in ['吗', '呢', '吧', '啊', '呀', '啦', '嘛']:
+        if clean_word in ['\u5417', '\u5462', '\u5427', '\u554a', '\u54e6', '\u5566', '\u561b']:
             return 'modal_particle'
 
         # Structural particles
-        if clean_word in ['的', '地', '得']:
+        if clean_word in ['\u7684', '\u5730', '\u5f97']:
             return 'structural_particle'
 
         # General particles
-        if clean_word in ['了', '着', '过', '的', '地', '得', '吗', '呢', '吧', '啊']:
+        if clean_word in ['\u4e86', '\u7740', '\u8fc7', '\u7684', '\u5730', '\u5f97', '\u5417', '\u5462', '\u5427', '\u554a']:
             return 'particle'
 
         # Common classifiers
@@ -128,39 +129,71 @@ class ZhFallbacks:
             return 'classifier'
 
         # Pronouns
-        if clean_word in ['我', '你', '他', '她', '它', '我们', '你们', '他们', '她们', '这', '那', '这些', '那些']:
+        if clean_word in ['\u6211', '\u4f60', '\u4ed6', '\u5979', '\u5b83', '\u6211\u4eec', '\u4f60\u4eec', '\u4ed6\u4eec', '\u5979\u4eec', '\u8fd9', '\u90a3', '\u8fd9\u4e9b', '\u90a3\u4e9b']:
             return 'pronoun'
 
         # Question words
-        if clean_word in ['什么', '谁', '哪里', '什么时候', '怎么', '为什么', '多少', '几']:
+        if clean_word in ['\u4ec0\u4e48', '\u8c01', '\u54ea\u91cc', '\u4ec0\u4e48\u65f6\u5019', '\u600e\u4e48', '\u4e3a\u4ec0\u4e48', '\u591a\u5c11', '\u51e0']:
             return 'interrogative'
 
         # Conjunctions
-        if clean_word in ['和', '与', '或', '但是', '因为', '所以', '如果', '虽然']:
+        if clean_word in ['\u548c', '\u4e0e', '\u6216', '\u4f46\u662f', '\u56e0\u4e3a', '\u6240\u4ee5', '\u5982\u679c', '\u867d\u7136']:
             return 'conjunction'
 
         # Prepositions
-        if clean_word in ['在', '从', '到', '给', '对', '向', '跟', '被']:
+        if clean_word in ['\u5728', '\u4ece', '\u5230', '\u7ed9', '\u5bf9', '\u5411', '\u8ddf', '\u88ab']:
             return 'preposition'
 
         # Numbers
-        if clean_word.isdigit() or clean_word in ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '百', '千', '万']:
+        if clean_word.isdigit() or clean_word in ['\u4e00', '\u4e8c', '\u4e09', '\u56db', '\u4e94', '\u516d', '\u4e03', '\u516b', '\u4e5d', '\u5341', '\u767e', '\u5343', '\u4e07']:
             return 'numeral'
 
         # Interjections
-        if clean_word in ['啊', '哦', '哎呀', '嗯', '唉']:
+        if clean_word in ['\u554a', '\u54e6', '\u54ce\u54ce', '\u55ef', '\u54ce']:
             return 'interjection'
 
         # Verb-like endings or common verbs (basic heuristics)
-        if len(clean_word) >= 2 and any(clean_word.endswith(suffix) for suffix in ['了', '着', '过', '来', '去', '到']):
+        if len(clean_word) >= 2 and any(clean_word.endswith(suffix) for suffix in ['\u4e86', '\u7740', '\u8fc7', '\u6765', '\u53bb', '\u5230']):
             return 'verb'
 
-        # Adjective-like (basic heuristics - adjectives often end with 的 or are single syllable)
-        if len(clean_word) == 1 or clean_word.endswith('的'):
+        # Adjective-like (basic heuristics - adjectives often end with çš„ or are single syllable)
+        if len(clean_word) == 1 or clean_word.endswith('\u7684'):
             return 'adjective'
 
         # Default to noun for most other words (most common in Chinese)
         return 'noun'
+
+    def _normalize_text(self, text: str) -> str:
+        """Normalize mojibake-encoded Chinese text to Unicode if needed."""
+        if not text:
+            return text
+        replacements = {
+            "ç€": "\u7740",
+            "å—": "\u5417",
+            "æ¯": "\u676f"
+        }
+        if any(0x80 <= ord(ch) <= 0x9f for ch in text):
+            text = ''.join(ch for ch in text if not (0x80 <= ord(ch) <= 0x9f))
+        for bad, good in replacements.items():
+            if bad in text:
+                text = text.replace(bad, good)
+        if any('\u4e00' <= ch <= '\u9fff' for ch in text):
+            return text
+        for encoding in ('latin-1', 'cp1252'):
+            try:
+                repaired = text.encode(encoding).decode('utf-8')
+            except UnicodeError:
+                continue
+            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
+                return repaired
+        if all(ord(ch) < 256 for ch in text):
+            try:
+                repaired = bytes(ord(ch) for ch in text).decode('utf-8')
+            except UnicodeError:
+                return text
+            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
+                return repaired
+        return text
 
     def _get_fallback_color(self, role: str) -> str:
         """Get color for fallback role."""

@@ -7,7 +7,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 
-from sentence_generator import analyze_grammar_and_color, LANGUAGE_NAME_TO_CODE
+from sentence_generator import analyze_grammar_and_color
+from streamlit_app.shared_utils import LANGUAGE_NAME_TO_CODE
 from language_analyzers.analyzer_registry import get_analyzer
 
 def test_integration():

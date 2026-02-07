@@ -20,14 +20,17 @@ Architecture:
 - External configuration support
 
 Usage:
-    from languages.turkish import TurkishAnalyzer
+    from languages.turkish import TrAnalyzer
 
     analyzer = TrAnalyzer()
-    result = analyzer.analyze("Merhaba dünya!")
-    print(analyzer.format_analysis_result(result))
+    result = analyzer.analyze_grammar("Merhaba dünya!", "dünya", "beginner", "YOUR_API_KEY")
+    print(result)
 """
 
 from .tr_analyzer import TrAnalyzer
+
+# Backward-compatible alias
+TurkishAnalyzer = TrAnalyzer
 
 # Version info
 __version__ = "1.0.0"
@@ -36,6 +39,7 @@ __language_code__ = "tr"
 
 # Main exports
 __all__ = [
+    'TrAnalyzer',
     'TurkishAnalyzer',
     '__version__',
     '__language__',

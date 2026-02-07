@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Comprehensive Test Suite for ZhAnalyzer (Chinese Simplified Grammar Analyzer)
 Phase 4: Tests + Documentation
@@ -21,7 +21,7 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'streamlit_app'))
 
-from languages.zh.zh_analyzer import ZhAnalyzer
+from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
 
 
 class TestZhAnalyzer:
@@ -36,11 +36,11 @@ class TestZhAnalyzer:
     def sample_sentences(self):
         """Sample Chinese sentences for testing"""
         return [
-            "我吃了三个苹果。",
-            "他在图书馆学习。",
-            "你去过北京吗？",
-            "这本书很好看。",
-            "我们一起吃饭吧。"
+            "æˆ‘åƒäº†ä¸‰ä¸ªè‹¹æžœã€‚",
+            "ä»–åœ¨å›¾ä¹¦é¦†å­¦ä¹ ã€‚",
+            "ä½ åŽ»è¿‡åŒ—äº¬å—ï¼Ÿ",
+            "è¿™æœ¬ä¹¦å¾ˆå¥½çœ‹ã€‚",
+            "æˆ‘ä»¬ä¸€èµ·åƒé¥­å§ã€‚"
         ]
 
     def test_initialization(self, analyzer):
@@ -83,7 +83,7 @@ class TestZhAnalyzer:
 
     def test_batch_prompt_generation(self, analyzer, sample_sentences):
         """Test batch grammar prompt generation"""
-        prompt = analyzer.get_batch_grammar_prompt("intermediate", sample_sentences, "学习")
+        prompt = analyzer.get_batch_grammar_prompt("intermediate", sample_sentences, "å­¦ä¹ ")
 
         # Verify prompt structure - actual implementation does character-level analysis
         assert "Chinese" in prompt
@@ -112,15 +112,15 @@ class TestZhAnalyzer:
         # Valid analysis - character level as per actual implementation
         valid_data = {
             "elements": [
-                {"word": "我", "grammatical_role": "pronoun", "pronunciation": "wǒ"},
-                {"word": "吃", "grammatical_role": "verb", "pronunciation": "chī"},
-                {"word": "了", "grammatical_role": "aspect_particle", "pronunciation": "le"},
-                {"word": "苹", "grammatical_role": "noun", "pronunciation": "píng"},
-                {"word": "果", "grammatical_role": "noun", "pronunciation": "guǒ"}
+                {"word": "æˆ‘", "grammatical_role": "pronoun", "pronunciation": "wÇ’"},
+                {"word": "åƒ", "grammatical_role": "verb", "pronunciation": "chÄ«"},
+                {"word": "äº†", "grammatical_role": "aspect_particle", "pronunciation": "le"},
+                {"word": "è‹¹", "grammatical_role": "noun", "pronunciation": "pÃ­ng"},
+                {"word": "æžœ", "grammatical_role": "noun", "pronunciation": "guÇ’"}
             ]
         }
 
-        confidence = analyzer.validate_analysis(valid_data, "我吃了苹果。")
+        confidence = analyzer.validate_analysis(valid_data, "æˆ‘åƒäº†è‹¹æžœã€‚")
         # Note: Actual implementation may give lower confidence, adjust expectation
         assert isinstance(confidence, float)
         assert 0.0 <= confidence <= 1.0
@@ -129,32 +129,32 @@ class TestZhAnalyzer:
         """Test HTML output generation"""
         parsed_data = {
             "elements": [
-                {"word": "我", "grammatical_role": "pronoun", "color": "#FF4444"},
-                {"word": "吃", "grammatical_role": "verb", "color": "#44FF44"},
-                {"word": "了", "grammatical_role": "aspect_particle", "color": "#8A2BE2"},
-                {"word": "苹", "grammatical_role": "noun", "color": "#FFAA00"},
-                {"word": "果", "grammatical_role": "noun", "color": "#FFAA00"}
+                {"word": "æˆ‘", "grammatical_role": "pronoun", "color": "#FF4444"},
+                {"word": "åƒ", "grammatical_role": "verb", "color": "#44FF44"},
+                {"word": "äº†", "grammatical_role": "aspect_particle", "color": "#8A2BE2"},
+                {"word": "è‹¹", "grammatical_role": "noun", "color": "#FFAA00"},
+                {"word": "æžœ", "grammatical_role": "noun", "color": "#FFAA00"}
             ]
         }
 
-        html = analyzer._generate_html_output(parsed_data, "我吃了苹果。", "intermediate")
+        html = analyzer._generate_html_output(parsed_data, "æˆ‘åƒäº†è‹¹æžœã€‚", "intermediate")
 
         # Check HTML structure
         assert "<span" in html
         assert "style=" in html
-        assert "我" in html
-        assert "吃" in html
-        assert "了" in html
-        assert "苹" in html
-        assert "果" in html
+        assert "æˆ‘" in html
+        assert "åƒ" in html
+        assert "äº†" in html
+        assert "è‹¹" in html
+        assert "æžœ" in html
 
         # Check color coding (may be default if role not found)
         # The actual implementation may use default colors
 
     def test_single_sentence_processing(self, analyzer):
         """Test single sentence processing methods"""
-        sentence = "我吃了苹果。"
-        prompt = analyzer.get_grammar_prompt("intermediate", sentence, "吃")
+        sentence = "æˆ‘åƒäº†è‹¹æžœã€‚"
+        prompt = analyzer.get_grammar_prompt("intermediate", sentence, "åƒ")
 
         assert "Chinese" in prompt
         assert sentence in prompt
@@ -163,19 +163,19 @@ class TestZhAnalyzer:
 
     def test_complexity_levels(self, analyzer):
         """Test different complexity level prompts"""
-        sentence = "我吃了苹果。"
+        sentence = "æˆ‘åƒäº†è‹¹æžœã€‚"
 
         # Test beginner prompt
-        beginner_prompt = analyzer.get_grammar_prompt("beginner", sentence, "吃")
+        beginner_prompt = analyzer.get_grammar_prompt("beginner", sentence, "åƒ")
         assert "CHARACTER" in beginner_prompt.upper()  # Beginner does character analysis
         assert "EVERY" in beginner_prompt.upper()
 
         # Test intermediate prompt
-        intermediate_prompt = analyzer.get_grammar_prompt("intermediate", sentence, "吃")
+        intermediate_prompt = analyzer.get_grammar_prompt("intermediate", sentence, "åƒ")
         assert "intermediate" in intermediate_prompt
 
         # Test advanced prompt
-        advanced_prompt = analyzer.get_grammar_prompt("advanced", sentence, "吃")
+        advanced_prompt = analyzer.get_grammar_prompt("advanced", sentence, "åƒ")
         assert "advanced" in advanced_prompt
 
     def test_error_handling(self, analyzer):
