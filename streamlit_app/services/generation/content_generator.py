@@ -433,7 +433,7 @@ IMPORTANT:
             logger.warning(f"Failed to parse sentences from response. Raw response: {response_text}")
 
         # Validate and create fallbacks
-        validated_sentences, validated_translations, validated_ipa, validated_keywords = self._validate_and_create_fallbacks(
+        validated_sentences, validated_translations, validated_ipa, validated_keywords, validation_warnings = self._validate_and_create_fallbacks(
             sentences, translations, ipa_list, keywords, word, restrictions, num_sentences, min_length, max_length
         )
 
@@ -443,12 +443,13 @@ IMPORTANT:
             'sentences': validated_sentences,
             'translations': validated_translations,
             'ipa': validated_ipa,
-            'keywords': validated_keywords
+            'keywords': validated_keywords,
+            'validation_warnings': validation_warnings
         }
 
     def _validate_and_create_fallbacks(self, sentences: List[str], translations: List[str], ipa_list: List[str], keywords: List[str],
-                                      word: str, restrictions: str, num_sentences: int, min_length: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str]]:
-        """Validate content and create fallbacks for invalid items."""
+                                      word: str, restrictions: str, num_sentences: int, min_length: int, max_length: int) -> Tuple[List[str], List[str], List[str], List[str], List[Dict[str, Any]]]:
+        """Validate content and create validation warnings instead of fallbacks."""
 
         # Create fallback templates based on restrictions
         if "imperative" in restrictions.lower() or "command" in restrictions.lower():
@@ -506,6 +507,7 @@ IMPORTANT:
         validated_translations = []
         validated_ipa = []
         validated_keywords = []
+        validation_warnings = []
 
         generic_terms = ['language', 'learning', 'word', 'text', 'communication', 'study']
 
@@ -540,39 +542,47 @@ IMPORTANT:
 
             sentence = normalized_sentence
             word_missing = not is_target_word_present(word, sentence)
-            if word_missing:
-                logger.warning(f"Sentence {i+1} missing target word '{word}'. Using fallback.")
-
             word_count = self._count_sentence_units(sentence)
 
-            if not word_missing and min_length <= word_count <= max_length:
-                validated_sentences.append(sentence)
-                validated_translations.append(translations[i] if i < len(translations) and translations[i] else f"This is a sample sentence with {word}.")
-                validated_ipa.append(ipa_list[i] if i < len(ipa_list) else "")
-                candidate_keywords = keywords[i] if i < len(keywords) else fallback_keywords[i % len(fallback_keywords)]
-                keyword_items = [kw.strip().lower() for kw in candidate_keywords.split(',')]
-                if any(any(term in kw for term in generic_terms) for kw in keyword_items):
-                    candidate_keywords = fallback_keywords[i % len(fallback_keywords)]
-                validated_keywords.append(candidate_keywords)
-            else:
-                logger.warning(
-                    f"Sentence {i+1} has {word_count} words, outside {min_length}-{max_length}. Using fallback."
-                )
-                fallback_idx = i % len(fallback_templates)
-                validated_sentences.append(fallback_templates[fallback_idx])
-                validated_translations.append(f"This is a sample sentence with {word}.")
-                validated_ipa.append("")
-                validated_keywords.append(fallback_keywords[fallback_idx])
+            # Always use the AI-generated sentence, but collect validation warnings
+            validated_sentences.append(sentences[i])  # Use original sentence, not normalized
+            validated_translations.append(translations[i] if i < len(translations) and translations[i] else f"This is a sample sentence with {word}.")
+            validated_ipa.append(ipa_list[i] if i < len(ipa_list) else "")
+            candidate_keywords = keywords[i] if i < len(keywords) else fallback_keywords[i % len(fallback_keywords)]
+            keyword_items = [kw.strip().lower() for kw in candidate_keywords.split(',')]
+            if any(any(term in kw for term in generic_terms) for kw in keyword_items):
+                candidate_keywords = fallback_keywords[i % len(fallback_keywords)]
+            validated_keywords.append(candidate_keywords)
 
-        # Ensure correct number of items
+            # Collect validation warnings for this sentence
+            warnings = []
+            if word_missing:
+                warnings.append(f"Missing target word '{word}'")
+                logger.warning(f"Sentence {i+1} missing target word '{word}'. Keeping sentence with warning.")
+
+            if not (min_length <= word_count <= max_length):
+                warnings.append(f"Word count: {word_count} (required: {min_length}-{max_length})")
+                logger.warning(f"Sentence {i+1} has {word_count} words, outside {min_length}-{max_length}. Keeping sentence with warning.")
+
+            validation_warnings.append({
+                'sentence_index': i + 1,
+                'issues': warnings,
+                'is_valid': len(warnings) == 0
+            })
+
+        # Ensure correct number of items (use fallbacks only as absolute last resort)
         while len(validated_sentences) < num_sentences:
             validated_sentences.append(f"This is a sample sentence with {word}.")
-        while len(validated_translations) < len(validated_sentences):
             validated_translations.append(f"This is a sample sentence with {word}.")
-        while len(validated_ipa) < len(validated_sentences):
             validated_ipa.append("")
-        while len(validated_keywords) < len(validated_sentences):
-            validated_keywords.append(f"{word}, daily life, scene")
+            validated_keywords.append(fallback_keywords[len(validated_sentences) % len(fallback_keywords)])
+            validation_warnings.append({
+                'sentence_index': len(validation_warnings) + 1,
+                'issues': ['Used fallback sentence - AI generation failed'],
+                'is_valid': False
+            })
+
+        return validated_sentences, validated_translations, validated_ipa, validated_keywords, validation_warnings
 
         return validated_sentences[:num_sentences], validated_translations[:num_sentences], validated_ipa[:num_sentences], validated_keywords[:num_sentences]
 

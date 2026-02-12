@@ -48,14 +48,20 @@ class ContentGenerator:
         sentences = result.get("sentences", [])
         translations = result.get("translations", [])
         restrictions = result.get("restrictions", "")
+        validation_warnings = result.get("validation_warnings", [])
 
         items: List[Dict[str, Any]] = []
         for idx, sentence in enumerate(sentences):
+            warning_info = {}
+            if idx < len(validation_warnings):
+                warning_info = validation_warnings[idx]
+
             items.append(
                 {
                     "sentence": sentence,
                     "translation": translations[idx] if idx < len(translations) else "",
                     "grammar_explanation": restrictions,
+                    "validation_warning": warning_info,
                 }
             )
 
