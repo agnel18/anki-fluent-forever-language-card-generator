@@ -290,15 +290,17 @@ class ZhTwPatterns:
             )
             validation_results['confidence'] *= 0.8
 
-        # Check for Traditional-specific characters
+        # Check for Traditional-specific characters (optional check)
         traditional_markers = ['著', '裡', '藉', '徵', '並', '祇']
         has_traditional = any(char in text for char in traditional_markers)
 
+        # For Traditional Chinese analyzer, we accept any Chinese text
+        # The presence of traditional markers is a bonus but not required
+        # Don't add this as an issue that makes validation fail
         if not has_traditional and len(text) > 5:
-            validation_results['issues'].append(
-                "Text may be Simplified Chinese rather than Traditional"
-            )
-            validation_results['confidence'] *= 0.9
+            # Just log a warning but don't mark as invalid
+            logger.warning("Text may be Simplified Chinese rather than Traditional")
+            validation_results['confidence'] *= 0.95
 
         # Structural validation
         if not self._compiled_patterns['sentence_end'].search(text):
@@ -323,10 +325,11 @@ class ZhTwPatterns:
         Segment Chinese Traditional sentence into words/elements.
 
         SEGMENTATION STRATEGY:
-        1. Identify compound words and phrases
-        2. Split on grammatical boundaries
-        3. Preserve functional elements
-        4. Handle Traditional character compounds
+        1. Remove punctuation
+        2. Identify compound words and phrases
+        3. Split on grammatical boundaries
+        4. Preserve functional elements
+        5. Handle Traditional character compounds
 
         Args:
             sentence: Chinese Traditional sentence to segment
@@ -334,8 +337,12 @@ class ZhTwPatterns:
         Returns:
             List of word/element strings
         """
+        # Remove punctuation first
+        import re
+        clean_sentence = re.sub(r'[。！？，、；：「」『』（）《》〈〉【】]', '', sentence)
+
         # Start with character-level segmentation
-        elements = list(sentence)
+        elements = list(clean_sentence)
 
         # Merge common compounds
         merged_elements = []

@@ -162,6 +162,34 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
         - Maintains sentence word order (LTR) for optimal user experience
         - Colors based on grammatical roles and complexity level
         """
+        # Input validation
+        if not sentence or not sentence.strip():
+            logger.warning("Empty sentence provided to analyze_grammar")
+            return GrammarAnalysis(
+                word_explanations=[],
+                confidence=0.0,
+                explanation_quality={'quality_score': 0.0, 'issues': ['Empty sentence']},
+                processing_time=0.0
+            )
+
+        if not target_word or not target_word.strip():
+            logger.warning("Empty target_word provided to analyze_grammar")
+            return GrammarAnalysis(
+                word_explanations=[],
+                confidence=0.0,
+                explanation_quality={'quality_score': 0.0, 'issues': ['Empty target word']},
+                processing_time=0.0
+            )
+
+        if not gemini_api_key or not gemini_api_key.strip():
+            logger.warning("Empty API key provided to analyze_grammar")
+            return GrammarAnalysis(
+                word_explanations=[],
+                confidence=0.0,
+                explanation_quality={'quality_score': 0.0, 'issues': ['Invalid API key']},
+                processing_time=0.0
+            )
+
         try:
             prompt = self.get_grammar_prompt(complexity, sentence, target_word)
             ai_response = self._call_ai(prompt, gemini_api_key)
@@ -914,13 +942,13 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
         - Provide reasonable defaults
         """
         # Check for known particles
-        if word in self.config.aspect_markers:
+        if word in self.zh_tw_config.aspect_markers:
             return "aspect_particle"
-        if word in self.config.modal_particles:
+        if word in self.zh_tw_config.modal_particles:
             return "modal_particle"
-        if word in self.config.structural_particles:
+        if word in self.zh_tw_config.structural_particles:
             return "structural_particle"
-        if word in self.config.common_classifiers:
+        if word in self.zh_tw_config.common_classifiers:
             return "measure_word"
 
         # Position-based inference
@@ -1105,10 +1133,10 @@ IMPORTANT:
             Dictionary with component status information
         """
         return {
-            "config_loaded": bool(self.config.grammatical_roles),
+            "config_loaded": bool(self.zh_tw_config.grammatical_roles),
             "patterns_available": self.patterns.get_pattern_info(),
             "complexity_levels": self.get_supported_complexity_levels(),
-            "grammatical_roles_count": len(self.config.grammatical_roles),
+            "grammatical_roles_count": len(self.zh_tw_config.grammatical_roles),
             "color_schemes": {level: len(self.get_color_scheme(level))
                             for level in self.get_supported_complexity_levels()}
         }
