@@ -1,0 +1,1 @@
+"""Hindi domain package."""

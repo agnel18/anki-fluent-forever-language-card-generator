@@ -248,6 +248,7 @@ Important:
                 "postposition": "#4444FF",
                 "auxiliary_verb": "#4ECDC4", # Same as verb - related function
                 "conjunction": "#888888",
+              "interjection": "#FFD700",
                 "particle": "#AA44FF",
                 "other": "#AAAAAA"
             },

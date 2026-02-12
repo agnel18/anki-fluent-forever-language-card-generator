@@ -79,6 +79,74 @@ class HiValidator:
             logger.warning(f"Low confidence ({confidence}) for sentence: {sentence}")
         
         return result
+
+    def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate quality of word explanations for Hindi."""
+        quality_score = 1.0
+        issues = []
+
+        word_explanations = result.get('word_explanations', [])
+        explanations = result.get('explanations', {})
+
+        for word_exp in word_explanations:
+            if len(word_exp) >= 4:
+                meaning = word_exp[3]
+                if len(meaning) < 5:
+                    quality_score *= 0.9
+                    issues.append(f"Very short explanation for '{word_exp[0]}'")
+                elif len(meaning) > 75:
+                    quality_score *= 0.8
+                    issues.append(f"Explanation too long for '{word_exp[0]}'")
+            else:
+                quality_score *= 0.8
+                issues.append("Word explanation missing required fields")
+
+        if not explanations:
+            quality_score *= 0.7
+            issues.append("Missing overall explanations section")
+        else:
+            overall_structure = explanations.get('overall_structure', '')
+            key_features = explanations.get('key_features', '')
+
+            if len(overall_structure.strip()) < 20:
+                quality_score *= 0.9
+                issues.append("Overall structure explanation too brief")
+
+            if len(key_features.strip()) < 15:
+                quality_score *= 0.9
+                issues.append("Key features explanation too brief")
+
+            hindi_features = ['postposition', 'gender', 'case', 'honorific', 'sov']
+            combined = f"{overall_structure} {key_features}".lower()
+            if not any(feature in combined for feature in hindi_features):
+                quality_score *= 0.9
+                issues.append("Explanations lack Hindi-specific grammatical features")
+
+        quality_score = min(max(quality_score, 0.0), 1.0)
+
+        return {
+            'quality_score': quality_score,
+            'issues': issues,
+            'recommendations': self._generate_quality_recommendations(issues)
+        }
+
+    def _generate_quality_recommendations(self, issues: List[str]) -> List[str]:
+        """Generate recommendations based on quality issues."""
+        recommendations = []
+
+        if any('brief' in issue.lower() for issue in issues):
+            recommendations.append("Expand explanations to clarify grammatical function and relationships")
+
+        if any('missing' in issue.lower() for issue in issues):
+            recommendations.append("Include overall structure and key features in explanations")
+
+        if any('hindi-specific' in issue.lower() for issue in issues):
+            recommendations.append("Emphasize postpositions, agreement, and SOV structure in summaries")
+
+        if not recommendations:
+            recommendations.append("Analysis quality is good; consider adding more Hindi-specific details")
+
+        return recommendations
     
     def _calculate_confidence(self, result: Dict[str, Any], sentence: str) -> float:
         """Calculate confidence score based on various heuristics."""

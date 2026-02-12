@@ -104,7 +104,7 @@ class DeAnalyzer(BaseGrammarAnalyzer):
 
         logger.info("German analyzer initialized with Duden grammar standards")
 
-    def analyze_grammar(self, sentence: str, target_word: str, complexity: str, gemini_api_key: str) -> GrammarAnalysis:
+    def analyze_grammar(self, sentence: str, target_word: str = "", complexity: str = "intermediate", gemini_api_key: str = "") -> GrammarAnalysis:
         """
         Analyze German grammar using AI with comprehensive case/gender analysis.
 
@@ -255,10 +255,10 @@ class DeAnalyzer(BaseGrammarAnalyzer):
                     tooltip = " | ".join(tooltip_parts)
 
                     # Create colored span
-                    html_parts.append(f'<span style="color: {color};" title="{tooltip}">{word}</span> ')
+                    html_parts.append(f'<span style="color: {color}; font-weight: bold;" title="{tooltip}">{word}</span> ')
                 else:
                     # Word not analyzed, use default color
-                    html_parts.append(f'<span style="color: {color_scheme.get("default", "#000000")};">{word}</span> ')
+                    html_parts.append(f'<span style="color: {color_scheme.get("default", "#000000")}; font-weight: bold;">{word}</span> ')
 
             html_parts.append('</div>')
 

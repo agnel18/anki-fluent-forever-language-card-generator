@@ -352,6 +352,8 @@ IMPORTANT:
 
         is_chinese = language in ["Chinese Simplified", "Chinese Traditional", "Chinese (Simplified)", "Chinese (Traditional)"]
         pronunciation_section = "PINYIN:" if is_chinese else "IPA:"
+        if not is_chinese and "ROMANIZATION:" in response_text:
+            pronunciation_section = "ROMANIZATION:"
 
         # Extract meaning
         if "MEANING:" in response_text:
@@ -510,6 +512,24 @@ IMPORTANT:
         def strip_arabic_diacritics(text: str) -> str:
             return re.sub(r"[\u064B-\u065F\u0670\u06D6-\u06ED]", "", text)
 
+        def is_target_word_present(target: str, value: str) -> bool:
+            if target in value:
+                return True
+
+            # Arabic: allow diacritic-insensitive matching.
+            if any('\u0600' <= ch <= '\u06FF' for ch in target):
+                stripped = strip_arabic_diacritics(value)
+                if target in stripped:
+                    return True
+
+            # Devanagari: allow infinitive stem matching (e.g., होना -> हो/होगा/होते).
+            if any('\u0900' <= ch <= '\u097F' for ch in target) and target.endswith("ना"):
+                stem = target[:-2]
+                if stem and stem in value:
+                    return True
+
+            return False
+
         for i, sentence in enumerate(sentences[:num_sentences]):
             normalized_sentence = sentence
             if any('\u0600' <= ch <= '\u06FF' for ch in word):
@@ -519,7 +539,7 @@ IMPORTANT:
                         normalized_sentence = stripped
 
             sentence = normalized_sentence
-            word_missing = word not in sentence
+            word_missing = not is_target_word_present(word, sentence)
             if word_missing:
                 logger.warning(f"Sentence {i+1} missing target word '{word}'. Using fallback.")
 

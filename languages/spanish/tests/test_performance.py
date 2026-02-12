@@ -1,19 +1,19 @@
 
 """
-Performance tests for zh analyzer.
+Performance tests for es analyzer.
 """
 
 import pytest
-from languages.chinese_simplified.zh_analyzer import ZhAnalyzer
+from languages.spanish.es_analyzer import EsAnalyzer
 
 
-class TestZhAnalyzerPerformance:
+class TestEsAnalyzerPerformance:
     """Performance tests for analyzer."""
 
     @pytest.fixture
     def analyzer(self):
         """Create analyzer for testing."""
-        return ZhAnalyzer()
+        return EsAnalyzer()
 
     def test_dummy(self, analyzer):
         """Dummy test."""

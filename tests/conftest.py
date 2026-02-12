@@ -4,7 +4,6 @@ Pytest configuration and fixtures for the language learning app tests.
 
 import os
 import sys
-import warnings
 import pytest
 
 # Add the streamlit_app directory to the Python path
@@ -15,8 +14,7 @@ sys.path.insert(0, streamlit_app_path)
 os.environ.setdefault('STREAMLIT_SERVER_HEADLESS', 'true')
 os.environ.setdefault('STREAMLIT_BROWSER_GATHER_USAGE_STATS', 'false')
 
-# Silence third-party deprecations during tests
-warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"google\.genai\..*")
+
 
 
 @pytest.fixture(scope="session", autouse=True)

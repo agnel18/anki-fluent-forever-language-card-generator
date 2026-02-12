@@ -39,8 +39,9 @@ if str(PROJECT_ROOT) not in sys.path:
 class GoldStandardComparator:
     """Compares language analyzer with gold standards."""
 
-    def __init__(self, language_code: str, detailed: bool = False):
+    def __init__(self, language_code: str, detailed: bool = False, reference_code: str = "zh"):
         self.language_code = language_code
+        self.reference_code = reference_code
         self.detailed = detailed
         self.comparison_results: Dict[str, Any] = {}
         self.test_sentences = self._load_test_sentences()
@@ -48,7 +49,8 @@ class GoldStandardComparator:
         # Gold standard analyzers
         self.gold_standards = {
             'zh': self._load_zh_analyzer,
-            'hi': self._load_hi_analyzer
+            'hi': self._load_hi_analyzer,
+            'tr': self._load_tr_analyzer
         }
 
     def _load_zh_analyzer(self):
@@ -59,13 +61,17 @@ class GoldStandardComparator:
         """Load Hindi gold standard analyzer."""
         return self._load_analyzer('hi')
 
+    def _load_tr_analyzer(self):
+        """Load Turkish gold standard analyzer."""
+        return self._load_analyzer('tr')
+
     def compare_all(self) -> bool:
         """Run all comparison tests."""
-        print(f"\n🏆 COMPARING {self.language_code.upper()} WITH GOLD STANDARDS")
+        print(f"\n🏆 COMPARING {self.language_code.upper()} WITH GOLD STANDARD '{self.reference_code.upper()}'")
         print("=" * 70)
 
-        if self.language_code in ['zh', 'hi']:
-            print(f"⚠️ {self.language_code.upper()} is a gold standard - comparing with itself")
+        if self.language_code == self.reference_code:
+            print(f"⚠️ {self.language_code.upper()} is the reference standard - comparing with itself")
             return True
 
         comparisons = [
@@ -183,30 +189,30 @@ class GoldStandardComparator:
         """Compare result structure consistency."""
         try:
             analyzer = self._load_analyzer(self.language_code)
-            zh_analyzer = self._load_analyzer('zh')
+            reference_analyzer = self._load_analyzer(self.reference_code)
 
             test_sentence = self.test_sentences[0]
             target_word = test_sentence.split()[0]
 
             result = analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
-            zh_result = zh_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
+            reference_result = reference_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
 
             # Check basic structure
             required_attrs = ['word_explanations', 'html_output', 'confidence_score']
             for attr in required_attrs:
                 if not hasattr(result, attr):
                     return False, f"Missing attribute: {attr}"
-                if not hasattr(zh_result, attr):
+                if not hasattr(reference_result, attr):
                     return False, f"Gold standard missing attribute: {attr}"
 
             # Check word explanations structure
-            if result.word_explanations and zh_result.word_explanations:
+            if result.word_explanations and reference_result.word_explanations:
                 result_len = len(result.word_explanations[0])
-                zh_len = len(zh_result.word_explanations[0])
+                ref_len = len(reference_result.word_explanations[0])
                 if result_len < 3:
                     return False, f"Word explanation too short: {result_len} elements"
-                if abs(result_len - zh_len) > 1:  # Allow some flexibility
-                    return False, f"Structure mismatch: {result_len} vs {zh_len} elements"
+                if abs(result_len - ref_len) > 1:  # Allow some flexibility
+                    return False, f"Structure mismatch: {result_len} vs {ref_len} elements"
 
             return True, "Result structure matches gold standard"
 
@@ -249,7 +255,7 @@ class GoldStandardComparator:
         """Compare performance benchmarks."""
         try:
             analyzer = self._load_analyzer(self.language_code)
-            zh_analyzer = self._load_analyzer('zh')
+            reference_analyzer = self._load_analyzer(self.reference_code)
 
             test_sentence = self.test_sentences[0]
             target_word = test_sentence.split()[0]
@@ -261,14 +267,14 @@ class GoldStandardComparator:
 
             # Time gold standard
             start_time = time.time()
-            zh_result = zh_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
-            zh_duration = time.time() - start_time
+            reference_result = reference_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
+            ref_duration = time.time() - start_time
 
             # Performance should be within 2x of gold standard
-            if duration > zh_duration * 2:
-                return False, f"Duration {duration:.2f}s exceeds gold standard {zh_duration:.2f}s"
+            if duration > ref_duration * 2:
+                return False, f"Duration {duration:.2f}s exceeds gold standard {ref_duration:.2f}s"
 
-            return True, f"Duration {duration:.2f}s vs gold standard {zh_duration:.2f}s"
+            return True, f"Duration {duration:.2f}s vs gold standard {ref_duration:.2f}s"
 
         except Exception as e:
             return False, f"Performance comparison failed: {e}"
@@ -343,19 +349,19 @@ class GoldStandardComparator:
             if not api_key:
                 return True, "Skipped HTML comparison (no API key)"
             analyzer = self._load_analyzer(self.language_code)
-            zh_analyzer = self._load_analyzer('zh')
+            reference_analyzer = self._load_analyzer(self.reference_code)
 
             test_sentence = self.test_sentences[0]
             target_word = test_sentence.split()[0]
 
             result = analyzer.analyze_grammar(test_sentence, target_word, "intermediate", api_key)
-            zh_result = zh_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
+            reference_result = reference_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
 
-            if not hasattr(result, 'html_output') or not hasattr(zh_result, 'html_output'):
+            if not hasattr(result, 'html_output') or not hasattr(reference_result, 'html_output'):
                 return False, "Missing HTML output"
 
             html = result.html_output
-            zh_html = zh_result.html_output
+            reference_html = reference_result.html_output
 
             # Check for basic HTML structure
             if '<span' not in html:
@@ -418,6 +424,7 @@ def main():
     parser.add_argument("--detailed", action="store_true", help="Show detailed comparison results")
     parser.add_argument("--export-results", action="store_true", help="Export results to JSON file")
     parser.add_argument("--all-languages", action="store_true", help="Compare all languages")
+    parser.add_argument("--reference", default="zh", help="Reference analyzer code (default: zh)")
 
     args = parser.parse_args()
 
@@ -429,7 +436,7 @@ def main():
 
         results = {}
         for lang_code in language_codes:
-            comparator = GoldStandardComparator(lang_code, args.detailed)
+            comparator = GoldStandardComparator(lang_code, args.detailed, reference_code=args.reference)
             results[lang_code] = comparator.compare_all()
 
         print("\n" + "=" * 70)
@@ -449,7 +456,7 @@ def main():
                 json.dump(results, f, indent=2)
             print("📄 Results exported to gold_standard_comparison_results.json")
     else:
-        comparator = GoldStandardComparator(args.language, args.detailed)
+        comparator = GoldStandardComparator(args.language, args.detailed, reference_code=args.reference)
         success = comparator.compare_all()
 
         if args.export_results:

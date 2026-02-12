@@ -275,7 +275,7 @@ class EsAnalyzer(BaseGrammarAnalyzer):
                 color = color_scheme.get(pos, color_scheme.get('default', '#000000'))
                 
                 # Create colored span for each word
-                html_parts.append(f'<span style="color: {color};" title="{pos}">{word}</span> ')
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;" title="{pos}">{word}</span> ')
             
             html_parts.append('</div>')
             

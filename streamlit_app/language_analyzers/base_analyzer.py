@@ -441,7 +441,7 @@ IMPORTANT:
         # Replace each word with colored version using inline styles
         for word, color in all_words:
             # Use inline style for Anki compatibility
-            colored_span = f'<span style="color: {color};">{word}</span>'
+            colored_span = f'<span style="color: {color}; font-weight: bold;">{word}</span>'
 
             # Use simple string replacement with word boundaries
             # Split the sentence into words, replace exact matches, then rejoin

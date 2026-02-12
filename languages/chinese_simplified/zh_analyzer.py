@@ -533,8 +533,9 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
                         break
 
             if not matched:
-                # No match, add character as-is
-                html_parts.append(sentence[i])
+                # No match, add character with default styling
+                default_color = color_scheme.get('default', '#000000')
+                html_parts.append(f'<span style="color: {default_color}; font-weight: bold;">{sentence[i]}</span>')
                 i += 1
 
         html = ''.join(html_parts)

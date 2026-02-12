@@ -1,0 +1,26 @@
+{
+  "compare_result_structure": {
+    "passed": true,
+    "details": "Result structure matches gold standard"
+  },
+  "compare_confidence_scoring": {
+    "passed": true,
+    "details": "Average confidence 0.36"
+  },
+  "compare_performance": {
+    "passed": true,
+    "details": "Duration 2.14s vs gold standard 1.63s"
+  },
+  "compare_error_handling": {
+    "passed": true,
+    "details": "Error handling matches gold standard patterns"
+  },
+  "compare_linguistic_quality": {
+    "passed": true,
+    "details": "Generated 13 explanations, 13 detailed"
+  },
+  "compare_html_generation": {
+    "passed": true,
+    "details": "HTML generation matches gold standard format"
+  }
+}

@@ -56,7 +56,8 @@ class ImplementationValidator:
         self.gold_standards = {
             'zh': 'Chinese Simplified (Primary Gold Standard)',
             'hi': 'Hindi (Secondary Reference)',
-            'zh_tw': 'Chinese Traditional (Should match zh patterns)'
+            'zh_tw': 'Chinese Traditional (Should match zh patterns)',
+            'zh-tw': 'Chinese Traditional (Should match zh patterns)'  # Also handle hyphenated version
         }
 
     def validate_all(self) -> bool:
@@ -96,7 +97,7 @@ class ImplementationValidator:
 
         required_files = [
             f"{self.file_name}_analyzer.py",
-            f"{self.language_code}_grammar_concepts.md",
+            f"{self.file_name}_grammar_concepts.md",
             "domain/__init__.py",
             f"domain/{self.file_name}_config.py",
             f"domain/{self.file_name}_prompt_builder.py",
@@ -468,6 +469,8 @@ class ImplementationValidator:
 
     def _get_directory_name(self, language_code: str) -> str:
         """Map language code to directory name."""
+        # Normalize language code by replacing hyphens with underscores
+        normalized_code = language_code.replace('-', '_')
         mapping = {
             "zh_tw": "chinese_traditional",
             "zh": "chinese_simplified",
@@ -477,10 +480,12 @@ class ImplementationValidator:
             "de": "german",
             "tr": "turkish"
         }
-        return mapping.get(language_code, language_code)
+        return mapping.get(normalized_code, normalized_code)
 
     def _get_file_name(self, language_code: str) -> str:
         """Map language code to analyzer file name."""
+        # Normalize language code by replacing hyphens with underscores
+        normalized_code = language_code.replace('-', '_')
         mapping = {
             "zh_tw": "zh_tw",
             "zh": "zh",
@@ -490,10 +495,12 @@ class ImplementationValidator:
             "de": "de",
             "tr": "tr"
         }
-        return mapping.get(language_code, language_code)
+        return mapping.get(normalized_code, normalized_code)
 
     def _get_class_prefix(self, language_code: str) -> str:
         """Map language code to class name prefix."""
+        # Normalize language code by replacing hyphens with underscores
+        normalized_code = language_code.replace('-', '_')
         mapping = {
             "zh_tw": "ZhTw",
             "zh": "Zh",
@@ -503,7 +510,7 @@ class ImplementationValidator:
             "de": "De",
             "tr": "Tr"
         }
-        return mapping.get(language_code, language_code.title())
+        return mapping.get(normalized_code, normalized_code.title())
 
     def _call_analyzer(self, analyzer, sentence: str, target_word: str, complexity: str, api_key: str):
         """Call analyzer.analyze_grammar with flexible signatures."""
