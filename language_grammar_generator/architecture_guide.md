@@ -1081,7 +1081,7 @@ class PromptBuilder:
 # âŒ Bad: Magic numbers everywhere
 class Analyzer:
     def __init__(self):
-        self.max_tokens = 2000  # Magic number
+        self.max_tokens = 4000  # Magic number
         self.timeout = 30       # Magic number
         self.colors = {         # Magic values
             'noun': '#FFAA00',

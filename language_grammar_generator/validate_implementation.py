@@ -478,7 +478,8 @@ class ImplementationValidator:
             "es": "spanish",
             "ar": "arabic",
             "de": "german",
-            "tr": "turkish"
+            "tr": "turkish",
+            "fr": "french"
         }
         return mapping.get(normalized_code, normalized_code)
 

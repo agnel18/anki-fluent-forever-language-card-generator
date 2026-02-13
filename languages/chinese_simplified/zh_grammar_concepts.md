@@ -201,7 +201,7 @@ Based on pedagogical needs for language learners:
 
 ### Batch Processing Considerations
 - **8-Sentence Batches**: Standard limit for complete responses
-- **2000 max_tokens**: Required for detailed Chinese analysis
+- **4000 max_tokens**: Required for detailed Chinese analysis
 - **Character-Based Analysis**: Consider both character and word levels
 - **Compound Word Handling**: Identify and treat compounds as units
 

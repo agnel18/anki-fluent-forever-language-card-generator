@@ -965,19 +965,19 @@ class {Language}AIService:
             "temperature": 0.1,  # Low temperature for consistent analysis
             "top_p": 0.8,
             "top_k": 40,
-            "max_output_tokens": 2048,
+            "max_output_tokens": 4000,
         }
 
         # Adjust for complexity
         if complexity == 'advanced':
             base_config.update({
                 "temperature": 0.2,  # Slightly higher for complex analysis
-                "max_output_tokens": 4096,  # More tokens for detailed analysis
+                "max_output_tokens": 4000,  # Standard tokens for detailed analysis
             })
         elif complexity == 'beginner':
             base_config.update({
                 "temperature": 0.05,  # Very low for simple, consistent results
-                "max_output_tokens": 1024,
+                "max_output_tokens": 4000,
             })
 
         return base_config
@@ -1361,7 +1361,7 @@ class {Language}PerformanceMonitor:
             'max_response_time': 5.0,  # seconds
             'min_quality_score': 0.7,
             'max_error_rate': 0.1,
-            'target_tokens': 2000
+            'target_tokens': 4000
         }
 
     def record_request(self, response_time: float, quality_score: float,
@@ -1546,7 +1546,7 @@ class CircuitBreakerOpenException(Exception):
 - [ ] **Response Time:** < 3 seconds average for simple analysis, < 5 seconds for complex
 - [ ] **Quality Score:** > 0.8 average confidence score
 - [ ] **Error Rate:** < 5% failure rate with proper fallbacks
-- [ ] **Token Efficiency:** < 2000 tokens per request average
+- [ ] **Token Efficiency:** < 4000 tokens per request average
 
 ### Prompt Engineering
 - [ ] **Template Coverage:** All complexity levels and sentence types covered

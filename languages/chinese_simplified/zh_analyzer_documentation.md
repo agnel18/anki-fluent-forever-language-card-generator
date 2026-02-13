@@ -180,7 +180,7 @@ The analyzer integrates with the 6-step language learning pipeline:
 
 ### Batch Processing
 - **Batch Size**: 8 sentences (optimal balance)
-- **Token Limit**: 2000 max_tokens (prevents JSON truncation)
+- **Token Limit**: 4000 max_tokens (prevents JSON truncation)
 - **Error Handling**: Per-sentence fallbacks
 - **Performance**: <5 second response times
 

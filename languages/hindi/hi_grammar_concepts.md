@@ -171,7 +171,7 @@ Based on pedagogical needs for language learners:
 
 ### Batch Processing Considerations
 - **8-Sentence Batches**: Standard limit for complete responses
-- **2000 max_tokens**: Required for detailed Hindi analysis
+- **4000 max_tokens**: Required for detailed Hindi analysis
 - **Character-Based Analysis**: Consider conjuncts and diacritics
 - **Agreement Complexity**: Higher processing needs for agreement validation
 

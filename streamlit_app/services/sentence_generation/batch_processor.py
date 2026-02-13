@@ -404,7 +404,7 @@ Provide explanations in {native_language}. Return ONLY the JSON array, no additi
                     if analyzer:
                         # Use analyzer's individual processing
                         prompt = analyzer.get_grammar_prompt(complexity_level, sentence, word, native_language)
-                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=2000)
+                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=4000)
 
                         parsed_data = analyzer.parse_grammar_response(response_text, complexity_level, sentence)
                         colored_sentence = analyzer._generate_html_output(parsed_data, sentence, complexity_level)
@@ -436,7 +436,7 @@ Return analysis in this exact JSON format:
 Color codes: nouns=#FF6B6B, verbs=#4ECDC4, adjectives/adverbs=#45B7D1, prepositions/conjunctions=#96CEB4, pronouns/articles=#FFEAA7, other=#CCCCCC
 Return ONLY the JSON object."""
 
-                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=2000)
+                        response_text = self.api_client.call_completion(prompt, temperature=0.3, max_tokens=4000)
 
                         # Extract and parse JSON
                         if "```json" in response_text:

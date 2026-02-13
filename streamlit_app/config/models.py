@@ -68,7 +68,7 @@ def get_tts_endpoint(operation: str = 'synthesize') -> str:
 
 SERVICE_CONFIG = {
     'gemini': {
-        'max_tokens': 2000,
+        'max_tokens': 4000,
         'temperature': 0.7,
         'top_p': 0.8,
         'top_k': 40,

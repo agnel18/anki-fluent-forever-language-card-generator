@@ -27,7 +27,7 @@ class APIClient:
 
     @retry_with_exponential_backoff(max_retries=3)
     def call_completion(self, prompt: str, temperature: float = 0.3,
-                       max_tokens: int = 2000) -> str:
+                       max_tokens: int = 4000) -> str:
         """
         Make a chat completion API call with error recovery.
 
@@ -59,7 +59,7 @@ class APIClient:
         return response_text
 
     def call_with_rate_limit(self, prompt: str, temperature: float = 0.3,
-                           max_tokens: int = 2000, delay_seconds: int = 5) -> str:
+                           max_tokens: int = 4000, delay_seconds: int = 5) -> str:
         """
         Make an API call with built-in rate limiting delay.
 

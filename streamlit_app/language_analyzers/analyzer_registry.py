@@ -69,6 +69,7 @@ class AnalyzerRegistry:
             'chinese_traditional': 'zh-tw',
             'german': 'de',
             'turkish': 'tr',
+            'french': 'fr',
             'zh': 'zh'  # Backward compatibility
         }
 
