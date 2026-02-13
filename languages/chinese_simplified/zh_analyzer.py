@@ -685,22 +685,37 @@ IMPORTANT:
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
         """Map Chinese grammatical roles to color scheme categories"""
-        role_mapping = {
-            'noun': 'noun',
-            'verb': 'verb',
-            'adjective': 'adjective',
-            'adverb': 'adverb',
-            'pronoun': 'pronoun',
-            'preposition': 'preposition',
-            'conjunction': 'conjunction',
-            'interjection': 'interjection',
-            'particle': 'particle',
-            'classifier': 'classifier',
-            'aspect_marker': 'aspect_marker',
-            'modal_particle': 'modal_particle',
-            'structural_particle': 'structural_particle',
-            'measure_word': 'measure_word',
-            'numeral': 'numeral',
-            'other': 'other'
-        }
-        return role_mapping.get(grammatical_role, 'other')
+        # Convert to lowercase for case-insensitive matching
+        role_lower = grammatical_role.lower()
+        
+        # Handle compound roles and variations - order matters (more specific first)
+        if 'pronoun' in role_lower:
+            return 'pronoun'
+        elif 'classifier' in role_lower or 'measure' in role_lower:
+            return 'classifier'
+        elif 'noun' in role_lower:
+            return 'noun'
+        elif 'adverb' in role_lower:
+            return 'adverb'
+        elif 'verb' in role_lower:
+            return 'verb'
+        elif 'adjective' in role_lower:
+            return 'adjective'
+        elif 'particle' in role_lower:
+            return 'particle'
+        elif 'aspect' in role_lower:
+            return 'aspect_marker'
+        elif 'modal' in role_lower:
+            return 'modal_particle'
+        elif 'structural' in role_lower:
+            return 'structural_particle'
+        elif 'numeral' in role_lower or 'number' in role_lower:
+            return 'numeral'
+        elif 'preposition' in role_lower:
+            return 'preposition'
+        elif 'conjunction' in role_lower:
+            return 'conjunction'
+        elif 'interjection' in role_lower:
+            return 'interjection'
+        else:
+            return 'other'
