@@ -1,0 +1,1 @@
+# French analyzer tests

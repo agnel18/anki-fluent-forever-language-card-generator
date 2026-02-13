@@ -1,0 +1,244 @@
+# fr_patterns.yaml
+# French Patterns Configuration
+# Regex patterns and validation rules for French text processing
+
+# Elision Patterns (apostrophe handling)
+elision_patterns:
+  # Words that elide before vowels
+  elidable_words:
+    - "le"      # l'
+    - "la"      # l'
+    - "de"      # d'
+    - "se"      # s'
+    - "ce"      # c'
+    - "je"      # j'
+    - "me"      # m'
+    - "te"      # t'
+    - "ne"      # n'
+    - "que"     # qu'
+    - "jusque"  # jusqu'
+    - "lorsque" # lorsqu'
+    - "puisque" # puisqu'
+    - "quoique" # quoiqu'
+
+  # Regex for detecting elision
+  elision_regex: "\\b(l'|d'|s'|c'|j'|m'|t'|n'|qu'|jusqu'|lorsqu'|puisqu'|quoiqu')\\b"
+
+  # Reverse mapping (elided → full form)
+  elision_reverse:
+    "l'": ["le", "la"]
+    "d'": "de"
+    "s'": "se"
+    "c'": "ce"
+    "j'": "je"
+    "m'": "me"
+    "t'": "te"
+    "n'": "ne"
+    "qu'": "que"
+    "jusqu'": "jusque"
+    "lorsqu'": "lorsque"
+    "puisqu'": "puisque"
+    "quoiqu'": "quoique"
+
+# Liaison Patterns (consonant pronunciation rules)
+liaison_patterns:
+  # Words that cause liaison
+  liaison_triggers:
+    - "nous"    # nous_aimons
+    - "vous"    # vous_êtes
+    - "ils"     # ils_ont
+    - "elles"   # elles_ont
+    - "mes"     # mes_amies
+    - "tes"     # tes_amies
+    - "ses"     # ses_amies
+    - "nos"     # nos_amies
+    - "vos"     # vos_amies
+    - "leurs"   # leurs_amies
+    - "ces"     # ces_amies
+    - "des"     # des_enfants
+    - "les"     # les_enfants
+    - "aux"     # aux_enfants
+
+  # Liaison consonant additions
+  liaison_consonants:
+    "s": ["nous", "vous", "ils", "elles", "mes", "tes", "ses", "nos", "vos", "leurs", "ces", "des", "les"]
+    "z": ["mes", "tes", "ses", "nos", "vos", "leurs", "ces", "des", "les"]
+
+# Gender Agreement Patterns
+gender_patterns:
+  # Masculine endings
+  masculine_endings:
+    - "age"
+    - "ment"
+    - "tion"
+    - "sion"
+    - "isme"
+    - "eau"
+    - "ou"
+    - "ail"
+    - "euil"
+
+  # Feminine endings
+  feminine_endings:
+    - "tion"
+    - "sion"
+    - "ure"
+    - "ière"
+    - "euse"
+    - "rice"
+    - "enne"
+    - "ine"
+    - "esse"
+    - "ette"
+
+  # Exceptions (masculine words with feminine endings)
+  masculine_exceptions:
+    - "automne"
+    - "fils"
+    - "printemps"
+    - "été"
+    - "hiver"
+    - "printemps"
+
+  # Feminine exceptions (feminine words with masculine endings)
+  feminine_exceptions:
+    - "voix"
+    - "nuit"
+    - "main"
+    - "fois"
+    - "façon"
+
+# Verb Conjugation Patterns
+verb_patterns:
+  # Infinitive endings
+  infinitive_endings:
+    first_group: "er$"
+    second_group: "ir$"
+    third_group: "re$"
+
+  # Present tense endings by group
+  present_endings:
+    first_group: ["e", "es", "e", "ons", "ez", "ent"]
+    second_group: ["is", "is", "it", "issons", "issez", "issent"]
+    third_group: ["s", "s", "", "ons", "ez", "ent"]
+
+  # Irregular verb stems
+  irregular_stems:
+    être: ["suis", "es", "est", "sommes", "êtes", "sont"]
+    avoir: ["ai", "as", "a", "avons", "avez", "ont"]
+    aller: ["vais", "vas", "va", "allons", "allez", "vont"]
+    faire: ["fais", "fais", "fait", "faisons", "faites", "font"]
+
+# Diacritic Patterns
+diacritic_patterns:
+  # Accents and their purposes
+  accents:
+    acute: "é"      # stress on E
+    grave: "è/à/ù"  # distinguishes words
+    circumflex: "â/ê/î/ô/û"  # indicates lost S or distinguishes words
+    diaeresis: "ë/ï/ü"  # indicates separate pronunciation
+    cedilla: "ç"    # indicates soft C sound
+
+  # Common diacritic changes
+  diacritic_changes:
+    "etat": "état"
+    "pere": "père"
+    "mere": "mère"
+    "ou": "où"
+    "voila": "voilà"
+    "francais": "français"
+    "francaises": "françaises"
+
+# Number Agreement Patterns
+number_patterns:
+  # Plural formation rules
+  plural_rules:
+    regular: "add s"
+    s_ending: "no change"
+    eau_ending: "add x"
+    eu_ending: "add x"
+    ou_ending: "add s"
+    al_ending: "aux"
+
+  # Irregular plurals
+  irregular_plurals:
+    "cheval": "chevaux"
+    "œil": "yeux"
+    "monsieur": "messieurs"
+    "madame": "mesdames"
+    "mademoiselle": "mesdemoiselles"
+
+# Sentence Boundary Patterns
+sentence_patterns:
+  # Question patterns
+  question_patterns:
+    - "\\?$"                    # Ends with question mark
+    - "^Est-ce que"             # Est-ce que construction
+    - "\\b(qui|que|quoi|où|quand|comment|pourquoi|combien)\\b"
+
+  # Negation patterns
+  negation_patterns:
+    - "\\bne\\s+pas\\b"
+    - "\\bne\\s+plus\\b"
+    - "\\bne\\s+jamais\\b"
+    - "\\bne\\s+rien\\b"
+    - "\\bne\\s+personne\\b"
+
+  # Relative clause patterns
+  relative_patterns:
+    - "\\bqui\\b"
+    - "\\bque\\b"
+    - "\\bdont\\b"
+    - "\\boù\\b"
+    - "\\b(auquel|duquel|lequel|laquelle|lesquels|lesquelles)\\b"
+
+# Validation Rules
+validation_rules:
+  # Gender agreement validation
+  gender_agreement:
+    enabled: true
+    check_adjectives: true
+    check_participles: true
+    check_pronouns: true
+
+  # Verb conjugation validation
+  verb_conjugation:
+    enabled: true
+    check_person: true
+    check_number: true
+    check_tense: true
+    check_mood: true
+
+  # Preposition validation
+  preposition_usage:
+    enabled: true
+    check_common_errors: true
+    validate_contractions: true
+
+  # Character encoding validation
+  encoding_validation:
+    enabled: true
+    check_diacritics: true
+    validate_utf8: true
+
+# Processing Rules
+processing_rules:
+  # Tokenization rules
+  tokenization:
+    split_on_apostrophes: true
+    preserve_elision: true
+    handle_compound_words: true
+
+  # Normalization rules
+  normalization:
+    lowercase_diacritics: false
+    standardize_quotes: true
+    remove_extra_spaces: true
+
+  # Analysis rules
+  analysis:
+    detect_gender: true
+    detect_number: true
+    detect_person: true
+    detect_tense: true
+    detect_mood: true

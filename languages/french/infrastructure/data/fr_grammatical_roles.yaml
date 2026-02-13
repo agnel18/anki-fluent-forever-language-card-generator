@@ -1,0 +1,142 @@
+# fr_grammatical_roles.yaml
+# French Grammatical Roles Configuration
+# Defines role hierarchy and complexity-based filtering
+
+# Role Hierarchy Mapping (specific roles inherit from general ones)
+role_hierarchy:
+  # Noun hierarchy
+  proper_noun: "noun"
+  common_noun: "noun"
+
+  # Verb hierarchy
+  auxiliary_verb: "verb"
+  modal_verb: "verb"
+  reflexive_verb: "verb"
+  irregular_verb: "verb"
+  regular_er_verb: "verb"
+  regular_ir_verb: "verb"
+  regular_re_verb: "verb"
+
+  # Pronoun hierarchy
+  personal_pronoun: "pronoun"
+  reflexive_pronoun: "pronoun"
+  possessive_pronoun: "pronoun"
+  demonstrative_pronoun: "pronoun"
+  relative_pronoun: "pronoun"
+  indefinite_pronoun: "pronoun"
+
+  # Determiner hierarchy
+  definite_article: "determiner"
+  indefinite_article: "determiner"
+  partitive_article: "determiner"
+  possessive_determiner: "determiner"
+  demonstrative_determiner: "determiner"
+
+  # Adjective hierarchy
+  possessive_adjective: "adjective"
+  demonstrative_adjective: "adjective"
+  interrogative_adjective: "adjective"
+  indefinite_adjective: "adjective"
+
+# Complexity-Based Role Filtering
+# Defines which roles are shown at each complexity level
+complexity_filters:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - determiner
+    - preposition
+    - conjunction
+
+  intermediate:
+    - noun
+    - verb
+    - auxiliary_verb
+    - modal_verb
+    - adjective
+    - adverb
+    - pronoun
+    - personal_pronoun
+    - reflexive_pronoun
+    - possessive_pronoun
+    - demonstrative_pronoun
+    - determiner
+    - definite_article
+    - indefinite_article
+    - partitive_article
+    - preposition
+    - conjunction
+
+  advanced:
+    - noun
+    - proper_noun
+    - common_noun
+    - verb
+    - auxiliary_verb
+    - modal_verb
+    - reflexive_verb
+    - irregular_verb
+    - regular_er_verb
+    - regular_ir_verb
+    - regular_re_verb
+    - adjective
+    - possessive_adjective
+    - demonstrative_adjective
+    - interrogative_adjective
+    - indefinite_adjective
+    - adverb
+    - pronoun
+    - personal_pronoun
+    - reflexive_pronoun
+    - possessive_pronoun
+    - demonstrative_pronoun
+    - relative_pronoun
+    - indefinite_pronoun
+    - determiner
+    - definite_article
+    - indefinite_article
+    - partitive_article
+    - possessive_determiner
+    - demonstrative_determiner
+    - preposition
+    - conjunction
+    - interjection
+
+# Role Descriptions (for AI prompting)
+role_descriptions:
+  noun: "Content word representing a person, place, thing, or idea"
+  proper_noun: "Specific name of a person, place, organization, or title"
+  common_noun: "General name for a person, place, thing, or idea"
+  verb: "Word expressing action, state, or occurrence"
+  auxiliary_verb: "Helper verb (avoir, être) used with main verbs in compound tenses"
+  modal_verb: "Verb expressing possibility, necessity, or ability (pouvoir, devoir, vouloir)"
+  reflexive_verb: "Verb used with reflexive pronoun (se laver, s'habiller)"
+  irregular_verb: "Verb that doesn't follow regular conjugation patterns"
+  regular_er_verb: "Verb following -er conjugation pattern (parler, manger)"
+  regular_ir_verb: "Verb following -ir conjugation pattern (finir, choisir)"
+  regular_re_verb: "Verb following -re conjugation pattern (vendre, attendre)"
+  adjective: "Word describing or modifying a noun"
+  possessive_adjective: "Adjective showing ownership (mon, ton, son, notre, votre, leur)"
+  demonstrative_adjective: "Adjective pointing out specific items (ce, cet, cette, ces)"
+  interrogative_adjective: "Adjective used in questions (quel, quelle, quels, quelles)"
+  indefinite_adjective: "Adjective expressing indefinite quantity (chaque, quelque, plusieurs)"
+  adverb: "Word modifying a verb, adjective, or other adverb"
+  pronoun: "Word replacing a noun or noun phrase"
+  personal_pronoun: "Pronoun referring to specific persons (je, tu, il/elle, nous, vous, ils/elles)"
+  reflexive_pronoun: "Pronoun used with reflexive verbs (me, te, se, nous, vous, se)"
+  possessive_pronoun: "Pronoun showing ownership (le mien, la mienne, les miens, les miennes)"
+  demonstrative_pronoun: "Pronoun pointing out specific items (celui, celle, ceux, celles)"
+  relative_pronoun: "Pronoun introducing relative clauses (qui, que, dont, où, lequel)"
+  indefinite_pronoun: "Pronoun referring to indefinite persons/things (quelqu'un, quelque chose)"
+  determiner: "Word specifying which noun is being referred to"
+  definite_article: "Article referring to specific nouns (le, la, l', les)"
+  indefinite_article: "Article referring to non-specific nouns (un, une, des)"
+  partitive_article: "Article expressing partial quantity (du, de la, de l', des)"
+  possessive_determiner: "Determiner showing ownership (mon, ma, mes, ton, ta, tes, etc.)"
+  demonstrative_determiner: "Determiner pointing out specific items (ce, cet, cette, ces)"
+  preposition: "Word showing relationship between nouns/pronouns and other words"
+  conjunction: "Word connecting clauses or sentences"
+  interjection: "Word expressing emotion or sudden feeling"

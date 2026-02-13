@@ -1,0 +1,187 @@
+# fr_verb_conjugations.yaml
+# French Verb Conjugation Patterns Configuration
+# Defines conjugation groups and patterns for French verbs
+
+# Main Conjugation Groups
+conjugation_groups:
+  first_group:  # -er verbs (regular)
+    infinitive_ending: "er"
+    stem_changes: []
+    examples:
+      - parler
+      - manger
+      - travailler
+      - étudier
+
+  second_group:  # -ir verbs (regular)
+    infinitive_ending: "ir"
+    stem_changes: []
+    examples:
+      - finir
+      - choisir
+      - obéir
+      - réussir
+
+  third_group:  # -re verbs (regular) + irregulars
+    infinitive_ending: "re"
+    stem_changes: []
+    examples:
+      - vendre
+      - attendre
+      - répondre
+      - perdre
+
+# Irregular Verbs (most common)
+irregular_verbs:
+  être:
+    group: "irregular"
+    auxiliary: "être"
+    present:
+      je: "suis"
+      tu: "es"
+      il: "est"
+      nous: "sommes"
+      vous: "êtes"
+      ils: "sont"
+
+  avoir:
+    group: "irregular"
+    auxiliary: "avoir"
+    present:
+      je: "ai"
+      tu: "as"
+      il: "a"
+      nous: "avons"
+      vous: "avez"
+      ils: "ont"
+
+  aller:
+    group: "irregular"
+    auxiliary: "aller"
+    present:
+      je: "vais"
+      tu: "vas"
+      il: "va"
+      nous: "allons"
+      vous: "allez"
+      ils: "vont"
+
+  faire:
+    group: "irregular"
+    auxiliary: "avoir"
+    present:
+      je: "fais"
+      tu: "fais"
+      il: "fait"
+      nous: "faisons"
+      vous: "faites"
+      ils: "font"
+
+# Stem-Changing Verbs (-er group irregularities)
+stem_changing_verbs:
+  acheter:
+    infinitive: "acheter"
+    stem_change: "è"  # achète, achètes, achète, achetons, achetez, achètent
+    pattern: "e → è"
+
+  appeler:
+    infinitive: "appeler"
+    stem_change: "l"  # appelle, appelles, appelle, appelons, appelez, appellent
+    pattern: "l → ll"
+
+  manger:
+    infinitive: "manger"
+    stem_change: "ge"  # mange, manges, mange, mangeons, mangez, mangent
+    pattern: "ger → ge"
+
+  commencer:
+    infinitive: "commencer"
+    stem_change: "ç"  # commence, commences, commence, commençons, commencez, commencent
+    pattern: "cer → ç"
+
+# Auxiliary Verb Selection Rules
+auxiliary_selection:
+  # Verbs that take être
+  etre_verbs:
+    - aller
+    - venir
+    - entrer
+    - sortir
+    - naître
+    - mourir
+    - arriver
+    - partir
+    - monter
+    - descendre
+    - rester
+    - tomber
+    - retourner
+
+  # Most verbs take avoir (default)
+  avoir_verbs: "default"
+
+# Tense Formation Patterns
+tense_patterns:
+  present:
+    endings:
+      first_group: ["e", "es", "e", "ons", "ez", "ent"]
+      second_group: ["is", "is", "it", "issons", "issez", "issent"]
+      third_group: ["s", "s", "", "ons", "ez", "ent"]
+
+  passe_compose:
+    formation: "auxiliary + past_participle"
+    past_participles:
+      first_group: "é"  # parlé
+      second_group: "i"  # fini
+      third_group: "u"  # vendu
+
+  imparfait:
+    endings: ["ais", "ais", "ait", "ions", "iez", "aient"]
+    formation: "stem_from_nous_form_present + endings"
+
+  futur_simple:
+    endings: ["ai", "as", "a", "ons", "ez", "ont"]
+    formation: "infinitive + endings"
+
+  subjunctive_present:
+    endings: ["e", "es", "e", "ions", "iez", "ent"]
+    formation: "stem_from_ils_form_present + endings"
+
+# Mood Indicators
+moods:
+  indicative: "states facts, describes reality"
+  subjunctive: "expresses doubt, emotion, necessity, hypothesis"
+  conditional: "expresses hypothetical situations"
+  imperative: "gives commands or requests"
+
+# Common Modal Verbs
+modal_verbs:
+  - pouvoir
+  - devoir
+  - vouloir
+  - savoir
+  - falloir
+
+# Reflexive Verb Patterns
+reflexive_patterns:
+  pronouns:
+    je: "me"
+    tu: "te"
+    il_elle: "se"
+    nous: "nous"
+    vous: "vous"
+    ils_elles: "se"
+
+  common_reflexives:
+    - se laver
+    - s'habiller
+    - se lever
+    - se coucher
+    - se promener
+    - s'amuser
+
+# Verb Classification Rules (for AI analysis)
+classification_rules:
+  auxiliary_verbs: ["avoir", "être"]
+  modal_verbs: ["pouvoir", "devoir", "vouloir", "savoir", "falloir"]
+  reflexive_markers: ["me", "te", "se", "nous", "vous"]

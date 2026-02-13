@@ -1,0 +1,216 @@
+# fr_pronoun_patterns.yaml
+# French Pronoun Patterns Configuration
+# Defines pronoun types, forms, and usage patterns
+
+# Personal Pronouns
+personal_pronouns:
+  subject:
+    first_singular: "je"
+    second_singular: "tu"
+    third_masculine: "il"
+    third_feminine: "elle"
+    first_plural: "nous"
+    second_plural: "vous"
+    third_plural: "ils/elles"
+
+  direct_object:
+    first_singular: "me"
+    second_singular: "te"
+    third_masculine: "le"
+    third_feminine: "la"
+    first_plural: "nous"
+    second_plural: "vous"
+    third_plural: "les"
+
+  indirect_object:
+    first_singular: "me"
+    second_singular: "te"
+    third_masculine: "lui"
+    third_feminine: "lui"
+    first_plural: "nous"
+    second_plural: "vous"
+    third_plural: "leur"
+
+  reflexive:
+    first_singular: "me"
+    second_singular: "te"
+    third_singular: "se"
+    first_plural: "nous"
+    second_plural: "vous"
+    third_plural: "se"
+
+  disjunctive_emphatic:
+    first_singular: "moi"
+    second_singular: "toi"
+    third_masculine: "lui"
+    third_feminine: "elle"
+    first_plural: "nous"
+    second_plural: "vous"
+    third_plural: "eux/elles"
+
+# Possessive Pronouns
+possessive_pronouns:
+  masculine_singular:
+    mine: "le mien"
+    yours_sg: "le tien"
+    his_hers_its: "le sien"
+    ours: "le nôtre"
+    yours_pl: "le vôtre"
+    theirs: "le leur"
+
+  feminine_singular:
+    mine: "la mienne"
+    yours_sg: "la tienne"
+    his_hers_its: "la sienne"
+    ours: "la nôtre"
+    yours_pl: "la vôtre"
+    theirs: "la leur"
+
+  plural:
+    mine: "les miens/miennes"
+    yours_sg: "les tiens/tiennes"
+    his_hers_its: "les siens/siennes"
+    ours: "les nôtres"
+    yours_pl: "les vôtres"
+    theirs: "les leurs"
+
+# Demonstrative Pronouns
+demonstrative_pronouns:
+  masculine_singular: "celui"
+  feminine_singular: "celle"
+  plural: "ceux/celles"
+
+  compound_forms:
+    - celui-ci
+    - celle-là
+    - ceux-ci
+    - celles-là
+
+# Relative Pronouns
+relative_pronouns:
+  subject: "qui"
+  direct_object: "que"
+  indirect_object: "dont"
+  location: "où"
+  manner: "comme"
+
+  compound:
+    lequel: "lequel/laquelle/lesquels/lesquelles"
+    examples:
+      - "le livre lequel j'ai lu"  # formal
+      - "la maison où j'habite"
+      - "l'homme dont je parle"
+
+# Indefinite Pronouns
+indefinite_pronouns:
+  people:
+    - quelqu'un
+    - personne
+    - chacun/chacune
+    - quiconque
+
+  things:
+    - quelque_chose
+    - rien
+    - tout
+    - autre_chose
+
+  quantity:
+    - plusieurs
+    - quelques-uns
+    - la plupart
+    - beaucoup
+    - peu
+
+# Interrogative Pronouns
+interrogative_pronouns:
+  who: "qui"
+  what: "que"
+  which: "lequel/laquelle/lesquels/lesquelles"
+  whose: "à qui"
+
+# Pronoun Placement Rules
+placement_rules:
+  # Object pronouns before verb
+  before_verb:
+    - me
+    - te
+    - le
+    - la
+    - les
+    - lui
+    - leur
+    - nous
+    - vous
+    - y
+    - en
+
+  # Multiple pronoun order: me/le/lui/y/en
+  multiple_order:
+    - first: "reflexive/indirect"  # me, te, se, nous, vous
+    - second: "direct"  # le, la, les
+    - third: "indirect"  # lui, leur
+    - fourth: "y"
+    - fifth: "en"
+
+  # Examples
+  pronoun_order_examples:
+    - "Il me le donne"  # me (indirect) + le (direct)
+    - "Elle se le demande"  # se (reflexive) + le (direct)
+    - "Nous lui en parlons"  # lui (indirect) + en (of it)
+
+# Pronoun Agreement Rules
+agreement_rules:
+  possessive_pronouns:
+    agree_with: "possessed_noun"
+    example: "Ma voiture est rouge → C'est la mienne qui est rouge"
+
+  demonstrative_pronouns:
+    agree_with: "antecedent"
+    example: "Regarde ces livres → Lequel veux-tu ?"
+
+  relative_pronouns:
+    agree_with: "antecedent"
+    example: "La femme qui parle"  # qui agrees with la femme (feminine)
+
+# Tu/Vous Distinction
+politeness_system:
+  tu:
+    usage: "familiar, friends, family, children"
+    verbs: "tu manges, tu parles"
+    possessives: "ton livre, ta maison"
+
+  vous:
+    usage: "formal, strangers, superiors, plural"
+    verbs: "vous mangez, vous parlez"
+    possessives: "votre livre, votre maison"
+
+# Special Pronouns
+special_pronouns:
+  y:
+    meaning: "there, to it, at it"
+    examples: ["J'y vais", "Il y pense"]
+
+  en:
+    meaning: "of it/them, from there, some"
+    examples: ["J'en ai", "Il en vient", "Du pain ? J'en veux"]
+
+# Pronoun Recognition Patterns (for AI analysis)
+recognition_patterns:
+  # Words that trigger pronoun usage
+  pronoun_triggers:
+    - verbs
+    - prepositions
+    - être (for possessive pronouns)
+
+  # Context-dependent pronoun resolution
+  context_resolution:
+    gender_agreement: "pronoun must agree with antecedent"
+    number_agreement: "singular/plural must match"
+    person_agreement: "1st/2nd/3rd person consistency"
+
+  # Common pronoun errors
+  common_errors:
+    - gender_mismatch: "using le instead of la"
+    - number_mismatch: "using les instead of le"
+    - placement_errors: "pronouns after instead of before verb"

@@ -1,0 +1,160 @@
+# fr_common_determiners.yaml
+# French Common Determiners Configuration
+# Lists common determiners for French language processing
+
+# Definite Articles
+definite_articles:
+  masculine_singular: "le"
+  feminine_singular: "la"
+  neutral_singular: "l'"
+  plural: "les"
+
+# Indefinite Articles
+indefinite_articles:
+  masculine_singular: "un"
+  feminine_singular: "une"
+  plural: "des"
+
+# Partitive Articles
+partitive_articles:
+  masculine_singular: "du"
+  feminine_singular: "de la"
+  neutral_singular: "de l'"
+  plural: "des"
+
+# Possessive Determiners
+possessive_determiners:
+  # First person singular
+  my_masculine_singular: "mon"
+  my_feminine_singular: "ma"
+  my_plural: "mes"
+  # Second person singular (tu)
+  your_masculine_singular: "ton"
+  your_feminine_singular: "ta"
+  your_plural: "tes"
+  # Third person singular (il/elle)
+  his_her_its_masculine_singular: "son"
+  his_her_its_feminine_singular: "sa"
+  his_her_its_plural: "ses"
+  # First person plural
+  our_masculine_singular: "notre"
+  our_feminine_singular: "notre"
+  our_plural: "nos"
+  # Second person plural/formal
+  your_masculine_singular: "votre"
+  your_feminine_singular: "votre"
+  your_plural: "vos"
+  # Third person plural
+  their_masculine_singular: "leur"
+  their_feminine_singular: "leur"
+  their_plural: "leurs"
+
+# Demonstrative Determiners
+demonstrative_determiners:
+  masculine_singular_near: "ce"
+  masculine_singular_far: "cet"
+  feminine_singular: "cette"
+  plural: "ces"
+
+# Interrogative Determiners
+interrogative_determiners:
+  masculine_singular: "quel"
+  feminine_singular: "quelle"
+  plural: "quels"  # Note: quelles for feminine plural
+
+# Indefinite Determiners
+indefinite_determiners:
+  some_masculine: "du"
+  some_feminine: "de la"
+  some_neutral: "de l'"
+  some_plural: "des"
+  any_masculine: "de"
+  any_feminine: "de"
+  any_neutral: "d'"
+  any_plural: "de"
+  each: "chaque"
+  several: "plusieurs"
+  every: "chaque"
+  all: "tout"
+
+# Quantifiers
+quantifiers:
+  - beaucoup
+  - peu
+  - assez
+  - trop
+  - autant
+  - plus
+  - moins
+
+# Numbers (basic)
+numbers:
+  - un
+  - deux
+  - trois
+  - quatre
+  - cinq
+  - six
+  - sept
+  - huit
+  - neuf
+  - dix
+
+# All determiners combined (for easy lookup)
+all_determiners:
+  - le
+  - la
+  - l'
+  - les
+  - un
+  - une
+  - des
+  - du
+  - de la
+  - de l'
+  - mon
+  - ma
+  - mes
+  - ton
+  - ta
+  - tes
+  - son
+  - sa
+  - ses
+  - notre
+  - nos
+  - votre
+  - vos
+  - leur
+  - leurs
+  - ce
+  - cet
+  - cette
+  - ces
+  - quel
+  - quelle
+  - quels
+  - quelles
+  - chaque
+  - plusieurs
+  - tout
+  - toute
+  - tous
+  - toutes
+  - beaucoup
+  - peu
+  - assez
+  - trop
+  - autant
+  - plus
+  - moins
+  - un
+  - deux
+  - trois
+  - quatre
+  - cinq
+  - six
+  - sept
+  - huit
+  - neuf
+  - dix

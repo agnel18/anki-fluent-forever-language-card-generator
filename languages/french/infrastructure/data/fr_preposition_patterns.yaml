@@ -1,0 +1,163 @@
+# fr_preposition_patterns.yaml
+# French Preposition Patterns Configuration
+# Defines preposition usage patterns and common translations
+
+# Basic Prepositions
+basic_prepositions:
+  - à
+  - de
+  - en
+  - dans
+  - sur
+  - sous
+  - avec
+  - sans
+  - pour
+  - par
+  - chez
+  - vers
+  - contre
+  - entre
+  - pendant
+  - depuis
+  - jusqu'à
+  - malgré
+  - selon
+
+# Complex Prepositions (multi-word)
+complex_prepositions:
+  - à cause de
+  - à côté de
+  - à travers
+  - au lieu de
+  - au milieu de
+  - au sujet de
+  - d'après
+  - de plus en plus
+  - en face de
+  - en train de
+  - par rapport à
+  - près de
+  - quant à
+
+# Preposition Usage Patterns
+usage_patterns:
+  # Location/Time
+  à:
+    location: "at, to, in (cities, times)"
+    examples: ["à Paris", "à trois heures", "aller à l'école"]
+  en:
+    location: "in, to (countries, months, materials)"
+    examples: ["en France", "en janvier", "en bois"]
+  dans:
+    location: "in, inside, within (time periods)"
+    examples: ["dans la maison", "dans trois jours"]
+
+  # Movement/Direction
+  vers:
+    direction: "towards, around (time)"
+    examples: ["vers le nord", "vers midi"]
+  chez:
+    direction: "at/to the home of, at/to (professionals)"
+    examples: ["chez moi", "chez le médecin"]
+
+  # Possession/Origin
+  de:
+    possession: "of, from"
+    examples: ["la maison de Pierre", "venir de Paris"]
+
+  # Means/Instrument
+  avec:
+    means: "with (instrument)"
+    examples: ["écrire avec un stylo"]
+  par:
+    means: "by, through (means, agent)"
+    examples: ["par la fenêtre", "fait par Pierre"]
+
+  # Purpose/Cause
+  pour:
+    purpose: "for, in order to"
+    examples: ["pour toi", "partir pour Paris"]
+  à_cause_de:
+    cause: "because of"
+    examples: ["à cause du vent"]
+
+# Common Preposition Errors (English → French)
+common_errors:
+  "in":
+    correct: ["en", "dans", "à"]
+    explanation: "Depends on context: en for countries/months, dans for inside, à for cities"
+  "to":
+    correct: ["à", "en", "vers"]
+    explanation: "à for destination, en for countries, vers for direction"
+  "at":
+    correct: ["à", "chez", "en"]
+    explanation: "à for time/location, chez for someone's place, en for countries"
+  "for":
+    correct: ["pour", "pendant", "depuis"]
+    explanation: "pour purpose, pendant duration, depuis 'since' with present"
+  "with":
+    correct: ["avec", "chez"]
+    explanation: "avec for accompaniment, chez for 'at the home of'"
+
+# Preposition + Article Contractions
+contractions:
+  à_le: "au"
+  à_les: "aux"
+  de_le: "du"
+  de_les: "des"
+  de_des: "de"  # No contraction, just "de"
+
+# Preposition Collocations (common combinations)
+collocations:
+  penser_à: "to think about"
+  parler_de: "to talk about"
+  rêver_de: "to dream of"
+  dépendre_de: "to depend on"
+  s'intéresser_à: "to be interested in"
+  avoir_peur_de: "to be afraid of"
+  être_en_train_de: "to be in the process of"
+
+# Temporal Prepositions
+temporal_prepositions:
+  à: ["at (time)", "à trois heures"]
+  en: ["in (month/year)", "en janvier", "en 2023"]
+  dans: ["in (future)", "dans trois jours"]
+  pendant: ["during, for", "pendant l'été"]
+  depuis: ["since", "depuis lundi"]
+  jusqu'à: ["until", "jusqu'à demain"]
+  pour: ["for (duration)", "pour trois jours"]
+
+# Spatial Prepositions
+spatial_prepositions:
+  à: ["at, to", "à Paris", "aller à l'école"]
+  en: ["in, into", "en France", "entrer en classe"]
+  dans: ["in, inside", "dans la maison"]
+  sur: ["on", "sur la table"]
+  sous: ["under", "sous le lit"]
+  devant: ["in front of", "devant l'école"]
+  derrière: ["behind", "derrière la maison"]
+  entre: ["between", "entre les deux"]
+  près_de: ["near", "près de l'école"]
+  loin_de: ["far from", "loin de Paris"]
+
+# Preposition Recognition Patterns (for AI analysis)
+recognition_patterns:
+  # Words that commonly follow prepositions
+  preposition_followers:
+    - nouns
+    - pronouns
+    - infinitives
+    - gerunds
+
+  # Prepositions that can be elided
+  elidable_prepositions:
+    - de
+    - à
+
+  # Prepositions in fixed expressions
+  fixed_expressions:
+    - à_cause_de
+    - en_face_de
+    - au_lieu_de
+    - d_après
