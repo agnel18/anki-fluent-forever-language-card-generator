@@ -1,0 +1,62 @@
+# French honorific markers configuration
+# Following Hindi gold standard structure
+
+# French has T/V distinction (tu/vous) but simpler than Hindi honorifics
+
+formal_address:
+  - vous  # formal you (plural form used for singular formal)
+  - Monsieur  # Mr.
+  - Madame  # Mrs./Ms.
+  - Mademoiselle  # Miss (less common now)
+  - Docteur  # Doctor
+  - Professeur  # Professor
+  - Maître  # Master (for lawyers)
+  - Monsieur le  # Mr. the (for titles)
+
+informal_address:
+  - tu  # informal you
+  - toi  # informal you (object form)
+
+honorific_particles:
+  # French doesn't have particles like Hindi, but we can note politeness markers
+  - s'il vous plaît  # please (formal)
+  - s'il te plaît  # please (informal)
+
+respect_markers:
+  - je vous prie de  # I beg you to (very formal)
+  - veuillez  # please (formal imperative)
+  - auriez-vous l'obligeance de  # would you be so kind as to
+
+# Social hierarchy indicators in French
+hierarchy_indicators:
+  senior_to_junior:
+    - tu  # informal (equals or juniors)
+    - mon enfant  # my child
+    - petit  # little one
+
+  junior_to_senior:
+    - vous  # formal (superiors, elders, strangers)
+    - Monsieur/Madame  # with titles
+    - s'il vous plaît  # please
+
+  peer_to_peer:
+    - tu  # informal among peers
+    - vous  # formal among peers in professional contexts
+
+# Contextual honorifics
+contextual_honorifics:
+  professional:
+    - vous  # formal in business
+    - Monsieur/Madame + last name
+    - Cher/Chère collègue  # Dear colleague
+
+  familial:
+    - tu  # informal with family
+    - vous  # formal with in-laws initially
+    - grand-père/grand-mère  # grandfather/grandmother
+    - oncle/tante  # uncle/aunt
+
+  intimate:
+    - tu  # informal with close friends
+    - mon amour  # my love
+    - chéri/chérie  # darling

@@ -131,141 +131,38 @@ class FrResponseParser:
             return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
 
     def _extract_json(self, response: str) -> Dict[str, Any]:
-        """Extract JSON from AI response with multiple robust fallback methods."""
+        """Extract JSON from AI response using gold standard approach (simplified from Hindi)."""
         logger.info(f"DEBUG: Extracting JSON from response: {response[:1000]}...")
         try:
-            cleaned_response = response.strip()
-
-            # Method 1: Direct parsing if starts with JSON
-            if cleaned_response.startswith(('{', '[')):
-                logger.info("DEBUG: Trying direct JSON parsing")
-                try:
-                    return json.loads(cleaned_response)
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Direct parsing failed: {e}")
-
-            # Method 2: Extract from markdown code blocks
-            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_response, re.DOTALL | re.IGNORECASE)
-            if json_match:
-                logger.info("DEBUG: Found JSON in markdown code block")
-                try:
-                    return json.loads(json_match.group(1))
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Markdown parsing failed: {e}")
-
-            # Method 3: Extract JSON between curly braces (most robust for partial responses)
-            brace_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
-            if brace_match:
-                logger.info("DEBUG: Found JSON between braces")
-                candidate = brace_match.group(0)
-                logger.info(f"DEBUG: Extracted candidate: {candidate[:500]}...")
-                # Clean the extracted JSON
-                candidate = self._clean_json_response(candidate)
-                logger.info(f"DEBUG: Cleaned candidate: {candidate[:500]}...")
-                try:
-                    return json.loads(candidate)
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Brace extraction parsing failed: {e}")
-                    logger.warning(f"Failed candidate: {candidate[:1000]}...")
-
-            # Method 4: Try entire response after cleaning
-            logger.info("DEBUG: Trying entire response after cleaning")
-            cleaned_response = self._clean_json_response(cleaned_response)
-            try:
-                return json.loads(cleaned_response)
-            except json.JSONDecodeError as e:
-                logger.warning(f"Full response parsing failed: {e}")
-
-            # Method 5: Try to find and parse individual objects in the response
-            logger.info("DEBUG: Trying to extract individual JSON objects")
-            # Look for complete JSON objects
-            object_matches = re.findall(r'\{[^{}]*\{[^{}]*\}[^{}]*\}|[^{}]*\{[^{}]*\}', cleaned_response)
-            for match in object_matches:
-                try:
-                    cleaned_match = self._clean_json_response(match)
-                    return json.loads(cleaned_match)
-                except json.JSONDecodeError:
-                    continue
-
-        except json.JSONDecodeError as e:
-            logger.error(f"DEBUG: JSON parsing failed: {e}")
-            logger.error(f"DEBUG: Response that failed: {response[:2000]}...")
-            # Don't raise here - let the caller handle the fallback
-            raise ValueError(f"JSON parsing failed: {e}")
+            # Strip markdown if present (gold standard approach)
+            if "```json" in response:
+                response = response.split("```json")[1].split("```")[0].strip()
+            elif "```" in response:
+                response = response.split("```")[1].split("```")[0].strip()
+            logger.info(f"DEBUG: Cleaned response: {response[:1000]}...")
+            result = json.loads(response)
+            logger.info(f"DEBUG: Parsed JSON: {result}")
+            return result
         except Exception as e:
-            logger.error(f"DEBUG: Unexpected error extracting JSON: {e}")
-            logger.error(f"DEBUG: Response that failed: {response[:2000]}...")
+            logger.error(f"DEBUG: Failed to extract JSON from response: {e}")
+            logger.error(f"DEBUG: Response that failed: {response}")
             raise
 
     def _clean_json_response(self, response: str) -> str:
-        """Clean common issues in AI-generated JSON responses with enhanced patterns."""
+        """Clean common issues in AI-generated JSON responses (minimal version following Hindi gold standard)."""
         # Remove any leading/trailing whitespace
         response = response.strip()
-        
-        # Fix missing commas between key-value pairs (common AI mistake)
-        # Pattern: "key1": "value1" "key2": "value2" -> "key1": "value1", "key2": "value2"
-        response = re.sub(r'("\w+")\s*:\s*("[^"]*")\s+(?=")', r'\1: \2,', response)
-        response = re.sub(r'(true|false|null|\d+)\s+(?=")', r'\1,', response)
-        
-        # Fix missing commas between object properties
-        # Pattern: "key": "value" "next_key": -> "key": "value", "next_key":
-        response = re.sub(r'("[^"]*"\s*:\s*[^,}]+)\s+(?="[^"]*"\s*:)', r'\1,', response)
-        
-        # Fix missing commas in arrays
-        # Pattern: "item1" "item2" -> "item1", "item2"
-        response = re.sub(r'("[^"]*")\s+(?=")', r'\1,', response)
-        response = re.sub(r'(\w+)\s+(?=[\[{])', r'\1,', response)
-        
-        # Fix missing commas before closing braces in objects
-        response = re.sub(r'([^,{\[\s])\s*}', r'\1}', response)
-        response = re.sub(r'([^,{\[\s])\s*]', r'\1]', response)
-        
+
+        # Fix most common AI mistake: missing commas between key-value pairs
+        response = re.sub(r'"\s*\n\s*"', '",\n"', response)
+        response = re.sub(r'"\s+"', '", "', response)
+
         # Remove trailing commas before closing braces/brackets
         response = re.sub(r',(\s*[}\]])', r'\1', response)
-        
+
         # Fix unquoted keys (common AI issue)
-        # Be careful not to quote already quoted keys
         response = re.sub(r'(?<!")(\w+)(?!")\s*:', r'"\1":', response)
-        
-        # Fix structural issues between objects/arrays
-        response = re.sub(r'}\s*{', r'},{', response)
-        response = re.sub(r']\s*\[', r'],[' , response)
-        response = re.sub(r'}\s*\[', r'},{', response)
-        response = re.sub(r']\s*{', r'],{', response)
-        
-        # Fix double-quoted strings that shouldn't be
-        response = re.sub(r'""([^"]*?)""', r'"\1"', response)
-        
-        # Fix incomplete property values that end abruptly
-        # Pattern: "key": "value (incomplete -> "key": "value"
-        response = re.sub(r'(":\s*"[^"]*)\s*$', r'\1"', response)
-        
-        # Fix missing closing quotes in property values
-        response = re.sub(r'(":\s*"[^"]*)\s*[,}]]', r'\1")\3', response)
-        
-        # Ensure proper spacing around colons
-        response = re.sub(r'\s*:\s*', ': ', response)
-        
-        # Fix common AI typos in JSON structure
-        response = re.sub(r',\s*,', ',', response)  # Double commas
-        response = re.sub(r'{\s*,', '{', response)  # Leading comma in object
-        response = re.sub(r'\[\s*,', '[', response)  # Leading comma in array
-        
-        # Fix incomplete JSON structures by ensuring proper closing
-        # Count braces and brackets to detect imbalances
-        open_braces = response.count('{')
-        close_braces = response.count('}')
-        open_brackets = response.count('[')
-        close_brackets = response.count(']')
-        
-        # Add missing closing braces/brackets if needed
-        while close_braces < open_braces:
-            response += '}'
-            close_braces += 1
-        while close_brackets < open_brackets:
-            response += ']'
-            close_brackets += 1
-            
+
         return response
 
     def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:

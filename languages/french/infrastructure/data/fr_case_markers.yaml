@@ -1,0 +1,80 @@
+# French case markers configuration
+# Following Hindi gold standard structure
+
+# French doesn't have case inflection like Hindi, but we can define
+# preposition patterns that serve similar grammatical functions
+
+nominative:
+  - ""  # No marker for nominative (subject case)
+
+accusative:
+  - ""  # Usually no marker, but can be indicated by word order
+
+dative:
+  - à  # to/for
+  - pour  # for
+
+genitive:
+  - de  # of
+  - du  # of the (masculine)
+  - de la  # of the (feminine)
+  - des  # of the (plural)
+  - d'  # of (elided form)
+
+locative:
+  - dans  # in
+  - sur  # on
+  - sous  # under
+  - devant  # in front of
+  - derrière  # behind
+  - à côté de  # next to
+  - près de  # near
+  - loin de  # far from
+
+instrumental:
+  - avec  # with
+  - par  # by (means)
+  - au moyen de  # by means of
+
+ablative:
+  - de  # from
+  - depuis  # since/from
+  - hors de  # out of
+
+vocative:
+  - ""  # No specific marker, often just intonation
+
+# French preposition patterns for different semantic roles
+preposition_patterns:
+  direction:
+    - à  # to
+    - vers  # toward
+    - en direction de  # in the direction of
+
+  source:
+    - de  # from
+    - depuis  # from/since
+    - à partir de  # starting from
+
+  location:
+    - à  # at/in
+    - dans  # in
+    - sur  # on
+    - en  # in (for feminine countries/regions)
+
+  time:
+    - à  # at (time)
+    - en  # in (months/seasons)
+    - pendant  # during
+    - depuis  # since
+    - jusqu'à  # until
+
+  manner:
+    - avec  # with
+    - sans  # without
+    - de manière  # in a way
+
+  purpose:
+    - pour  # for/to
+    - afin de  # in order to
+    - en vue de  # with a view to

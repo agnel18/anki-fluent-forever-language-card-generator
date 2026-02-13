@@ -94,6 +94,8 @@ class FrConfig:
     verb_conjugations: Dict[str, str]
     preposition_patterns: Dict[str, str]
     pronoun_patterns: Dict[str, str]
+    case_markers: Dict[str, Any]
+    honorific_markers: Dict[str, Any]
     word_meanings: Dict[str, str]
     prompt_templates: Dict[str, str]
     patterns: Dict[str, Any]  # For regex patterns, etc.
@@ -115,9 +117,11 @@ class FrConfig:
         self.verb_conjugations = self._load_yaml(config_dir / "fr_verb_conjugations.yaml")
         self.preposition_patterns = self._load_yaml(config_dir / "fr_preposition_patterns.yaml")
         self.pronoun_patterns = self._load_yaml(config_dir / "fr_pronoun_patterns.yaml")
+        self.case_markers = self._load_yaml(config_dir / "fr_case_markers.yaml")
+        self.honorific_markers = self._load_yaml(config_dir / "fr_honorific_markers.yaml")
         self.word_meanings = self._load_json(config_dir / "fr_word_meanings.json")
 
-        # French-specific prompt templates
+        # French-specific prompt templates using Jinja2
         self.prompt_templates = {
             "single": """
 Analyze this French sentence and provide DETAILED grammatical breakdown.
@@ -128,7 +132,7 @@ Complexity level: {{complexity}}
 
 For EACH word in the sentence, provide:
 - Its specific grammatical function and role
-- Gender agreement (masculine/feminine) for nouns/adjectives
+- Gender agreement (masculine/feminine/neutral) for nouns/adjectives
 - Verb conjugation details (person, number, tense, mood)
 - Agreement relationships with other words
 - French-specific features (elision, liaison, preposition choice)
@@ -139,12 +143,12 @@ Return a JSON object with exactly this structure:
   "words": [
     {
       "word": "word",
-      "grammatical_role": "noun|verb|adjective|pronoun|determiner|preposition|...",
-      "gender": "masculine|feminine|neutral"  // for nouns/adjectives
-      "number": "singular|plural"  // for nouns/adjectives/verbs
-      "person": "1|2|3"  // for verbs/pronouns
-      "tense": "present|past|future|..."  // for verbs
-      "mood": "indicative|subjunctive|conditional|..."  // for verbs
+      "grammatical_role": "noun|verb|adjective|pronoun|determiner|preposition|auxiliary_verb|modal_verb|reflexive_pronoun|possessive_pronoun|demonstrative_pronoun|relative_pronoun|indefinite_pronoun|personal_pronoun|conjunction|adverb|interjection|other",
+      "gender": "masculine|feminine|neutral",
+      "number": "singular|plural",
+      "person": "1|2|3",
+      "tense": "present|past|future|imperfect|subjunctive|conditional",
+      "mood": "indicative|subjunctive|conditional|imperative",
       "individual_meaning": "Detailed explanation of this element's function, agreement relationships, and contribution to sentence meaning"
     }
   ],
@@ -156,6 +160,9 @@ Return a JSON object with exactly this structure:
 }
 
 CRITICAL: Always explain gender agreement, verb conjugations, and French-specific grammatical patterns.
+{% if native_language != 'English' %}
+Provide explanations in {{native_language}} when possible.
+{% endif %}
 """,
             "batch": """
 Analyze these French sentences and provide grammatical breakdowns for each.
@@ -175,12 +182,12 @@ Return a JSON object with exactly this structure:
       "words": [
         {
           "word": "word",
-          "grammatical_role": "noun|verb|adjective|pronoun|determiner|preposition|...",
+          "grammatical_role": "noun|verb|adjective|pronoun|determiner|preposition|auxiliary_verb|modal_verb|reflexive_pronoun|possessive_pronoun|demonstrative_pronoun|relative_pronoun|indefinite_pronoun|personal_pronoun|conjunction|adverb|interjection|other",
           "gender": "masculine|feminine|neutral",
           "number": "singular|plural",
           "person": "1|2|3",
-          "tense": "present|past|future|...",
-          "mood": "indicative|subjunctive|conditional|...",
+          "tense": "present|past|future|imperfect|subjunctive|conditional",
+          "mood": "indicative|subjunctive|conditional|imperative",
           "individual_meaning": "Brief explanation of function and agreement"
         }
       ],
@@ -194,6 +201,9 @@ Return a JSON object with exactly this structure:
 }
 
 CRITICAL: Keep explanations under 75 characters. Focus on essential French grammar.
+{% if native_language != 'English' %}
+Provide explanations in {{native_language}} when possible.
+{% endif %}
 """
         }
         self.patterns = self._load_yaml(config_dir / "fr_patterns.yaml")
