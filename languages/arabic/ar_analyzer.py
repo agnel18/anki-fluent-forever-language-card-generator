@@ -17,33 +17,9 @@ from .domain.ar_fallbacks import ArFallbacks
 # Import BaseGrammarAnalyzer
 import sys
 import os
-# Try different import paths
-try:
-    from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-    from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
-except ImportError:
-    try:
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
-        from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-        from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
-    except ImportError:
-        # Fallback - define minimal classes if import fails
-        @dataclass
-        class LanguageConfig:
-            code: str
-            name: str
-            native_name: str
-            family: str
-            script_type: str
-            complexity_rating: str
-            key_features: List[str]
-            supported_complexity_levels: List[str]
-
-        class BaseGrammarAnalyzer:
-            def __init__(self, language_config):
-                self.config = language_config
-        class GrammarAnalysis:
-            pass
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
+from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
 
 logger = logging.getLogger(__name__)
 
