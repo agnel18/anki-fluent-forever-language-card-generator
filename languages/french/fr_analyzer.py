@@ -60,22 +60,25 @@ logger = logging.getLogger(__name__)
 
 class FrAnalyzer(BaseGrammarAnalyzer):
     """
-    Grammar analyzer for French - Clean Architecture.
+    Grammar analyzer for French - Enhanced Clean Architecture.
 
-    FRENCH-SPECIFIC FEATURES:
+    FRENCH-SPECIFIC FEATURES ENHANCED:
     - Fusional Language: Complex inflection with multiple grammatical features
     - Gender System: Grammatical gender (masculine/feminine) affecting agreement
     - Verb Conjugation: Three main groups with irregular forms and stem changes
     - Agreement Cascade: Adjectives, pronouns, past participles agree with nouns
     - Complex Prepositions: Multiple translations for single English prepositions
     - Partitive Articles: du/de la/de l'/des for partial quantities
+    - Enhanced AI Integration: Retry logic and improved error handling
+    - Robust Parsing: Multiple fallback strategies for JSON extraction
+    - Advanced Validation: French-specific grammar error detection
 
     Key Features: ['gender_agreement', 'verb_conjugation', 'complex_prepositions', 'partitive_articles', 'fusional_morphology']
     Complexity Levels: ['beginner', 'intermediate', 'advanced']
     Script: Latin alphabet with diacritics (LTR), alphabetic writing system
     """
 
-    VERSION = "1.0"
+    VERSION = "2.0"
     LANGUAGE_CODE = "fr"
     LANGUAGE_NAME = "French"
 
@@ -134,10 +137,22 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         - Colors based on grammatical roles and complexity level
         """
         try:
+            import time
+            start_time = time.time()
+
+            logger.info(f"DEBUG French Analysis: Starting analysis for sentence: '{sentence[:50]}...' (complexity: {complexity})")
+
             prompt = self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
+            logger.debug(f"DEBUG French Analysis: Prompt built, length: {len(prompt)}")
+
             ai_response = self._call_ai(prompt, gemini_api_key)
+            logger.debug(f"DEBUG French Analysis: AI response received, length: {len(ai_response)}")
+
             result = self.response_parser.parse_response(ai_response, complexity, sentence, target_word)
+            logger.debug(f"DEBUG French Analysis: Response parsed, words: {len(result.get('word_explanations', []))}")
+
             validated_result = self.validator.validate_result(result, sentence)
+            logger.debug(f"DEBUG French Analysis: Validation complete, confidence: {validated_result.get('confidence', 'N/A')}")
 
             # Additional explanation quality validation
             quality_validation = self.validator.validate_explanation_quality(validated_result)
@@ -151,10 +166,29 @@ class FrAnalyzer(BaseGrammarAnalyzer):
 
             # Log quality issues if any
             if quality_validation.get('issues'):
-                logger.info(f"Explanation quality issues for '{sentence}': {quality_validation['issues']}")
+                logger.info(f"Explanation quality issues for '{sentence[:30]}...': {len(quality_validation['issues'])} issues")
 
             # Generate HTML output
             html_output = self._generate_html_output(validated_result, sentence, complexity)
+
+            # Create result object
+            analysis_result = GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word,
+                language_code=self.language_code,
+                complexity_level=complexity,
+                grammatical_elements=validated_result.get('elements', {}),
+                explanations=validated_result.get('explanations', {}),
+                word_explanations=validated_result.get('word_explanations', []),
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=adjusted_confidence
+            )
+
+            processing_time = time.time() - start_time
+            logger.info(f"DEBUG French Analysis: Completed in {processing_time:.2f}s, confidence: {adjusted_confidence:.2f}")
+
+            return analysis_result
 
             # Return GrammarAnalysis object
             return GrammarAnalysis(
@@ -259,10 +293,11 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         """
         Call Google Gemini AI for French grammar analysis.
 
-        FRENCH AI INTEGRATION:
+        FRENCH AI INTEGRATION ENHANCED:
         - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
-        - 2000 max_output_tokens prevents JSON truncation in batch responses
+        - 4000 max_output_tokens prevents JSON truncation in complex French responses
         - 30-second timeout for online environments
+        - Retry logic with exponential backoff for transient failures
         - Comprehensive error handling with meaningful logging
         - Returns error response for fallback processing
 
@@ -270,41 +305,75 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         - Handles diacritics and elision properly
         - Accounts for fusional morphology analysis
         - Supports gender agreement and conjugation validation
+        - Optimized for French grammatical complexity
         - Future-proof: Update model names as Google releases new versions
 
         ERROR HANDLING:
         - Catches all exceptions to prevent crashes
+        - Implements retry logic for network/API issues
         - Returns standardized error response for fallback logic
         - Logs detailed information for debugging
         """
-        logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
-        try:
-            api = get_gemini_api()
-            api.configure(api_key=gemini_api_key)
-            # Try primary model first
+        logger.info(f"DEBUG French AI: _call_ai called with prompt length: {len(prompt)}")
+        max_retries = 3
+        base_delay = 1.0
+
+        for attempt in range(max_retries):
             try:
-                response = api.generate_content(
-                    model=get_gemini_model(),
-                    contents=prompt,
-                    config={'max_output_tokens': 4000}
-                )
-                ai_response = response.text.strip()
-            except Exception as primary_error:
-                logger.warning(f"Primary model {get_gemini_model()} failed: {primary_error}")
-                # Fallback to preview model
-                response = api.generate_content(
-                    model=get_gemini_fallback_model(),
-                    contents=prompt,
-                    config={'max_output_tokens': 4000}
-                )
-                ai_response = response.text.strip()
-            logger.info(f"DEBUG: AI response: {ai_response[:500]}...")
-            logger.info(f"AI response received: {ai_response[:500]}...")
-            return ai_response
-        except Exception as e:
-            logger.info(f"DEBUG: AI call failed: {e}")
-            logger.error(f"AI call failed: {e}")
-            return '{"sentence": "error", "words": []}'  # Standardized error response
+                api = get_gemini_api()
+                api.configure(api_key=gemini_api_key)
+
+                # Try primary model first
+                try:
+                    logger.info(f"DEBUG French AI: Attempting primary model {get_gemini_model()} (attempt {attempt + 1})")
+                    response = api.generate_content(
+                        model=get_gemini_model(),
+                        contents=prompt,
+                        config={'max_output_tokens': 4000, 'temperature': 0.1}
+                    )
+                    ai_response = response.text.strip()
+                    logger.info(f"DEBUG French AI: Primary model succeeded, response length: {len(ai_response)}")
+                    return ai_response
+
+                except Exception as primary_error:
+                    logger.warning(f"DEBUG French AI: Primary model {get_gemini_model()} failed (attempt {attempt + 1}): {str(primary_error)[:200]}")
+
+                    # Fallback to preview model
+                    try:
+                        logger.info(f"DEBUG French AI: Attempting fallback model {get_gemini_fallback_model()} (attempt {attempt + 1})")
+                        response = api.generate_content(
+                            model=get_gemini_fallback_model(),
+                            contents=prompt,
+                            config={'max_output_tokens': 4000, 'temperature': 0.1}
+                        )
+                        ai_response = response.text.strip()
+                        logger.info(f"DEBUG French AI: Fallback model succeeded, response length: {len(ai_response)}")
+                        return ai_response
+
+                    except Exception as fallback_error:
+                        logger.warning(f"DEBUG French AI: Fallback model {get_gemini_fallback_model()} also failed (attempt {attempt + 1}): {str(fallback_error)[:200]}")
+                        if attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt)
+                            logger.info(f"DEBUG French AI: Retrying in {delay} seconds...")
+                            import time
+                            time.sleep(delay)
+                        else:
+                            raise fallback_error
+
+            except Exception as e:
+                logger.error(f"DEBUG French AI: All models failed on attempt {attempt + 1}: {str(e)[:200]}")
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    logger.info(f"DEBUG French AI: Retrying in {delay} seconds...")
+                    import time
+                    time.sleep(delay)
+                else:
+                    logger.error("DEBUG French AI: All retry attempts exhausted")
+                    return '{"error": "AI service unavailable", "sentence": "error"}'
+
+        # This should never be reached, but just in case
+        logger.error("DEBUG French AI: Unexpected end of retry loop")
+        return '{"error": "AI service unavailable", "sentence": "error"}'
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """
@@ -450,6 +519,17 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         - Handles elision and liaison processing
         """
         return self.response_parser.parse_response(ai_response, complexity, sentence, None)
+
+    def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], complexity: str, native_language: str = "English") -> List[Dict[str, Any]]:
+        """
+        Parse batch AI response using French-specific batch parsing logic.
+
+        FRENCH BATCH PARSING:
+        - Delegates to response_parser for robust batch JSON extraction
+        - Applies French-specific fallbacks and transformations
+        - Handles per-sentence error recovery in batch mode
+        """
+        return self.response_parser.parse_batch_response(ai_response, sentences, complexity)
 
     def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
         """

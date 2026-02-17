@@ -207,8 +207,7 @@ IMPORTANT:
 
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
-            # Fallback to individual parsing (less efficient but works)
-            return [self.parse_grammar_response(ai_response, complexity, sentence) for sentence in sentences]
+            raise  # Re-raise to let caller handle fallback
 
     @abc.abstractmethod
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
@@ -331,7 +330,20 @@ IMPORTANT:
             analysis_data = self._call_ai_model(prompt, gemini_api_key)
 
             # Parse batch response
-            batch_results = self.parse_batch_grammar_response(analysis_data, sentences, complexity)
+            try:
+                batch_results = self.parse_batch_grammar_response(analysis_data, sentences, complexity)
+            except Exception as parse_error:
+                logger.warning(f"Batch parsing failed, falling back to individual analysis: {parse_error}")
+                # Fallback to individual analysis
+                results = []
+                for sentence in sentences:
+                    try:
+                        individual_result = self.analyze_grammar(sentence, target_word, complexity, gemini_api_key)
+                        results.append(individual_result)
+                    except Exception as e2:
+                        logger.error(f"Individual analysis failed for '{sentence}': {e2}")
+                        results.append(self._create_fallback_analysis(sentence, target_word, complexity))
+                return results
 
             # Convert to GrammarAnalysis objects
             results = []

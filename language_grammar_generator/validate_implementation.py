@@ -11,7 +11,7 @@ VALIDATION CHECKS:
 3. Interface Compliance - Matches gold standard interfaces
 4. Configuration Validation - External config files loaded correctly
 5. Component Integration - All domain components work together
-6. Gold Standard Comparison - Results match Chinese Simplified patterns
+6. Gold Standard Comparison - Results match French v2.0 patterns
 7. Error Handling - Proper fallbacks and error recovery
 8. Performance Validation - Meets performance requirements
 
@@ -21,8 +21,8 @@ USAGE:
     python validate_implementation.py --all-languages
 
 GOLD STANDARDS:
-- Chinese Simplified (zh): Primary reference for Clean Architecture
-- Hindi (hi): Secondary reference for Indo-European patterns
+- French (fr): Primary reference for Clean Architecture (v2.0)
+- Chinese Simplified (zh): Secondary reference for logographic patterns
 """
 
 import argparse
@@ -54,8 +54,8 @@ class ImplementationValidator:
 
         # Gold standard references
         self.gold_standards = {
-            'zh': 'Chinese Simplified (Primary Gold Standard)',
-            'hi': 'Hindi (Secondary Reference)',
+            'fr': 'French (Primary Gold Standard - v2.0)',
+            'zh': 'Chinese Simplified (Secondary Reference)',
             'zh_tw': 'Chinese Traditional (Should match zh patterns)',
             'zh-tw': 'Chinese Traditional (Should match zh patterns)'  # Also handle hyphenated version
         }
@@ -184,9 +184,9 @@ class ImplementationValidator:
         print("\nðŸ”— Checking Interface Compliance...")
 
         try:
-            # Compare with Chinese Simplified analyzer
-            zh_analyzer = importlib.import_module("languages.chinese_simplified.zh_analyzer")
-            zh_class = zh_analyzer.ZhAnalyzer
+            # Compare with French analyzer (primary gold standard v2.0)
+            fr_analyzer = importlib.import_module("languages.french.fr_analyzer")
+            fr_class = fr_analyzer.FrAnalyzer
 
             analyzer_module = importlib.import_module(
                 f"languages.{self.directory_name}.{self.file_name}_analyzer"
@@ -194,10 +194,10 @@ class ImplementationValidator:
             analyzer_class = getattr(analyzer_module, f"{self.class_prefix}Analyzer")
 
             # Check method signatures match
-            zh_methods = [m for m in dir(zh_class) if not m.startswith('_') and callable(getattr(zh_class, m))]
+            fr_methods = [m for m in dir(fr_class) if not m.startswith('_') and callable(getattr(fr_class, m))]
             impl_methods = [m for m in dir(analyzer_class) if not m.startswith('_') and callable(getattr(analyzer_class, m))]
 
-            missing_interface_methods = set(zh_methods) - set(impl_methods)
+            missing_interface_methods = set(fr_methods) - set(impl_methods)
             if missing_interface_methods:
                 self.errors.append(f"Missing interface methods compared to gold standard: {missing_interface_methods}")
                 return False
@@ -221,10 +221,10 @@ class ImplementationValidator:
 
             config_instance = config_class()
 
-            # Check for required attributes (compare with zh_config)
-            zh_config = importlib.import_module("languages.chinese_simplified.domain.zh_config")
-            zh_config_class = zh_config.ZhConfig
-            zh_instance = zh_config_class()
+            # Check for required attributes (compare with fr_config)
+            fr_config = importlib.import_module("languages.french.domain.fr_config")
+            fr_config_class = fr_config.FrConfig
+            fr_instance = fr_config_class()
 
             required_attrs = ['grammatical_roles', 'get_color_scheme']
             for attr in required_attrs:

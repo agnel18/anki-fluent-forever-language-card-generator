@@ -131,22 +131,63 @@ class FrResponseParser:
             return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
 
     def _extract_json(self, response: str) -> Dict[str, Any]:
-        """Extract JSON from AI response using gold standard approach (simplified from Hindi)."""
-        logger.info(f"DEBUG: Extracting JSON from response: {response[:1000]}...")
+        """Extract JSON from AI response using robust parsing with multiple fallbacks (enhanced from Hindi gold standard)."""
+        logger.info(f"DEBUG French Extract - Input response length: {len(response)}")
+        logger.info(f"DEBUG French Extract - Input response: {response[:1000]}...")
+
+        # Try direct JSON parsing first (for batch individual items)
         try:
-            # Strip markdown if present (gold standard approach)
-            if "```json" in response:
-                response = response.split("```json")[1].split("```")[0].strip()
-            elif "```" in response:
-                response = response.split("```")[1].split("```")[0].strip()
-            logger.info(f"DEBUG: Cleaned response: {response[:1000]}...")
             result = json.loads(response)
-            logger.info(f"DEBUG: Parsed JSON: {result}")
+            logger.info(f"DEBUG French Extract - Successfully parsed direct JSON. Keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
             return result
-        except Exception as e:
-            logger.error(f"DEBUG: Failed to extract JSON from response: {e}")
-            logger.error(f"DEBUG: Response that failed: {response}")
-            raise
+        except json.JSONDecodeError:
+            logger.info("DEBUG French Extract - Direct JSON parse failed, trying markdown extraction")
+
+        # Try to extract JSON from markdown (gold standard approach)
+        json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+        if json_match:
+            try:
+                cleaned = json_match.group(1).strip()
+                result = json.loads(cleaned)
+                logger.info(f"DEBUG French Extract - Successfully parsed JSON from markdown. Keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+                return result
+            except json.JSONDecodeError:
+                logger.error(f"DEBUG French Extract - JSON decode error in markdown: {cleaned[:200]}...")
+
+        # Try generic markdown extraction
+        if "```" in response:
+            try:
+                cleaned = response.split("```")[1].split("```")[0].strip()
+                result = json.loads(cleaned)
+                logger.info(f"DEBUG French Extract - Successfully parsed JSON from generic markdown. Keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+                return result
+            except (json.JSONDecodeError, IndexError):
+                logger.error("DEBUG French Extract - Generic markdown extraction failed")
+
+        # Try to repair and parse JSON
+        try:
+            repaired = self._clean_json_response(response)
+            result = json.loads(repaired)
+            logger.info(f"DEBUG French Extract - Successfully parsed repaired JSON. Keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+            return result
+        except json.JSONDecodeError:
+            logger.error(f"DEBUG French Extract - Repaired JSON parse failed: {repaired[:200]}...")
+
+        # Final attempt: extract from text if it looks like JSON
+        try:
+            # Look for JSON-like structure in the text
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                potential_json = response[json_start:json_end]
+                result = json.loads(potential_json)
+                logger.info(f"DEBUG French Extract - Successfully extracted JSON from text. Keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+                return result
+        except json.JSONDecodeError:
+            logger.error("DEBUG French Extract - Text extraction failed")
+
+        logger.error(f"DEBUG French Extract - All parsing attempts failed for response: {response}")
+        raise ValueError("Unable to extract valid JSON from AI response")
 
     def _clean_json_response(self, response: str) -> str:
         """Clean common issues in AI-generated JSON responses (minimal version following Hindi gold standard)."""
@@ -209,48 +250,17 @@ class FrResponseParser:
         return hierarchy.get(role, role)
 
     def _build_french_explanation(self, word_data: Dict[str, Any], standard_role: str) -> str:
-        """Build explanation with French-specific grammatical details."""
+        """Build explanation with French-specific grammatical details - SIMPLIFIED LIKE HINDI GOLD STANDARD."""
         word = word_data.get('word', '')
         individual_meaning = word_data.get('individual_meaning', '')
 
-        # If AI provided a detailed explanation, use it
+        # Use AI-provided explanation if available (like Hindi gold standard)
         if individual_meaning:
             return individual_meaning
 
-        # Otherwise, build from morphological features
-        explanation_parts = []
-
-        # Add gender information
-        gender = word_data.get('gender')
-        if gender:
-            explanation_parts.append(f"{gender} gender")
-
-        # Add number information
-        number = word_data.get('number')
-        if number:
-            explanation_parts.append(f"{number} number")
-
-        # Add person/tense/mood for verbs
-        if standard_role in ['verb', 'auxiliary_verb', 'modal_verb']:
-            person = word_data.get('person')
-            tense = word_data.get('tense')
-            mood = word_data.get('mood')
-
-            if person:
-                explanation_parts.append(f"{person} person")
-            if tense:
-                explanation_parts.append(f"{tense} tense")
-            if mood and mood != 'indicative':
-                explanation_parts.append(f"{mood} mood")
-
-        # Add base role description
+        # Fallback to basic role description (like Hindi gold standard)
         role_descriptions = self.config.grammatical_roles.get('role_descriptions', {})
-        base_description = role_descriptions.get(standard_role, f"a {standard_role.replace('_', ' ')}")
-
-        if explanation_parts:
-            return f"{base_description} ({', '.join(explanation_parts)})"
-        else:
-            return base_description
+        return role_descriptions.get(standard_role, f"a {standard_role.replace('_', ' ')}")
 
     def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Get color scheme based on complexity."""

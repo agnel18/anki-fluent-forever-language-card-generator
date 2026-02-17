@@ -1,9 +1,9 @@
 ﻿# Deployment Guide
 ## Production Deployment Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture benchmark  
-**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
-**Critical:** Deploy only implementations matching Chinese Simplified Clean Architecture patterns  
+**Primary Gold Standard:** [French v2.0](languages/french/fr_analyzer.py) - Clean Architecture benchmark  
+**Secondary Reference:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
+**Critical:** Deploy only implementations matching French v2.0 Clean Architecture patterns  
 **Prerequisites:** Study gold standards, complete implementation following their patterns  
 **Architecture:** Follow [Architecture Guide](architecture_guide.md) with gold standard compliance  
 **Time Estimate:** 2-4 weeks for full production deployment
@@ -11,7 +11,7 @@
 ## ðŸŽ¯ Deployment Philosophy - Gold Standard Compliance
 
 ### Production Readiness Principles - Match Gold Standards
-- **Gold Standard Verification:** All deployments must match Hindi/Chinese Simplified patterns
+- **Gold Standard Verification:** All deployments must match French v2.0/Chinese Simplified patterns
 - **Natural Validation:** No artificial confidence boosting in production (removed from all implementations)
 - **Facade Pattern:** Deploy only clean component orchestration like gold standards
 - **External Configuration:** Load all settings from files like gold standards
@@ -20,7 +20,7 @@
 
 ### Deployment Strategy - Gold Standard Validation
 - **Pre-Deployment Audit:** Verify implementation matches gold standards before deployment
-- **Gold Standard Testing:** All tests must pass against Hindi/Chinese Simplified baselines
+- **Gold Standard Testing:** All tests must pass against French v2.0/Chinese Simplified baselines
 - **Configuration Validation:** External configs must load like gold standards
 - **AI Integration Check:** Verify allowed models and circuit breaker implementation
 - **Automated Rollback:** Instant recovery if gold standard compliance fails
@@ -30,7 +30,7 @@
 ### 1. Directory Structure Matching Gold Standards
 ```
 languages/{language}/
-â”œâ”€â”€ {language}_analyzer.py          # Main facade like hi_analyzer.py/zh_analyzer.py
+â”œâ”€â”€ {language}_analyzer.py          # Main facade like fr_analyzer.py/zh_analyzer.py
 â”œâ”€â”€ {language}_config.py            # External config loading like gold standards
 â”œâ”€â”€ {language}_prompt_builder.py    # Prompt generation like gold standards
 â”œâ”€â”€ {language}_response_parser.py   # Response parsing like gold standards
@@ -89,7 +89,7 @@ CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000
 ### Phase 1: Pre-Deployment Verification
 ```bash
 # 1. Gold standard comparison
-compare_with_gold_standards.sh hindi zh ${LANGUAGE_CODE}
+compare_with_gold_standards.sh french zh ${LANGUAGE_CODE}
 
 # 2. Natural validation audit (no artificial boosting)
 audit_natural_validation.sh ${LANGUAGE_CODE}
@@ -110,7 +110,7 @@ deploy_staging.sh ${LANGUAGE_CODE}
 run_gold_standard_tests.sh staging ${LANGUAGE_CODE}
 
 # Performance benchmark against gold standards
-benchmark_against_gold_standards.sh staging hindi zh
+benchmark_against_gold_standards.sh staging french zh
 ```
 
 ### Phase 3: Production Deployment
@@ -145,7 +145,7 @@ def monitor_gold_standard_compliance():
 ```python
 # Performance monitoring against gold standards
 def performance_monitoring():
-    gold_standard_baseline = get_gold_standard_performance()  # Hindi/Chinese baseline
+    gold_standard_baseline = get_gold_standard_performance()  # French/Chinese baseline
 
     current_metrics = {
         "response_time_ratio": current_time / gold_standard_baseline["response_time"],
@@ -348,7 +348,7 @@ def ab_test_against_gold_standards(new_version, gold_standard_version):
 ## ðŸ“‹ Deployment Checklist - Gold Standard Compliance
 
 ### Pre-Deployment
-- [ ] **Gold Standard Study:** Thoroughly studied Hindi and Chinese Simplified analyzers?
+- [ ] **Gold Standard Study:** Thoroughly studied French v2.0 and Chinese Simplified analyzers?
 - [ ] **Natural Validation:** Removed all artificial confidence boosting?
 - [ ] **Facade Pattern:** Implemented component orchestration like gold standards?
 - [ ] **External Config:** Loading all settings from files like gold standards?
@@ -378,7 +378,7 @@ def ab_test_against_gold_standards(new_version, gold_standard_version):
 
 ---
 
-**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** Only deploy implementations that match the gold standards ([French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
 â”‚   â”‚   â””â”€â”€ rules.yml
 â”‚   â”œâ”€â”€ grafana/
 â”‚   â”‚   â””â”€â”€ dashboards/
@@ -1304,7 +1304,7 @@ jobs:
 
 ---
 
-**Remember:** Only deploy implementations that match the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** Only deploy implementations that match the gold standards ([French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
         # Wait for service to be ready
         kubectl wait --for=condition=available --timeout=300s deployment/language-analyzer
 

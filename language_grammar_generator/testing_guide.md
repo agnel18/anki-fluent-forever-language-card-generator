@@ -1,28 +1,28 @@
 ﻿# Testing Guide
 ## Comprehensive Testing Strategy Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Clean Architecture benchmark
-**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)
-**Critical:** Test against Chinese Simplified gold standard - external configuration, integrated fallbacks, natural validation
-**Prerequisites:** Study Chinese Simplified Clean Architecture before testing
-**Architecture:** Follow [Architecture Guide](architecture_guide.md) with Chinese Simplified compliance
+**Primary Gold Standard:** [French v2.0](languages/french/fr_analyzer.py) - Enterprise reliability benchmark
+**Secondary Reference:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)
+**Critical:** Test against French v2.0 gold standard - enterprise reliability, 5-level fallbacks, comprehensive monitoring
+**Prerequisites:** Study French v2.0 enterprise patterns before testing
+**Architecture:** Follow [Architecture Guide](architecture_guide.md) with French v2.0 compliance
 **Time Estimate:** 1-2 weeks for gold standard compliant test suite
 
-## ðŸŽ¯ Testing Philosophy - Chinese Simplified Gold Standard Compliance
+## ðŸŽ¯ Testing Philosophy - French v2.0 Gold Standard Compliance
 
-### Quality Assurance Principles - Match Chinese Simplified
-- **Gold Standard Comparison:** All tests compare with Chinese Simplified Clean Architecture results
-- **External Configuration Testing:** Test YAML/JSON file loading (Chinese Simplified pattern)
-- **Integrated Fallback Testing:** Test fallbacks within domain layer (Chinese Simplified pattern)
+### Quality Assurance Principles - Match French v2.0
+- **Gold Standard Comparison:** All tests compare with French v2.0 Clean Architecture results
+- **External Configuration Testing:** Test YAML/JSON file loading (French v2.0 pattern)
+- **Integrated Fallback Testing:** Test fallbacks within domain layer (French v2.0 pattern)
 - **Natural Validation Testing:** No tests for artificial confidence boosting (removed)
-- **Component Isolation:** Test components separately like Chinese Simplified
+- **Component Isolation:** Test components separately like French v2.0
 - **Facade Pattern Testing:** Test complete Clean Architecture orchestration
 - **Jinja2 Template Testing:** Test template-based prompt generation
 
-### Testing Pyramid - Chinese Simplified Validation
+### Testing Pyramid - French v2.0 Validation
 ```
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  (Few tests, high value)
-â”‚ Gold Standard   â”‚  Compare with Chinese Simplified
+â”‚ Gold Standard   â”‚  Compare with French v2.0
 â”‚ Compliance      â”‚  Clean Architecture validation
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚ System Tests    â”‚  End-to-end facade workflow
@@ -55,16 +55,16 @@ python language_grammar_generator/run_all_tests.py --all-languages
 
 ### Gold Standard Comparison
 ```bash
-# Compare with Chinese Simplified and Hindi
+# Compare with French v2.0 and Chinese Simplified
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code}
 
 # Detailed comparison with export
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
 ```
 
-## ðŸ§ª Testing Framework Setup - Chinese Simplified Structure
+## ðŸ§ª Testing Framework Setup - French v2.0 Structure
 
-### 1. Directory Structure - Like Chinese Simplified
+### 1. Directory Structure - Like French v2.0
 ```
 languages/{language}/tests/
 â”œâ”€â”€ __init__.py
@@ -75,8 +75,8 @@ languages/{language}/tests/
 â”œâ”€â”€ test_{language}_response_parser.py # Response parsing with integrated fallbacks
 â”œâ”€â”€ test_{language}_validator.py   # NATURAL validation tests (NO boosting)
 â”œâ”€â”€ test_{language}_integration.py # Facade orchestration tests
-â”œâ”€â”€ test_{language}_performance.py # Performance vs Chinese Simplified
-â”œâ”€â”€ test_gold_standard_comparison.py # Compare with Chinese Simplified
+â”œâ”€â”€ test_{language}_performance.py # Performance vs French v2.0
+â”œâ”€â”€ test_gold_standard_comparison.py # Compare with French v2.0
 â”œâ”€â”€ fixtures/
 â”‚   â”œâ”€â”€ sample_sentences.json     # Test sentences
 â”‚   â”œâ”€â”€ expected_outputs.json     # Expected results like gold standards
@@ -95,7 +95,7 @@ from languages.{language}.{language}_analyzer import {Language}Analyzer
 @pytest.fixture
 def config():
     """Load config from external files like gold standards"""
-    return {Language}Config()  # Loads from YAML like Hindi/Chinese
+    return {Language}Config()  # Loads from YAML like French/Chinese
 
 @pytest.fixture
 def analyzer(config):
@@ -2036,7 +2036,7 @@ if __name__ == "__main__":
 
 ---
 
-**Remember:** All tests must follow gold standard patterns from [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py). Focus on natural validation testing, component isolation, and gold standard comparison - no artificial confidence boosting tests.
+**Remember:** All tests must follow gold standard patterns from [French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py). Focus on natural validation testing, component isolation, and gold standard comparison - no artificial confidence boosting tests.
 - [ ] **Mock Management:** Proper mocking of external dependencies
 - [ ] **Flaky Test Detection:** Automated detection of unreliable tests
 - [ ] **Test Documentation:** Clear test naming and documentation

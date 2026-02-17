@@ -200,20 +200,42 @@ class FrFallbacks:
         if word in adverbs:
             return 'adverb'
 
-        # Verb detection (ends with common verb endings or is infinitive)
+        # Verb detection (enhanced with conjugated forms)
         verb_endings = ['er', 'ir', 're', 'oir', 'ire']
-        if any(word.endswith(ending) for ending in verb_endings) or word in [
-            'aller', 'venir', 'voir', 'faire', 'prendre', 'mettre', 'dire', 'être', 'avoir'
-        ]:
+        conjugated_endings = ['e', 'es', 'ons', 'ez', 'ent', 'is', 'it', 'îmes', 'îtes', 'irent',
+                             's', 't', 'ons', 'ez', 'ent', 'ais', 'ait', 'ions', 'iez', 'aient',
+                             'ai', 'as', 'a', 'âmes', 'âtes', 'èrent', 'erai', 'eras', 'era',
+                             'erons', 'erez', 'eront', 'rais', 'rait', 'rions', 'riez', 'raient']
+
+        is_verb = (any(word.endswith(ending) for ending in verb_endings) or
+                  any(word.endswith(ending) for ending in conjugated_endings) or
+                  word in ['aller', 'venir', 'voir', 'faire', 'prendre', 'mettre', 'dire',
+                          'être', 'avoir', 'pouvoir', 'vouloir', 'savoir', 'falloir', 'devoir'])
+
+        if is_verb:
             return 'verb'
 
-        # Adjective detection (common adjective patterns)
-        if (word.endswith(('eau', 'el', 'et', 'i', 'u', 'eux', 'aux', 'if', 'ive', 'able', 'ible')) or
-            word in ['bon', 'mauvais', 'grand', 'petit', 'beau', 'nouveau', 'vieux']):
+        # Adjective detection (enhanced patterns)
+        adj_endings = ['eau', 'el', 'et', 'i', 'u', 'eux', 'aux', 'if', 'ive', 'able', 'ible',
+                      'ant', 'ent', 'eur', 'euse', 'eux', 'euse', 'ien', 'ienne', 'ois', 'oise']
+        common_adjectives = ['bon', 'mauvais', 'grand', 'petit', 'beau', 'nouveau', 'vieux',
+                           'blanc', 'noir', 'rouge', 'bleu', 'vert', 'jaune', 'gros', 'lourd',
+                           'léger', 'long', 'court', 'haut', 'bas', 'premier', 'dernier']
+
+        if (any(word.endswith(ending) for ending in adj_endings) or word in common_adjectives):
             return 'adjective'
 
-        # Default to noun (most common category in French)
-        return 'noun'
+        # Noun detection (words that don't match other categories)
+        # In French, most remaining words are likely nouns
+        # Check for noun-like patterns (capitalized, or common noun endings)
+        noun_endings = ['tion', 'ment', 'age', 'ure', 'ance', 'ence', 'ité', 'erie', 'aison']
+        if (any(word.endswith(ending) for ending in noun_endings) or
+            word[0].isupper() or  # Proper nouns
+            len(word) > 3):  # Longer words tend to be nouns
+            return 'noun'
+
+        # Default to other for very short or unknown words
+        return 'other'
 
     def _normalize_text(self, text: str) -> str:
         """Normalize French text (handle elision, accents, etc.)."""

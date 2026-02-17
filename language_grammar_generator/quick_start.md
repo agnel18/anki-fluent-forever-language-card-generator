@@ -48,16 +48,17 @@ Create `{language}_grammar_concepts.md` in your language directory:
 2. "I see the big house" â†’ [breakdown]
 ```
 
-#### 1.2 Study Chinese Simplified Gold Standard
-**CRITICAL:** Before implementing, study the Chinese Simplified analyzer structure:
+#### 1.2 Study French v2.0 Gold Standard
+**CRITICAL:** Before implementing, study the French v2.0 analyzer structure:
 
 ```python
-# Chinese Simplified Clean Architecture Pattern
-class ZhAnalyzer(BaseGrammarAnalyzer):
+# French v2.0 Enterprise Reliability Pattern
+class FrAnalyzer(BaseGrammarAnalyzer):
     def __init__(self):
-        # 1. Initialize domain components
-        self.zh_config = ZhConfig()           # Loads external YAML/JSON
-        self.prompt_builder = ZhPromptBuilder(self.zh_config)
+        # 1. Initialize enterprise components
+        self.fr_config = FrConfig()           # Advanced configuration with validation
+        self.circuit_breaker = FrCircuitBreaker()  # Enterprise reliability
+        self.ai_service = FrAiService(self.circuit_breaker)  # Advanced AI integration
         self.response_parser = ZhResponseParser(self.zh_config)
         self.validator = ZhValidator(self.zh_config)
         self.fallbacks = ZhFallbacks(self.zh_config)  # Integrated in domain

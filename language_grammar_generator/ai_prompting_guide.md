@@ -1,54 +1,54 @@
 ﻿# AI Prompting Guide
 ## AI Integration Following Gold Standard Patterns
 
-**Primary Gold Standard:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py) - Jinja2 templates, external configuration  
-**Secondary Reference:** [Hindi](languages/hindi/hi_analyzer.py)  
-**Critical:** Use Chinese Simplified Clean Architecture patterns - Jinja2 templates, external config, no artificial confidence boosting  
-**Prerequisites:** Study Chinese Simplified template system before AI integration  
-**Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like Chinese Simplified)  
+**Primary Gold Standard:** [French v2.0](languages/french/fr_analyzer.py) - Jinja2 templates, external configuration  
+**Secondary Reference:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
+**Critical:** Use French v2.0 Clean Architecture patterns - Jinja2 templates, external config, no artificial confidence boosting  
+**Prerequisites:** Study French v2.0 template system before AI integration  
+**Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like French v2.0)  
 **Time Estimate:** 2-3 weeks for gold standard compliant optimization
 
-## ðŸŽ¯ AI Integration Philosophy - Chinese Simplified Gold Standard Compliance
+## ðŸŽ¯ AI Integration Philosophy - French v2.0 Gold Standard Compliance
 
-### Model Selection Strategy - Match Chinese Simplified
-- **gemini-2.5-flash:** Complex linguistic analysis (like Chinese Simplified analyzer)
+### Model Selection Strategy - Match French v2.0
+- **gemini-2.5-flash:** Complex linguistic analysis (like French v2.0 analyzer)
 - **gemini-3-flash-preview:** Simple analysis, high-volume processing
-- **No other models allowed** - strict enforcement like Chinese Simplified
-- **Circuit Breaker:** Implement like Chinese Simplified for reliability
+- **No other models allowed** - strict enforcement like French v2.0
+- **Circuit Breaker:** Implement like French v2.0 for reliability
 
-### Prompt Engineering Principles - Chinese Simplified Patterns
-- **Jinja2 Templates:** Template-based prompt generation (Chinese Simplified pattern)
-- **External Configuration:** Load prompt templates from YAML files (Chinese Simplified pattern)
+### Prompt Engineering Principles - French v2.0 Patterns
+- **Jinja2 Templates:** Template-based prompt generation (French v2.0 pattern)
+- **External Configuration:** Load prompt templates from YAML files (French v2.0 pattern)
 - **Natural Confidence:** No artificial boosting - use natural AI confidence scores
 - **Clean Architecture:** AI calls orchestrated through domain components
-- **Integrated Fallbacks:** Fallback mechanisms within domain layer (Chinese Simplified pattern)
+- **Integrated Fallbacks:** Fallback mechanisms within domain layer (French v2.0 pattern)
 
 ### Quality Assurance - Natural Validation Only
 - **Natural Confidence Scoring:** Use AI-provided confidence without manipulation
-- **Fallback Mechanisms:** Graceful degradation like Chinese Simplified
+- **Fallback Mechanisms:** Graceful degradation like French v2.0
 - **Validation Loops:** Cross-check with linguistic rules (no artificial boosting)
 - **Performance Monitoring:** Track natural confidence distributions
 - **Role Consistency:** Ensure meaning text matches display role to eliminate grammatical repetition
 
-## ðŸ“ Prompt Template Architecture - Chinese Simplified Gold Standard Structure
+## ðŸ“ Prompt Template Architecture - French v2.0 Gold Standard Structure
 
-### 1. Base Prompt Structure - Like Chinese Simplified
+### 1. Base Prompt Structure - Like French v2.0
 
-**File:** `languages/{language}/{language}_prompt_builder.py` (like zh_prompt_builder.py)
+**File:** `languages/{language}/{language}_prompt_builder.py` (like fr_prompt_builder.py)
 ```python
 from typing import Dict, Any
 from jinja2 import Template
 
 class {Language}PromptBuilder:
-    """Prompt builder following Chinese Simplified Clean Architecture patterns"""
+    """Prompt builder following French v2.0 Clean Architecture patterns"""
 
     def __init__(self, config: {Language}Config):
         self.config = config
-        self.templates = self._load_templates_from_config()  # Like Chinese Simplified
+        self.templates = self._load_templates_from_config()  # Like French v2.0
 
     def _load_templates_from_config(self) -> Dict[str, Template]:
-        """Load templates from external config - LIKE CHINESE SIMPLIFIED"""
-        # Load from YAML files like Chinese Simplified config
+        """Load templates from external config - LIKE FRENCH v2.0"""
+        # Load from YAML files like French v2.0 config
         config_templates = self.config.prompt_templates
 
         return {
@@ -71,7 +71,7 @@ class {Language}PromptBuilder:
 
     def build_batch_prompt(self, sentences: List[Dict], complexity: str) -> str:
         """Build batch prompt - LIKE GOLD STANDARD BATCH METHOD"""
-        # Batch processing like Hindi/Chinese analyzers
+        # Batch processing like French/Chinese analyzers
         formatted_sentences = []
         for item in sentences:
             formatted_sentences.append(f"Sentence: {item['sentence']}")
@@ -91,7 +91,7 @@ class {Language}PromptBuilder:
 **File:** `languages/{language}/ai_service.py` (separate from domain like gold standards)
 ```python
 class AIService:
-    """AI service following gold standard patterns - LIKE HINDI/CHINESE AI INTEGRATION"""
+    """AI service following gold standard patterns - LIKE FRENCH/CHINESE AI INTEGRATION"""
 
     ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT like gold standards
 
@@ -122,10 +122,10 @@ class AIService:
 
 ### 3. Response Parser - Like Gold Standards
 
-**File:** `languages/{language}/{language}_response_parser.py` (like hi_response_parser.py/zh_response_parser.py)
+**File:** `languages/{language}/{language}_response_parser.py` (like fr_response_parser.py/zh_response_parser.py)
 ```python
 class {Language}ResponseParser:
-    """Response parser following gold standard patterns - LIKE HINDI/CHINESE PARSERS"""
+    """Response parser following gold standard patterns - LIKE FRENCH/CHINESE PARSERS"""
 
     def __init__(self, config: {Language}Config):
         self.config = config
@@ -141,7 +141,7 @@ class {Language}ResponseParser:
             # Normalize structure like gold standards
             normalized = self._normalize_response(json_data, sentence, target_word)
 
-            # Language-specific processing like Hindi/Chinese
+            # Language-specific processing like French/Chinese
             processed = self._apply_language_specific_processing(normalized)
 
             return processed
@@ -219,7 +219,7 @@ class {Language}Validator:
 
     def _calculate_natural_confidence(self, result: Dict, checks: Dict) -> float:
         """Natural confidence calculation - LIKE GOLD STANDARDS"""
-        # Simple weighted scoring like Hindi/Chinese
+        # Simple weighted scoring like French/Chinese
         base_score = 0.5
 
         if checks["has_analysis"]:
@@ -235,7 +235,7 @@ class {Language}Validator:
 ## ðŸ”§ Implementation Steps - Gold Standard Compliance
 
 ### Phase 1: Study Gold Standards Thoroughly
-1. **Read Hindi Analyzer:** Study `hi_analyzer.py`, `hi_prompt_builder.py`, `hi_response_parser.py`
+1. **Read French v2.0 Analyzer:** Study `fr_analyzer.py`, `fr_prompt_builder.py`, `fr_response_parser.py`
 2. **Read Chinese Simplified:** Study `zh_analyzer.py`, `zh_prompt_builder.py`, `zh_response_parser.py`
 3. **Identify Patterns:** Note facade orchestration, natural validation, external configs
 4. **Document Differences:** Understand why they work and others don't
@@ -264,7 +264,7 @@ class {Language}Validator:
 ```python
 # Quality metrics matching gold standards
 def measure_ai_quality():
-    test_cases = load_gold_standard_test_cases()  # From Hindi/Chinese tests
+    test_cases = load_gold_standard_test_cases()  # From French/Chinese tests
 
     results = []
     for test_case in test_cases:
@@ -286,7 +286,7 @@ def measure_ai_quality():
 ```python
 # Performance comparison with gold standards
 def benchmark_against_gold_standards():
-    gold_standard_times = benchmark_gold_standard()  # Hindi/Chinese baseline
+    gold_standard_times = benchmark_gold_standard()  # French/Chinese baseline
 
     your_times = benchmark_your_implementation()
 
@@ -472,7 +472,7 @@ class CachedPromptBuilder:
 
 ### Batch Processing - Like Gold Standards
 ```python
-# Batch AI calls like Hindi/Chinese analyzers
+# Batch AI calls like French/Chinese analyzers
 def process_batch(self, sentences, api_key):
     """Batch processing like gold standards"""
     batch_prompt = self.prompt_builder.build_batch_prompt(sentences)
@@ -512,7 +512,7 @@ class CircuitBreaker:
 ## ðŸ“‹ AI Integration Checklist - Gold Standard Compliance
 
 ### Pre-Implementation
-- [ ] **Gold Standard Study:** Thoroughly studied Hindi and Chinese Simplified AI integration?
+- [ ] **Gold Standard Study:** Thoroughly studied French v2.0 and Chinese Simplified AI integration?
 - [ ] **Natural Validation:** Understood natural confidence scoring (no artificial boosting)?
 - [ ] **Model Restrictions:** Committed to using only gemini-2.5-flash and gemini-3-flash-preview?
 - [ ] **Component Separation:** Ready to separate AI service from domain logic?

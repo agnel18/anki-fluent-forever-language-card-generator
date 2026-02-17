@@ -19,8 +19,8 @@ USAGE:
     python run_all_tests.py --all-languages --parallel
 
 GOLD STANDARDS:
-- Chinese Simplified (zh): Primary reference for Clean Architecture
-- Hindi (hi): Secondary reference for Indo-European patterns
+- French (fr): Primary reference for Clean Architecture (v2.0)
+- Chinese Simplified (zh): Secondary reference for logographic patterns
 """
 
 import argparse
@@ -49,6 +49,7 @@ class TestRunner:
             "zh_tw": "chinese_traditional",
             "zh": "chinese_simplified",  # Chinese Simplified
             "hi": "hindi",
+            "fr": "french",
             "es": "spanish",
             "ar": "arabic",
             "de": "german",
@@ -62,6 +63,7 @@ class TestRunner:
             "zh_tw": "ZhTwAnalyzer",
             "zh": "ZhAnalyzer",  # Chinese Simplified
             "hi": "HiAnalyzer",
+            "fr": "FrAnalyzer",
             "es": "EsAnalyzer",
             "ar": "ArAnalyzer",
             "arabic": "ArAnalyzer",  # Special case for when user passes "arabic"
@@ -76,6 +78,7 @@ class TestRunner:
             "zh_tw": "zh_tw",
             "zh": "zh",  # Chinese Simplified
             "hi": "hi",
+            "fr": "fr",
             "es": "es",
             "ar": "ar",
             "arabic": "ar",  # Special case for when user passes "arabic"

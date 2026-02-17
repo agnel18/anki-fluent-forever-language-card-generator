@@ -1,7 +1,7 @@
 ﻿# Troubleshooting Guide
 ## Solutions for Common Language Analyzer Issues
 
-**Gold Standards:** [Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
+**Gold Standards:** [French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
 **Critical:** Compare with gold standards - no artificial confidence boosting  
 **Prerequisites:** Study gold standards before troubleshooting  
 **Purpose:** Systematic debugging following proven patterns  
@@ -416,7 +416,7 @@ ISSUE TYPE â†’ COMPARE WITH GOLD STANDARDS â†’ SOLUTION STRATEGY
 
 1. Analysis Quality Issues
    â†“
-   Compare with Hindi/Chinese Simplified â†’ Match gold standard patterns â†’ Fix deviations
+   Compare with French v2.0/Chinese Simplified â†’ Match gold standard patterns â†’ Fix deviations
 
 2. Performance Problems
    â†“
@@ -432,7 +432,7 @@ ISSUE TYPE â†’ COMPARE WITH GOLD STANDARDS â†’ SOLUTION STRATEGY
 ```
 
 ### 2. Diagnostic Checklist - Gold Standard Verification
-- [ ] **Gold Standard Comparison:** Does implementation match Hindi/Chinese Simplified patterns?
+- [ ] **Gold Standard Comparison:** Does implementation match French v2.0/Chinese Simplified patterns?
 - [ ] **Natural Validation:** No artificial confidence boosting (removed from all implementations)
 - [ ] **Facade Pattern:** Clean component orchestration like gold standards?
 - [ ] **External Config:** Loading from files like gold standards?
@@ -444,7 +444,7 @@ ISSUE TYPE â†’ COMPARE WITH GOLD STANDARDS â†’ SOLUTION STRATEGY
 ### Issue 1: Inconsistent Quality vs Gold Standards
 
 **Symptoms:**
-- Results differ from Hindi/Chinese Simplified analyzers
+- Results differ from French v2.0/Chinese Simplified analyzers
 - Artificial confidence boosting detected (should be removed)
 - Complex patterns not matching simpler gold standard approaches
 
@@ -480,7 +480,7 @@ def good_validate_result(self, result, sentence):
 ```
 
 **Solution Steps:**
-1. **Study Gold Standards:** Read Hindi and Chinese Simplified analyzers thoroughly
+1. **Study Gold Standards:** Read French v2.0 and Chinese Simplified analyzers thoroughly
 2. **Remove Artificial Boosting:** Ensure NO confidence manipulation beyond natural scoring
 3. **Match Facade Pattern:** Implement component orchestration like gold standards
 4. **Test Against Gold Standards:** Verify results match proven implementations
@@ -554,7 +554,7 @@ def verify_config_loading(language_code):
 # CORRECT - Like gold standards
 class LanguageConfig:
     def __init__(self):
-        # Load from external files (like Hindi/Chinese)
+        # Load from external files (like French/Chinese)
         self.grammatical_roles = self._load_yaml("grammatical_roles.yaml")
         self.color_schemes = self._load_yaml("color_schemes.yaml")
         self.prompt_templates = self._load_yaml("prompt_templates.yaml")
@@ -711,7 +711,7 @@ class LanguageAnalyzer(BaseGrammarAnalyzer):
 # Benchmark against gold standards
 def performance_comparison():
     """Compare performance with gold standards"""
-    gold_standard_time = benchmark_gold_standard()  # Hindi/Chinese baseline
+    gold_standard_time = benchmark_gold_standard()  # French/Chinese baseline
     your_time = benchmark_your_implementation()
 
     return {
@@ -917,7 +917,7 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
 ## ðŸŽ¯ Quick Reference - Gold Standard Checklist
 
 ### Pre-Troubleshooting Checklist
-- [ ] Studied [Hindi analyzer](languages/hindi/hi_analyzer.py) thoroughly?
+- [ ] Studied [French v2.0 analyzer](languages/french/fr_analyzer.py) thoroughly?
 - [ ] Studied [Chinese Simplified analyzer](languages/chinese_simplified/zh_analyzer.py) thoroughly?
 - [ ] Removed all artificial confidence boosting?
 - [ ] Implemented facade pattern like gold standards?
@@ -925,7 +925,7 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
 - [ ] Loading config from external files?
 
 ### Issue Resolution Priority
-1. **Compare with Gold Standards** - Does it match Hindi/Chinese Simplified?
+1. **Compare with Gold Standards** - Does it match French v2.0/Chinese Simplified?
 2. **Remove Artificial Boosting** - Any confidence manipulation detected?
 3. **Check Component Isolation** - Are components loosely coupled?
 4. **Verify AI Integration** - Using correct models and error handling?
@@ -936,7 +936,7 @@ def analyze_grammar(self, sentence, target_word, complexity, api_key):
 # If analysis is broken - compare with gold standard
 def emergency_fix():
     """Copy working pattern from gold standards"""
-    # 1. Copy facade pattern from Hindi analyzer
+    # 1. Copy facade pattern from French analyzer
     # 2. Copy natural validation from Chinese Simplified
     # 3. Remove any artificial boosting
     # 4. Test against gold standards
@@ -945,7 +945,7 @@ def emergency_fix():
 
 ---
 
-**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** When in doubt, compare with the gold standards ([French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
 ```python
 # Check confidence scoring
 def diagnose_confidence_issues(sentence, complexity):
@@ -2453,7 +2453,7 @@ def parse_batch_grammar_response(self, ai_response: str, sentences: List[str], c
 
 ---
 
-**Remember:** When in doubt, compare with the gold standards ([Hindi](languages/hindi/hi_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
+**Remember:** When in doubt, compare with the gold standards ([French v2.0](languages/french/fr_analyzer.py) and [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)). They represent the proven working patterns - no artificial confidence boosting, clean facade orchestration, natural validation scoring.
 
 ---
 
@@ -2488,7 +2488,7 @@ class ZhTwResponseParser:
         return parsed_data
 ```
 
-**Prevention:** Ensure all abstract methods are implemented. Compare with gold standards (Hindi/Chinese Simplified) to verify completeness.
+**Prevention:** Ensure all abstract methods are implemented. Compare with gold standards (French v2.0/Chinese Simplified) to verify completeness.
 
 ### 3. AI Prompt Engineering for Uniqueness
 **Problem:** AI providing repeated generic meanings instead of unique individual explanations
@@ -2627,7 +2627,7 @@ except Exception as e:
 
 ### Key Takeaways
 - **Always validate syntax** with Pylance before deployment
-- **Compare with gold standards** (Hindi/Chinese Simplified) for proven patterns
+- **Compare with gold standards** (French v2.0/Chinese Simplified) for proven patterns
 - **Use explicit AI prompts** with uniqueness requirements and examples
 - **Implement robust fallbacks** that generate meaningful content from available data
 - **Map incompatible language codes** for TTS and other services

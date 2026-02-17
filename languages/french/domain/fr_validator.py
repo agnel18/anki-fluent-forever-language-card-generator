@@ -92,8 +92,11 @@ class FrValidator:
             return 0.0
 
         # Check word count alignment (allowing for some flexibility)
-        if abs(len(word_explanations) - len(sentence_words)) > 2:
-            score *= 0.8
+        word_count_diff = abs(len(word_explanations) - len(sentence_words))
+        if word_count_diff > 2:
+            score *= 0.7
+        elif word_count_diff > 0:
+            score *= 0.9
 
         # Check role distribution
         roles = [item[1] for item in word_explanations if len(item) > 1]
@@ -103,25 +106,38 @@ class FrValidator:
         # Penalize too many 'other' roles
         other_count = roles.count('other')
         if other_count / len(roles) > 0.4:
-            score *= 0.7
+            score *= 0.6
+        elif other_count / len(roles) > 0.2:
+            score *= 0.8
 
         # Check for valid French patterns
         if self._has_valid_french_patterns(word_explanations):
             score *= 1.1
         else:
-            score *= 0.9
+            score *= 0.8
 
         # Bonus for French-specific grammatical features
         has_agreement = self._check_agreement_patterns(word_explanations)
         has_conjugation = any(role in ['verb', 'auxiliary_verb', 'modal_verb'] for role in roles)
         has_pronouns = any('pronoun' in role for role in roles)
         has_determiners = 'determiner' in roles
+        has_prepositions = 'preposition' in roles
 
         if has_agreement:
-            score *= 1.05
+            score *= 1.08
         if has_conjugation:
-            score *= 1.03
+            score *= 1.05
         if has_pronouns and has_determiners:
+            score *= 1.03
+        if has_prepositions:
+            score *= 1.02
+
+        # Check for common French grammar errors
+        error_penalty = self._check_common_french_errors(word_explanations, sentence)
+        score *= (1.0 - error_penalty)
+
+        # Length-based adjustment (longer analyses tend to be more detailed)
+        if len(word_explanations) > 5:
             score *= 1.02
 
         return min(max(score, 0.0), 1.0)
@@ -167,6 +183,54 @@ class FrValidator:
                     break
 
         return agreement_found
+
+    def _check_common_french_errors(self, word_explanations: List[List[str]], sentence: str) -> float:
+        """Check for common French grammar analysis errors and return penalty score (0.0-1.0)."""
+        penalty = 0.0
+
+        # Check for missing gender information on nouns/adjectives
+        for explanation in word_explanations:
+            if len(explanation) < 4:
+                continue
+
+            role = explanation[1]
+            meaning = explanation[3].lower()
+
+            # Nouns and adjectives should mention gender in French
+            if role in ['noun', 'adjective'] and not any(gender in meaning for gender in ['masculine', 'feminine', 'neutral']):
+                penalty += 0.05
+
+            # Verbs should mention person/tense information
+            if role == 'verb' and not any(verb_info in meaning for verb_info in ['person', 'tense', 'present', 'past', 'future']):
+                penalty += 0.03
+
+        # Check for pronoun agreement issues
+        pronoun_noun_pairs = []
+        for i, explanation in enumerate(word_explanations):
+            if len(explanation) < 2:
+                continue
+            role = explanation[1]
+            if 'pronoun' in role:
+                # Look for nearby nouns
+                for j in range(max(0, i-3), min(len(word_explanations), i+4)):
+                    if j != i and len(word_explanations[j]) > 1:
+                        other_role = word_explanations[j][1]
+                        if other_role in ['noun', 'adjective']:
+                            pronoun_noun_pairs.append((i, j))
+
+        # Penalize if no pronoun-noun relationships found in complex sentences
+        if len(sentence.split()) > 4 and len(pronoun_noun_pairs) == 0:
+            pronouns = [exp[1] for exp in word_explanations if len(exp) > 1 and 'pronoun' in exp[1]]
+            nouns = [exp[1] for exp in word_explanations if len(exp) > 1 and exp[1] in ['noun', 'adjective']]
+            if pronouns and nouns:
+                penalty += 0.02
+
+        # Check for preposition usage patterns
+        preposition_count = sum(1 for exp in word_explanations if len(exp) > 1 and exp[1] == 'preposition')
+        if preposition_count > len(word_explanations) * 0.3:  # Too many prepositions
+            penalty += 0.05
+
+        return min(penalty, 0.3)  # Cap penalty at 30%
 
     def validate_explanation_quality(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the quality and comprehensiveness of explanations in the analysis result."""

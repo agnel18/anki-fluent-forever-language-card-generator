@@ -3,7 +3,7 @@
 
 **Version:** 2026-01-28
 **Purpose:** Eliminate iterative development cycles through comprehensive validation
-**Gold Standards:** Chinese Simplified (zh) and Hindi (hi) analyzers
+**Gold Standards:** French v2.0 (fr) and Chinese Simplified (zh) analyzers
 
 ## 🎯 Problem Solved
 
@@ -48,7 +48,7 @@ python language_grammar_generator/run_all_tests.py --language {language_code} --
 
 ### Phase 3: Gold Standard Quality Assurance
 ```bash
-# Compare with Chinese Simplified and Hindi analyzers
+# Compare with French v2.0 and Chinese Simplified analyzers
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code}
 
 # Detailed analysis with export
@@ -134,7 +134,7 @@ tests/
 - [ ] **Integration Testing** - Components work together
 - [ ] **System Testing** - End-to-end workflows functional
 - [ ] **Performance Requirements** - Meet speed and resource limits
-- [ ] **Gold Standard Compliance** - Match Chinese Simplified quality
+- [ ] **Gold Standard Compliance** - Match French v2.0 quality
 - [ ] **Regression Prevention** - No reintroduced bugs
 
 ## 🔧 Troubleshooting Framework
