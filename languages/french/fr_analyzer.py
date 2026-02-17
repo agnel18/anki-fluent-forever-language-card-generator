@@ -415,7 +415,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
 
         # Build HTML by processing the sentence word by word
         html_parts = []
-        words_in_sentence = sentence.split()
+        words_in_sentence = self._split_french_words(sentence)
         i = 0
 
         for word_in_sentence in words_in_sentence:
@@ -454,6 +454,79 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         html = ''.join(html_parts)
         print(f"DEBUG French HTML Gen - Final HTML result: {html}")
         return html
+
+    def _split_french_words(self, sentence: str) -> List[str]:
+        """
+        Split French sentence into words, properly handling elision and punctuation.
+
+        Handles cases like "l'obtenir." -> ["l'", "obtenir", "."]
+        """
+        words = sentence.split()
+        result = []
+
+        for word in words:
+            # Handle punctuation at the end
+            punctuation = ''
+            clean_word = word
+            if word and not word[-1].isalnum():
+                # Extract trailing punctuation
+                while clean_word and not clean_word[-1].isalnum():
+                    punctuation = clean_word[-1] + punctuation
+                    clean_word = clean_word[:-1]
+
+            # Handle common elided forms on the clean word
+            if "'" in clean_word:
+                # Check for elided articles: l', d', etc.
+                if clean_word.startswith("l'") and len(clean_word) > 2:
+                    result.append("l'")
+                    result.append(clean_word[2:])  # Remove "l'" and add the rest
+                elif clean_word.startswith("d'") and len(clean_word) > 2:
+                    result.append("d'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("c'") and len(clean_word) > 2:
+                    result.append("c'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("j'") and len(clean_word) > 2:
+                    result.append("j'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("m'") and len(clean_word) > 2:
+                    result.append("m'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("t'") and len(clean_word) > 2:
+                    result.append("t'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("n'") and len(clean_word) > 2:
+                    result.append("n'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("s'") and len(clean_word) > 2:
+                    result.append("s'")
+                    result.append(clean_word[2:])
+                elif clean_word.startswith("qu'") and len(clean_word) > 3:
+                    result.append("qu'")
+                    result.append(clean_word[3:])
+                elif clean_word.startswith("jusqu'") and len(clean_word) > 6:
+                    result.append("jusqu'")
+                    result.append(clean_word[6:])
+                elif clean_word.startswith("lorsqu'") and len(clean_word) > 7:
+                    result.append("lorsqu'")
+                    result.append(clean_word[7:])
+                elif clean_word.startswith("puisqu'") and len(clean_word) > 7:
+                    result.append("puisqu'")
+                    result.append(clean_word[7:])
+                elif clean_word.startswith("quoiqu'") and len(clean_word) > 7:
+                    result.append("quoiqu'")
+                    result.append(clean_word[7:])
+                else:
+                    # No specific elision pattern, keep as is
+                    result.append(clean_word)
+            else:
+                result.append(clean_word)
+
+            # Add punctuation as separate token if present
+            if punctuation:
+                result.append(punctuation)
+
+        return result
 
     def _words_match(self, word_in_sentence: str, explanation_word: str) -> bool:
         """Check if words match, handling elision cases."""
