@@ -83,12 +83,12 @@ Return ONLY the complete Python code for the analyzer, no explanations."""
             if self.api.api_type == 'new':
                 config = self.api.genai.types.GenerateContentConfig(
                     temperature=0.3,  # Consistency for code generation
-                    max_output_tokens=4000,
+                    max_output_tokens=20000,
                 )
             else:
                 config = self.api.genai.types.GenerationConfig(
                     temperature=0.3,  # Consistency for code generation
-                    max_output_tokens=4000,
+                    max_output_tokens=20000,
                 )
 
             response = self.api.generate_content(

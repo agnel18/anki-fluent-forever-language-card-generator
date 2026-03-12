@@ -257,7 +257,7 @@ class ZhTwAnalyzer(BaseGrammarAnalyzer):
 
         CHINESE TRADITIONAL BATCH SIZE CONSIDERATIONS:
         - 8 sentences: Optimal balance of efficiency and response quality
-        - Prevents JSON truncation with 2000 max_tokens
+        - Prevents JSON truncation with 20000 max_tokens
         - Allows meaningful error recovery per sentence
         - Accounts for character-based analysis complexity
 

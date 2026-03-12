@@ -1,8 +1,13 @@
 # constants.py - Centralized constants for the language learning app
 
 # API Limits
-GEMINI_CALL_LIMIT = 1000
-GEMINI_TOKEN_LIMIT = 3000000
+# Source: https://ai.google.dev/gemini-api/docs/pricing (updated 2026-03-12)
+# gemini-2.5-flash (stable, free tier): free of charge for tokens; ~1,500 RPD on free tier
+# gemini-3-flash-preview (preview, free tier): free of charge for tokens; more restrictive RPD (preview)
+# RPD resets at midnight Pacific Time. Verify your current limits in AI Studio:
+# https://aistudio.google.com/rate-limit
+GEMINI_CALL_LIMIT = 1500   # ~1,500 RPD documented for gemini-2.5-flash free tier
+GEMINI_TOKEN_LIMIT = 3000000  # Rough daily token budget for UI tracking (free tier has no hard token/day cap)
 GOOGLE_SEARCH_CALL_LIMIT = 100
 
 # Default Settings

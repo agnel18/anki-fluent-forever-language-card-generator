@@ -290,7 +290,7 @@ IMPORTANT:
                         contents=prompt,
                         config=client.genai.types.GenerateContentConfig(
                             temperature=0.7,  # Creativity for sentence variety
-                            max_output_tokens=4000,  # Increased for Arabic and complex responses
+                            max_output_tokens=20000,  # Increased for Arabic and complex responses
                         )
                     )
                     logger.info(f"API call successful with model: {model_name}")
@@ -315,7 +315,29 @@ IMPORTANT:
             parsed_sentences = len(result.get('sentences', []))
             if parsed_sentences == 0:
                 logger.warning(f"Failed to parse sentences from response. Raw response: {response_text}")
-            
+
+            # Attempt AI repair when validation failures are present
+            critical_failures = [w for w in result.get('validation_warnings', []) if not w.get('is_valid', True)]
+            if critical_failures:
+                logger.info(f"Attempting AI repair for {len(critical_failures)} validation failure(s)")
+                repaired_result = self._repair_with_ai(
+                    client=client,
+                    models_to_try=models_to_try,
+                    original_prompt=prompt,
+                    failed_response=response_text,
+                    critical_failures=critical_failures,
+                    word=word,
+                    language=language,
+                    num_sentences=num_sentences,
+                    min_length=min_length,
+                    max_length=max_length,
+                    pronunciation_label=pronunciation_label,
+                    restrictions=result.get('restrictions', 'No specific grammatical restrictions.'),
+                    difficulty=difficulty,
+                )
+                if repaired_result is not None:
+                    return repaired_result
+
             return result
 
         except Exception as e:
@@ -331,7 +353,13 @@ IMPORTANT:
             elif "connection" in error_msg:
                 logger.error("Connection error - possible network/firewall issue")
             elif "rate limit" in error_msg or "429" in error_msg:
-                logger.error("Rate limit exceeded")
+                logger.error(
+                    "Quota/rate limit exceeded (HTTP 429). "
+                    "Daily free-tier limit reached. "
+                    "Set a hard quota in Google Cloud Console (APIs & Services → "
+                    "Generative Language API → Quotas & System Limits) to prevent "
+                    "this from causing unexpected charges."
+                )
             elif "unauthorized" in error_msg or "401" in error_msg:
                 logger.error("API key invalid or unauthorized")
             elif "forbidden" in error_msg or "403" in error_msg:
@@ -601,6 +629,142 @@ IMPORTANT:
             return cjk_count + kana_count + hangul_count + thai_count
 
         return len(tokens)
+
+    def _repair_with_ai(
+        self,
+        client,
+        models_to_try: List[str],
+        original_prompt: str,
+        failed_response: str,
+        critical_failures: List[Dict],
+        word: str,
+        language: str,
+        num_sentences: int,
+        min_length: int,
+        max_length: int,
+        pronunciation_label: str,
+        restrictions: str,
+        difficulty: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Use AI to repair a failed/invalid generation response."""
+        try:
+            fix_prompt = self._build_fix_prompt(
+                original_prompt=original_prompt,
+                failed_response=failed_response,
+                critical_failures=critical_failures,
+                word=word,
+                language=language,
+                num_sentences=num_sentences,
+                min_length=min_length,
+                max_length=max_length,
+                pronunciation_label=pronunciation_label,
+                restrictions=restrictions,
+                difficulty=difficulty,
+            )
+            for model_name in models_to_try:
+                try:
+                    repaired_response = client.generate_content(
+                        model=model_name,
+                        contents=fix_prompt,
+                        config=client.genai.types.GenerateContentConfig(
+                            temperature=0.4,  # Lower temperature for deterministic repair
+                            max_output_tokens=20000,
+                        ),
+                    )
+                    if repaired_response:
+                        repaired_text = repaired_response.text.strip()
+                        repaired_result = self._parse_generation_response(
+                            repaired_text, word, language, num_sentences, min_length, max_length
+                        )
+                        repaired_failures = [
+                            w for w in repaired_result.get('validation_warnings', [])
+                            if not w.get('is_valid', True)
+                        ]
+                        if len(repaired_failures) < len(critical_failures):
+                            logger.info(
+                                f"AI repair improved content: {len(critical_failures)} -> "
+                                f"{len(repaired_failures)} failure(s)"
+                            )
+                            return repaired_result
+                        else:
+                            logger.info("AI repair did not reduce failures; keeping original result")
+                    break
+                except Exception as repair_e:
+                    logger.warning(f"Repair attempt with model {model_name} failed: {repair_e}")
+                    continue
+        except Exception as e:
+            logger.warning(f"AI repair failed: {e}")
+        return None
+
+    def _build_fix_prompt(
+        self,
+        original_prompt: str,
+        failed_response: str,
+        critical_failures: List[Dict],
+        word: str,
+        language: str,
+        num_sentences: int,
+        min_length: int,
+        max_length: int,
+        pronunciation_label: str,
+        restrictions: str,
+        difficulty: str,
+    ) -> str:
+        """Build the repair prompt for a failed AI generation response."""
+        num_failing = len(critical_failures)
+        error_description = f"{num_failing} sentence(s) failed validation"
+        specific_failures = "; ".join(
+            f"Sentence {w['sentence_index']}: {', '.join(w['issues'])}"
+            for w in critical_failures
+            if w.get('issues')
+        )
+
+        return (
+            "You are an expert AI content editor specializing in fixing and improving "
+            "language learning content generated by Google Gemini. Your task is to take "
+            "a failed Gemini response and transform it into high-quality, properly formatted "
+            "content that meets all specified criteria.\n\n"
+            "## ORIGINAL GENERATION CRITERIA\n"
+            f"{original_prompt}\n\n"
+            "## FAILED GEMINI RESPONSE\n"
+            f"{failed_response}\n\n"
+            "## FAILURE DETAILS\n"
+            f"Error Type: VALIDATION_FAILURE\n"
+            f"Error Description: {error_description}\n"
+            f"Specific Issues: {specific_failures}\n\n"
+            "## FIXING PRIORITIES\n\n"
+            "### PRIORITY 1: FORMAT COMPLIANCE (CRITICAL)\n"
+            "- Response must follow EXACT output format from original criteria\n"
+            f"- ALL sections must be present: MEANING, RESTRICTIONS, SENTENCES, TRANSLATIONS, {pronunciation_label}, KEYWORDS\n"
+            "- Section headers must be in ALL CAPS with colons\n"
+            "- Numbering must be sequential starting from 1\n"
+            f"- Each section must have exactly {num_sentences} items\n"
+            "- Keywords must be comma-separated in format: keyword1, keyword2, keyword3\n\n"
+            "### PRIORITY 2: CONTENT VALIDATION (CRITICAL)\n"
+            f"- Every sentence must be between {min_length} and {max_length} words (count precisely)\n"
+            f"- Target word \"{word}\" must be used correctly in ALL sentences according to grammatical restrictions\n"
+            f"- Content must be in specified language \"{language}\" only\n"
+            f"- Sentences must follow restrictions: {restrictions}\n"
+            f"- Difficulty level must be maintained: {difficulty}\n"
+            "- All content must be semantically meaningful and educationally valuable\n\n"
+            "### PRIORITY 3: QUALITY IMPROVEMENT\n"
+            "- Fix any truncated or incomplete content from token limits\n"
+            "- Correct grammatical errors, unnatural phrasing, or literal translations\n"
+            "- Ensure cultural appropriateness and natural native speaker language\n"
+            "- Maintain consistency across all sentences and translations\n"
+            "- Improve clarity while preserving educational intent\n"
+            "- Fix IPA pronunciation formatting and accuracy\n\n"
+            "### PRIORITY 4: STRUCTURAL INTEGRITY\n"
+            "- Repair any parsing or JSON structure issues\n"
+            "- Correct section ordering and separation\n"
+            "- Fix encoding issues or malformed characters\n"
+            "- Ensure proper data types and formatting\n\n"
+            "## OUTPUT REQUIREMENTS\n"
+            "Return ONLY the corrected response in the exact format specified in the original criteria. "
+            "Do not include explanations, comments, or text outside the required structure. "
+            "The output must be parseable by the existing codebase validation logic.\n\n"
+            "## CORRECTED RESPONSE:"
+        )
 
     def _create_fallback_response(self, word: str, num_sentences: int) -> Dict[str, Any]:
         """Create fallback response when generation fails."""

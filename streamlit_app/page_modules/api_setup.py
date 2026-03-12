@@ -147,23 +147,37 @@ def render_api_setup_page():
         st.markdown("---")
 
         # Step 2: Enable Billing & Set Up Budget Alerts
-        st.markdown("#### 💰 Step 2: Enable Billing & Set Up Budget Alerts")
+        st.markdown("#### 💰 Step 2: Enable Billing & Set Hard Quota Limits")
         st.markdown("""
-        **Google requires billing to be enabled for API access, even for FREE usage.** Your card is only charged if you EXCEED free limits.
+        **Google requires billing to be enabled for API access, even for FREE usage.** Setting a hard quota is the safest way to make sure you're never charged more than you expect — we've seen users accidentally receive bills of ₹600+ (≈ $7) because alerts arrived too late.
 
         ### Quick Billing Setup:
         1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
         2. **Click "Billing"** → **"Create Billing Account"**
-        3. **Add your credit/debit card** (won't be charged automatically)
+        3. **Add your credit/debit card** (won't be charged until you exceed ALL free limits)
         4. **Complete verification**
 
-        ### Set Up Budget Alerts (Recommended):
-        1. **Go to** [Google Cloud Billing](https://console.cloud.google.com/billing)
-        2. **Create a budget:** (Acts as a Safety Net to avoid unexpected charges.)
-           - **Amount**: $5-10 (catches any mistakes early)
-           - **Email alerts**: Enable at 50%, 80%, 100%
+        ### ✅ Set Hard Quotas (Strongly Recommended — Better Than Budget Alerts):
 
-        **Free Tier Limits:** ~50 cards/day, 1,000 cards/month - stay well below these!
+        > 💡 **Why quotas?** Budget alerts only *email* you after spending starts. Hard quotas *block* the API before charges accumulate — like a spending cap, not just a warning.
+
+        **For Gemini AI (text generation):**
+        1. Go to [APIs & Services → Enabled APIs](https://console.cloud.google.com/apis/dashboard)
+        2. Click **"Generative Language API"**
+        3. Click the **"Quotas & System Limits"** tab
+        4. Find **"Generate content requests per day per project"**
+        5. Click the ✏️ pencil icon → enter your limit (e.g., **500** for casual use)
+        6. Click **"Save"**
+
+        **For Text-to-Speech (audio generation):**
+        1. Go to [APIs & Services → Enabled APIs](https://console.cloud.google.com/apis/dashboard)
+        2. Click **"Cloud Text-to-Speech API"**
+        3. Click the **"Quotas & System Limits"** tab
+        4. Find **"Characters synthesized per day"**
+        5. Click ✏️ → enter your limit (e.g., **50,000** characters/day ≈ 30–50 cards)
+        6. Click **"Save"**
+
+        **Free Tier Limits:** 1,500 Gemini requests/day and 1 million TTS characters/month — hard quotas keep you safely below these!
         """)
 
         st.markdown("---")

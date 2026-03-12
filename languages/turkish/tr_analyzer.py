@@ -28,7 +28,7 @@ INTEGRATION POINTS:
 - Called by sentence_generator.py for Pass 3: Grammar Analysis
 - Returns GrammarAnalysis objects with word_explanations in [word, role, color, meaning] format
 - Supports batch processing with 8-sentence limits to prevent token overflow
-- Uses 2000 max_tokens for complete AI responses (prevents JSON truncation)
+- Uses 20000 max_tokens for complete AI responses (prevents JSON truncation)
 
 INHERITANCE:
 - Inherits from BaseGrammarAnalyzer (Turkish is agglutinative, not analytic)
@@ -209,7 +209,7 @@ class TrAnalyzer(BaseGrammarAnalyzer):
 
         TURKISH BATCH SIZE CONSIDERATIONS:
         - 8 sentences: Optimal balance of efficiency and response quality
-        - Prevents JSON truncation with 2000 max_tokens
+        - Prevents JSON truncation with 20000 max_tokens
         - Allows meaningful error recovery per sentence
         - Accounts for agglutinative analysis complexity
 
@@ -270,7 +270,7 @@ class TrAnalyzer(BaseGrammarAnalyzer):
 
         TURKISH AI INTEGRATION:
         - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
-        - 2000 max_output_tokens prevents JSON truncation in batch responses
+        - 20000 max_output_tokens prevents JSON truncation in batch responses
         - 30-second timeout for online environments
         - Comprehensive error handling with meaningful logging
         - Returns error response for fallback processing

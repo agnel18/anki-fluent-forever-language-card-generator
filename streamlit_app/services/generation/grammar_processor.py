@@ -268,7 +268,7 @@ IMPORTANT:
                 contents=prompt,
                 config=api.genai.types.GenerateContentConfig(
                     temperature=0.3,  # Lower temperature for consistent analysis
-                    max_output_tokens=1500,
+                    max_output_tokens=20000,
                 )
             )
 

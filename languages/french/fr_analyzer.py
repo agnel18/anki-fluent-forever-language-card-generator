@@ -28,7 +28,7 @@ INTEGRATION POINTS:
 - Called by sentence_generator.py for Pass 3: Grammar Analysis
 - Returns GrammarAnalysis objects with word_explanations in [word, role, color, meaning] format
 - Supports batch processing with 8-sentence limits to prevent token overflow
-- Uses 2000 max_tokens for complete AI responses (prevents JSON truncation)
+- Uses 20000 max_tokens for complete AI responses (prevents JSON truncation)
 
 INHERITANCE:
 - Inherits from BaseGrammarAnalyzer (French is fusional, Indo-European)
@@ -234,7 +234,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
 
         FRENCH BATCH SIZE CONSIDERATIONS:
         - 8 sentences: Optimal balance of efficiency and response quality
-        - Prevents JSON truncation with 2000 max_tokens
+        - Prevents JSON truncation with 20000 max_tokens
         - Allows meaningful error recovery per sentence
         - Accounts for fusional morphology analysis complexity
 
@@ -295,7 +295,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
 
         FRENCH AI INTEGRATION ENHANCED:
         - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
-        - 4000 max_output_tokens prevents JSON truncation in complex French responses
+        - 20000 max_output_tokens prevents JSON truncation in complex French responses
         - 30-second timeout for online environments
         - Retry logic with exponential backoff for transient failures
         - Comprehensive error handling with meaningful logging
@@ -329,7 +329,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
                     response = api.generate_content(
                         model=get_gemini_model(),
                         contents=prompt,
-                        config={'max_output_tokens': 4000, 'temperature': 0.1}
+                        config={'max_output_tokens': 20000, 'temperature': 0.1}
                     )
                     ai_response = response.text.strip()
                     logger.info(f"DEBUG French AI: Primary model succeeded, response length: {len(ai_response)}")
@@ -344,7 +344,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
                         response = api.generate_content(
                             model=get_gemini_fallback_model(),
                             contents=prompt,
-                            config={'max_output_tokens': 4000, 'temperature': 0.1}
+                            config={'max_output_tokens': 20000, 'temperature': 0.1}
                         )
                         ai_response = response.text.strip()
                         logger.info(f"DEBUG French AI: Fallback model succeeded, response length: {len(ai_response)}")

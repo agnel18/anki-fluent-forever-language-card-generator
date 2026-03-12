@@ -25,9 +25,17 @@ logger = logging.getLogger(__name__)
 
 # Gemini model configuration - STRICTLY LIMITED TO APPROVED MODELS ONLY
 GEMINI_MODELS = {
-    'current': 'gemini-2.5-flash',        # Primary model for complex analysis
-    'fallback': 'gemini-3-flash-preview', # Fallback model for simpler tasks
-    'deprecated': ['gemini-pro', 'gemini-pro-vision', 'gemini-1.5-flash', 'gemini-2.0-flash-exp']
+    'current': 'gemini-2.5-flash',        # Stable — best price-performance, ~1,500 RPD free tier
+    'fallback': 'gemini-3-flash-preview', # Preview — higher capability, more restrictive rate limits
+    'deprecated': [
+        'gemini-pro',
+        'gemini-pro-vision',
+        'gemini-1.5-flash',        # Deprecated
+        'gemini-2.0-flash-exp',    # Deprecated experimental
+        'gemini-2.0-flash',        # Deprecated — shut down June 1, 2026
+        'gemini-2.0-flash-lite',   # Deprecated — shut down June 1, 2026
+        'gemini-3-pro-preview',    # SHUT DOWN March 9, 2026
+    ]
 }
 
 def get_gemini_model() -> str:
@@ -331,7 +339,7 @@ CONTENT_LANGUAGE_MAP = {
 # ============================================================================
 
 # API Limits
-GEMINI_CALL_LIMIT = 1000
+GEMINI_CALL_LIMIT = 1500  # ~1,500 RPD for gemini-2.5-flash free tier (source: ai.google.dev/gemini-api/docs/pricing)
 GEMINI_TOKEN_LIMIT = 3000000
 GOOGLE_SEARCH_CALL_LIMIT = 100
 

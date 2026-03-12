@@ -78,6 +78,24 @@ def render_statistics_page():
         st.metric("**Total Cost**", f"${total_actual:.4f}", delta=f"{fmt_num(cards_generated)} cards generated")
         st.caption("🔊 Audio generation (Standard voice)")
 
+    # Quota health warnings
+    gemini_pct = gemini_calls / GEMINI_CALL_LIMIT if GEMINI_CALL_LIMIT > 0 else 0
+    if gemini_pct >= 1.0:
+        st.error(
+            "🚫 **Daily Quota Reached** — Generation is paused to protect your account. "
+            "Your limit resets at midnight (UTC). To avoid this in future, set a hard quota in "
+            "[Google Cloud Console → Generative Language API → Quotas](https://console.cloud.google.com/apis/dashboard) "
+            "so the API stops automatically before charges can occur. "
+            "You can also increase your quota limit there if you need to generate more cards."
+        )
+    elif gemini_pct >= 0.8:
+        st.warning(
+            f"⚠️ **Heads up — you've used {gemini_calls:,} of your {GEMINI_CALL_LIMIT:,} daily Gemini requests ({gemini_pct:.0%}).** "
+            "You're getting close to today's limit. If you hit it mid-deck, generation will stop. "
+            "Consider [setting a hard quota](https://console.cloud.google.com/apis/dashboard) in Google Cloud Console "
+            "so the API pauses automatically and you're never caught off guard."
+        )
+
     # Free tier impact
     free_tier_remaining = max(0, 1000 - gemini_tokens)  # Assuming 1000 free tokens
     if free_tier_remaining > 0:

@@ -59,7 +59,7 @@ IMPORTANT: Return ONLY the meaning line, nothing else. No markdown, no explanati
 
         config = api.genai.types.GenerateContentConfig(
             temperature=0.3,  # Lower temperature for consistency
-            max_output_tokens=100,
+            max_output_tokens=20000,
         )
 
         response = api.generate_content(

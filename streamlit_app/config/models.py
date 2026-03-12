@@ -10,11 +10,29 @@ from typing import Dict, List, Optional
 # ============================================================================
 # GEMINI AI MODELS
 # ============================================================================
+# Source: https://ai.google.dev/gemini-api/docs/models  (updated 2026-03-10)
+#         https://ai.google.dev/gemini-api/docs/pricing (updated 2026-03-12)
+#
+# gemini-2.5-flash  : STABLE. Best price-performance, 1M context, thinking support.
+#                     Free tier: tokens free of charge, ~1,500 RPD, 10 RPM.
+#                     Paid: $0.30/1M input, $2.50/1M output.
+#
+# gemini-3-flash-preview : PREVIEW. Frontier-class, multimodal, agentic.
+#                          Free tier: free of charge; note MORE RESTRICTIVE rate limits
+#                          (preview models). Verify exact RPD in AI Studio.
+#                          Paid: $0.50/1M input, $3.00/1M output.
+#
+# Verify your live rate limits at: https://aistudio.google.com/rate-limit
 
 GEMINI_MODELS = {
-    'default': 'gemini-2.5-flash',
-    'fallback': 'gemini-3-flash-preview',
-    'deprecated': ['gemini-1.5-flash'],  # Keep for backwards compatibility checks
+    'default': 'gemini-2.5-flash',          # Stable — recommended for production
+    'fallback': 'gemini-3-flash-preview',   # Preview — higher capability, more restrictive limits
+    'deprecated': [
+        'gemini-1.5-flash',        # Deprecated (no shutdown date announced)
+        'gemini-2.0-flash',        # Deprecated — shut down June 1, 2026
+        'gemini-2.0-flash-lite',   # Deprecated — shut down June 1, 2026
+        'gemini-3-pro-preview',    # SHUT DOWN March 9, 2026
+    ],
 }
 
 def get_gemini_model() -> str:
@@ -68,7 +86,7 @@ def get_tts_endpoint(operation: str = 'synthesize') -> str:
 
 SERVICE_CONFIG = {
     'gemini': {
-        'max_tokens': 4000,
+        'max_tokens': 20000,
         'temperature': 0.7,
         'top_p': 0.8,
         'top_k': 40,

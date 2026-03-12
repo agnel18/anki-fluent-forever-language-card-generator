@@ -283,7 +283,7 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
                 response = api.generate_content(
                     model=get_gemini_model(),
                     contents=prompt,
-                    config={'max_output_tokens': 4000}
+                    config={'max_output_tokens': 20000}
                 )
                 ai_response = response.text.strip()
             except Exception as primary_error:
@@ -292,7 +292,7 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
                 response = api.generate_content(
                     model=get_gemini_fallback_model(),
                     contents=prompt,
-                    config={'max_output_tokens': 4000}
+                    config={'max_output_tokens': 20000}
                 )
                 ai_response = response.text.strip()
             logger.info(f"DEBUG: AI response: {ai_response[:500]}...")

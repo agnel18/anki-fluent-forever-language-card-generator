@@ -61,7 +61,7 @@ IMPORTANT:
 try:
     config = api.genai.types.GenerateContentConfig(
         temperature=0.3,
-        max_output_tokens=1500,
+        max_output_tokens=20000,
     )
     response = api.generate_content(
         model=get_gemini_model(),
