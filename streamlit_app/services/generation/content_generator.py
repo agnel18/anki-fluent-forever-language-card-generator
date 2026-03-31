@@ -355,10 +355,10 @@ IMPORTANT:
             elif "rate limit" in error_msg or "429" in error_msg:
                 logger.error(
                     "Quota/rate limit exceeded (HTTP 429). "
-                    "Daily free-tier limit reached. "
-                    "Set a hard quota in Google Cloud Console (APIs & Services → "
-                    "Generative Language API → Quotas & System Limits) to prevent "
-                    "this from causing unexpected charges."
+                    "Rate limit or daily free-tier limit reached. "
+                    "Set a per-minute rate limit in Google Cloud Console "
+                    "(APIs & Services → Generative Language API → Quotas & System Limits "
+                    "→ 'GenerateContent requests per minute') to prevent unexpected charges."
                 )
             elif "unauthorized" in error_msg or "401" in error_msg:
                 logger.error("API key invalid or unauthorized")

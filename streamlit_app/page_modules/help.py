@@ -38,21 +38,24 @@ def render_help_page():
     - Your data and API keys stay on your device
     - Nothing is stored or sent to external servers
 
-    ## Why should I set API quotas in Google Cloud?
+    ## Why do I need two Google Cloud projects?
 
-    Budget alerts (email notifications) tell you *after* you've started spending — 
-    by then it may be too late. **Hard quotas block API calls the moment your limit is 
-    hit**, so Google can never charge you beyond what you've allowed.
+    Enabling billing on a GCP project upgrades **ALL** its APIs to the paid tier — including
+    Gemini. This means you lose the **1,500 free Gemini requests/day**. Since TTS requires
+    billing, we use two separate projects to keep Gemini free:
 
-    One of our users generated a large deck without realising they'd left their key 
-    unrestricted and received an unexpected ₹600 (~$7) bill. A hard quota set to 
-    500 requests/day would have stopped generation automatically and prevented the charge entirely.
+    - **Project A ("Language Cards - Gemini"):** Gemini only, NO billing → free tier preserved
+    - **Project B ("Language Cards - TTS"):** TTS only, billing enabled → pay only for audio
 
-    **To set hard quotas (takes 2 minutes):**
-    1. Open [Google Cloud Console → APIs & Services](https://console.cloud.google.com/apis/dashboard)
-    2. Click **"Generative Language API"** → **"Quotas & System Limits"** tab
-    3. Edit **"Generate content requests per day per project"** → set e.g. **500**
-    4. Repeat for **Cloud Text-to-Speech API** → **"Characters synthesized per day"** → set e.g. **50,000**
+    Set the `GOOGLE_TTS_API_KEY` environment variable (in your `.env` file) to Project B's key.
+    The main API key entered in the app should be Project A's key.
+
+    **To set a spend limit on TTS:**
+    1. Open [Google Cloud Console](https://console.cloud.google.com/) → select your TTS project
+    2. Go to **APIs & Services** → **Cloud Text-to-Speech API** → **Quotas & System Limits**
+    3. Find **"Characters synthesized per day"** → click ✏️ → set e.g. **50,000**
+
+    > 💰 TTS first 1M characters/month are FREE (Standard voices). Full setup guide is in the **API Setup** page.
 
     Full step-by-step guide is in the **API Setup** page under "Step 2".
 

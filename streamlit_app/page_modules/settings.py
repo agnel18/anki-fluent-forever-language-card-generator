@@ -252,78 +252,59 @@ def render_settings_page():
         # Step 1: Setup Instructions
         st.markdown("#### 📖 Step 1: Get Your API Key")
         st.markdown("""
-        **Follow these steps to get your Google Cloud API key:**
+        **We use two separate Google Cloud projects to keep Gemini AI free and only pay for audio.**
 
-        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-        2. **Create a new project** or select an existing one
-        3. **Enable exactly these two APIs:**
-           - **Gemini API** - For AI text generation and translations
-           - **Cloud Text-to-Speech API** - For audio generation
+        > ⚠️ **Why two projects?** Enabling billing on a project upgrades ALL its APIs to the paid tier. By keeping Gemini in a billing-free project, you preserve its **1,500 free requests/day**. TTS requires billing, so it goes in a separate project.
 
-        > [!IMPORTANT]
-        > Do NOT enable other Google Cloud APIs unless you specifically need them for other projects.
+        ---
 
-        4. **Create credentials:**
-           - Go to "APIs & Services" → "Credentials"
-           - Click "Create Credentials" → "API key"
-        5. **Copy and paste** the key into the field below
-        """)
+        ### 📦 Project A — Gemini AI (FREE, no billing needed)
+        This project handles AI text generation. **Do NOT enable billing on this project.**
 
-        st.markdown("---")
+        1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+        2. Click **"Select a project"** → **"New Project"**
+        3. Name it something like **"Language Cards - Gemini"** → click **"Create"**
+        4. Go to **"APIs & Services"** → **"Enable APIs and Services"**
+        5. Search for **"Generative Language API"** → click **"Enable"**
+        6. Go to **"APIs & Services"** → **"Credentials"**
+        7. Click **"Create Credentials"** → **"API key"**
+        8. **Copy this key** — this is your **main API key** (paste it below)
+        9. Click on the key → **"API restrictions"** → **"Restrict key"** → check only **"Generative Language API"** → **"Save"**
 
-        # Step 2: Enable Billing & Set Up Budget Alerts
-        st.markdown("#### 💰 Step 2: Enable Billing & Set Hard Quota Limits")
-        st.markdown("""
-        **Google Cloud requires billing to be enabled for API access, even for FREE USAGE.** Setting a hard quota is the safest way to make sure you're never charged more than you expect — we've seen users accidentally receive bills of ₹600+ (≈ $7) because alerts arrived too late.
+        > ✅ Free tier: ~1,500 requests/day, 1 million tokens/day — no credit card needed!
 
-        ### Quick Billing Setup:
-        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-        2. **Click "Billing"** → **"Create Billing Account"**
-        3. **Add your credit/debit card** (won't be charged until you exceed ALL free limits)
-        4. **Complete verification**
+        ---
 
-        ### ✅ Set Hard Quotas (Strongly Recommended — Better Than Budget Alerts):
+        ### 📦 Project B — Text-to-Speech (requires billing)
+        This project handles audio generation only. Billing is required but costs are minimal.
 
-        > 💡 **Why quotas?** Budget alerts only *email* you after spending starts. Hard quotas *block* the API before charges accumulate — like a spending cap, not just a warning.
+        1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+        2. Click **"Select a project"** → **"New Project"**
+        3. Name it **"Language Cards - TTS"** → click **"Create"**
+        4. Go to **"Billing"** → **"Link a billing account"** (add a credit/debit card if needed)
+        5. Go to **"APIs & Services"** → **"Enable APIs and Services"**
+        6. Search for **"Cloud Text-to-Speech API"** → click **"Enable"**
+        7. Go to **"APIs & Services"** → **"Credentials"**
+        8. Click **"Create Credentials"** → **"API key"**
+        9. **Copy this key** — this is your **TTS API key**
+        10. Click on the key → **"API restrictions"** → **"Restrict key"** → check only **"Cloud Text-to-Speech API"** → **"Save"**
 
-        **For Gemini AI (text generation):**
-        1. Go to [APIs & Services → Enabled APIs](https://console.cloud.google.com/apis/dashboard)
-        2. Click **"Generative Language API"**
-        3. Click the **"Quotas & System Limits"** tab
-        4. Find **"Generate content requests per day per project"**
-        5. Click the ✏️ pencil icon → enter your limit (e.g., **500** for casual use)
-        6. Click **"Save"**
+        **Set a spend limit on TTS:**
+        1. Go to **"APIs & Services"** → click **"Cloud Text-to-Speech API"**
+        2. Click the **"Quotas & System Limits"** tab
+        3. Find **"Characters synthesized per day"**
+        4. Click ✏️ → set e.g. **50,000** characters/day (≈ 30–50 flashcards)
+        5. Click **"Save"**
 
-        **For Text-to-Speech (audio generation):**
-        1. Go to [APIs & Services → Enabled APIs](https://console.cloud.google.com/apis/dashboard)
-        2. Click **"Cloud Text-to-Speech API"**
-        3. Click the **"Quotas & System Limits"** tab
-        4. Find **"Characters synthesized per day"**
-        5. Click ✏️ → enter your limit (e.g., **50,000** characters/day ≈ 30–50 cards)
-        6. Click **"Save"**
+        > 💰 TTS pricing: first 1 million characters/month are FREE (Standard voices). After that, ~$4 per 1M characters.
 
-        **Free Tier Limits:** 1,500 Gemini requests/day and 1 million TTS characters/month — hard quotas keep you safely below these!
-        """)
+        ---
 
-        st.markdown("---")
+        ### 🔑 Where to enter your keys
+        - **Gemini key (Project A):** Paste in the field below
+        - **TTS key (Project B):** Set the environment variable `GOOGLE_TTS_API_KEY` in your `.env` file, or enter it in Settings
 
-        # Step 3: API Key Security (CRITICAL)
-        st.markdown("#### 🔒 Step 3: API Key Security (CRITICAL)")
-        st.markdown("""
-        **Restrict your API key to prevent unauthorized usage and reduce security risks:**
-
-        1. **Go to** [Google Cloud Console](https://console.cloud.google.com/)
-        2. **Navigate to** "APIs & Services" → "Credentials"
-        3. **Click on your API key** to edit it
-        4. **Under "API restrictions":**
-           - Select **"Restrict key"**
-           - Check ONLY these two APIs:
-             - ✅ **Generative Language API**
-             - ✅ **Cloud Text-to-Speech API**
-        5. **Click "Save"**
-
-        > [!WARNING]
-        > An unrestricted API key can be used for expensive Google Cloud services like GPUs, Maps, or other APIs. Always restrict your keys!
+        > If you only enter one key below, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
         """)
 
     # Google Cloud API Key Input

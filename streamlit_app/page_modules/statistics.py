@@ -83,17 +83,17 @@ def render_statistics_page():
     if gemini_pct >= 1.0:
         st.error(
             "🚫 **Daily Quota Reached** — Generation is paused to protect your account. "
-            "Your limit resets at midnight (UTC). To avoid this in future, set a hard quota in "
+            "Your limit resets at midnight (Pacific Time). To avoid this in future, set a per-minute rate limit in "
             "[Google Cloud Console → Generative Language API → Quotas](https://console.cloud.google.com/apis/dashboard) "
-            "so the API stops automatically before charges can occur. "
-            "You can also increase your quota limit there if you need to generate more cards."
+            "(filter for 'GenerateContent requests per minute') so the API throttles automatically. "
+            "For the best protection, use two separate GCP projects — one for Gemini (free), one for TTS (billed)."
         )
     elif gemini_pct >= 0.8:
         st.warning(
             f"⚠️ **Heads up — you've used {gemini_calls:,} of your {GEMINI_CALL_LIMIT:,} daily Gemini requests ({gemini_pct:.0%}).** "
             "You're getting close to today's limit. If you hit it mid-deck, generation will stop. "
-            "Consider [setting a hard quota](https://console.cloud.google.com/apis/dashboard) in Google Cloud Console "
-            "so the API pauses automatically and you're never caught off guard."
+            "Consider [setting a per-minute rate limit](https://console.cloud.google.com/apis/dashboard) in Google Cloud Console "
+            "(Generative Language API → Quotas → 'GenerateContent requests per minute') so usage is throttled automatically."
         )
 
     # Free tier impact
