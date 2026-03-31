@@ -296,8 +296,8 @@ def render_settings_page():
         if st.button("💾 Save Gemini Key", help="Save the Gemini API key", key="settings_save_gemini"):
             if google_key_input:
                 st.session_state.google_api_key = google_key_input
-                os.environ["GOOGLE_API_KEY"] = google_key_input
-                if _save_key_to_env("GOOGLE_API_KEY", google_key_input):
+                os.environ["GEMINI_API_KEY"] = google_key_input
+                if _save_key_to_env("GEMINI_API_KEY", google_key_input):
                     st.success("✅ Gemini API key saved!")
                     time.sleep(1)
                     st.rerun()

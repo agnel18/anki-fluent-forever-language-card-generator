@@ -12,9 +12,10 @@ import sys
 # Add the workspace root to sys.path to enable absolute imports from streamlit_app
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Load environment variables from .env file
+# Load environment variables from .env files (project root + streamlit_app/)
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv()  # project root .env
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=True)  # streamlit_app/.env
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')

@@ -10,6 +10,29 @@ from constants import PAGE_LANGUAGE_SELECT
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
 
 
+def _save_keys_to_disk():
+    """Persist current session API keys to user_secrets.json."""
+    secrets_path = Path(__file__).parent.parent / "user_secrets.json"
+    user_secrets = {}
+    # Load existing secrets first
+    try:
+        if secrets_path.exists():
+            with open(secrets_path, "r", encoding="utf-8") as f:
+                user_secrets = json.load(f)
+    except Exception:
+        pass
+    # Update with current keys
+    for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+        val = st.session_state.get(key, "")
+        if val:
+            user_secrets[key] = val
+    try:
+        with open(secrets_path, "w", encoding="utf-8") as f:
+            json.dump(user_secrets, f, indent=2)
+    except Exception:
+        pass
+
+
 def render_api_setup_page():
     """Render the API keys setup page."""
 
@@ -27,8 +50,7 @@ def render_api_setup_page():
 
     # Show a quick test section if keys are already configured
     if has_real_api_keys:
-        st.markdown("# 🌍 Language Anki Deck Generator")
-        st.markdown("Create custom Anki decks in minutes | 100% free, no data stored")
+        st.markdown("# Step 0: API Keys")
         st.success("✅ **All API Keys Configured** — You can proceed to language selection or re-test below")
         st.divider()
 
@@ -58,8 +80,7 @@ def render_api_setup_page():
     # ==========================================
     # MAIN SETUP PAGE (keys not yet configured)
     # ==========================================
-    st.markdown("# 🌍 Language Anki Deck Generator")
-    st.markdown("Create custom Anki decks in minutes | 100% free, no data stored")
+    st.markdown("# Step 0: API Keys")
     st.divider()
 
     # Firebase sync
@@ -144,6 +165,7 @@ def render_api_setup_page():
         if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
             if google_key_input:
                 st.session_state.google_api_key = google_key_input
+                _save_keys_to_disk()
                 st.success("✅ Gemini API key saved!")
             else:
                 st.error("❌ Please enter your Gemini API key")
@@ -226,6 +248,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         if st.button("💾 Save TTS Key", help="Save the TTS API key"):
             if tts_key_input:
                 st.session_state.google_tts_api_key = tts_key_input
+                _save_keys_to_disk()
                 st.success("✅ TTS API key saved!")
             else:
                 st.error("❌ Please enter your TTS API key")
@@ -278,6 +301,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
             if pixabay_key_input:
                 st.session_state.pixabay_api_key = pixabay_key_input
+                _save_keys_to_disk()
                 st.success("✅ Pixabay API key saved!")
             else:
                 st.error("❌ Please enter a Pixabay API key")

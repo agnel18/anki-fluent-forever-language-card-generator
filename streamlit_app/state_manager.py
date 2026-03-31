@@ -39,6 +39,8 @@ def initialize_session_state():
                 st.session_state[SESSION_GOOGLE_API_KEY] = user_secrets["google_api_key"]
             if user_secrets.get("google_tts_api_key") and not st.session_state.get("google_tts_api_key"):
                 st.session_state.google_tts_api_key = user_secrets["google_tts_api_key"]
+            if user_secrets.get("pixabay_api_key") and not st.session_state.get("pixabay_api_key"):
+                st.session_state.pixabay_api_key = user_secrets["pixabay_api_key"]
     except Exception:
         # If loading fails, continue with empty keys
         pass
