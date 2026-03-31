@@ -221,21 +221,26 @@ def render_settings_page():
 
     # Load current API keys
     google_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
+    tts_key = st.session_state.get("google_tts_api_key", os.getenv("GOOGLE_TTS_API_KEY", ""))
     pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     # Check current API status
     google_configured = bool(google_key)
+    tts_configured = bool(tts_key)
     pixabay_configured = bool(pixabay_key)
 
     # Status overview
     col1, col2, col3 = st.columns(3)
     with col1:
         if google_configured:
-            st.success("✅ **Google Cloud APIs** - Configured")
+            st.success("✅ **Gemini API (Project A)** - Configured")
         else:
-            st.error("❌ **Google Cloud APIs** - Not configured")
+            st.error("❌ **Gemini API (Project A)** - Not configured")
     with col2:
-        st.info("ℹ️ **Status:** Gemini + Text-to-Speech")
+        if tts_configured:
+            st.success("✅ **TTS API (Project B)** - Configured")
+        else:
+            st.warning("⚠️ **TTS API (Project B)** - Using Gemini key as fallback")
 
     with col3:
         if pixabay_configured:
@@ -301,32 +306,29 @@ def render_settings_page():
         ---
 
         ### 🔑 Where to enter your keys
-        - **Gemini key (Project A):** Paste in the field below
-        - **TTS key (Project B):** Set the environment variable `GOOGLE_TTS_API_KEY` in your `.env` file, or enter it in Settings
+        - **Gemini key (Project A):** Paste in the **first** field below
+        - **TTS key (Project B):** Paste in the **second** field below
 
-        > If you only enter one key below, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
+        > If you only enter the Gemini key, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
         """)
 
-    # Google Cloud API Key Input
+    # --- Gemini API Key (Project A) ---
+    st.markdown("#### 📦 Project A — Gemini AI Key")
     google_key_input = st.text_input(
-        "Google Cloud API Key",
+        "Gemini API Key (Project A)",
         value=google_key,
         type="password",
-        help="Paste your Google Cloud API key here (used for Gemini AI and Text-to-Speech)",
+        help="Paste your Gemini API key from the billing-free project",
         key="google_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Google Cloud Key", help="Save the Google Cloud API key"):
+        if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
             if google_key_input:
-                # Save to session state
                 st.session_state.google_api_key = google_key_input
-
-                # Save to environment variable
                 os.environ["GOOGLE_API_KEY"] = google_key_input
 
-                # Save to .env file
                 env_path = Path(__file__).parent.parent / ".env"
                 try:
                     env_content = ""
@@ -345,36 +347,97 @@ def render_settings_page():
                         lines.append(f'GOOGLE_API_KEY={google_key_input}')
 
                     env_path.write_text('\n'.join(lines))
-                    st.success("✅ Google Cloud API key saved successfully!")
-                    st.info("🔄 Refresh the page to apply changes.")
+                    st.success("✅ Gemini API key saved!")
                     time.sleep(1)
                     st.rerun()
                 except Exception as e:
                     st.error(f"❌ Failed to save to .env file: {e}")
                     st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Google Cloud API key")
+                st.error("❌ Please enter a valid Gemini API key")
 
     with col_test:
         if google_key_input or google_key:
             test_key = google_key_input or google_key
-            if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
-                with st.spinner("Testing Google Cloud API connection..."):
+            if st.button("🧪 Test Gemini Connection", help="Test your Gemini API key"):
+                with st.spinner("Testing Gemini API connection..."):
                     try:
                         from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
                         api = get_gemini_api()
                         api.configure(api_key=test_key)
-                        response = api.generate_content(
+                        api.generate_content(
                             model=get_gemini_model(),
                             contents="Hello"
                         )
-                        st.success("✅ Google Cloud API connection successful!")
-                        st.info("🎉 You can now generate AI content with Gemini and audio with Text-to-Speech!")
+                        st.success("✅ Gemini API connection successful!")
                     except Exception as e:
-                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
-                        st.info("💡 Check your API key and ensure both Gemini API and Cloud Text-to-Speech API are enabled.")
+                        st.error(f"❌ Gemini API test failed: {str(e)}")
 
     st.markdown("---")
+
+    # --- TTS API Key (Project B) ---
+    st.markdown("#### 🔊 Project B — Text-to-Speech Key")
+    tts_key_input = st.text_input(
+        "TTS API Key (Project B)",
+        value=tts_key,
+        type="password",
+        help="Paste your TTS API key from the billing-enabled project (optional — falls back to Gemini key if empty)",
+        key="google_tts_key_input"
+    )
+
+    col_save_tts, col_test_tts = st.columns([1, 1])
+    with col_save_tts:
+        if st.button("💾 Save TTS Key", help="Save the TTS API key"):
+            if tts_key_input:
+                st.session_state.google_tts_api_key = tts_key_input
+                os.environ["GOOGLE_TTS_API_KEY"] = tts_key_input
+
+                env_path = Path(__file__).parent.parent / ".env"
+                try:
+                    env_content = ""
+                    if env_path.exists():
+                        env_content = env_path.read_text()
+
+                    lines = env_content.split('\n')
+                    key_found = False
+                    for i, line in enumerate(lines):
+                        if line.startswith('GOOGLE_TTS_API_KEY='):
+                            lines[i] = f'GOOGLE_TTS_API_KEY={tts_key_input}'
+                            key_found = True
+                            break
+
+                    if not key_found:
+                        lines.append(f'GOOGLE_TTS_API_KEY={tts_key_input}')
+
+                    env_path.write_text('\n'.join(lines))
+                    st.success("✅ TTS API key saved!")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to save to .env file: {e}")
+                    st.info("💡 The key is set for this session.")
+            else:
+                st.error("❌ Please enter a valid TTS API key")
+
+    with col_test_tts:
+        if tts_key_input or tts_key:
+            test_tts = tts_key_input or tts_key
+            if st.button("🧪 Test TTS Connection", help="Test your TTS API key"):
+                with st.spinner("Testing TTS API connection..."):
+                    try:
+                        import requests
+                        url = f"https://texttospeech.googleapis.com/v1/voices?key={test_tts}"
+                        resp = requests.get(url, timeout=10)
+                        if resp.status_code == 200:
+                            st.success("✅ TTS API connection successful!")
+                        else:
+                            st.error(f"❌ TTS API test failed: HTTP {resp.status_code}")
+                    except Exception as e:
+                        st.error(f"❌ TTS API test failed: {str(e)}")
+
+    if not tts_key_input and not tts_key:
+        st.info("💡 No TTS key? Audio generation will use your Gemini key as fallback. For cost protection, we recommend a separate TTS project.")
+
     st.markdown("---")
 
     # === PIXABAY API SECTION ===

@@ -47,8 +47,9 @@ def render_help_page():
     - **Project A ("Language Cards - Gemini"):** Gemini only, NO billing → free tier preserved
     - **Project B ("Language Cards - TTS"):** TTS only, billing enabled → pay only for audio
 
-    Set the `GOOGLE_TTS_API_KEY` environment variable (in your `.env` file) to Project B's key.
-    The main API key entered in the app should be Project A's key.
+    Set the `GOOGLE_TTS_API_KEY` environment variable (in your `.env` file) to Project B's key,
+    or enter it directly on the **API Setup** page in the "Project B — Text-to-Speech Key" field.
+    The Gemini key goes in the "Project A — Gemini AI Key" field.
 
     **To set a spend limit on TTS:**
     1. Open [Google Cloud Console](https://console.cloud.google.com/) → select your TTS project

@@ -60,7 +60,7 @@ def get_google_tts_config():
         if not api_key:
             try:
                 import streamlit as st
-                api_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", "")))
+                api_key = st.session_state.get("google_tts_api_key", "") or st.session_state.get("google_api_key", "") or os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
             except ImportError:
                 # Streamlit not available, use environment variables only
                 api_key = os.getenv("GOOGLE_TTS_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
@@ -111,7 +111,13 @@ def is_google_tts_configured():
         return bool(config["api_key"])  # Only need API key for REST API
     except Exception as e:
         logger.warning(f"Failed to check TTS configuration: {e}")
-        # Fallback: check environment variables directly
+        # Fallback: check session state and environment variables directly
+        try:
+            import streamlit as st
+            if st.session_state.get("google_tts_api_key") or st.session_state.get("google_api_key"):
+                return True
+        except Exception:
+            pass
         import os
         return bool(os.getenv("GOOGLE_TTS_API_KEY") or os.getenv("GOOGLE_API_KEY"))
 

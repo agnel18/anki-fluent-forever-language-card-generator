@@ -19,13 +19,15 @@ def render_api_setup_page():
     google_key = st.session_state.get("google_api_key", "")
     pixabay_key = st.session_state.get("pixabay_api_key", "")
 
+    tts_key = st.session_state.get("google_tts_api_key", "")
+
     # Also check TTS configuration
     tts_configured = False
     try:
         from audio_generator import is_google_tts_configured
         tts_configured = is_google_tts_configured()
     except:
-        tts_configured = False
+        tts_configured = bool(tts_key)
 
     has_real_api_keys = (
         google_key and
@@ -88,6 +90,8 @@ def render_api_setup_page():
                     cloud_settings = load_settings_from_firebase(st.session_state.session_id)
                     if cloud_settings and 'google_api_key' in cloud_settings:
                         st.session_state.google_api_key = cloud_settings['google_api_key']
+                        if 'google_tts_api_key' in cloud_settings:
+                            st.session_state.google_tts_api_key = cloud_settings['google_tts_api_key']
                         st.success("✅ API keys loaded from cloud!")
                         st.session_state.page = PAGE_LANGUAGE_SELECT
                         st.rerun()
@@ -102,12 +106,18 @@ def render_api_setup_page():
 
     # Status overview
     google_key = st.session_state.get("google_api_key", "")
+    tts_key = st.session_state.get("google_tts_api_key", "")
     pixabay_key = st.session_state.get("pixabay_api_key", "")
 
     if google_key:
-        st.success("✅ **Google Cloud API** - Set")
+        st.success("✅ **Gemini API Key (Project A)** - Set")
     else:
-        st.error("❌ **Google Cloud API** - Required")
+        st.error("❌ **Gemini API Key (Project A)** - Required")
+
+    if tts_key:
+        st.success("✅ **TTS API Key (Project B)** - Set")
+    else:
+        st.warning("⚠️ **TTS API Key (Project B)** - Not set (audio will use Gemini key as fallback)")
 
     if pixabay_key:
         st.success("✅ **Pixabay API** - Set")
@@ -176,40 +186,41 @@ def render_api_setup_page():
         ---
 
         ### 🔑 Where to enter your keys
-        - **Gemini key (Project A):** Paste in the field below
-        - **TTS key (Project B):** Set the environment variable `GOOGLE_TTS_API_KEY` in your `.env` file, or enter it in Settings
+        - **Gemini key (Project A):** Paste in the **first** field below
+        - **TTS key (Project B):** Paste in the **second** field below
 
-        > If you only enter one key below, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
+        > If you only enter the Gemini key, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
         """)
 
+    # --- Gemini API Key (Project A) ---
+    st.markdown("#### 📦 Project A — Gemini AI Key")
     google_key_input = st.text_input(
-        "Google Cloud API Key",
+        "Gemini API Key (Project A)",
         value=google_key,
         type="password",
-        help="Paste your Google Cloud API key here (used for Gemini AI and Text-to-Speech)",
+        help="Paste your Gemini API key from the billing-free project",
         key="google_api_key_input"
     )
 
-    # API Key Validation
     if google_key_input and not google_key_input.startswith('AIza'):
         st.warning("⚠️ Google API keys typically start with 'AIza'. Please verify your key.")
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Google Cloud Key", help="Save the Google Cloud API key"):
+        if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
             if google_key_input:
                 if not google_key_input.startswith('AIza'):
                     st.warning("⚠️ This doesn't look like a valid Google API key format. Please verify.")
                 st.session_state.google_api_key = google_key_input
-                st.success("✅ Google Cloud API key saved!")
+                st.success("✅ Gemini API key saved!")
             else:
-                st.error("❌ Please enter a Google Cloud API key")
+                st.error("❌ Please enter your Gemini API key")
 
     with col_test:
         if google_key_input or google_key:
             test_key = google_key_input or google_key
-            if st.button("🧪 Test Google Cloud Connection", help="Test your Google Cloud API key"):
-                with st.spinner("Testing Google Cloud API connection..."):
+            if st.button("🧪 Test Gemini Connection", help="Test your Gemini API key"):
+                with st.spinner("Testing Gemini API connection..."):
                     try:
                         api = get_gemini_api()
                         api.configure(api_key=test_key)
@@ -217,9 +228,57 @@ def render_api_setup_page():
                             model=get_gemini_model(),
                             contents="Hello"
                         )
-                        st.success("✅ Google Cloud API connection successful!")
+                        st.success("✅ Gemini API connection successful!")
                     except Exception as e:
-                        st.error(f"❌ Google Cloud API test failed: {str(e)}")
+                        st.error(f"❌ Gemini API test failed: {str(e)}")
+
+    st.markdown("---")
+
+    # --- TTS API Key (Project B) ---
+    st.markdown("#### 🔊 Project B — Text-to-Speech Key")
+    tts_key_input = st.text_input(
+        "TTS API Key (Project B)",
+        value=tts_key,
+        type="password",
+        help="Paste your TTS API key from the billing-enabled project (optional — falls back to Gemini key if empty)",
+        key="google_tts_api_key_input"
+    )
+
+    if tts_key_input and not tts_key_input.startswith('AIza'):
+        st.warning("⚠️ Google API keys typically start with 'AIza'. Please verify your key.")
+
+    col_save_tts, col_test_tts = st.columns([1, 1])
+    with col_save_tts:
+        if st.button("💾 Save TTS Key", help="Save the TTS API key"):
+            if tts_key_input:
+                if not tts_key_input.startswith('AIza'):
+                    st.warning("⚠️ This doesn't look like a valid Google API key format. Please verify.")
+                st.session_state.google_tts_api_key = tts_key_input
+                st.success("✅ TTS API key saved!")
+            else:
+                st.error("❌ Please enter your TTS API key")
+
+    with col_save_tts:
+        pass  # spacer
+
+    with col_test_tts:
+        if tts_key_input or tts_key:
+            test_tts = tts_key_input or tts_key
+            if st.button("🧪 Test TTS Connection", help="Test your TTS API key"):
+                with st.spinner("Testing TTS API connection..."):
+                    try:
+                        import requests as req
+                        url = f"https://texttospeech.googleapis.com/v1/voices?key={test_tts}"
+                        resp = req.get(url, timeout=10)
+                        if resp.status_code == 200:
+                            st.success("✅ TTS API connection successful!")
+                        else:
+                            st.error(f"❌ TTS API test failed: HTTP {resp.status_code}")
+                    except Exception as e:
+                        st.error(f"❌ TTS API test failed: {str(e)}")
+
+    if not tts_key_input and not tts_key:
+        st.info("💡 No TTS key? Audio generation will use your Gemini key as fallback. For cost protection, we recommend a separate TTS project.")
 
     st.markdown("---")
 
@@ -320,10 +379,11 @@ def render_api_setup_page():
     if st.button("🚀 Next: Select Language", use_container_width=True):
         # Use the input values, falling back to session state if input is empty
         final_google_key = google_key_input or google_key
+        final_tts_key = tts_key_input or tts_key
         final_pixabay_key = pixabay_key_input or pixabay_key
 
         if not final_google_key:
-            st.error("❌ Please enter your Google Cloud API key")
+            st.error("❌ Please enter your Gemini API key (Project A)")
             st.stop()
 
         if not final_pixabay_key:
@@ -331,12 +391,15 @@ def render_api_setup_page():
             st.stop()
 
         st.session_state.google_api_key = final_google_key
+        if final_tts_key:
+            st.session_state.google_tts_api_key = final_tts_key
         st.session_state.pixabay_api_key = final_pixabay_key
 
         # Save API keys locally
         secrets_path = Path(__file__).parent.parent / "user_secrets.json"
         user_secrets = {
             "google_api_key": final_google_key,
+            "google_tts_api_key": final_tts_key,
             "pixabay_api_key": final_pixabay_key
         }
         with open(secrets_path, "w", encoding="utf-8") as f:
@@ -348,6 +411,7 @@ def render_api_setup_page():
                     from firebase_manager import save_settings_to_firebase
                     cloud_data = {
                         "google_api_key": final_google_key,
+                        "google_tts_api_key": final_tts_key,
                         "pixabay_api_key": final_pixabay_key
                     }
                     save_settings_to_firebase(st.session_state.session_id, cloud_data)
