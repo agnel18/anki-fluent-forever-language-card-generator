@@ -217,213 +217,182 @@ def render_settings_page():
 
     # --- API Configuration Sections ---
     st.markdown("## 🔑 API Configuration")
-    st.markdown("Configure the required APIs for AI generation, images, and audio. All three are needed for full functionality.")
 
     # Load current API keys
     google_key = st.session_state.get("google_api_key", os.getenv("GOOGLE_API_KEY", ""))
     tts_key = st.session_state.get("google_tts_api_key", os.getenv("GOOGLE_TTS_API_KEY", ""))
     pixabay_key = st.session_state.get("pixabay_api_key", "")
 
-    # Check current API status
-    google_configured = bool(google_key)
-    tts_configured = bool(tts_key)
-    pixabay_configured = bool(pixabay_key)
+    # Status overview (vertical — mobile friendly)
+    if google_key:
+        st.success("✅ **Gemini AI** — Configured")
+    else:
+        st.error("❌ **Gemini AI** — Required")
+    if tts_key:
+        st.success("✅ **Text-to-Speech** — Configured")
+    else:
+        st.error("❌ **Text-to-Speech** — Required")
+    if pixabay_key:
+        st.success("✅ **Pixabay Images** — Configured")
+    else:
+        st.error("❌ **Pixabay Images** — Required")
 
-    # Status overview
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if google_configured:
-            st.success("✅ **Gemini API (Project A)** - Configured")
-        else:
-            st.error("❌ **Gemini API (Project A)** - Not configured")
-    with col2:
-        if tts_configured:
-            st.success("✅ **TTS API (Project B)** - Configured")
-        else:
-            st.warning("⚠️ **TTS API (Project B)** - Using Gemini key as fallback")
+    st.markdown("---")
 
-    with col3:
-        if pixabay_configured:
-            st.success("✅ **Pixabay API** - Configured")
-        else:
-            st.error("❌ **Pixabay API** - Not configured")
+    # Helper to save a key to .env file
+    def _save_key_to_env(env_key_name, key_value):
+        env_path = Path(__file__).parent.parent / ".env"
+        try:
+            env_content = ""
+            if env_path.exists():
+                env_content = env_path.read_text()
+            lines = env_content.split('\n')
+            key_found = False
+            for i, line in enumerate(lines):
+                if line.startswith(f'{env_key_name}='):
+                    lines[i] = f'{env_key_name}={key_value}'
+                    key_found = True
+                    break
+            if not key_found:
+                lines.append(f'{env_key_name}={key_value}')
+            env_path.write_text('\n'.join(lines))
+            return True
+        except Exception as e:
+            st.error(f"❌ Failed to save to .env file: {e}")
+            st.info("💡 The key is set for this session only.")
+            return False
 
-    if not all([google_configured, pixabay_configured]):
-        st.warning("⚠️ Some APIs are not configured. Please set up all required APIs below for full functionality.")
+    # ==========================================================
+    # SECTION 1: Gemini AI — FREE (no billing needed)
+    # ==========================================================
+    st.markdown("### 🤖 Gemini AI — FREE (no billing needed)")
 
-    # === GOOGLE CLOUD APIs SECTION ===
-    st.markdown("### ☁️ Google Cloud APIs (Gemini + Text-to-Speech)")
-    with st.expander("📖 Setup Instructions", expanded=not google_configured):
-        # Step 1: Setup Instructions
-        st.markdown("#### 📖 Step 1: Get Your API Key")
+    with st.expander("📖 How to get your Gemini API key", expanded=not bool(google_key)):
         st.markdown("""
-        **We use two separate Google Cloud projects to keep Gemini AI free and only pay for audio.**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Click **"Select a project"** → **"New Project"**
+3. Name it **"Language Cards - Gemini"** → click **"Create"**
+4. **Do NOT enable billing** — this keeps Gemini free!
+5. Go to **APIs & Services** → **Enable APIs and Services**
+6. Search for **"Generative Language API"** → click **"Enable"**
+7. Go to **APIs & Services** → **Credentials**
+8. Click **"Create Credentials"** → **"API key"**
+9. Copy the key and paste it below
+10. Click on the key → **"API restrictions"** → **"Restrict key"** → select only **"Generative Language API"** → **"Save"**
 
-        > ⚠️ **Why two projects?** Enabling billing on a project upgrades ALL its APIs to the paid tier. By keeping Gemini in a billing-free project, you preserve its **1,500 free requests/day**. TTS requires billing, so it goes in a separate project.
-
-        ---
-
-        ### 📦 Project A — Gemini AI (FREE, no billing needed)
-        This project handles AI text generation. **Do NOT enable billing on this project.**
-
-        1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-        2. Click **"Select a project"** → **"New Project"**
-        3. Name it something like **"Language Cards - Gemini"** → click **"Create"**
-        4. Go to **"APIs & Services"** → **"Enable APIs and Services"**
-        5. Search for **"Generative Language API"** → click **"Enable"**
-        6. Go to **"APIs & Services"** → **"Credentials"**
-        7. Click **"Create Credentials"** → **"API key"**
-        8. **Copy this key** — this is your **main API key** (paste it below)
-        9. Click on the key → **"API restrictions"** → **"Restrict key"** → check only **"Generative Language API"** → **"Save"**
-
-        > ✅ Free tier: ~1,500 requests/day, 1 million tokens/day — no credit card needed!
-
-        ---
-
-        ### 📦 Project B — Text-to-Speech (requires billing)
-        This project handles audio generation only. Billing is required but costs are minimal.
-
-        1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-        2. Click **"Select a project"** → **"New Project"**
-        3. Name it **"Language Cards - TTS"** → click **"Create"**
-        4. Go to **"Billing"** → **"Link a billing account"** (add a credit/debit card if needed)
-        5. Go to **"APIs & Services"** → **"Enable APIs and Services"**
-        6. Search for **"Cloud Text-to-Speech API"** → click **"Enable"**
-        7. Go to **"APIs & Services"** → **"Credentials"**
-        8. Click **"Create Credentials"** → **"API key"**
-        9. **Copy this key** — this is your **TTS API key**
-        10. Click on the key → **"API restrictions"** → **"Restrict key"** → check only **"Cloud Text-to-Speech API"** → **"Save"**
-
-        **Set a spend limit on TTS:**
-        1. Go to **"APIs & Services"** → click **"Cloud Text-to-Speech API"**
-        2. Click the **"Quotas & System Limits"** tab
-        3. Find **"Characters synthesized per day"**
-        4. Click ✏️ → set e.g. **50,000** characters/day (≈ 30–50 flashcards)
-        5. Click **"Save"**
-
-        > 💰 TTS pricing: first 1 million characters/month are FREE (Standard voices). After that, ~$4 per 1M characters.
-
-        ---
-
-        ### 🔑 Where to enter your keys
-        - **Gemini key (Project A):** Paste in the **first** field below
-        - **TTS key (Project B):** Paste in the **second** field below
-
-        > If you only enter the Gemini key, it will be used for both Gemini and TTS (single-project mode). For cost protection, we strongly recommend the two-project setup above.
+> ✅ **Free tier: ~1,500 requests/day, 1 million tokens/day — no credit card needed!**
         """)
 
-    # --- Gemini API Key (Project A) ---
-    st.markdown("#### 📦 Project A — Gemini AI Key")
     google_key_input = st.text_input(
-        "Gemini API Key (Project A)",
+        "Gemini API Key",
         value=google_key,
         type="password",
-        help="Paste your Gemini API key from the billing-free project",
+        help="Your API key from the billing-free Gemini project",
         key="google_key_input"
     )
 
     col_save, col_test = st.columns([1, 1])
     with col_save:
-        if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
+        if st.button("💾 Save Gemini Key", help="Save the Gemini API key", key="settings_save_gemini"):
             if google_key_input:
                 st.session_state.google_api_key = google_key_input
                 os.environ["GOOGLE_API_KEY"] = google_key_input
-
-                env_path = Path(__file__).parent.parent / ".env"
-                try:
-                    env_content = ""
-                    if env_path.exists():
-                        env_content = env_path.read_text()
-
-                    lines = env_content.split('\n')
-                    key_found = False
-                    for i, line in enumerate(lines):
-                        if line.startswith('GOOGLE_API_KEY='):
-                            lines[i] = f'GOOGLE_API_KEY={google_key_input}'
-                            key_found = True
-                            break
-
-                    if not key_found:
-                        lines.append(f'GOOGLE_API_KEY={google_key_input}')
-
-                    env_path.write_text('\n'.join(lines))
+                if _save_key_to_env("GOOGLE_API_KEY", google_key_input):
                     st.success("✅ Gemini API key saved!")
                     time.sleep(1)
                     st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Failed to save to .env file: {e}")
-                    st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Gemini API key")
+                st.error("❌ Please enter your Gemini API key")
 
     with col_test:
         if google_key_input or google_key:
             test_key = google_key_input or google_key
-            if st.button("🧪 Test Gemini Connection", help="Test your Gemini API key"):
-                with st.spinner("Testing Gemini API connection..."):
+            if st.button("🧪 Test Gemini", help="Test your Gemini API key", key="settings_test_gemini"):
+                with st.spinner("Testing Gemini API..."):
                     try:
                         from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
                         api = get_gemini_api()
                         api.configure(api_key=test_key)
-                        api.generate_content(
-                            model=get_gemini_model(),
-                            contents="Hello"
-                        )
+                        api.generate_content(model=get_gemini_model(), contents="Hello")
                         st.success("✅ Gemini API connection successful!")
                     except Exception as e:
-                        st.error(f"❌ Gemini API test failed: {str(e)}")
+                        st.error(f"❌ Gemini test failed: {str(e)}")
 
     st.markdown("---")
 
-    # --- TTS API Key (Project B) ---
-    st.markdown("#### 🔊 Project B — Text-to-Speech Key")
+    # ==========================================================
+    # SECTION 2: Text-to-Speech — FREE (billing enabled for activation only)
+    # ==========================================================
+    st.markdown("### 🔊 Text-to-Speech — FREE (billing enabled for activation only)")
+
+    with st.expander("📖 How to get your TTS API key", expanded=not bool(tts_key)):
+        st.markdown("""
+> ⚠️ **This must be a DIFFERENT Google Cloud project from Gemini** (see "Why?" below)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Click **"Select a project"** → **"New Project"**
+3. Name it **"Language Cards - TTS"** → click **"Create"**
+4. Go to **Billing** → **Link a billing account** (required to activate TTS, but the service itself is free within limits)
+5. Go to **APIs & Services** → **Enable APIs and Services**
+6. Search for **"Cloud Text-to-Speech API"** → click **"Enable"**
+7. Go to **APIs & Services** → **Credentials**
+8. Click **"Create Credentials"** → **"API key"**
+9. Copy the key and paste it below
+10. Click on the key → **"API restrictions"** → **"Restrict key"** → select only **"Cloud Text-to-Speech API"** → **"Save"**
+
+> 💰 **FREE: 1 million characters/month (Standard voices) — that's ~600+ flashcard decks!**
+        """)
+
+        with st.expander("⚠️ Why a separate project from Gemini?"):
+            st.markdown("""
+Enabling billing on a Google Cloud project upgrades **ALL** APIs in that project to the paid tier.
+
+If Gemini and TTS share one project:
+- You enable billing for TTS → Gemini silently loses its free 1,500 requests/day
+- Gemini starts charging per request → unexpected costs
+
+**Two projects = both services stay free:**
+- **Project A (Gemini):** No billing → free 1,500 requests/day
+- **Project B (TTS):** Billing enabled → free 1M characters/month
+            """)
+
+        with st.expander("🛡️ Optional: Set a daily spend limit"):
+            st.markdown("""
+1. Open [Google Cloud Console](https://console.cloud.google.com/) → select your TTS project
+2. Go to **APIs & Services** → click **"Cloud Text-to-Speech API"**
+3. Click the **"Quotas & System Limits"** tab
+4. Find **"Characters synthesized per day"** → click ✏️
+5. Set e.g. **50,000** characters/day → click **"Save"**
+
+This caps your daily usage. Even without a limit, the first 1M characters/month are free.
+            """)
+
     tts_key_input = st.text_input(
-        "TTS API Key (Project B)",
+        "TTS API Key",
         value=tts_key,
         type="password",
-        help="Paste your TTS API key from the billing-enabled project (optional — falls back to Gemini key if empty)",
+        help="Your API key from the billing-enabled TTS project",
         key="google_tts_key_input"
     )
 
     col_save_tts, col_test_tts = st.columns([1, 1])
     with col_save_tts:
-        if st.button("💾 Save TTS Key", help="Save the TTS API key"):
+        if st.button("💾 Save TTS Key", help="Save the TTS API key", key="settings_save_tts"):
             if tts_key_input:
                 st.session_state.google_tts_api_key = tts_key_input
                 os.environ["GOOGLE_TTS_API_KEY"] = tts_key_input
-
-                env_path = Path(__file__).parent.parent / ".env"
-                try:
-                    env_content = ""
-                    if env_path.exists():
-                        env_content = env_path.read_text()
-
-                    lines = env_content.split('\n')
-                    key_found = False
-                    for i, line in enumerate(lines):
-                        if line.startswith('GOOGLE_TTS_API_KEY='):
-                            lines[i] = f'GOOGLE_TTS_API_KEY={tts_key_input}'
-                            key_found = True
-                            break
-
-                    if not key_found:
-                        lines.append(f'GOOGLE_TTS_API_KEY={tts_key_input}')
-
-                    env_path.write_text('\n'.join(lines))
+                if _save_key_to_env("GOOGLE_TTS_API_KEY", tts_key_input):
                     st.success("✅ TTS API key saved!")
                     time.sleep(1)
                     st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Failed to save to .env file: {e}")
-                    st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid TTS API key")
+                st.error("❌ Please enter your TTS API key")
 
     with col_test_tts:
         if tts_key_input or tts_key:
             test_tts = tts_key_input or tts_key
-            if st.button("🧪 Test TTS Connection", help="Test your TTS API key"):
-                with st.spinner("Testing TTS API connection..."):
+            if st.button("🧪 Test TTS", help="Test your TTS API key", key="settings_test_tts"):
+                with st.spinner("Testing TTS API..."):
                     try:
                         import requests
                         url = f"https://texttospeech.googleapis.com/v1/voices?key={test_tts}"
@@ -431,104 +400,70 @@ def render_settings_page():
                         if resp.status_code == 200:
                             st.success("✅ TTS API connection successful!")
                         else:
-                            st.error(f"❌ TTS API test failed: HTTP {resp.status_code}")
+                            st.error(f"❌ TTS test failed: HTTP {resp.status_code}")
                     except Exception as e:
-                        st.error(f"❌ TTS API test failed: {str(e)}")
-
-    if not tts_key_input and not tts_key:
-        st.info("💡 No TTS key? Audio generation will use your Gemini key as fallback. For cost protection, we recommend a separate TTS project.")
+                        st.error(f"❌ TTS test failed: {str(e)}")
 
     st.markdown("---")
 
-    # === PIXABAY API SECTION ===
-    st.markdown("### 🌐 Pixabay API (Free Image Generation)")
-    with st.expander("📖 Setup Instructions", expanded=not bool(st.session_state.get("pixabay_api_key", ""))):
+    # ==========================================================
+    # SECTION 3: Pixabay — FREE Images
+    # ==========================================================
+    st.markdown("### 🖼️ Pixabay — FREE Images")
+
+    with st.expander("📖 How to get your Pixabay API key", expanded=not bool(pixabay_key)):
         st.markdown("""
-        **Follow these steps to get your free Pixabay API key:**
+1. Go to [Pixabay API Documentation](https://pixabay.com/api/docs/)
+2. Click **"Get Started for Free"** or go to [pixabay.com/api/](https://pixabay.com/api/)
+3. Sign up for a free account (email verification required)
+4. Once signed in, visit [pixabay.com/api/docs/](https://pixabay.com/api/docs/)
+5. Find your API key in the "Parameters" section
+6. Copy and paste the key below
 
-        1. **Go to** [Pixabay API Documentation](https://pixabay.com/api/docs/)
-        2. **Click "Get Started for Free"** or visit [pixabay.com/api/](https://pixabay.com/api/)
-        3. **Sign up** for a free account (email verification required)
-        4. **Once signed in**, visit [https://pixabay.com/api/docs/](https://pixabay.com/api/docs/)
-        5. **Find your API key** in the "Parameters" section on that page
-        6. **Copy and paste** the key into the field below
-
-        **Free Plan:** 5,000 images/month, then $0.001 per additional image.
+> ✅ **Free: 5,000 images/month**
         """)
 
-    # Pixabay API Key Input
-    pixabay_key = st.session_state.get("pixabay_api_key", "")
     pixabay_key_input = st.text_input(
         "Pixabay API Key",
         value=pixabay_key,
         type="password",
-        help="Paste your free Pixabay API key here",
+        help="Your free Pixabay API key for image generation",
         key="pixabay_key_input"
     )
 
-    col_save, col_test = st.columns([1, 1])
-    with col_save:
-        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
+    col_save_pix, col_test_pix = st.columns([1, 1])
+    with col_save_pix:
+        if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key", key="settings_save_pixabay"):
             if pixabay_key_input:
-                # Save to session state
                 st.session_state.pixabay_api_key = pixabay_key_input
-
-                # Save to .env file
-                env_path = Path(__file__).parent.parent / ".env"
-                try:
-                    env_content = ""
-                    if env_path.exists():
-                        env_content = env_path.read_text()
-
-                    lines = env_content.split('\n')
-                    key_found = False
-                    for i, line in enumerate(lines):
-                        if line.startswith('PIXABAY_API_KEY='):
-                            lines[i] = f'PIXABAY_API_KEY={pixabay_key_input}'
-                            key_found = True
-                            break
-
-                    if not key_found:
-                        lines.append(f'PIXABAY_API_KEY={pixabay_key_input}')
-
-                    env_path.write_text('\n'.join(lines))
-                    st.success("✅ Pixabay API key saved successfully!")
-                    st.info("🔄 Refresh the page to apply changes.")
+                if _save_key_to_env("PIXABAY_API_KEY", pixabay_key_input):
+                    st.success("✅ Pixabay API key saved!")
                     time.sleep(1)
                     st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Failed to save to .env file: {e}")
-                    st.info("💡 The key is set for this session.")
             else:
-                st.error("❌ Please enter a valid Pixabay API key")
+                st.error("❌ Please enter a Pixabay API key")
 
-    with col_test:
+    with col_test_pix:
         if pixabay_key_input or pixabay_key:
             test_key = pixabay_key_input or pixabay_key
-            if st.button("🧪 Test Pixabay Connection", help="Test your Pixabay API key"):
-                with st.spinner("Testing Pixabay API connection..."):
+            if st.button("🧪 Test Pixabay", help="Test your Pixabay API key", key="settings_test_pixabay"):
+                with st.spinner("Testing Pixabay API..."):
                     try:
                         import requests
                         response = requests.get(
                             "https://pixabay.com/api/",
-                            params={
-                                "key": test_key,
-                                "q": "cat",
-                                "per_page": 3
-                            }
+                            params={"key": test_key, "q": "test", "image_type": "photo", "per_page": 3}
                         )
                         if response.status_code == 200:
                             data = response.json()
-                            if "hits" in data and len(data["hits"]) > 0:
+                            if "hits" in data:
                                 st.success("✅ Pixabay API connection successful!")
-                                st.info("🎉 You can now generate free images with Pixabay!")
                             else:
-                                st.error("❌ Pixabay API returned no results")
+                                st.error("❌ Pixabay test failed: Invalid response")
                         else:
-                            st.error(f"❌ Pixabay API test failed: HTTP {response.status_code}")
+                            st.error(f"❌ Pixabay test failed: HTTP {response.status_code}")
                     except Exception as e:
-                        st.error(f"❌ Pixabay API test failed: {str(e)}")
-                        st.info("💡 Check your API key and internet connection.")
+                        st.error(f"❌ Pixabay test failed: {str(e)}")
 
     st.markdown("---")
     st.markdown("## 🎨 Theme")

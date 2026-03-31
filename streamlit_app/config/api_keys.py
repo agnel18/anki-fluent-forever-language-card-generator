@@ -25,9 +25,8 @@ API_KEY_CONFIG = {
     'text_to_speech': {
         'env_var': 'GOOGLE_TTS_API_KEY',
         'session_key': 'google_tts_api_key',
-        'fallback_session_key': 'google_api_key',
-        'description': 'Google Text-to-Speech API Key (separate billing project recommended)',
-        'required': False,
+        'description': 'Google Text-to-Speech API Key (separate billing project required)',
+        'required': True,
         'validator': lambda key: key and len(key) > 10 and key.startswith(('AIza', 'sk-')),
     },
 }
@@ -56,13 +55,6 @@ def get_api_key(service: str, session_state: Optional[Dict] = None) -> Optional[
     # Check session state first
     if session_state and config['session_key'] in session_state:
         key = session_state[config['session_key']]
-        if key and not is_fallback_key(key):
-            return key
-
-    # Check fallback session key (e.g., TTS falls back to Gemini key)
-    fallback_key_name = config.get('fallback_session_key')
-    if fallback_key_name and session_state and fallback_key_name in session_state:
-        key = session_state[fallback_key_name]
         if key and not is_fallback_key(key):
             return key
 

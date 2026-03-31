@@ -42,23 +42,20 @@ def render_help_page():
 
     Enabling billing on a GCP project upgrades **ALL** its APIs to the paid tier — including
     Gemini. This means you lose the **1,500 free Gemini requests/day**. Since TTS requires
-    billing, we use two separate projects to keep Gemini free:
+    billing to activate (even though **TTS itself is FREE within 1M characters/month**),
+    we use two separate projects so both services stay free:
 
-    - **Project A ("Language Cards - Gemini"):** Gemini only, NO billing → free tier preserved
-    - **Project B ("Language Cards - TTS"):** TTS only, billing enabled → pay only for audio
+    - **Project A ("Language Cards - Gemini"):** Gemini only, NO billing → free 1,500 requests/day
+    - **Project B ("Language Cards - TTS"):** TTS only, billing enabled → free 1M characters/month
 
-    Set the `GOOGLE_TTS_API_KEY` environment variable (in your `.env` file) to Project B's key,
-    or enter it directly on the **API Setup** page in the "Project B — Text-to-Speech Key" field.
-    The Gemini key goes in the "Project A — Gemini AI Key" field.
+    Enter both keys on the **API Setup** page — one in the Gemini section, one in the TTS section.
 
-    **To set a spend limit on TTS:**
+    **To set a daily spend limit on TTS:**
     1. Open [Google Cloud Console](https://console.cloud.google.com/) → select your TTS project
     2. Go to **APIs & Services** → **Cloud Text-to-Speech API** → **Quotas & System Limits**
     3. Find **"Characters synthesized per day"** → click ✏️ → set e.g. **50,000**
 
-    > 💰 TTS first 1M characters/month are FREE (Standard voices). Full setup guide is in the **API Setup** page.
-
-    Full step-by-step guide is in the **API Setup** page under "Step 2".
+    > 💰 TTS is **FREE**: 1 million characters/month (Standard voices) — that's ~600+ flashcard decks!
 
     ## Troubleshooting
     - Double-check API keys

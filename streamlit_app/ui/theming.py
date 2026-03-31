@@ -117,6 +117,8 @@ def apply_theme_css():
                 .stTextInput input {{
                     color: var(--text-color) !important;
                     background-color: var(--secondary-bg) !important;
+                    border: 1px solid var(--card-border) !important;
+                    border-radius: 8px !important;
                 }}
 
                 button[kind="primary"] {{
