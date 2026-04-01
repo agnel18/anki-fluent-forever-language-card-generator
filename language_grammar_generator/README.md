@@ -46,13 +46,13 @@ This modular framework provides comprehensive guidance for implementing **produc
 3. **Choose Implementation Level:**
    - **Level 1 (Beginner)**: Simple languages with basic grammar → Start with [Quick Start Guide](quick_start.md)
    - **Level 2 (Intermediate)**: Complex languages → Follow [Implementation Guide](implementation_guide.md)
-   - **Level 3 (Advanced)**: Enterprise optimization → See [Advanced Guide](advanced_guide.md)
+   - **Level 3 (Advanced)**: Enterprise optimization → Study the [French gold standard](../languages/french/) directly
 
 4. **Select Language Family:**
    - [Indo-European](language_family_guides/indo_european.md) - Use French/Hindi as references
    - [Sino-Tibetan](language_family_guides/sino_tibetan.md) - Use Chinese Simplified as primary reference
-   - [Afro-Asiatic](language_family_guides/afro_asiatic.md)
-   - [Agglutinative](language_family_guides/agglutinative.md)
+   - Afro-Asiatic (Arabic, Hebrew) — guide not yet created
+   - Agglutinative (Turkish, Japanese, Korean) — guide not yet created
 
 5. **Follow the 7-Phase Process:**
    ```bash
