@@ -1,111 +1,113 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
-.venv/
-venv/
-ENV/
-env/
-
-# Sensitive Files & Secrets (NEVER COMMIT)
-.env
-.env.local
-.env.*.local
-*.env
-firebase_config.json
-user_data.db
-user_secrets.json
-user_full_state.json
-user_settings.json
-PRESENTATION_SCRIPT.md
-PPT_SLIDES.md
-MASTER_PROMPT.md
-REFACTORING_MASTER_PROMPT.md
-MECE_ANALYSIS_REPORT.md
-UI_MASTER_PROMPT.md
-MASTER_PROMPT_V2.md
-
-# Streamlit secrets
-.streamlit/secrets.toml
-.streamlit/secrets.json
-
-# All user data and state files
-streamlit_app/user_*.json
-streamlit_app/user_*.db
-**/user_*.json
-**/user_*.db
-
-# API Keys and credentials
-*_key.txt
-*_keys.txt
-api_keys.*
-credentials.*
-secrets.*
-
-# Generated outputs and media (keep local)
-output/
-**/output/
-**/media/
-**/audio/
-**/ANKI_IMPORT.tsv
-**/*.apkg
-
-# Cache files
-cache/
-**/cache/
-**/*.cache
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.backup
-~$*.xlsx
-~$*.xls
-
-# Logs
-*.log
-logs/
-**/*.log
-
-# Note: Sample output files are included for demonstration
-# Users should delete these before adapting for their own use:
-# - FluentForever_Arabic_Perfect/working_data.xlsx
-# - FluentForever_Arabic_Perfect/ANKI_IMPORT.tsv
-# - FluentForever_Arabic_Perfect/audio/*.mp3
-# - FluentForever_Arabic_Perfect/images/*.jpg
-ARCHIVED_PHASES.md
-repo_backup_pre_cleanup/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Sensitive Files & Secrets (NEVER COMMIT)
+.env
+.env.local
+.env.*.local
+*.env
+firebase_config.json
+user_data.db
+user_secrets.json
+user_full_state.json
+user_settings.json
+PRESENTATION_SCRIPT.md
+PPT_SLIDES.md
+MASTER_PROMPT.md
+REFACTORING_MASTER_PROMPT.md
+MECE_ANALYSIS_REPORT.md
+UI_MASTER_PROMPT.md
+MASTER_PROMPT_V2.md
+YOUTUBE_SCRIPT.md
+REDDIT_POSTS.md
+
+# Streamlit secrets
+.streamlit/secrets.toml
+.streamlit/secrets.json
+
+# All user data and state files
+streamlit_app/user_*.json
+streamlit_app/user_*.db
+**/user_*.json
+**/user_*.db
+
+# API Keys and credentials
+*_key.txt
+*_keys.txt
+api_keys.*
+credentials.*
+secrets.*
+
+# Generated outputs and media (keep local)
+output/
+**/output/
+**/media/
+**/audio/
+**/ANKI_IMPORT.tsv
+**/*.apkg
+
+# Cache files
+cache/
+**/cache/
+**/*.cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+~$*.xlsx
+~$*.xls
+
+# Logs
+*.log
+logs/
+**/*.log
+
+# Note: Sample output files are included for demonstration
+# Users should delete these before adapting for their own use:
+# - FluentForever_Arabic_Perfect/working_data.xlsx
+# - FluentForever_Arabic_Perfect/ANKI_IMPORT.tsv
+# - FluentForever_Arabic_Perfect/audio/*.mp3
+# - FluentForever_Arabic_Perfect/images/*.jpg
+ARCHIVED_PHASES.md
+repo_backup_pre_cleanup/
 CLAUDE.md

@@ -86,9 +86,11 @@ class ContentGenerator:
             raise ValueError("Google Gemini API key too short")
 
         logger.info(f"Content generation called with word='{word}', language='{language}', num_sentences={num_sentences}")
-        logger.info(f"API key provided: {'YES' if gemini_api_key else 'NO'} (length: {len(gemini_api_key) if gemini_api_key else 0})")
-        if gemini_api_key:
-            logger.info(f"API key starts with: {gemini_api_key[:10]}... (ends with: ...{gemini_api_key[-10:] if len(gemini_api_key) > 10 else gemini_api_key})")
+
+        # Sanitize user input to prevent prompt injection
+        import json as _json
+        safe_word = word.strip()[:100]  # Limit length
+        safe_word = ''.join(c for c in safe_word if c.isprintable())  # Remove control chars
 
         # Map language name for AI compatibility
         ai_language = CONTENT_LANGUAGE_MAP.get(language, language)
@@ -128,14 +130,14 @@ class ContentGenerator:
 
                     if definitions:
                         meaning_summary = '; '.join(definitions[:4])  # Use first 4 definitions
-                        enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings (letter, deity, etc.) and provide a comprehensive meaning like "letter (seventh letter of Hindi alphabet); deity (Vishnu)" - do NOT focus on just one meaning.'
+                        enriched_meaning_instruction = f'Analyze this linguistic data for "{safe_word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings (letter, deity, etc.) and provide a comprehensive meaning like "letter (seventh letter of Hindi alphabet); deity (Vishnu)" - do NOT focus on just one meaning.'
                     else:
-                        enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any raw linguistic data in your response.'
+                        enriched_meaning_instruction = f'Analyze this linguistic context for "{safe_word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include any raw linguistic data in your response.'
                 else:
                     # Legacy format
-                    enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include the original text in your response.'
+                    enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{safe_word}": "{enriched_meaning}". Generate a clean English meaning based on this. IMPORTANT: Return ONLY the English meaning in format like "house (a building where people live)" - do NOT include the original text in your response.'
             else:
-                enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+                enriched_meaning_instruction = f'Provide a brief English meaning for "{safe_word}".'
 
             # Check if language is Chinese for Pinyin instead of IPA
             is_chinese = language in ["Chinese Simplified", "Chinese Traditional", "Chinese (Simplified)", "Chinese (Traditional)"]
@@ -172,7 +174,7 @@ class ContentGenerator:
             if not custom_prompt:
                 prompt = f"""You are a native-level expert linguist in {ai_language} with professional experience teaching it to non-native learners.
 
-Your task: Generate a complete learning package for the {ai_language} word "{word}" in ONE response.
+Your task: Generate a complete learning package for the {ai_language} word "{safe_word}" in ONE response.
 
 ===========================
 STEP 1: WORD MEANING
@@ -184,7 +186,7 @@ IMPORTANT: Keep the entire meaning under 75 characters total.
 ===========================
 WORD-SPECIFIC RESTRICTIONS
 ===========================
-Based on the meaning above, identify any grammatical constraints, mood, person, or context restrictions for "{word}".
+Based on the meaning above, identify any grammatical constraints, mood, person, or context restrictions for "{safe_word}".
 Examples:
 - Imperatives (commands): ONLY use in direct commands, never in statements
 - Restricted moods: ONLY use in specific grammatical contexts (e.g., subjunctive for doubts)
@@ -197,13 +199,13 @@ IMPORTANT: Keep the entire restrictions summary under 60 characters total.
 ===========================
 STEP 2: SENTENCES
 ===========================
-Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {ai_language} for the word "{word}".
+Generate exactly {num_sentences} highly natural, idiomatic, culturally appropriate sentences in {ai_language} for the word "{safe_word}".
 
 QUALITY RULES (STRICT):
 - Every sentence must sound like it was written by an educated native speaker
 - Absolutely no unnatural, robotic, or literal-translation phrasing
 - Grammar, syntax, spelling, diacritics, gender agreement, case, politeness level, and punctuation must all be correct
-- The target word "{word}" MUST be used correctly in context according to its grammatical restrictions
+- The target word "{safe_word}" MUST be used correctly in context according to its grammatical restrictions
 - Ensure EVERY sentence matches the EXACT meaning and follows the WORD-SPECIFIC RESTRICTIONS above
 - If the word cannot be used naturally within restrictions, use related forms and note it (e.g., base form instead of imperative)
 - E.g., for imperatives: ONLY in commands like "Come here!"; for restricted moods: DO NOT force – use alternatives like base form

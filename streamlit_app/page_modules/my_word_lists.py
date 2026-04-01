@@ -30,7 +30,8 @@ def render_my_word_lists_page():
         return
 
     user_id = st.session_state.user['uid']
-    user_name = st.session_state.user.get('displayName', 'User')
+    import html as _html
+    user_name = _html.escape(st.session_state.user.get('displayName', 'User'))
 
     st.markdown(f"**Welcome back, {user_name}!** Manage your custom word lists below.")
 

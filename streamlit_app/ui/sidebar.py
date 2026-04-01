@@ -84,7 +84,8 @@ def render_sidebar():
     # Authentication section - prominent placement
     if is_signed_in():
         user = st.session_state.get("user", {})
-        st.sidebar.markdown(f"**👋 Welcome, {user.get('displayName', 'User')}!**")
+        import html as _html
+        st.sidebar.markdown(f"**👋 Welcome, {_html.escape(user.get('displayName', 'User'))}!**")
         if st.sidebar.button("🚪 Sign Out", key="sidebar_sign_out", use_container_width=True):
             sign_out()
             st.rerun()

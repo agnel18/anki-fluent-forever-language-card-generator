@@ -531,7 +531,8 @@ def render_user_profile():
             with col1:
                 st.markdown("👤")
             with col2:
-                st.markdown(f"**{user.get('displayName', 'User')}**")
+                import html as _html
+                st.markdown(f"**{_html.escape(user.get('displayName', 'User'))}**")
                 st.caption(user.get('email', ''))
 
             # Sign out button
@@ -598,7 +599,8 @@ def render_auth_handler_page():
     else:
         st.success("You're already signed in!")
         user = get_current_user()
-        st.write(f"Welcome back, {user.get('displayName', 'User')}!")
+        import html as _html
+        st.write(f"Welcome back, {_html.escape(user.get('displayName', 'User'))}!")
 
         # Show user stats
         user_profile = get_user_profile(user['uid'])
