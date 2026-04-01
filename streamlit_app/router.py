@@ -1,68 +1,44 @@
+import importlib
+import logging
 import streamlit as st
+
+logger = logging.getLogger(__name__)
+
+# Registry: page_name -> (module_path, function_name)
+PAGE_REGISTRY = {
+    "api_setup":          ("streamlit_app.page_modules.api_setup",          "render_api_setup_page"),
+    "main":               ("streamlit_app.page_modules.main",               "render_main_page"),
+    "language_select":    ("streamlit_app.page_modules.language_select",    "render_language_select_page"),
+    "word_select":        ("streamlit_app.page_modules.word_select",        "render_word_select_page"),
+    "sentence_settings":  ("streamlit_app.page_modules.sentence_settings",  "render_sentence_settings_page"),
+    "generate":           ("streamlit_app.page_modules.generate",           "render_generate_page"),
+    "generating":         ("streamlit_app.page_modules.generating",         "render_generating_page"),
+    "complete":           ("streamlit_app.page_modules.complete",           "render_complete_page"),
+    "settings":           ("streamlit_app.page_modules.settings",           "render_settings_page"),
+    "statistics":         ("streamlit_app.page_modules.statistics",         "render_statistics_page"),
+    "my_word_lists":      ("streamlit_app.page_modules.my_word_lists",      "render_my_word_lists_page"),
+    "privacy_policy":     ("streamlit_app.page_modules.privacy_policy",     "render_privacy_policy_page"),
+    "terms_conditions":   ("streamlit_app.page_modules.terms_conditions",   "render_terms_conditions_page"),
+    "refund_policy":      ("streamlit_app.page_modules.refund_policy",      "render_refund_policy_page"),
+    "shipping_delivery":  ("streamlit_app.page_modules.shipping_delivery",  "render_shipping_delivery_page"),
+    "contact_us":         ("streamlit_app.page_modules.contact_us",         "render_contact_us_page"),
+    "auth_handler":       ("streamlit_app.page_modules.auth_handler",       "render_auth_handler_page"),
+}
 
 def route_to_page(current_page):
     """Route to the appropriate page based on current_page."""
     try:
-        if current_page == "api_setup":
-            from streamlit_app.page_modules.api_setup import render_api_setup_page
-            render_api_setup_page()
-        elif current_page == "main":
-            from streamlit_app.page_modules.main import render_main_page
-            render_main_page()
-        elif current_page == "language_select":
-            from streamlit_app.page_modules.language_select import render_language_select_page
-            render_language_select_page()
-        elif current_page == "word_select":
-            from streamlit_app.page_modules.word_select import render_word_select_page
-            render_word_select_page()
-        elif current_page == "sentence_settings":
-            from streamlit_app.page_modules.sentence_settings import render_sentence_settings_page
-            render_sentence_settings_page()
-        elif current_page == "generate":
-            from streamlit_app.page_modules.generate import render_generate_page
-            render_generate_page()
-        elif current_page == "generating":
-            from streamlit_app.page_modules.generating import render_generating_page
-            render_generating_page()
-        elif current_page == "complete":
-            from streamlit_app.page_modules.complete import render_complete_page
-            render_complete_page()
-        elif current_page == "settings":
-            from streamlit_app.page_modules.settings import render_settings_page
-            render_settings_page()
-        elif current_page == "statistics":
-            from streamlit_app.page_modules.statistics import render_statistics_page
-            render_statistics_page()
-        elif current_page == "my_word_lists":
-            from streamlit_app.page_modules.my_word_lists import render_my_word_lists_page
-            render_my_word_lists_page()
-        elif current_page == "privacy_policy":
-            from streamlit_app.page_modules.privacy_policy import render_privacy_policy_page
-            render_privacy_policy_page()
-        elif current_page == "terms_conditions":
-            from streamlit_app.page_modules.terms_conditions import render_terms_conditions_page
-            render_terms_conditions_page()
-        elif current_page == "refund_policy":
-            from streamlit_app.page_modules.refund_policy import render_refund_policy_page
-            render_refund_policy_page()
-        elif current_page == "shipping_delivery":
-            from streamlit_app.page_modules.shipping_delivery import render_shipping_delivery_page
-            render_shipping_delivery_page()
-        elif current_page == "contact_us":
-            from streamlit_app.page_modules.contact_us import render_contact_us_page
-            render_contact_us_page()
-        elif current_page == "auth_handler":
-            from streamlit_app.page_modules.auth_handler import render_auth_handler_page
-            render_auth_handler_page()
+        entry = PAGE_REGISTRY.get(current_page)
+        if entry:
+            module_path, func_name = entry
+            module = importlib.import_module(module_path)
+            getattr(module, func_name)()
         else:
-            # Default to main page
-            print(f"Warning: Unknown page '{current_page}', defaulting to main")
-            from streamlit_app.page_modules.main import render_main_page
-            render_main_page()
+            logger.warning(f"Unknown page '{current_page}', defaulting to main")
+            module = importlib.import_module("streamlit_app.page_modules.main")
+            module.render_main_page()
     except Exception as page_error:
-        print(f"DEBUG: Page loading error for '{current_page}': {type(page_error).__name__}: {page_error}")
-        import traceback
-        print(f"DEBUG: Full traceback:\n{traceback.format_exc()}")
+        logger.error(f"Page loading error for '{current_page}': {type(page_error).__name__}: {page_error}", exc_info=True)
         st.error(f"Error loading page '{current_page}': {page_error}")
         st.write("Falling back to main page...")
         try:

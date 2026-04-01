@@ -280,9 +280,29 @@ async def generate_audio_google_rest_async(
 
     except requests.exceptions.Timeout:
         logger.error(f"Timeout error generating audio with voice {voice_name}")
+        try:
+            import streamlit as st
+            if not st.session_state.get('tts_warning_shown'):
+                st.warning("⚠️ **Audio generation timed out** — The TTS service is slow or unreachable. Cards will still be created without audio.")
+                st.session_state.tts_warning_shown = True
+        except Exception:
+            pass
         return False
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error generating audio with voice {voice_name}: {e}")
+        try:
+            import streamlit as st
+            if not st.session_state.get('tts_warning_shown'):
+                error_str = str(e).lower()
+                if '429' in error_str or 'quota' in error_str or 'rate' in error_str:
+                    st.warning("⚠️ **TTS quota exhausted** — Monthly character limit reached. Cards will still be created without audio.")
+                elif '403' in error_str or '401' in error_str:
+                    st.warning("⚠️ **TTS authentication failed** — Check your API key in API Settings. Cards will still be created without audio.")
+                else:
+                    st.warning("⚠️ **Audio generation failed** — Network error contacting TTS service. Cards will still be created without audio.")
+                st.session_state.tts_warning_shown = True
+        except Exception:
+            pass
         return False
     except Exception as exc:
         logger.error(f"Unexpected error in Google TTS REST generation for {voice_name}: {exc}")
@@ -389,6 +409,13 @@ def generate_audio(
     # Check if TTS is configured (has API key)
     if not is_google_tts_configured():
         logger.warning("Google Cloud Text-to-Speech not configured - no API key available")
+        try:
+            import streamlit as st
+            if not st.session_state.get('tts_warning_shown'):
+                st.warning("⚠️ **Audio skipped** — Google Cloud TTS API key not configured. Cards will still be created without audio. Set up your TTS key in API Settings.")
+                st.session_state.tts_warning_shown = True
+        except Exception:
+            pass
         return []
 
     os.makedirs(output_dir, exist_ok=True)

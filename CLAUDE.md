@@ -85,7 +85,7 @@ Both pages use the same 3-section layout with self-contained instructions:
 - Rate limits: https://aistudio.google.com/rate-limit
 - Models: https://ai.google.dev/gemini-api/docs/models
 
-> **⚠️ KNOWN ISSUE — Model config is DUPLICATED** in `config/models.py` AND `shared_utils.py`. The `content_generator.py` imports from `shared_utils`, not `config/models.py`. Both must be kept in sync. This is tech debt.
+> **⚠️ KNOWN ISSUE — Model config was DUPLICATED** in `config/models.py` AND `shared_utils.py`. **RESOLVED:** `config/models.py` deleted (was dead code — nothing imported from it). `shared_utils.py` is the sole canonical source. `content_generator.py` imports from `shared_utils`.
 
 ---
 
@@ -145,6 +145,15 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 |-----------|----------|--------|--------|
 | **Primary** | French v2.0 | `languages/french/` | Enterprise gold standard — most complete, all patterns |
 | **Secondary** | Chinese Simplified | `languages/chinese_simplified/` | Clean architecture reference |
+
+#### Direction-Based Gold Standard Selection
+
+| Direction | Gold Standard | Use For |
+|-----------|--------------|---------|
+| **LTR** | French v2.0 | All LTR languages (Spanish, German, Japanese, Korean, Hungarian, etc.) |
+| **RTL** | Arabic | All RTL languages (Hebrew, Persian, Urdu, Pashto) |
+
+> **Note:** Japanese is **LTR** (horizontal) or top-to-bottom vertical — it is NOT RTL. Use French as gold standard for Japanese, Korean, and Hungarian.
 
 ```
 languages/french/
@@ -297,11 +306,12 @@ APIError (base)
 1. **Grammar analyzers for 69 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
 3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 8 language outputs to confirm repair quality.
-4. **TTS silent failure** — `audio_generator.py` returns `False` on TTS quota exhaustion with no user-facing message. Consider adding an explicit warning.
+4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.
 5. **Social media posts** — Not yet implemented.
 6. **Razorpay payment** — Currently a simple redirect link in `payment.py`. No server-side API integration, no webhook handling.
-7. **Model config duplication** — `shared_utils.py` and `config/models.py` both define `GEMINI_MODELS` independently. Risk of drift. content_generator uses shared_utils.
+7. ~~**Model config duplication**~~ — **RESOLVED.** `config/models.py` deleted (was dead code — nothing imported from it). `shared_utils.py` is the sole canonical source. `content_generator.py` imports from `shared_utils`.
 8. **.gitignore encoding** — Last 2 entries (`ARCHIVED_PHASES.md`, `repo_backup_pre_cleanup/`) were appended in UTF-16LE encoding. Rest of file is ASCII/UTF-8. May cause Git to not ignore those entries on some systems.
+9. **API key retrieval duplication** — Key retrieval logic duplicated across `audio_generator.py`, `state_manager.py`, `api_setup.py`, `sync_manager.py`. Each has slightly different needs (startup vs runtime vs UI vs sync). Documented tech debt — centralizing risks breaking the delicate fallback chains. Address when building the next major feature.
 
 ---
 
@@ -311,9 +321,8 @@ APIError (base)
 |------|---------|
 | `streamlit_app/app_v3.py` | Main entry point, routing, global CSS |
 | `streamlit_app/constants.py` | All app constants, rate limits, page names, session keys |
-| `streamlit_app/shared_utils.py` | Model config (duplicate), cache, retry utilities, exceptions |
-| `streamlit_app/config/models.py` | Canonical model config (but content_generator uses shared_utils) |
-| `streamlit_app/router.py` | Page routing via session state |
+| `streamlit_app/shared_utils.py` | Canonical model config, cache, retry utilities, exceptions |
+| `streamlit_app/router.py` | Page routing via session state (dict dispatch + importlib) |
 | `streamlit_app/services/generation/content_generator.py` | Gemini content generation, AI repair mechanism |
 | `streamlit_app/services/generation/generation_orchestrator.py` | Orchestrates batch generation workflow |
 | `streamlit_app/audio_generator.py` | Google Cloud TTS integration (REST API, no Gemini key fallback) |

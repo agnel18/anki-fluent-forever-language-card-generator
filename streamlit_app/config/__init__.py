@@ -1,19 +1,8 @@
 # config/__init__.py - Config package initialization
 """
 Configuration package for centralized settings management.
+Note: Model configuration lives in shared_utils.py (canonical source).
 """
-
-from .models import (
-    GEMINI_MODELS,
-    get_gemini_model,
-    get_gemini_fallback_model,
-    get_available_gemini_models,
-    is_deprecated_model,
-    API_ENDPOINTS,
-    get_gemini_endpoint,
-    get_tts_endpoint,
-    get_service_config,
-)
 
 from .api_keys import (
     get_api_key,
@@ -43,12 +32,6 @@ from .defaults import (
 )
 
 __all__ = [
-    # Models
-    'GEMINI_MODELS', 'get_gemini_model', 'get_gemini_fallback_model',
-    'get_available_gemini_models', 'is_deprecated_model',
-    'API_ENDPOINTS', 'get_gemini_endpoint', 'get_tts_endpoint',
-    'get_service_config',
-
     # API Keys
     'get_api_key', 'validate_api_key', 'is_fallback_key',
     'get_required_services', 'get_all_services', 'get_service_description',
