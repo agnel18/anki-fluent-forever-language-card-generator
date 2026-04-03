@@ -124,7 +124,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 ## Language Analyzers
 
 ### Status
-**8 implemented** out of 77 target languages:
+**9 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
@@ -134,10 +134,11 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | French | `fr` | `languages/french/` | ✅ Gold standard (v2.0) |
 | German | `de` | `languages/german/` | ✅ Implemented |
 | Hindi | `hi` | `languages/hindi/` | ✅ Implemented |
+| Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented |
 
-**69 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+**68 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
 
 ### Gold Standards
 
@@ -303,9 +304,9 @@ APIError (base)
 
 ## Open Tasks
 
-1. **Grammar analyzers for 69 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
+1. **Grammar analyzers for 68 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
-3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 8 language outputs to confirm repair quality.
+3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 9 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.
 5. **Social media posts** — Not yet implemented.
 6. **Razorpay payment** — Currently a simple redirect link in `payment.py`. No server-side API integration, no webhook handling.

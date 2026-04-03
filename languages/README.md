@@ -20,10 +20,14 @@ languages/
 | Language | Code | Directory |
 |----------|------|-----------|
 | Arabic | ar | arabic/ |
-| Hindi | hi | hindi/ |
 | Chinese Simplified | zh | chinese_simplified/ |
 | Chinese Traditional | zh_tw | chinese_traditional/ |
+| French | fr | french/ |
+| German | de | german/ |
+| Hindi | hi | hindi/ |
+| Japanese | ja | japanese/ |
 | Spanish | es | spanish/ |
+| Turkish | tr | turkish/ |
 
 ## File Naming Convention
 

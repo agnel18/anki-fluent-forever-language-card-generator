@@ -1,0 +1,1 @@
+"""Japanese analyzer domain components."""

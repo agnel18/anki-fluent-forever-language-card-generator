@@ -1,0 +1,97 @@
+# ja_patterns.yaml
+# Japanese General Patterns Configuration
+
+# Script detection patterns (Unicode ranges)
+script_ranges:
+  hiragana:
+    start: "\\u3040"
+    end: "\\u309F"
+    description: "Hiragana characters"
+  katakana:
+    start: "\\u30A0"
+    end: "\\u30FF"
+    description: "Katakana characters"
+  kanji:
+    ranges:
+      - start: "\\u4E00"
+        end: "\\u9FFF"
+        description: "CJK Unified Ideographs"
+      - start: "\\u3400"
+        end: "\\u4DBF"
+        description: "CJK Unified Ideographs Extension A"
+  fullwidth:
+    start: "\\uFF00"
+    end: "\\uFFEF"
+    description: "Fullwidth ASCII and punctuation"
+  punctuation:
+    chars: ["。", "、", "！", "？", "「", "」", "『", "』", "（", "）", "・", "〜", "ー", "…"]
+
+# Sentence structure patterns
+sentence_patterns:
+  basic_sov:
+    pattern: "Subject + は/が + Object + を + Verb"
+    example: "私は本を読む"
+    description: "Basic Subject-Object-Verb pattern"
+  topic_comment:
+    pattern: "Topic + は + Comment"
+    example: "東京は大きいです"
+    description: "Topic-comment structure (fundamental to Japanese)"
+  existence:
+    animate: "Subject + が + いる/います"
+    inanimate: "Subject + が + ある/あります"
+    example_animate: "猫がいる"
+    example_inanimate: "本がある"
+  relative_clause:
+    pattern: "Modifying clause + Noun"
+    example: "昨日買った本"
+    description: "Relative clause precedes the noun (no relative pronoun)"
+  giving_receiving:
+    give_to_equal: "あげる"
+    give_to_inferior: "やる"
+    receive: "もらう"
+    give_to_me: "くれる"
+
+# Common grammatical patterns by level
+beginner_patterns:
+  - "〜です / 〜ます (polite copula/verb)"
+  - "〜は〜です (A is B)"
+  - "〜を〜ます (object + verb)"
+  - "〜に〜があります/います (existence)"
+  - "〜たいです (want to)"
+  - "〜てください (please do)"
+  - "〜ましょう (let's)"
+  - "〜ないでください (please don't)"
+
+intermediate_patterns:
+  - "〜ている (progressive/resultative)"
+  - "〜たことがある (experience)"
+  - "〜ようにする (try to / make sure to)"
+  - "〜ようになる (come to be able to)"
+  - "〜てしまう (completive/regret)"
+  - "〜ことができる (can do)"
+  - "〜なければならない (must do)"
+  - "〜かもしれない (might)"
+  - "〜そうだ (hearsay / appears to be)"
+  - "〜ようだ / 〜みたいだ (seems like)"
+
+advanced_patterns:
+  - "〜ざるを得ない (cannot help but)"
+  - "〜に違いない (must be / no doubt)"
+  - "〜わけがない (there's no way)"
+  - "〜に対して (toward / in contrast to)"
+  - "〜において (in / at [formal])"
+  - "〜にもかかわらず (despite)"
+  - "〜ものの (although)"
+  - "〜ばかりか〜も (not only... but also)"
+  - "〜にしても (even if)"
+  - "〜を通じて (through / throughout)"
+
+# Word boundary heuristics
+word_boundary_rules:
+  - "Particle follows content word (often single hiragana)"
+  - "Kanji cluster = content word stem"
+  - "Hiragana after kanji = verb/adjective ending or particle"
+  - "Katakana cluster = loanword or emphasis"
+  - "ー (chōon) extends katakana vowel"
+  - "っ (sokuon) = double consonant, belongs to preceding mora"
+  - "ん is always part of preceding word"

@@ -1,0 +1,72 @@
+# ja_adjective_patterns.yaml
+# Japanese Adjective Configuration
+
+# い-adjective (i-adjective / 形容詞)
+i_adjectives:
+  description: "True adjectives ending in い. Conjugate directly."
+  conjugations:
+    present_affirmative: "Base form (e.g., 高い)"
+    present_negative: "Drop い + くない (e.g., 高くない)"
+    past_affirmative: "Drop い + かった (e.g., 高かった)"
+    past_negative: "Drop い + くなかった (e.g., 高くなかった)"
+    te_form: "Drop い + くて (e.g., 高くて)"
+    adverbial: "Drop い + く (e.g., 高く)"
+    polite: "Base + です (e.g., 高いです)"
+  exceptions:
+    いい:
+      note: "Irregular. Uses よ- stem for all conjugations except plain present."
+      present: "いい"
+      negative: "よくない"
+      past: "よかった"
+      past_negative: "よくなかった"
+      te_form: "よくて"
+    かっこいい:
+      note: "Compound with いい. Same irregular pattern."
+      past: "かっこよかった"
+  common_examples:
+    大きい: "big"
+    小さい: "small"
+    高い: "tall/expensive"
+    安い: "cheap"
+    新しい: "new"
+    古い: "old"
+    暑い: "hot (weather)"
+    寒い: "cold (weather)"
+    美しい: "beautiful"
+    楽しい: "fun"
+    嬉しい: "happy"
+    悲しい: "sad"
+    難しい: "difficult"
+    易しい: "easy"
+    面白い: "interesting"
+
+# な-adjective (na-adjective / 形容動詞)
+na_adjectives:
+  description: "Adjectival nouns. Require な before nouns, だ/です for predicate."
+  conjugations:
+    attributive: "Stem + な + noun (e.g., 静かな部屋)"
+    present_affirmative: "Stem + だ (plain) / です (polite)"
+    present_negative: "Stem + ではない (plain) / ではありません (polite)"
+    past_affirmative: "Stem + だった (plain) / でした (polite)"
+    past_negative: "Stem + ではなかった (plain) / ではありませんでした (polite)"
+    te_form: "Stem + で (e.g., 静かで)"
+    adverbial: "Stem + に (e.g., 静かに)"
+  common_examples:
+    静か: "quiet"
+    綺麗: "beautiful/clean"
+    有名: "famous"
+    元気: "energetic/healthy"
+    好き: "liked"
+    嫌い: "disliked"
+    大変: "terrible/very"
+    大切: "important"
+    便利: "convenient"
+    簡単: "simple"
+    親切: "kind"
+    丁寧: "polite/careful"
+
+# Special cases: words that look like い-adjectives but are な-adjectives
+false_i_adjectives:
+  - "きれい (綺麗)"
+  - "嫌い"
+  - "有名"

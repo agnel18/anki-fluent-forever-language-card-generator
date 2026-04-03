@@ -47,7 +47,7 @@ The app guides you through setup on the **"Step 0: API Keys"** page. You need **
 
 ### Content Generation
 - **AI Sentences** — Gemini AI generates 1–10 contextual sentences per word (default 4)
-- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (8 languages)
+- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (9 languages)
 - **Native Audio** — Google Cloud TTS with learner-friendly speed (0.8x default), adjustable 0.5x–1.5x
 - **Images** — Pixabay integration with AI keyword extraction
 - **IPA / Romanization** — Phonetic transcriptions for all languages; romanization for complex scripts (Hindi, Arabic, Persian, etc.)

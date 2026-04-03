@@ -1,0 +1,71 @@
+# ja_honorific_patterns.yaml
+# Japanese Keigo (Honorific Language) Configuration
+
+# Honorific system overview
+honorific_levels:
+  teineigo:
+    name: "丁寧語 (Polite language)"
+    description: "Standard polite speech. Uses です/ます forms."
+    markers: ["です", "ます", "でした", "ました", "ません", "でしょう"]
+    usage: "Default for conversations with strangers, colleagues, acquaintances."
+  sonkeigo:
+    name: "尊敬語 (Respectful language)"
+    description: "Elevates the status of the subject (the person you're talking about)."
+    patterns:
+      passive_form: "Verb passive form used as honorific (e.g., 読まれる)"
+      o_verb_ni_naru: "お + verb stem + になる (e.g., お読みになる)"
+      special_verbs:
+        いる: "いらっしゃる"
+        行く: "いらっしゃる"
+        来る: "いらっしゃる"
+        する: "なさる"
+        食べる: "召し上がる"
+        飲む: "召し上がる"
+        言う: "おっしゃる"
+        見る: "ご覧になる"
+        知る: "ご存知"
+        くれる: "くださる"
+    usage: "Speaking about superiors, customers, elderly people."
+  kenjougo:
+    name: "謙譲語 (Humble language)"
+    description: "Lowers the status of the speaker or their in-group."
+    patterns:
+      o_verb_suru: "お + verb stem + する (e.g., お持ちする)"
+      special_verbs:
+        いる: "おる"
+        行く: "参る"
+        来る: "参る"
+        する: "いたす"
+        食べる: "いただく"
+        飲む: "いただく"
+        言う: "申す / 申し上げる"
+        見る: "拝見する"
+        知る: "存じる"
+        あげる: "差し上げる"
+        もらう: "いただく"
+    usage: "Speaking about oneself or in-group to superiors/customers."
+
+# Common honorific prefixes/suffixes
+honorific_affixes:
+  prefixes:
+    お: "Honorific prefix (native Japanese words) — お名前, お水"
+    ご: "Honorific prefix (Sino-Japanese words) — ご連絡, ご家族"
+  suffixes:
+    さん: "General polite title — Mr./Ms./Mrs."
+    様: "Formal title — Sir/Madam (written)"
+    さま: "Formal title — Sir/Madam (spoken)"
+    ちゃん: "Affectionate (children, close friends)"
+    くん: "Familiar (younger males, subordinates)"
+    先生: "Teacher/Doctor/Expert"
+    殿: "Formal (official documents)"
+
+# Politeness level detection markers
+politeness_markers:
+  casual:
+    endings: ["だ", "だろう", "だった"]
+    sentence_particles: ["よ", "ね", "ぞ", "な", "わ", "さ"]
+  polite:
+    endings: ["です", "ます", "でした", "ました", "ません", "でしょう"]
+  formal:
+    markers: ["ございます", "いたします", "申し上げます", "存じます"]
+    patterns: ["お〜になる", "お〜する", "ご〜になる", "ご〜する"]

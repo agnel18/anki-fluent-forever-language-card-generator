@@ -1,0 +1,55 @@
+# ja_particle_patterns.yaml
+# Japanese Particle Configuration
+
+# Case particles (格助詞)
+case_particles:
+  は: "topic marker"
+  が: "subject marker"
+  を: "object marker"
+  に: "direction/time/indirect object marker"
+  で: "means/location of action marker"
+  の: "possession/nominalization marker"
+  と: "and/with/quotation marker"
+  へ: "direction marker"
+  から: "from/because marker"
+  まで: "until/to marker"
+  より: "comparison marker"
+
+# Adverbial particles (副助詞)
+adverbial_particles:
+  も: "also/too"
+  は: "contrast (when not topic)"
+  さえ: "even"
+  しか: "only (with negative)"
+  だけ: "only/just"
+  ばかり: "just/nothing but"
+  ほど: "extent/degree"
+  くらい: "approximately"
+  など: "and so on"
+
+# Sentence-final particles (終助詞)
+sentence_final_particles:
+  よ: "assertion/emphasis (new info)"
+  ね: "confirmation/agreement seeking"
+  か: "question marker"
+  わ: "soft assertion"
+  ぞ: "strong assertion (masculine)"
+  な: "prohibition/reflection"
+  さ: "casual assertion"
+  の: "explanation/seeking explanation"
+
+# Conjunctive particles (接続助詞)
+conjunctive_particles:
+  て: "and/then (te-form connector)"
+  から: "because/after"
+  ので: "because (softer)"
+  が: "but/although"
+  けれど: "but/although"
+  けれども: "but/although (formal)"
+  のに: "despite/although"
+  ても: "even if/though"
+  たら: "if/when"
+  ば: "if (conditional)"
+  と: "when/if (automatic consequence)"
+  ながら: "while doing"
+  し: "and also (listing reasons)"

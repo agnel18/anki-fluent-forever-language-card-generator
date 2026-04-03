@@ -1,0 +1,110 @@
+# ja_grammatical_roles.yaml
+# Japanese Grammatical Roles Configuration
+
+role_hierarchy:
+  # Verb hierarchy
+  auxiliary_verb: "verb"
+  honorific_verb: "verb"
+  humble_verb: "verb"
+  potential_verb: "verb"
+  passive_verb: "verb"
+  causative_verb: "verb"
+  te_form: "verb"
+  conditional_form: "verb"
+  volitional_form: "verb"
+
+  # Adjective hierarchy
+  i_adjective: "adjective"
+  na_adjective: "adjective"
+
+  # Particle hierarchy
+  topic_particle: "particle"
+  subject_particle: "particle"
+  object_particle: "particle"
+  sentence_final_particle: "particle"
+  nominalizer: "particle"
+  quotation_particle: "particle"
+
+complexity_filters:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - particle
+    - copula
+    - conjunction
+    - pronoun
+
+  intermediate:
+    - noun
+    - verb
+    - auxiliary_verb
+    - i_adjective
+    - na_adjective
+    - adverb
+    - particle
+    - topic_particle
+    - subject_particle
+    - object_particle
+    - copula
+    - counter
+    - conjunction
+    - pronoun
+
+  advanced:
+    - noun
+    - verb
+    - auxiliary_verb
+    - honorific_verb
+    - humble_verb
+    - potential_verb
+    - passive_verb
+    - causative_verb
+    - te_form
+    - conditional_form
+    - volitional_form
+    - i_adjective
+    - na_adjective
+    - adverb
+    - particle
+    - topic_particle
+    - subject_particle
+    - object_particle
+    - sentence_final_particle
+    - nominalizer
+    - quotation_particle
+    - copula
+    - counter
+    - conjunction
+    - pronoun
+    - interjection
+
+role_descriptions:
+  noun: "Content word representing a person, place, thing, or idea (名詞)"
+  verb: "Word expressing action, state, or occurrence (動詞)"
+  i_adjective: "Adjective ending in い that conjugates directly (い形容詞)"
+  na_adjective: "Adjective requiring な before nouns (な形容詞)"
+  adjective: "A descriptive word (形容詞)"
+  adverb: "Word modifying a verb, adjective, or sentence (副詞)"
+  particle: "Postpositional grammatical marker (助詞)"
+  topic_particle: "は — marks the topic of the sentence"
+  subject_particle: "が — marks the grammatical subject"
+  object_particle: "を — marks the direct object"
+  copula: "です/だ — linking verb equivalent to 'is/am/are' (繋辞)"
+  auxiliary_verb: "Verbal suffix adding grammatical meaning (助動詞)"
+  conjunction: "Word connecting clauses or sentences (接続詞)"
+  counter: "Counter word used with numbers (助数詞)"
+  pronoun: "Word replacing a noun (代名詞)"
+  honorific_verb: "Verb form showing respect to the subject (尊敬語)"
+  humble_verb: "Verb form lowering the speaker's actions (謙譲語)"
+  potential_verb: "Verb form expressing ability/possibility (可能形)"
+  passive_verb: "Verb form expressing passive voice (受身形)"
+  causative_verb: "Verb form expressing causation (使役形)"
+  te_form: "Verb/adjective て-form used for connecting, requests, progressive (て形)"
+  conditional_form: "Verb form expressing conditions ば/たら (条件形)"
+  volitional_form: "Verb form expressing intention/suggestion よう (意志形)"
+  sentence_final_particle: "Particle at sentence end expressing mood/attitude (終助詞)"
+  nominalizer: "Particle turning a clause into a noun phrase — の/こと (名詞化)"
+  quotation_particle: "と — marks quoted speech or thought (引用助詞)"
+  interjection: "Expression of emotion or greeting (感動詞)"

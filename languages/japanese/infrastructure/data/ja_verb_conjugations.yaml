@@ -1,0 +1,144 @@
+# ja_verb_conjugations.yaml
+# Japanese Verb Conjugation Patterns
+
+# Verb groups
+verb_groups:
+  godan:
+    name: "五段動詞 (Godan / Group I)"
+    description: "Consonant-stem verbs. The final kana changes across five vowel rows."
+    endings: ["う", "く", "ぐ", "す", "つ", "ぬ", "ぶ", "む", "る"]
+    examples:
+      書く: "to write"
+      話す: "to speak"
+      読む: "to read"
+      飲む: "to drink"
+      待つ: "to wait"
+      死ぬ: "to die"
+      遊ぶ: "to play"
+      買う: "to buy"
+      走る: "to run"
+  ichidan:
+    name: "一段動詞 (Ichidan / Group II)"
+    description: "Vowel-stem verbs. Drop る and add conjugation suffix."
+    endings: ["る"]
+    preceding_sounds: ["い", "え"]
+    examples:
+      食べる: "to eat"
+      見る: "to see"
+      起きる: "to wake up"
+      寝る: "to sleep"
+      開ける: "to open"
+  irregular:
+    name: "不規則動詞 (Irregular)"
+    description: "Only two truly irregular verbs."
+    verbs:
+      する: "to do"
+      来る: "to come"
+
+# Conjugation forms
+conjugation_forms:
+  dictionary:
+    name: "辞書形 (Dictionary form)"
+    usage: "Plain present/future affirmative"
+    godan_rule: "base form"
+    ichidan_rule: "base form"
+    example: "書く / 食べる"
+  masu:
+    name: "ます形 (Polite form)"
+    usage: "Polite present/future"
+    godan_rule: "Change final u-row kana to i-row + ます"
+    ichidan_rule: "Drop る + ます"
+    example: "書きます / 食べます"
+  nai:
+    name: "ない形 (Negative form)"
+    usage: "Plain negative"
+    godan_rule: "Change final u-row kana to a-row + ない"
+    ichidan_rule: "Drop る + ない"
+    example: "書かない / 食べない"
+  te:
+    name: "て形 (Te-form)"
+    usage: "Connecting, requesting, progressive"
+    godan_rules:
+      く: "いて"
+      ぐ: "いで"
+      す: "して"
+      つ: "って"
+      う: "って"
+      る: "って"
+      ぬ: "んで"
+      ぶ: "んで"
+      む: "んで"
+    ichidan_rule: "Drop る + て"
+    irregular:
+      行く: "行って"
+    example: "書いて / 食べて"
+  ta:
+    name: "た形 (Past form)"
+    usage: "Plain past"
+    godan_rules:
+      く: "いた"
+      ぐ: "いだ"
+      す: "した"
+      つ: "った"
+      う: "った"
+      る: "った"
+      ぬ: "んだ"
+      ぶ: "んだ"
+      む: "んだ"
+    ichidan_rule: "Drop る + た"
+    example: "書いた / 食べた"
+  potential:
+    name: "可能形 (Potential form)"
+    usage: "Ability - can do"
+    godan_rule: "Change final u-row to e-row + る"
+    ichidan_rule: "Drop る + られる (or colloquial れる)"
+    example: "書ける / 食べられる"
+  passive:
+    name: "受身形 (Passive form)"
+    usage: "Passive voice / suffering passive"
+    godan_rule: "Change final u-row to a-row + れる"
+    ichidan_rule: "Drop る + られる"
+    example: "書かれる / 食べられる"
+  causative:
+    name: "使役形 (Causative form)"
+    usage: "Make/let someone do"
+    godan_rule: "Change final u-row to a-row + せる"
+    ichidan_rule: "Drop る + させる"
+    example: "書かせる / 食べさせる"
+  conditional_ba:
+    name: "ば形 (Conditional)"
+    usage: "If condition (general)"
+    godan_rule: "Change final u-row to e-row + ば"
+    ichidan_rule: "Drop る + れば"
+    example: "書けば / 食べれば"
+  volitional:
+    name: "意志形 (Volitional form)"
+    usage: "Let's / intend to"
+    godan_rule: "Change final u-row to o-row + う"
+    ichidan_rule: "Drop る + よう"
+    example: "書こう / 食べよう"
+  imperative:
+    name: "命令形 (Imperative form)"
+    usage: "Command"
+    godan_rule: "Change final u-row to e-row"
+    ichidan_rule: "Drop る + ろ (or よ)"
+    example: "書け / 食べろ"
+
+# Common auxiliary verbs / verb endings
+auxiliary_patterns:
+  ている: "progressive/resultative (is doing / has done)"
+  てある: "resultative state (something has been done)"
+  てしまう: "completive / regrettable action"
+  てみる: "try doing"
+  てくる: "come to do / begin to"
+  ていく: "go on doing / continue"
+  てもらう: "receive the favor of someone doing"
+  てあげる: "do something for someone (give favor)"
+  てくれる: "someone does something for me (give favor)"
+  たい: "want to (desire)"
+  たがる: "seems to want to (third person desire)"
+  なければならない: "must do"
+  なくてもいい: "don't have to"
+  ことができる: "can do (formal potential)"
+  ようにする: "make effort to / make sure to"
+  ようになる: "come to be able to / it becomes that"

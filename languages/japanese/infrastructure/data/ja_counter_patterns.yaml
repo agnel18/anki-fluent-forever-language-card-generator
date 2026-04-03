@@ -1,0 +1,111 @@
+# ja_counter_patterns.yaml
+# Japanese Counter Words (助数詞) Configuration
+
+# General counters
+general_counters:
+  つ:
+    name: "つ (Generic counter)"
+    usage: "Native Japanese counting system (1-9 only)"
+    readings: ["ひとつ", "ふたつ", "みっつ", "よっつ", "いつつ", "むっつ", "ななつ", "やっつ", "ここのつ", "とお"]
+    note: "Most versatile, works for almost anything"
+
+# People counters
+people_counters:
+  人:
+    name: "人 (にん/り)"
+    usage: "Counting people"
+    irregular: ["一人(ひとり)", "二人(ふたり)"]
+    regular_reading: "にん (3+)"
+  名:
+    name: "名 (めい)"
+    usage: "Counting people (formal/written)"
+
+# Object counters
+object_counters:
+  個:
+    name: "個 (こ)"
+    usage: "Small, compact objects"
+    examples: ["apples", "eggs", "balls"]
+  本:
+    name: "本 (ほん/ぼん/ぽん)"
+    usage: "Long, cylindrical objects"
+    examples: ["pens", "bottles", "trees", "roads", "rivers"]
+    sound_changes: ["一本(いっぽん)", "三本(さんぼん)", "六本(ろっぽん)", "八本(はっぽん)", "十本(じゅっぽん)"]
+  枚:
+    name: "枚 (まい)"
+    usage: "Flat, thin objects"
+    examples: ["paper", "plates", "shirts", "tickets"]
+  冊:
+    name: "冊 (さつ)"
+    usage: "Bound objects"
+    examples: ["books", "notebooks", "magazines"]
+  台:
+    name: "台 (だい)"
+    usage: "Machines, vehicles"
+    examples: ["cars", "computers", "TVs"]
+  杯:
+    name: "杯 (はい/ばい/ぱい)"
+    usage: "Cups, glasses, bowls of liquid"
+    sound_changes: ["一杯(いっぱい)", "三杯(さんばい)"]
+
+# Animal counters
+animal_counters:
+  匹:
+    name: "匹 (ひき/びき/ぴき)"
+    usage: "Small-medium animals"
+    examples: ["cats", "dogs", "fish", "insects"]
+    sound_changes: ["一匹(いっぴき)", "三匹(さんびき)", "六匹(ろっぴき)"]
+  頭:
+    name: "頭 (とう)"
+    usage: "Large animals"
+    examples: ["horses", "cows", "elephants"]
+  羽:
+    name: "羽 (わ)"
+    usage: "Birds, rabbits"
+    examples: ["birds", "chickens", "rabbits"]
+
+# Time counters
+time_counters:
+  時:
+    name: "時 (じ)"
+    usage: "Hours (time of day)"
+  分:
+    name: "分 (ふん/ぷん)"
+    usage: "Minutes"
+    sound_changes: ["一分(いっぷん)", "三分(さんぷん)", "六分(ろっぷん)", "八分(はっぷん)", "十分(じゅっぷん)"]
+  秒:
+    name: "秒 (びょう)"
+    usage: "Seconds"
+  日:
+    name: "日 (にち/か)"
+    usage: "Days / dates"
+    irregular: ["一日(ついたち)", "二日(ふつか)", "三日(みっか)", "四日(よっか)", "五日(いつか)", "六日(むいか)", "七日(なのか)", "八日(ようか)", "九日(ここのか)", "十日(とおか)", "二十日(はつか)"]
+  週間:
+    name: "週間 (しゅうかん)"
+    usage: "Weeks"
+  か月:
+    name: "か月 (かげつ)"
+    usage: "Months (duration)"
+  年:
+    name: "年 (ねん)"
+    usage: "Years"
+
+# Ordinal counters
+ordinal_counters:
+  番:
+    name: "番 (ばん)"
+    usage: "Ordinal number / turn"
+    example: "一番 (いちばん) = number one / first"
+  目:
+    name: "目 (め)"
+    usage: "Ordinal suffix"
+    example: "三つ目 = third one"
+  回:
+    name: "回 (かい)"
+    usage: "Times / occurrences"
+  度:
+    name: "度 (ど)"
+    usage: "Times / degrees"
+  階:
+    name: "階 (かい)"
+    usage: "Floors of a building"
