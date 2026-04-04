@@ -29,8 +29,6 @@ from .domain.ja_response_parser import JaResponseParser
 from .domain.ja_fallbacks import JaFallbacks
 from .domain.ja_validator import JaValidator
 
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
-
 logger = logging.getLogger(__name__)
 
 
@@ -176,6 +174,8 @@ class JaAnalyzer(BaseGrammarAnalyzer):
 
     def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
         """Call Google Gemini AI for Japanese grammar analysis."""
+        from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+
         max_retries = 3
         base_delay = 1.0
 

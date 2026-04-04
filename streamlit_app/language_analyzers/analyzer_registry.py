@@ -126,7 +126,8 @@ class AnalyzerRegistry:
                         #     logger.warning(f"No valid analyzer class found in {analyzer_file}")
 
                     except Exception as e:
-                        logger.error(f"Failed to load analyzer {language_code}: {e}")
+                        import traceback
+                        logger.error(f"Failed to load analyzer {language_code}: {e}\n{traceback.format_exc()}")
                 else:
                     logger.info(f"No analyzer file found for {folder_name}: {analyzer_file}")
 

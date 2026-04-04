@@ -60,8 +60,12 @@ class GrammarProcessor:
             # Use the language-specific analyzer
             logger.info(f"Using {language_code} analyzer for grammar analysis")
             try:
-                # Determine complexity level (default to intermediate)
-                complexity = "intermediate"
+                # Determine complexity level from user's difficulty setting
+                try:
+                    import streamlit as st
+                    complexity = st.session_state.get("difficulty", "intermediate")
+                except Exception:
+                    complexity = "intermediate"
 
                 # Analyze grammar using the language-specific analyzer
                 analysis_result = analyzer.analyze_grammar(
@@ -374,8 +378,12 @@ IMPORTANT:
 
                     logger.info(f"Processing batch {batch_start//BATCH_SIZE + 1}: sentences {batch_start + 1}-{batch_end}")
 
-                    # Determine complexity level (default to intermediate)
-                    complexity = "intermediate"
+                    # Determine complexity level from user's difficulty setting
+                    try:
+                        import streamlit as st
+                        complexity = st.session_state.get("difficulty", "intermediate")
+                    except Exception:
+                        complexity = "intermediate"
 
                     # Use same target word for all sentences in batch (common case)
                     target_word = batch_target_words[0] if batch_target_words else batch_sentences[0].split()[0]
