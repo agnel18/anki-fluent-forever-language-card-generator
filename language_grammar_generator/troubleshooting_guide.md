@@ -7,6 +7,92 @@
 **Purpose:** Systematic debugging following proven patterns  
 **Time Estimate:** Varies by issue complexity
 
+
+## ⚠️ CRITICAL RUNTIME ISSUES (Learn from Japanese Analyzer — Commit 61f32c7)
+
+> These issues cause analyzers to **pass all unit tests** but **fail at runtime**. They are the most dangerous because they are invisible during development.
+
+### Critical Issue: Module-Level Imports Break Analyzer Discovery (LAZY IMPORTS REQUIRED)
+
+**Symptoms:**
+- "No analyzer available for language: ja" at runtime
+- All unit tests pass (43/43)
+- Analyzer works in isolation, fails when loaded by the app
+
+**Root Cause:**
+The analyzer registry (`analyzer_registry.py`) uses `importlib.import_module()` to discover analyzers at app startup. If an analyzer imports `streamlit_app.shared_utils` at **module level**, the import fails because Streamlit isn't fully initialized during discovery.
+
+**❌ WRONG — Module-level import (breaks discovery):**
+```python
+# ja_analyzer.py — TOP OF FILE
+from streamlit_app.shared_utils import get_gemini_model, get_gemini_api  # ← BREAKS AT RUNTIME
+```
+
+**✅ RIGHT — Lazy import inside method:**
+```python
+# ja_analyzer.py — INSIDE _call_ai() METHOD
+def _call_ai(self, prompt, api_key):
+    from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+    # ... use the imports here
+```
+
+**Rule:** Analyzer modules must **NEVER** import `streamlit_app.shared_utils` at module level. Always use lazy imports inside methods.
+
+**Verification:**
+```bash
+python -c "from streamlit_app.language_analyzers.analyzer_registry import AnalyzerRegistry; r = AnalyzerRegistry(); print(sorted(r._analyzers.keys()))"
+# Should list ALL analyzers including the new one
+```
+
+### Critical Issue: Missing `__init__.py` Prevents Package Discovery
+
+**Symptoms:**
+- Analyzer folder exists but isn't found by `importlib.import_module()`
+- `ModuleNotFoundError` during analyzer registry discovery
+
+**Root Cause:**
+Python requires `__init__.py` in every package directory for `importlib` to resolve it. Without it, the `languages/{lang}/` folder is not a Python package.
+
+**Solution:**
+Ensure every language folder has `__init__.py`:
+```
+languages/{language}/
+├── __init__.py                    ← REQUIRED (can be empty or single comment)
+├── {language}_analyzer.py
+├── domain/
+│   ├── __init__.py                ← REQUIRED
+│   └── ...
+├── infrastructure/
+│   ├── __init__.py                ← REQUIRED
+│   └── ...
+└── tests/
+    ├── __init__.py                ← REQUIRED
+    └── ...
+```
+
+### Critical Issue: Hardcoded Complexity Ignores User's Difficulty Setting
+
+**Symptoms:**
+- Grammar analysis always uses "intermediate" complexity regardless of user selection
+- Beginner mode shows advanced grammatical roles
+- Advanced mode shows simplified analysis
+
+**Root Cause:**
+`grammar_processor.py` had `complexity = "intermediate"` hardcoded in both `analyze_grammar_and_color()` and `batch_analyze_grammar_and_color()`.
+
+**Solution:**
+```python
+# ✅ CORRECT — Read from session state
+try:
+    import streamlit as st
+    complexity = st.session_state.get("difficulty", "intermediate")
+except Exception:
+    complexity = "intermediate"
+```
+
+**Rule:** Never hardcode complexity/difficulty values — always read from `st.session_state.get("difficulty", "intermediate")`.
+
+---
 ## ðŸ“š LESSONS LEARNED FROM RECENT FIXES
 
 ### Critical Issue: Analyzer Not Found (Registry Integration Missing)

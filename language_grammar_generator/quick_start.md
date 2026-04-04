@@ -112,6 +112,10 @@ languages/{language}/
     â””â”€â”€ test_regression.py          # Regression tests (auto-generated)
 ```
 
+
+> **⚠️ Important: Lazy Imports & `__init__.py`**
+> - Every folder in the tree above that contains `.py` files **must have `__init__.py`** (even if empty) for `importlib` discovery to work.
+> - Your main `{language}_analyzer.py` must **never** import `streamlit_app.shared_utils` at module level. Use lazy imports inside methods (e.g., inside `_call_ai()`). See [Troubleshooting Guide](troubleshooting_guide.md#critical-issue-module-level-imports-break-analyzer-discovery-lazy-imports-required).
 ### Step 2.5: Pre-Implementation Validation
 
 **CRITICAL:** Before implementing any code, validate your setup:

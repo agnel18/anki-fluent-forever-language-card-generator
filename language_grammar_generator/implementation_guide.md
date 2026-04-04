@@ -946,6 +946,39 @@ class {Language}Validator(ZhValidator):
         return 1.0
 ```
 
+
+---
+
+### ⚠️ Critical Implementation Constraints (Before Proceeding to Phase 4)
+
+> **These constraints were discovered from the Japanese analyzer runtime failure (commit 61f32c7). Ignoring them causes analyzers to pass all unit tests but fail at runtime.**
+
+#### 1. LAZY IMPORTS ONLY — Never import `shared_utils` at module level
+
+The analyzer registry uses `importlib.import_module()` during app startup. Module-level imports of `streamlit_app.shared_utils` fail because Streamlit isn't fully initialized at that point.
+
+**❌ WRONG (breaks analyzer discovery):**
+```python
+# TOP OF {language}_analyzer.py
+from streamlit_app.shared_utils import get_gemini_model  # BREAKS AT RUNTIME
+```
+
+**✅ RIGHT (lazy import inside method):**
+```python
+def _call_ai(self, prompt, api_key):
+    from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+    # ... use imports here
+```
+
+#### 2. Every package folder MUST have `__init__.py`
+
+Without `__init__.py`, `importlib` cannot resolve the package and the analyzer won't be discovered. Ensure `__init__.py` exists in: `languages/{language}/`, `domain/`, `infrastructure/`, and `tests/`.
+
+#### 3. Never hardcode complexity/difficulty
+
+Always read from session state: `st.session_state.get("difficulty", "intermediate")`. See [Troubleshooting Guide](troubleshooting_guide.md#critical-issue-hardcoded-complexity-ignores-users-difficulty-setting) for details.
+
+---
 ### Phase 4: Main Analyzer Implementation (4-6 hours)
 
 #### 4.1 Create Main Analyzer Class

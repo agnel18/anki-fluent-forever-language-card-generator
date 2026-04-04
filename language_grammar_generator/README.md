@@ -283,6 +283,11 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - **Facade Pattern** - Single entry point orchestrating domain components
 - **No Artificial Confidence Boosting** - Natural validation scoring like working analyzers
 
+### Runtime Safety Requirements
+4. **Lazy Imports Only**: Analyzer modules must **never** import `streamlit_app.shared_utils` at module level — use lazy imports inside methods. See [Troubleshooting Guide](troubleshooting_guide.md#critical-issue-module-level-imports-break-analyzer-discovery-lazy-imports-required).
+5. **`__init__.py` in Every Package**: Every folder under `languages/{lang}/` must have `__init__.py` for `importlib` discovery.
+6. **Never Hardcode Complexity**: Always read from `st.session_state.get("difficulty", "intermediate")`.
+7. **Run E2E Pipeline Test**: After unit tests pass, run `pytest tests/test_end_to_end_pipeline.py -v -s` to verify the full runtime pipeline. See [Testing Guide](testing_guide.md#end-to-end-pipeline-test-runtime-verification).
 ### AI Integration (Gold Standard)
 - **Strict Model Restrictions** - Only `gemini-2.5-flash` and `gemini-3-flash-preview`
 - **Intelligent Fallbacks** - Automatic model selection based on complexity

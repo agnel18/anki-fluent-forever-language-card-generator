@@ -62,6 +62,47 @@ python language_grammar_generator/compare_with_gold_standard.py --language {lang
 python language_grammar_generator/compare_with_gold_standard.py --language {language_code} --detailed --export-results
 ```
 
+
+### End-to-End Pipeline Test (Runtime Verification)
+
+> **Critical:** Unit tests and gold standard comparisons validate components in isolation. The E2E pipeline test verifies the **full runtime pipeline** — from analyzer discovery through content generation, grammar analysis, audio/image mocking, to card assembly. This catches issues like module-level imports that break `importlib` discovery (see [Troubleshooting Guide](troubleshooting_guide.md#critical-issue-module-level-imports-break-analyzer-discovery-lazy-imports-required)).
+
+**Test file:** `tests/test_end_to_end_pipeline.py`
+
+```bash
+# Run E2E pipeline test for all parameterized languages
+pytest tests/test_end_to_end_pipeline.py -v -s
+
+# Reports saved to tests/reports/pipeline_report_{language}.txt
+```
+
+**What it tests (7 stages):**
+1. Analyzer discovery via registry
+2. Content generation + structured parsing (mocked Gemini)
+3. Batch grammar analysis with color schemes
+4. Audio generation (mocked — verifies API call structure)
+5. Image generation (mocked — verifies Pixabay integration)
+6. Card assembly and APKG field verification
+7. Difficulty/complexity setting propagation
+
+**Adding a new language to the E2E test:**
+
+1. Create a `{LANGUAGE}_MOCK_DATA` dict in `test_end_to_end_pipeline.py`:
+   ```python
+   PORTUGUESE_MOCK_DATA = {
+       "language": "Portuguese",
+       "language_code": "pt",
+       "word": "comer",           # Pick from top-100 frequency list
+       "sentences_per_word": 4,
+       "difficulty": "beginner",
+       "topic": "Food & Cooking",
+       "mock_gemini_response": "MEANING: to eat\nRESTRICTIONS: ...\nSENTENCES: ...",
+       "mock_grammar_response": '{"batch_results": [...]}',
+   }
+   ```
+2. Add `@pytest.mark.parametrize` entry for the new language
+3. Run: `pytest tests/test_end_to_end_pipeline.py -v -s`
+4. Check report: `tests/reports/pipeline_report_portuguese.txt`
 ## ðŸ§ª Testing Framework Setup - French v2.0 Structure
 
 ### 1. Directory Structure - Like French v2.0
