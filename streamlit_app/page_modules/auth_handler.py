@@ -205,7 +205,7 @@ def firebase_auth_component():
         </script>
         """
 
-    st.html(auth_js, height=0)
+    st.html(auth_js)
 
 # Local auth functions
 def is_signed_in():
