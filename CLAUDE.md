@@ -134,7 +134,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | French | `fr` | `languages/french/` | ✅ Gold standard (v2.0) |
 | German | `de` | `languages/german/` | ✅ Implemented |
 | Hindi | `hi` | `languages/hindi/` | ✅ Implemented |
-| Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) |
+| Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — runtime-verified via E2E pipeline test |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented |
 
@@ -221,6 +221,7 @@ tests/test_integration.py
 | `validate_implementation.py` | 11 checks: file structure, method completeness, interface compliance vs French, component integration, error handling, performance (<30s), registry | `--language {code}`, `--verbose`, `--all-languages` |
 | `run_all_tests.py` | Unit + integration + gold standard tests | `--language {code}`, `--coverage`, `--parallel`, `--all-languages` |
 | `compare_with_gold_standard.py` | Compare against French/Chinese reference implementations | `--language {code}`, `--detailed`, `--export-results`, `--reference fr` |
+| `tests/test_end_to_end_pipeline.py` | Full pipeline E2E test: mocks Gemini, exercises content gen → parsing → grammar analysis → audio → images → card assembly. Parameterized by language. Produces detailed report to console + `tests/reports/` | `pytest tests/test_end_to_end_pipeline.py -v -s` |
 
 ```bash
 # Example: validate and test a new Portuguese analyzer
@@ -313,6 +314,8 @@ APIError (base)
 7. ~~**Model config duplication**~~ — **RESOLVED.** `config/models.py` deleted (was dead code — nothing imported from it). `shared_utils.py` is the sole canonical source. `content_generator.py` imports from `shared_utils`.
 8. **.gitignore encoding** — Last 2 entries (`ARCHIVED_PHASES.md`, `repo_backup_pre_cleanup/`) were appended in UTF-16LE encoding. Rest of file is ASCII/UTF-8. May cause Git to not ignore those entries on some systems.
 9. **API key retrieval duplication** — Key retrieval logic duplicated across `audio_generator.py`, `state_manager.py`, `api_setup.py`, `sync_manager.py`. Each has slightly different needs (startup vs runtime vs UI vs sync). Documented tech debt — centralizing risks breaking the delicate fallback chains. Address when building the next major feature.
+10. ~~**Japanese analyzer runtime failure**~~ — **RESOLVED (commit 61f32c7).** Root cause: `ja_analyzer.py` imported `streamlit_app.shared_utils` at module level, causing import failure during `_discover_analyzers()`. Fix: moved imports to `_call_ai()` method (lazy import). Also added `languages/japanese/__init__.py`.
+11. ~~**Hardcoded complexity in grammar_processor.py**~~ — **RESOLVED (commit 61f32c7).** `grammar_processor.py` had `complexity = "intermediate"` hardcoded in both `analyze_grammar_and_color()` and `batch_analyze_grammar_and_color()`, ignoring the user's difficulty setting. Fix: now reads `st.session_state.get("difficulty", "intermediate")`.
 
 ---
 
@@ -337,7 +340,9 @@ APIError (base)
 | `streamlit_app/page_modules/api_setup.py` | API key setup — 3 dedicated sections (Gemini, TTS, Pixabay) |
 | `streamlit_app/page_modules/statistics.py` | Usage dashboard with quota health warnings (80%/100%) |
 | `languages/french/` | Gold standard analyzer implementation (v2.0, primary reference) |
+| `languages/japanese/` | Japanese analyzer implementation (v1.0, Japonic family) |
 | `languages/turkish/` | Fully implemented analyzer (clean architecture) |
+| `tests/test_end_to_end_pipeline.py` | Full E2E pipeline test — parameterized by language, mocks Gemini, produces report |
 | `language_grammar_generator/` | 7-phase prompt templates + orchestrator for creating new analyzers |
 | `language_grammar_generator/language_analyzer_creation_guide.py` | Orchestrator — imports all phase prompts, fills placeholders per-language |
 | `language_grammar_generator/validate_implementation.py` | 11-check implementation validator (files, methods, interface, performance) |
@@ -361,3 +366,5 @@ APIError (base)
 - **API keys:** Gemini in `st.session_state.google_api_key`, TTS in `st.session_state.google_tts_api_key` — both required, no fallback between them
 - **Testing:** pytest; language-specific tests live in `languages/{lang}/tests/`; root-level test files for cross-cutting concerns
 - **Frequency lists:** Excel files in `77 Languages Frequency Word Lists/`, mapped via `languages.yaml`
+- **⚠️ Analyzer imports:** Analyzer modules (e.g., `ja_analyzer.py`) must NOT import `streamlit_app.shared_utils` at **module level**. The analyzer registry uses `importlib.import_module()` during discovery, and module-level imports of `shared_utils` can fail if Streamlit isn't fully initialized. Always use **lazy imports** inside methods (e.g., inside `_call_ai()`).
+- **Complexity/difficulty:** `grammar_processor.py` reads `st.session_state.get("difficulty", "intermediate")` — never hardcode complexity values

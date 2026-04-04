@@ -105,7 +105,7 @@
 
 | Language | Code | Status | Priority | Notes |
 |----------|------|--------|----------|-------|
-| **Japanese** | JA | ✅ Implemented | **DONE** | Full analyzer — character-level coloring, particle system, 3 writing systems |
+| **Japanese** | JA | ✅ Implemented | **DONE** | Full analyzer — character-level coloring, particle system, 3 writing systems. Runtime-verified via E2E pipeline test. |
 
 ### 6. **Koreanic Family** (Primary: Korean)
 **Eldest Sister:** Korean (only major language in family)

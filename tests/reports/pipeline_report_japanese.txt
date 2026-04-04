@@ -1,0 +1,126 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — JAPANESE
+================================================================================
+  Word          : 食べる
+  Language       : Japanese
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-04 09:43:54
+  Elapsed        : 12.01s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ja': JaAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food by putting it in the mouth)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=8, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=7, summary=YES
+         Sentence 4: colored=YES, explanations=7, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food by putting it in the mouth)
+
+  --- Sentence 1 ---
+  Original   : 私は毎朝パンとたまごを食べます。
+  Translation: I eat bread and eggs every morning.
+  IPA/Reading: わたし は まいあさ パン と たまご を たべます
+  Keywords   : bread on plate, fried eggs, breakfast table
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">私</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #44FFFF; font-weight: bold;">毎朝</span><span style="color: #FFAA00;…
+  Grammar Summ : SOV sentence: Subject は Time Object を Verb (polite). Uses topic particle は, object particle を, listing particle と, polite -ます form.
+  Word Explanations (8 words):
+    私             pronoun         #FF4444   I (first person pronoun) [読み: わたし]
+    は             other           #4444FF   topic marker particle
+    毎朝            verb            #44FFFF   every morning [読み: まいあさ]
+    パン            noun            #FFAA00   bread
+    と             other           #4444FF   and (listing particle)
+    たまご           noun            #FFAA00   egg
+    を             other           #4444FF   object marker particle
+    食べます          verb            #44FF44   eat (polite present) [読み: たべます]
+
+  --- Sentence 2 ---
+  Original   : 子供たちは学校で昼ごはんを食べます。
+  Translation: The children eat lunch at school.
+  IPA/Reading: こどもたち は がっこう で ひるごはん を たべます
+  Keywords   : children in cafeteria, school lunch tray, eating together
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">子供たち</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FFAA00; font-weight: bold;">学校</span><span style="color: #4444…
+  Grammar Summ : SOV sentence: Subject は Location で Object を Verb. Uses location particle で to mark where action takes place, topic particle は, object particle を.
+  Word Explanations (7 words):
+    子供たち          noun            #FFAA00   children (plural) [読み: こどもたち]
+    は             other           #4444FF   topic marker particle
+    学校            noun            #FFAA00   school [読み: がっこう]
+    で             other           #4444FF   location of action particle
+    昼ごはん          noun            #FFAA00   lunch [読み: ひるごはん]
+    を             other           #4444FF   object marker particle
+    食べます          verb            #44FF44   eat (polite present) [読み: たべます]
+
+  --- Sentence 3 ---
+  Original   : あなたは何を食べたいですか。
+  Translation: What do you want to eat?
+  IPA/Reading: あなた は なに を たべたい です か
+  Keywords   : restaurant menu, food choices, question mark
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">あなた</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FF4444; font-weight: bold;">何</span><span style="color: #4444FF…
+  Grammar Summ : Interrogative SOV: Subject は WH-word を Verb-たい です か? Uses -たい desire form, question particle か, polite copula です.
+  Word Explanations (7 words):
+    あなた           pronoun         #FF4444   you (second person pronoun)
+    は             other           #4444FF   topic marker particle
+    何             pronoun         #FF4444   what (interrogative) [読み: なに]
+    を             other           #4444FF   object marker particle
+    食べたい          verb            #44FF44   want to eat (desire form) [読み: たべたい]
+    です            other           #AA44FF   is/am/are (polite copula)
+    か             other           #4444FF   question marker particle
+
+  --- Sentence 4 ---
+  Original   : 母は台所でりんごを食べています。
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: はは は だいどころ で りんご を たべています
+  Keywords   : woman in kitchen, red apple, eating fruit
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">母</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FFAA00; font-weight: bold;">台所</span><span style="color: #4444FF;…
+  Grammar Summ : SOV progressive: Subject は Location で Object を Verb-ている. Uses て-いる progressive form for ongoing action, location particle で.
+  Word Explanations (7 words):
+    母             noun            #FFAA00   mother (humble form) [読み: はは]
+    は             other           #4444FF   topic marker particle
+    台所            noun            #FFAA00   kitchen [読み: だいどころ]
+    で             other           #4444FF   location of action particle
+    りんご           noun            #FFAA00   apple
+    を             other           #4444FF   object marker particle
+    食べています        verb            #44FF44   is eating (progressive, polite) [読み: たべています]
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================
