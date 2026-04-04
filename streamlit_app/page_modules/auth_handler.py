@@ -2,7 +2,6 @@
 
 import streamlit as st
 from typing import Optional, Dict, Any
-import streamlit.components.v1 as components
 import re
 import time
 import sys
@@ -206,7 +205,7 @@ def firebase_auth_component():
         </script>
         """
 
-    components.html(auth_js, height=0)
+    st.html(auth_js, height=0)
 
 # Local auth functions
 def is_signed_in():
