@@ -1,0 +1,118 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — HUNGARIAN
+================================================================================
+  Word          : eszik
+  Language       : Hungarian
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 07:37:33
+  Elapsed        : 3.19s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'hu': HuAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food by putting it in the mouth)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=6, summary=YES
+         Sentence 3: colored=YES, explanations=3, summary=YES
+         Sentence 4: colored=YES, explanations=6, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food by putting it in the mouth)
+
+  --- Sentence 1 ---
+  Original   : A fiú minden reggel kenyeret eszik.
+  Translation: The boy eats bread every morning.
+  IPA/Reading: ɒ fiuː mindɛn rɛɡːɛl kɛɲeːrɛt ɛsik
+  Keywords   : bread on plate, boy eating, morning breakfast table
+
+  Colored HTML : <span style="color: #AAAAAA; font-weight: bold;">A</span> <span style="color: #FFAA00; font-weight: bold;">fiú</span> <span style="color: #FF44FF; font-weight: bold;">minden</span> <span style="color:…
+  Grammar Summ : SVO sentence: Subject (A fiú) + Time (minden reggel) + Object-ACC (kenyeret) + Verb (eszik, indefinite conjugation). Accusative suffix -et on kenyér → kenyeret; indefinite conjugation because object has no definite article.
+  Word Explanations (6 words):
+    A             article         #AAAAAA   the (definite article before consonant)
+    fiú           noun            #FFAA00   boy (subject, nominative case)
+    minden        adjective       #FF44FF   every (determiner/adjective)
+    reggel        adverb          #44FFFF   morning (time adverb)
+    kenyeret      noun            #FFAA00   bread with accusative suffix -et (direct object) [case: accusative]
+    eszik         target_word     #AAAAAA   eats (3rd person singular, indefinite conjugation, present tense) [indefinite conjugation]
+
+  --- Sentence 2 ---
+  Original   : A gyerekek az iskolában ebédet esznek.
+  Translation: The children eat lunch at school.
+  IPA/Reading: ɒ ɟɛrɛkɛk ɒz iskolɑːbɒn ɛbeːdɛt ɛsnɛk
+  Keywords   : children in cafeteria, school lunch tray, eating together
+
+  Colored HTML : <span style="color: #AAAAAA; font-weight: bold;">A</span> <span style="color: #FFAA00; font-weight: bold;">gyerekek</span> <span style="color: #AAAAAA; font-weight: bold;">az</span> <span style="color…
+  Grammar Summ : SVO with location: Subject + Location-INESS + Object-ACC + Verb (indefinite). Inessive case -ban on iskola → iskolában (back vowel harmony); accusative -et on ebéd.
+  Word Explanations (6 words):
+    A             article         #AAAAAA   the (definite article)
+    gyerekek      noun            #FFAA00   children (plural, nominative)
+    az            article         #AAAAAA   the (definite article before vowel)
+    iskolában     noun            #FFAA00   in the school — iskola + inessive suffix -ban (back vowel harmony) [case: inessive]
+    ebédet        noun            #FFAA00   lunch with accusative suffix -et (direct object) [case: accusative]
+    esznek        verb            #44FF44   eat (3rd person plural, indefinite conjugation, present tense) [indefinite conjugation]
+
+  --- Sentence 3 ---
+  Original   : Mit szeretnél enni?
+  Translation: What would you like to eat?
+  IPA/Reading: mit sɛrɛtneːl ɛnːi
+  Keywords   : restaurant menu, food choices, question mark
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Mit</span> <span style="color: #44FF44; font-weight: bold;">szeretnél</span> <span style="color: #44FF44; font-weight: bold;">enni</span>?
+  Grammar Summ : Interrogative: WH-word (accusative) + Conditional verb + Infinitive. Question word mit (accusative of mi); conditional mood -né + 2sg -l; infinitive enni.
+  Word Explanations (3 words):
+    Mit           pronoun         #FF4444   what (interrogative, accusative of mi + -t) [case: accusative]
+    szeretnél     verb            #44FF44   would you like (2nd person singular, indefinite conjugation, conditional mood) [indefinite conjugation]
+    enni          verb            #44FF44   to eat (infinitive form of eszik)
+
+  --- Sentence 4 ---
+  Original   : Az anyám a konyhában almát eszik.
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: ɒz ɒɲaːm ɒ koɲhɑːbɒn ɒlmɑːt ɛsik
+  Keywords   : woman in kitchen, red apple, eating fruit
+
+  Colored HTML : <span style="color: #AAAAAA; font-weight: bold;">Az</span> <span style="color: #FFAA00; font-weight: bold;">anyám</span> <span style="color: #AAAAAA; font-weight: bold;">a</span> <span style="color: #…
+  Grammar Summ : SVO with possessive and location: Subject (Az anyám) + Location-INESS (a konyhában) + Object-ACC (almát) + Verb. Possessive suffix -m on anya → anyám (my mother); inessive -ban; accusative -t.
+  Word Explanations (6 words):
+    Az            article         #AAAAAA   the (definite article before vowel)
+    anyám         noun            #FFAA00   my mother — anya + possessive 1sg suffix -m
+    a             article         #AAAAAA   the (definite article before consonant)
+    konyhában     noun            #FFAA00   in the kitchen — konyha + inessive suffix -ban (back vowel harmony) [case: inessive]
+    almát         noun            #FFAA00   apple with accusative suffix -t [case: accusative]
+    eszik         target_word     #AAAAAA   eats (3rd person singular, indefinite conjugation, present) [indefinite conjugation]
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

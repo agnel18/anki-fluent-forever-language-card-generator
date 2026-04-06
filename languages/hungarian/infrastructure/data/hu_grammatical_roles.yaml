@@ -1,0 +1,137 @@
+# hu_grammatical_roles.yaml
+# Hungarian Grammatical Roles Configuration
+
+role_hierarchy:
+  # Verb hierarchy
+  definite_conjugation: "verb"
+  indefinite_conjugation: "verb"
+  auxiliary_verb: "verb"
+  causative_verb: "verb"
+  potential_verb: "verb"
+
+  # Article hierarchy
+  definite_article: "article"
+  indefinite_article: "article"
+
+  # Case marker hierarchy — case markers stay as their specific role
+  # (not collapsed) to preserve Hungarian-specific colors
+
+complexity_filters:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - definite_article
+    - indefinite_article
+    - conjunction
+    - copula
+    - postposition
+    - preverb
+    - numeral
+
+  intermediate:
+    - noun
+    - verb
+    - definite_conjugation
+    - indefinite_conjugation
+    - auxiliary_verb
+    - adjective
+    - adverb
+    - pronoun
+    - definite_article
+    - indefinite_article
+    - conjunction
+    - copula
+    - postposition
+    - preverb
+    - numeral
+    - accusative
+    - dative
+    - instrumental
+    - inessive
+    - superessive
+    - sublative
+    - elative
+    - illative
+    - allative
+    - ablative
+    - possessive_suffix
+
+  advanced:
+    - noun
+    - verb
+    - definite_conjugation
+    - indefinite_conjugation
+    - auxiliary_verb
+    - causative_verb
+    - potential_verb
+    - adjective
+    - adverb
+    - pronoun
+    - definite_article
+    - indefinite_article
+    - conjunction
+    - copula
+    - postposition
+    - preverb
+    - numeral
+    - accusative
+    - dative
+    - instrumental
+    - causal_final
+    - translative
+    - inessive
+    - superessive
+    - adessive
+    - sublative
+    - delative
+    - elative
+    - illative
+    - allative
+    - ablative
+    - terminative
+    - essive_formal
+    - distributive
+    - possessive_suffix
+    - interjection
+
+role_descriptions:
+  noun: "a naming word for a person, place, thing, or concept"
+  verb: "an action or state word, conjugated for person and number"
+  adjective: "a describing word that modifies a noun"
+  adverb: "a word that modifies a verb, adjective, or other adverb"
+  pronoun: "a word that replaces a noun"
+  definite_article: "the definite article 'a' or 'az' (before vowels)"
+  indefinite_article: "the indefinite article 'egy' (a/an)"
+  conjunction: "a connecting word linking clauses or phrases"
+  copula: "the verb 'van/volt/lesz' (to be)"
+  postposition: "a word placed after the noun it governs (like a preposition but after)"
+  preverb: "a verbal prefix that modifies verb meaning (meg-, el-, ki-, be-, fel-, le-)"
+  numeral: "a number word"
+  interjection: "an exclamation"
+  accusative: "noun with accusative case suffix -t (marks direct object)"
+  dative: "noun with dative case suffix -nak/-nek (marks indirect object or 'for')"
+  instrumental: "noun with instrumental case suffix -val/-vel (means 'with')"
+  causal_final: "noun with causal-final case suffix -ért (means 'for the sake of')"
+  translative: "noun with translative case suffix -vá/-vé (means 'becoming')"
+  inessive: "noun with inessive case suffix -ban/-ben (means 'in')"
+  superessive: "noun with superessive case suffix -n/-on/-en/-ön (means 'on')"
+  adessive: "noun with adessive case suffix -nál/-nél (means 'at')"
+  sublative: "noun with sublative case suffix -ra/-re (means 'onto')"
+  delative: "noun with delative case suffix -ról/-ről (means 'from/about')"
+  elative: "noun with elative case suffix -ból/-ből (means 'out of')"
+  illative: "noun with illative case suffix -ba/-be (means 'into')"
+  allative: "noun with allative case suffix -hoz/-hez/-höz (means 'to')"
+  ablative: "noun with ablative case suffix -tól/-től (means 'away from')"
+  terminative: "noun with terminative case suffix -ig (means 'until/as far as')"
+  essive_formal: "noun with essive-formal case suffix -ként (means 'as')"
+  distributive: "noun with distributive case suffix -nként (means 'per/each')"
+  definite_conjugation: "verb conjugated with definite object (a/az + noun, proper name)"
+  indefinite_conjugation: "verb conjugated with indefinite object or no object"
+  auxiliary_verb: "a helper verb (fog, tud, akar, kell, szabad, lehet)"
+  causative_verb: "a verb with causative suffix -tat/-tet (to cause/have done)"
+  potential_verb: "a verb with potential suffix -hat/-het (can/may)"
+  possessive_suffix: "suffix on noun indicating possession (-m, -d, -ja/-je, -nk, -tok/-tek/-tök, -juk/-jük)"
+  other: "other grammatical element"

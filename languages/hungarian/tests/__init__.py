@@ -1,0 +1,1 @@
+# Hungarian analyzer tests

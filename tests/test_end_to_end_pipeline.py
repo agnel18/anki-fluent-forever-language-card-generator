@@ -286,12 +286,119 @@ KOREAN_MOCK_DATA: Dict[str, Any] = {
 }
 
 
+HUNGARIAN_MOCK_DATA: Dict[str, Any] = {
+    "word": "eszik",
+    "language_name": "Hungarian",
+    "language_code": "hu",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 15,
+    "difficulty": "beginner",
+    # --- Mock Gemini response for content generation (sentence_generator) ---
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to eat (to consume food by putting it in the mouth)
+
+        RESTRICTIONS: Indefinite conjugation when the object is indefinite; definite conjugation when the object has a definite article.
+
+        SENTENCES:
+        1. A fiú minden reggel kenyeret eszik.
+        2. A gyerekek az iskolában ebédet esznek.
+        3. Mit szeretnél enni?
+        4. Az anyám a konyhában almát eszik.
+
+        TRANSLATIONS:
+        1. The boy eats bread every morning.
+        2. The children eat lunch at school.
+        3. What would you like to eat?
+        4. My mother is eating an apple in the kitchen.
+
+        IPA:
+        1. ɒ fiuː mindɛn rɛɡːɛl kɛɲeːrɛt ɛsik
+        2. ɒ ɟɛrɛkɛk ɒz iskolɑːbɒn ɛbeːdɛt ɛsnɛk
+        3. mit sɛrɛtneːl ɛnːi
+        4. ɒz ɒɲaːm ɒ koɲhɑːbɒn ɒlmɑːt ɛsik
+
+        KEYWORDS:
+        1. bread on plate, boy eating, morning breakfast table
+        2. children in cafeteria, school lunch tray, eating together
+        3. restaurant menu, food choices, question mark
+        4. woman in kitchen, red apple, eating fruit"""),
+
+    # --- Mock Gemini responses for grammar analysis (batch JSON array) ---
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "A fiú minden reggel kenyeret eszik.",
+            "words": [
+                {"word": "A", "grammatical_role": "definite_article", "case": None, "conjugation_type": None, "individual_meaning": "the (definite article before consonant)"},
+                {"word": "fiú", "grammatical_role": "noun", "case": "nominative", "conjugation_type": None, "individual_meaning": "boy (subject, nominative case)"},
+                {"word": "minden", "grammatical_role": "adjective", "case": None, "conjugation_type": None, "individual_meaning": "every (determiner/adjective)"},
+                {"word": "reggel", "grammatical_role": "adverb", "case": None, "conjugation_type": None, "individual_meaning": "morning (time adverb)"},
+                {"word": "kenyeret", "grammatical_role": "noun", "case": "accusative", "conjugation_type": None, "individual_meaning": "bread with accusative suffix -et (direct object)"},
+                {"word": "eszik", "grammatical_role": "verb", "case": None, "conjugation_type": "indefinite", "individual_meaning": "eats (3rd person singular, indefinite conjugation, present tense)"}
+            ],
+            "explanations": {
+                "overall_structure": "SVO sentence: Subject (A fiú) + Time (minden reggel) + Object-ACC (kenyeret) + Verb (eszik, indefinite conjugation).",
+                "key_features": "Accusative suffix -et on kenyér → kenyeret; indefinite conjugation because object has no definite article.",
+                "complexity_notes": "Beginner-friendly sentence with basic SVO order and accusative case."
+            }
+        },
+        {
+            "sentence": "A gyerekek az iskolában ebédet esznek.",
+            "words": [
+                {"word": "A", "grammatical_role": "definite_article", "case": None, "conjugation_type": None, "individual_meaning": "the (definite article)"},
+                {"word": "gyerekek", "grammatical_role": "noun", "case": "nominative", "conjugation_type": None, "individual_meaning": "children (plural, nominative)"},
+                {"word": "az", "grammatical_role": "definite_article", "case": None, "conjugation_type": None, "individual_meaning": "the (definite article before vowel)"},
+                {"word": "iskolában", "grammatical_role": "noun", "case": "inessive", "conjugation_type": None, "individual_meaning": "in the school — iskola + inessive suffix -ban (back vowel harmony)"},
+                {"word": "ebédet", "grammatical_role": "noun", "case": "accusative", "conjugation_type": None, "individual_meaning": "lunch with accusative suffix -et (direct object)"},
+                {"word": "esznek", "grammatical_role": "verb", "case": None, "conjugation_type": "indefinite", "individual_meaning": "eat (3rd person plural, indefinite conjugation, present tense)"}
+            ],
+            "explanations": {
+                "overall_structure": "SVO with location: Subject + Location-INESS + Object-ACC + Verb (indefinite).",
+                "key_features": "Inessive case -ban on iskola → iskolában (back vowel harmony); accusative -et on ebéd.",
+                "complexity_notes": "Beginner pattern with inessive location and plural subject."
+            }
+        },
+        {
+            "sentence": "Mit szeretnél enni?",
+            "words": [
+                {"word": "Mit", "grammatical_role": "pronoun", "case": "accusative", "conjugation_type": None, "individual_meaning": "what (interrogative, accusative of mi + -t)"},
+                {"word": "szeretnél", "grammatical_role": "verb", "case": None, "conjugation_type": "indefinite", "individual_meaning": "would you like (2nd person singular, indefinite conjugation, conditional mood)"},
+                {"word": "enni", "grammatical_role": "verb", "case": None, "conjugation_type": None, "individual_meaning": "to eat (infinitive form of eszik)"}
+            ],
+            "explanations": {
+                "overall_structure": "Interrogative: WH-word (accusative) + Conditional verb + Infinitive.",
+                "key_features": "Question word mit (accusative of mi); conditional mood -né + 2sg -l; infinitive enni.",
+                "complexity_notes": "Beginner question pattern with conditional politeness."
+            }
+        },
+        {
+            "sentence": "Az anyám a konyhában almát eszik.",
+            "words": [
+                {"word": "Az", "grammatical_role": "definite_article", "case": None, "conjugation_type": None, "individual_meaning": "the (definite article before vowel)"},
+                {"word": "anyám", "grammatical_role": "noun", "case": "nominative", "conjugation_type": None, "individual_meaning": "my mother — anya + possessive 1sg suffix -m"},
+                {"word": "a", "grammatical_role": "definite_article", "case": None, "conjugation_type": None, "individual_meaning": "the (definite article before consonant)"},
+                {"word": "konyhában", "grammatical_role": "noun", "case": "inessive", "conjugation_type": None, "individual_meaning": "in the kitchen — konyha + inessive suffix -ban (back vowel harmony)"},
+                {"word": "almát", "grammatical_role": "noun", "case": "accusative", "conjugation_type": None, "individual_meaning": "apple with accusative suffix -t"},
+                {"word": "eszik", "grammatical_role": "verb", "case": None, "conjugation_type": "indefinite", "individual_meaning": "eats (3rd person singular, indefinite conjugation, present)"}
+            ],
+            "explanations": {
+                "overall_structure": "SVO with possessive and location: Subject (Az anyám) + Location-INESS (a konyhában) + Object-ACC (almát) + Verb.",
+                "key_features": "Possessive suffix -m on anya → anyám (my mother); inessive -ban; accusative -t.",
+                "complexity_notes": "Beginner — possessive suffix and inessive case with SVO order."
+            }
+        }
+    ], ensure_ascii=False),
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
 LANGUAGE_MOCK_DATA = {
     "japanese": JAPANESE_MOCK_DATA,
     "korean": KOREAN_MOCK_DATA,
+    "hungarian": HUNGARIAN_MOCK_DATA,
     # Future: "french": FRENCH_MOCK_DATA, "spanish": SPANISH_MOCK_DATA, etc.
 }
 

@@ -1,0 +1,191 @@
+# hu_patterns.yaml
+# Hungarian General Patterns Configuration
+
+# Script detection patterns
+script_ranges:
+  latin_base:
+    start: "\\u0041"
+    end: "\\u007A"
+    description: "Basic Latin letters"
+  hungarian_extended:
+    chars: ["á", "é", "í", "ó", "ö", "ő", "ú", "ü", "ű", "Á", "É", "Í", "Ó", "Ö", "Ő", "Ú", "Ü", "Ű"]
+    description: "Hungarian-specific accented vowels"
+  punctuation:
+    chars:
+      - "."
+      - ","
+      - "!"
+      - "?"
+      - ";"
+      - ":"
+      - "…"
+      - "("
+      - ")"
+      - "–"
+      - "—"
+
+# Vowel harmony groups
+vowel_harmony:
+  back_vowels: ["a", "á", "o", "ó", "u", "ú"]
+  front_unrounded: ["e", "é", "i", "í"]
+  front_rounded: ["ö", "ő", "ü", "ű"]
+  rules:
+    - "Back vowel stems take back vowel suffixes: -ban, -nak, -val, -ra, etc."
+    - "Front unrounded stems take front suffixes: -ben, -nek, -vel, -re, etc."
+    - "Front rounded stems take rounded front suffixes where available: -höz, -ön, -tök, etc."
+    - "Mixed vowel words (mostly foreign loans) follow the last vowel"
+
+# Case suffix patterns
+case_suffixes:
+  accusative:
+    back: ["-t", "-at", "-ot"]
+    front: ["-t", "-et", "-öt"]
+    description: "Direct object marker"
+  dative:
+    back: ["-nak"]
+    front: ["-nek"]
+    description: "Indirect object / 'for'"
+  instrumental:
+    back: ["-val"]
+    front: ["-vel"]
+    description: "'with' — consonant assimilation applies"
+  inessive:
+    back: ["-ban"]
+    front: ["-ben"]
+    description: "'in' (inside)"
+  superessive:
+    back: ["-on"]
+    front: ["-en", "-ön"]
+    description: "'on' (surface)"
+  adessive:
+    back: ["-nál"]
+    front: ["-nél"]
+    description: "'at' (proximity)"
+  sublative:
+    back: ["-ra"]
+    front: ["-re"]
+    description: "'onto'"
+  delative:
+    back: ["-ról"]
+    front: ["-ről"]
+    description: "'from/about' (off surface)"
+  elative:
+    back: ["-ból"]
+    front: ["-ből"]
+    description: "'out of' (from inside)"
+  illative:
+    back: ["-ba"]
+    front: ["-be"]
+    description: "'into'"
+  allative:
+    back: ["-hoz"]
+    front: ["-hez", "-höz"]
+    description: "'to' (toward)"
+  ablative:
+    back: ["-tól"]
+    front: ["-től"]
+    description: "'away from'"
+  terminative:
+    neutral: ["-ig"]
+    description: "'until/as far as'"
+  causal_final:
+    neutral: ["-ért"]
+    description: "'for the sake of'"
+  translative:
+    back: ["-vá"]
+    front: ["-vé"]
+    description: "'becoming' — consonant assimilation applies"
+  essive_formal:
+    neutral: ["-ként"]
+    description: "'as/in the capacity of'"
+  distributive:
+    back: ["-nként"]
+    front: ["-nként"]
+    description: "'per/each'"
+
+# Sentence structure patterns
+sentence_patterns:
+  basic_svo:
+    pattern: "Subject + Verb + Object"
+    example: "A fiú eszik egy almát"
+    description: "Basic SVO pattern (neutral)"
+  topic_comment:
+    pattern: "Topic + Comment"
+    example: "A könyvet Péter olvassa"
+    description: "Topic-comment with focus position"
+  copula_predicate:
+    pattern: "Subject + [van] + Predicate"
+    example: "A ház szép"
+    description: "Copula (van is often dropped in 3rd person present)"
+  existential:
+    pattern: "Location + van/vannak + Subject"
+    example: "Az asztalon van egy könyv"
+    description: "Existential sentence"
+  negative:
+    pattern: "Subject + nem + Verb"
+    example: "Nem olvasok könyvet"
+    description: "Negation precedes the verb"
+
+# Common grammatical patterns by level
+beginner_patterns:
+  - "Subject + Verb (SVO order)"
+  - "a/az + noun (definite article)"
+  - "egy + noun (indefinite article)"
+  - "noun + -t (accusative object)"
+  - "noun + -ban/-ben (in)"
+  - "noun + -ba/-be (into)"
+  - "van/nincs (there is / there isn't)"
+  - "nem + verb (negation)"
+
+intermediate_patterns:
+  - "Definite conjugation with a/az objects"
+  - "Indefinite conjugation with egy or no article"
+  - "Past tense: verb + -t- + person suffix"
+  - "Possessive: noun + -m/-d/-ja/-je"
+  - "Preverb + verb (meg-, el-, ki-, be-)"
+  - "Preverb separation in negation/questions"
+  - "Conditional: verb + -ná/-né"
+  - "Multiple case suffixes"
+
+advanced_patterns:
+  - "Focus-topic structure (focus before verb)"
+  - "All 18 cases with vowel harmony"
+  - "Causative verbs (-tat/-tet)"
+  - "Potential verbs (-hat/-het)"
+  - "Complex preverb placement"
+  - "Subjunctive mood (-j-)"
+  - "Double possessives"
+  - "Essive-formal and distributive cases"
+
+# Preverb patterns
+preverbs:
+  common:
+    - prefix: "meg"
+      meaning: "completion/perfective"
+      example: "megír (finish writing)"
+    - prefix: "el"
+      meaning: "away/departure"
+      example: "elmegy (go away)"
+    - prefix: "ki"
+      meaning: "out/outward"
+      example: "kijön (come out)"
+    - prefix: "be"
+      meaning: "in/inward"
+      example: "bemegy (go in)"
+    - prefix: "fel"
+      meaning: "up/upward"
+      example: "feláll (stand up)"
+    - prefix: "le"
+      meaning: "down/downward"
+      example: "leül (sit down)"
+    - prefix: "vissza"
+      meaning: "back/return"
+      example: "visszajön (come back)"
+    - prefix: "össze"
+      meaning: "together"
+      example: "összegyűjt (gather together)"
+  behavior:
+    - "Preverb attaches to verb in affirmative declarative sentences"
+    - "Preverb separates and moves after verb in negation: Nem ment el"
+    - "Preverb separates in questions with question word: Hova ment el?"
+    - "Focus before verb pushes preverb after verb"

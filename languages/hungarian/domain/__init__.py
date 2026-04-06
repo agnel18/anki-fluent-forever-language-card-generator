@@ -1,0 +1,1 @@
+# Hungarian domain components
