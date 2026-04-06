@@ -1,0 +1,117 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — CHINESE (TRADITIONAL)
+================================================================================
+  Word          : 吃
+  Language       : Chinese (Traditional)
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:11:57
+  Elapsed        : 0.03s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'zh-tw': ZhTwAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=5, summary=YES
+         Sentence 3: colored=YES, explanations=4, summary=YES
+         Sentence 4: colored=YES, explanations=6, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : 我每天早上吃麵包。
+  Translation: I eat bread every morning.
+  IPA/Reading: wǒ měitiān zǎoshang chī miànbāo
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">我</span><span style="color: #44FFFF; font-weight: bold;">每天</span><span style="color: #FFAA00; font-weight: bold;">早上</span><span style="color: #44FF44…
+  Grammar Summ : SVO: Subject + Time + Verb + Object. Chinese SVO word order; no verb conjugation; time before verb.
+  Word Explanations (5 words):
+    我             pronoun         #FFFF44   I/me (first person pronoun)
+    每天            adverb          #FF44FF   every day (time adverb)
+    早上            noun            #FF4444   morning (time noun)
+    吃             verb            #44FF44   eat (action verb, no conjugation)
+    麵包            noun            #FF4444   bread (compound noun, Traditional form)
+
+  --- Sentence 2 ---
+  Original   : 孩子們在學校吃午飯。
+  Translation: The children eat lunch at school.
+  IPA/Reading: háizimen zài xuéxiào chī wǔfàn
+  Keywords   : children school, lunch tray
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">孩子們</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FFAA00; font-weight: bold;">學校</span><span style="color: #44FF4…
+  Grammar Summ : S + Location + V + O. Location phrase 在學校 before verb; 們 plural marker.
+  Word Explanations (5 words):
+    孩子們           noun            #FF4444   children (noun + plural suffix 們)
+    在             preposition     #44FFFF   at/in (location preposition)
+    學校            noun            #FF4444   school (Traditional form)
+    吃             verb            #44FF44   eat (action verb)
+    午飯            noun            #FF4444   lunch (compound: noon + meal, Traditional form)
+
+  --- Sentence 3 ---
+  Original   : 你想吃什麼？
+  Translation: What do you want to eat?
+  IPA/Reading: nǐ xiǎng chī shénme
+  Keywords   : food question, menu choices
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">你</span><span style="color: #44FF44; font-weight: bold;">想</span><span style="color: #44FF44; font-weight: bold;">吃</span><span style="color: #FF4444; …
+  Grammar Summ : S + Aux + V + WH. WH-word 什麼 stays in-situ; 想 + verb for desire.
+  Word Explanations (4 words):
+    你             pronoun         #FFFF44   you (second person pronoun)
+    想             auxiliary_verb  #666666   want to (modal/auxiliary verb)
+    吃             verb            #44FF44   eat (action verb)
+    什麼            pronoun         #FFFF44   what (interrogative pronoun, Traditional form)
+
+  --- Sentence 4 ---
+  Original   : 媽媽在廚房裡吃蘋果。
+  Translation: Mom is eating an apple in the kitchen.
+  IPA/Reading: māma zài chúfáng lǐ chī píngguǒ
+  Keywords   : mother kitchen, apple fruit
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">媽媽</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FFAA00; font-weight: bold;">廚房</span><span style="color: #888888…
+  Grammar Summ : S + Location + V + O. Location phrase 在...裡 wraps noun; Traditional characters throughout.
+  Word Explanations (6 words):
+    媽媽            noun            #FF4444   mom/mother (reduplicated kinship term)
+    在             preposition     #44FFFF   at/in (location preposition)
+    廚房            noun            #FF4444   kitchen (Traditional form)
+    裡             particle        #888888   inside (localizer/postposition, Traditional form of 里)
+    吃             verb            #44FF44   eat (action verb)
+    蘋果            noun            #FF4444   apple (Traditional form)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

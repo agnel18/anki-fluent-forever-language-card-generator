@@ -1,0 +1,121 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — HINDI
+================================================================================
+  Word          : खाना
+  Language       : Hindi
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:11:58
+  Elapsed        : 0.02s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'hi': HiAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food); also means 'food' as a noun
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=6, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=7, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food); also means 'food' as a noun
+
+  --- Sentence 1 ---
+  Original   : मैं हर सुबह रोटी खाता हूँ।
+  Translation: I eat bread every morning.
+  IPA/Reading: main har subah rotee khaata hoon
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <span style="color: #FFEAA7; font-weight: bold;">मैं</span> <span style="color: #FF44FF; font-weight: bold;">हर</span> <span style="color: #FFAA00; font-weight: bold;">सुबह</span> <span style="color: …
+  Grammar Summ : SOV: Subject + Time + Object + Verb + Auxiliary. Hindi SOV order; verb agrees with masculine subject (खाता); compound tense with auxiliary हूँ.
+  Word Explanations (6 words):
+    मैं           pronoun         #FF4444   I (first person singular pronoun)
+    हर            adjective       #FF44FF   every (quantifier adjective)
+    सुबह          noun            #FFAA00   morning (feminine noun)
+    रोटी          noun            #FFAA00   bread/chapati (feminine noun)
+    खाता          verb            #44FF44   eat (imperfective participle, masculine singular, agrees with subject)
+    हूँ           auxiliary_verb  #AAAAAA   am (present tense auxiliary, 1st person singular)
+
+  --- Sentence 2 ---
+  Original   : बच्चे स्कूल में खाना खाते हैं।
+  Translation: The children eat food at school.
+  IPA/Reading: bachche school mein khaanaa khaate hain
+  Keywords   : children school, lunch eating
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">बच्चे</span> <span style="color: #FFAA00; font-weight: bold;">स्कूल</span> <span style="color: #4444FF; font-weight: bold;">में</span> <span style="col…
+  Grammar Summ : SOV: Subject + Location + Object + Verb + Auxiliary. Postposition में after noun; plural verb agreement खाते; compound tense.
+  Word Explanations (6 words):
+    बच्चे         noun            #FFAA00   children (masculine plural noun, oblique/direct)
+    स्कूल         noun            #FFAA00   school (masculine noun, borrowed from English)
+    में           postposition    #4444FF   in/at (location postposition)
+    खाना          target_word     #AAAAAA   food (masculine noun; also means 'to eat' as infinitive)
+    खाते          verb            #44FF44   eat (imperfective participle, masculine plural)
+    हैं           auxiliary_verb  #AAAAAA   are (present tense auxiliary, 3rd person plural)
+
+  --- Sentence 3 ---
+  Original   : तुम क्या खाना चाहते हो?
+  Translation: What do you want to eat?
+  IPA/Reading: tum kya khaanaa chaahte ho
+  Keywords   : food question, menu choices
+
+  Colored HTML : <span style="color: #FFEAA7; font-weight: bold;">तुम</span> <span style="color: #FFEAA7; font-weight: bold;">क्या</span> <span style="color: #AAAAAA; font-weight: bold;">खाना</span> <span style="color…
+  Grammar Summ : S + WH + Infinitive + Modal + Aux: Subject + क्या + Verb-infinitive + चाहना + Auxiliary. WH-word क्या in-situ; चाहना + infinitive for 'want to'; SOV order preserved.
+  Word Explanations (5 words):
+    तुम           pronoun         #FF4444   you (2nd person informal pronoun)
+    क्या          pronoun         #FF4444   what (interrogative pronoun)
+    खाना          target_word     #AAAAAA   to eat (infinitive form)
+    चाहते         verb            #44FF44   want (imperfective participle, masculine plural, agrees with तुम)
+    हो            auxiliary_verb  #AAAAAA   are (present tense auxiliary, 2nd person informal)
+
+  --- Sentence 4 ---
+  Original   : माँ रसोई में सेब खा रही है।
+  Translation: Mother is eating an apple in the kitchen.
+  IPA/Reading: maan rasoee mein seb khaa rahee hai
+  Keywords   : mother kitchen, apple fruit
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">माँ</span> <span style="color: #FFAA00; font-weight: bold;">रसोई</span> <span style="color: #4444FF; font-weight: bold;">में</span> <span style="color:…
+  Grammar Summ : SOV progressive: Subject + Location + Object + Verb stem + रहा/रही + है. Progressive tense with रही (feminine agrees with माँ); postposition में; SOV order.
+  Word Explanations (7 words):
+    माँ           noun            #FFAA00   mother (feminine noun)
+    रसोई          noun            #FFAA00   kitchen (feminine noun)
+    में           postposition    #4444FF   in (location postposition)
+    सेब           noun            #FFAA00   apple (masculine noun)
+    खा            verb            #44FF44   eat (verb stem)
+    रही           auxiliary_verb  #AAAAAA   is (progressive marker, feminine singular, agrees with माँ)
+    है            auxiliary_verb  #AAAAAA   is (present tense auxiliary, 3rd person singular)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

@@ -1,0 +1,116 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — TURKISH
+================================================================================
+  Word          : yemek
+  Language       : Turkish
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:12:21
+  Elapsed        : 0.04s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'tr': TrAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food); also means 'food/meal' as a noun
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=5, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=4, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food); also means 'food/meal' as a noun
+
+  --- Sentence 1 ---
+  Original   : Ben her sabah ekmek yerim.
+  Translation: I eat bread every morning.
+  IPA/Reading: ben hæɾ sabah ecmec jeɾim
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Ben</span> <span style="color: #FF44FF; font-weight: bold;">her</span> <span style="color: #FFAA00; font-weight: bold;">sabah</span> <span style="color…
+  Grammar Summ : SOV: Subject + Time + Object + Verb. Aorist tense for habitual action; unmarked accusative (non-specific object); SOV word order.
+  Word Explanations (5 words):
+    Ben           pronoun         #FF4444   I (1st person singular pronoun)
+    her           adjective       #FF44FF   every (determiner/quantifier)
+    sabah         noun            #FFAA00   morning (noun, no suffix needed for time expressions)
+    ekmek         noun            #FFAA00   bread (noun, accusative unmarked — non-specific object)
+    yerim         verb            #44FF44   I eat (aorist tense -r + 1st person suffix -im of yemek)
+
+  --- Sentence 2 ---
+  Original   : Çocuklar okulda öğle yemeği yerler.
+  Translation: The children eat lunch at school.
+  IPA/Reading: tʃodʒuklaɾ okuldɑ øːle jemeji jeɾleɾ
+  Keywords   : children school cafeteria, lunch
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">Çocuklar</span> <span style="color: #FFAA00; font-weight: bold;">okulda</span> <span style="color: #FFAA00; font-weight: bold;">öğle</span> <span style…
+  Grammar Summ : SOV with location: Subject + Location + Object + Verb. Locative suffix -da (back vowel); compound noun öğle yemeği; plural -lar/-ler follows vowel harmony.
+  Word Explanations (5 words):
+    Çocuklar      noun            #FFAA00   children (çocuk + plural suffix -lar)
+    okulda        noun            #FFAA00   at school (okul + locative suffix -da, back vowel harmony)
+    öğle          noun            #FFAA00   noon (noun, part of compound)
+    yemeği        noun            #FFAA00   meal/food (yemek + possessive 3sg -i, compound noun: öğle yemeği = lunch)
+    yerler        verb            #44FF44   they eat (aorist ye-r + 3rd person plural -ler)
+
+  --- Sentence 3 ---
+  Original   : Bu akşam ne yemek istiyorsun?
+  Translation: What do you want to eat tonight?
+  IPA/Reading: bu akʃam ne jemec istijɔɾsun
+  Keywords   : dinner question, evening food
+
+  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">Bu</span> <span style="color: #FFAA00; font-weight: bold;">akşam</span> <span style="color: #FF4444; font-weight: bold;">ne</span> <span style="color: …
+  Grammar Summ : Time + WH + Infinitive + Modal: Time + Question + Verb-infinitive + Want. Progressive -yor for current desire; infinitive yemek as complement; SOV preserved in question.
+  Word Explanations (5 words):
+    Bu            adjective       #FF44FF   this (demonstrative adjective)
+    akşam         noun            #FFAA00   evening (noun, time expression)
+    ne            pronoun         #FF4444   what (interrogative pronoun)
+    yemek         target_word     #44FF44   to eat (infinitive/verbal noun form)
+    istiyorsun    verb            #44FF44   you want (iste- + progressive -yor + 2sg -sun)
+
+  --- Sentence 4 ---
+  Original   : Annem mutfakta elma yiyor.
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: annem mutfakta elma jijɔɾ
+  Keywords   : mother kitchen, apple eating
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">Annem</span> <span style="color: #FFAA00; font-weight: bold;">mutfakta</span> <span style="color: #FFAA00; font-weight: bold;">elma</span> yiyor.
+  Grammar Summ : SOV: Subject + Location + Object + Verb. Progressive -yor for ongoing action; possessive -m; locative -ta; vowel harmony throughout.
+  Word Explanations (4 words):
+    Annem         noun            #FFAA00   my mother (anne + 1sg possessive suffix -m)
+    mutfakta      noun            #FFAA00   in the kitchen (mutfak + locative suffix -ta, back vowel harmony)
+    elma          noun            #FFAA00   apple (noun, accusative unmarked — non-specific)
+    yiyor         verb            #44FF44   is eating (yi- + progressive suffix -yor, no person suffix for 3sg)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

@@ -15,11 +15,15 @@ from .domain.es_validator import EsValidator
 from .infrastructure.es_fallbacks import EsFallbacks
 
 # Import BaseGrammarAnalyzer
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
-from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+try:
+    from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
+    from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+
+# shared_utils imported lazily inside _call_ai() to support test mocking
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +161,7 @@ class EsAnalyzer(BaseGrammarAnalyzer):
                 return None
 
             # Configure API
+            from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
             api = get_gemini_api()
             api.configure(api_key=api_key)
 

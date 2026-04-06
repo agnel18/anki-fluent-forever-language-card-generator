@@ -1,0 +1,121 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — SPANISH
+================================================================================
+  Word          : comer
+  Language       : Spanish
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:12:08
+  Elapsed        : 3.13s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'es': EsAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=6, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=8, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : Yo como pan cada mañana.
+  Translation: I eat bread every morning.
+  IPA/Reading: ʝo komo pan kaða maɲana
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <div dir="ltr"><span style="color: #9370DB; font-weight: bold;" title="pronoun">Yo</span> <span style="color: #4ECDC4; font-weight: bold;" title="verb">como</span> <span style="color: #FFAA00; font-we…
+  Grammar Summ : SVO: Subject + Verb + Object + Time. Subject pronoun Yo (often omitted in Spanish).
+  Word Explanations (5 words):
+    Yo            pronoun         #9370DB   I (1st person singular subject pronoun)
+    como          verb            #4ECDC4   eat (present indicative, 1st person singular of comer)
+    pan           noun            #FFAA00   bread (masculine noun)
+    cada          adjective       #FF44FF   each/every (indefinite adjective)
+    mañana        noun            #FFAA00   morning (feminine noun)
+
+  --- Sentence 2 ---
+  Original   : Los niños comen en la escuela.
+  Translation: The children eat at school.
+  IPA/Reading: los niɲos komen en la eskwela
+  Keywords   : children school, lunch cafeteria
+
+  Colored HTML : <div dir="ltr"><span style="color: #000000; font-weight: bold;" title="article">Los</span> <span style="color: #FFAA00; font-weight: bold;" title="noun">niños</span> <span style="color: #4ECDC4; font-…
+  Grammar Summ : SVO: Subject + Verb + Location. Definite article los with masculine plural noun; preposition en for location.
+  Word Explanations (6 words):
+    Los           article         #000000   the (definite article, masculine plural)
+    niños         noun            #FFAA00   children (masculine plural noun)
+    comen         verb            #4ECDC4   eat (present indicative, 3rd person plural of comer)
+    en            preposition     #4444FF   at/in (preposition of location)
+    la            article         #000000   the (definite article, feminine singular)
+    escuela       noun            #FFAA00   school (feminine noun)
+
+  --- Sentence 3 ---
+  Original   : ¿Qué quieres comer esta noche?
+  Translation: What do you want to eat tonight?
+  IPA/Reading: ke kjeres komeɾ esta notʃe
+  Keywords   : dinner question, evening food
+
+  Colored HTML : <div dir="ltr"><span style="color: #9370DB; font-weight: bold;" title="pronoun">Qué</span> <span style="color: #4ECDC4; font-weight: bold;" title="verb">quieres</span> <span style="color: #4ECDC4; fon…
+  Grammar Summ : Interrogative: WH-word + Modal + Infinitive + Time. Stem-changing verb querer (e→ie); querer + infinitive pattern.
+  Word Explanations (5 words):
+    Qué           pronoun         #9370DB   what (interrogative pronoun)
+    quieres       verb            #4ECDC4   want (present indicative, 2nd person singular of querer, stem-changing e→ie)
+    comer         verb            #4ECDC4   to eat (infinitive)
+    esta          adjective       #FF44FF   this (demonstrative adjective, feminine)
+    noche         noun            #FFAA00   night/evening (feminine noun)
+
+  --- Sentence 4 ---
+  Original   : Mi madre come una manzana en la cocina.
+  Translation: My mother eats an apple in the kitchen.
+  IPA/Reading: mi maðɾe kome una manθana en la koθina
+  Keywords   : mother kitchen, red apple
+
+  Colored HTML : <div dir="ltr"><span style="color: #FF44FF; font-weight: bold;" title="adjective">Mi</span> <span style="color: #FFAA00; font-weight: bold;" title="noun">madre</span> <span style="color: #4ECDC4; font…
+  Grammar Summ : SVO with location: Possessive + Subject + Verb + Object + Location. Possessive Mi; indefinite article una; en + article for location.
+  Word Explanations (8 words):
+    Mi            adjective       #FF44FF   my (possessive adjective)
+    madre         noun            #FFAA00   mother (feminine noun)
+    come          verb            #4ECDC4   eats (present indicative, 3rd person singular of comer)
+    una           article         #000000   a/an (indefinite article, feminine)
+    manzana       noun            #FFAA00   apple (feminine noun)
+    en            preposition     #4444FF   in (preposition of location)
+    la            article         #000000   the (definite article, feminine)
+    cocina        noun            #FFAA00   kitchen (feminine noun)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

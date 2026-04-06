@@ -1,0 +1,125 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — FRENCH
+================================================================================
+  Word          : manger
+  Language       : French
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:11:54
+  Elapsed        : 3.36s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'fr': FrAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=8, summary=YES
+         Sentence 3: colored=YES, explanations=6, summary=YES
+         Sentence 4: colored=YES, explanations=8, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : Je mange du pain chaque matin.
+  Translation: I eat bread every morning.
+  IPA/Reading: ʒə mɑ̃ʒ dy pɛ̃ ʃak matɛ̃
+  Keywords   : bread on plate, morning breakfast
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Je</span> <span style="color: #44FF44; font-weight: bold;">mange</span> <span style="color: #888888; font-weight: bold;">du</span> <span style="color: …
+  Grammar Summ : SVO: Subject + Verb + Partitive Object + Time. Partitive article 'du' for uncountable nouns.
+  Word Explanations (6 words):
+    Je            pronoun         #FF4444   I (first person singular subject pronoun)
+    mange         verb            #44FF44   eat (present tense, 1st person singular of manger)
+    du            article         #AAAAAA   some (partitive article, contraction of de + le)
+    pain          noun            #FFAA00   bread (masculine noun)
+    chaque        adjective       #FF44FF   each/every (indefinite adjective)
+    matin         noun            #FFAA00   morning (masculine noun)
+
+  --- Sentence 2 ---
+  Original   : Les enfants mangent à la cantine de l'école.
+  Translation: The children eat at the school cafeteria.
+  IPA/Reading: lez ɑ̃fɑ̃ mɑ̃ʒ a la kɑ̃tin də lekɔl
+  Keywords   : children cafeteria, school lunch
+
+  Colored HTML : <span style="color: #888888; font-weight: bold;">Les</span> <span style="color: #FFAA00; font-weight: bold;">enfants</span> <span style="color: #44FF44; font-weight: bold;">mangent</span> <span style=…
+  Grammar Summ : SVO with location: Subject + Verb + Location. Elision l' before vowel; preposition à + definite article.
+  Word Explanations (8 words):
+    Les           article         #AAAAAA   the (definite article, plural)
+    enfants       noun            #FFAA00   children (masculine plural noun)
+    mangent       verb            #44FF44   eat (present tense, 3rd person plural of manger)
+    à             preposition     #4444FF   at/to (preposition of location)
+    la            article         #AAAAAA   the (definite article, feminine singular)
+    cantine       noun            #FFAA00   cafeteria (feminine noun)
+    de            preposition     #4444FF   of (preposition showing possession)
+    l'école       noun            #FFAA00   the school (feminine noun with elided article)
+
+  --- Sentence 3 ---
+  Original   : Qu'est-ce que tu veux manger ce soir ?
+  Translation: What do you want to eat tonight?
+  IPA/Reading: kɛs kə ty vø mɑ̃ʒe sə swaʁ
+  Keywords   : dinner menu, evening meal
+
+  Colored HTML : <span style="color: #000000; font-weight: bold;">Qu'est-ce</span> <span style="color: #000000; font-weight: bold;">que</span> <span style="color: #FF4444; font-weight: bold;">tu</span> <span style="co…
+  Grammar Summ : Interrogative: WH-phrase + Subject + Modal + Infinitive + Time. Qu'est-ce que for 'what'; vouloir + infinitive pattern.
+  Word Explanations (6 words):
+    Qu'est-ce que  pronoun         #FF4444   what (interrogative expression)
+    tu            pronoun         #FF4444   you (informal 2nd person subject pronoun)
+    veux          verb            #44FF44   want (present tense, 2nd person singular of vouloir)
+    manger        target_word     #AAAAAA   to eat (infinitive form)
+    ce            adjective       #FF44FF   this (demonstrative adjective, masculine)
+    soir          noun            #FFAA00   evening (masculine noun)
+
+  --- Sentence 4 ---
+  Original   : Ma mère mange une pomme dans la cuisine.
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: ma mɛʁ mɑ̃ʒ yn pɔm dɑ̃ la kɥizin
+  Keywords   : woman kitchen, red apple
+
+  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">Ma</span> <span style="color: #FFAA00; font-weight: bold;">mère</span> <span style="color: #44FF44; font-weight: bold;">mange</span> <span style="color…
+  Grammar Summ : SVO with location: Possessive + Subject + Verb + Object + Location. Possessive adjective ma; indefinite article une; location with dans.
+  Word Explanations (8 words):
+    Ma            adjective       #FF44FF   my (possessive adjective, feminine singular)
+    mère          noun            #FFAA00   mother (feminine noun)
+    mange         verb            #44FF44   eats/is eating (present tense, 3rd person singular)
+    une           article         #AAAAAA   a/an (indefinite article, feminine)
+    pomme         noun            #FFAA00   apple (feminine noun)
+    dans          preposition     #4444FF   in (preposition of location)
+    la            article         #AAAAAA   the (definite article, feminine)
+    cuisine       noun            #FFAA00   kitchen (feminine noun)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

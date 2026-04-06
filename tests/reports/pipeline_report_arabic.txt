@@ -1,0 +1,116 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — ARABIC
+================================================================================
+  Word          : أكل
+  Language       : Arabic
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:12:18
+  Elapsed        : 3.18s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ar': ArAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=4, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=5, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : أنا آكل الخبز كل صباح.
+  Translation: I eat bread every morning.
+  IPA/Reading: ana aakul al-khubz kull sabaah
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun ( person, ) in  case">أنا</span> <span …
+  Grammar Summ : VSO with fronted subject: Subject + Verb + Object + Time. Definite article ال on الخبز; present tense form آكل.
+  Word Explanations (5 words):
+    أنا           pronoun (ضمير)  #9370DB   Personal pronoun ( person, ) in  case
+    آكل           verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    الخبز         noun (اسم)      #4ECDC4   Noun ()
+    كل            adjective (صفة)  #9370DB   every/each (quantifier)
+    صباح          noun (اسم)      #4ECDC4   Noun ()
+
+  --- Sentence 2 ---
+  Original   : الأطفال يأكلون في المدرسة.
+  Translation: The children eat at school.
+  IPA/Reading: al-atfaal ya'kuluun fii al-madrasa
+  Keywords   : children school, lunch eating
+
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #4ECDC4; font-weight: bold;" title="noun (اسم): Noun ()">الأطفال</span> <span style="color: #FF44FF; font-we…
+  Grammar Summ : SV with location: Subject + Verb + Prepositional phrase. Plural verb ending -ون for masculine plural; definite article ال.
+  Word Explanations (4 words):
+    الأطفال       noun (اسم)      #4ECDC4   Noun ()
+    يأكلون        verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    في            preposition (حرف جر)  #9370DB   in/at (preposition of location)
+    المدرسة       noun (اسم)      #4ECDC4   Noun ()
+
+  --- Sentence 3 ---
+  Original   : ماذا تريد أن تأكل الليلة؟
+  Translation: What do you want to eat tonight?
+  IPA/Reading: maadha turiid an ta'kul al-layla
+  Keywords   : dinner question, food choices
+
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun ( person, ) in  case">ماذا</span> <span…
+  Grammar Summ : Interrogative: WH-word + Verb + أن + Subjunctive + Time. أن triggers subjunctive mood; ماذا for 'what'.
+  Word Explanations (5 words):
+    ماذا          pronoun (ضمير)  #9370DB   Personal pronoun ( person, ) in  case
+    تريد          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    أن            particle        #FFAA00   to (subjunctive particle)
+    تأكل          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    الليلة        noun (اسم)      #4ECDC4   Noun ()
+
+  --- Sentence 4 ---
+  Original   : أمي تأكل تفاحة في المطبخ.
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: ummi ta'kul tuffaaha fii al-matbakh
+  Keywords   : mother kitchen, red apple
+
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #4ECDC4; font-weight: bold;" title="noun (اسم): Noun ()">أمي</span> <span style="color: #FF44FF; font-weight…
+  Grammar Summ : SVO: Subject + Verb + Object + Location. Possessive suffix ي on أم; feminine verb form تأكل agrees with أمي; indefinite تفاحة.
+  Word Explanations (5 words):
+    أمي           noun (اسم)      #4ECDC4   Noun ()
+    تأكل          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    تفاحة         noun (اسم)      #4ECDC4   Noun ()
+    في            preposition (حرف جر)  #9370DB   in (preposition of location)
+    المطبخ        noun (اسم)      #4ECDC4   Noun ()
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

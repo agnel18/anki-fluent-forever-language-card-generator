@@ -19,13 +19,11 @@ import sys
 import os
 # Try different import paths
 try:
-    from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-    from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+    from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
 except ImportError:
     try:
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
         from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-        from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
     except ImportError:
         # Fallback - define minimal classes if import fails
         @dataclass
@@ -152,6 +150,7 @@ class DeAnalyzer(BaseGrammarAnalyzer):
         """Call Gemini AI for German analysis"""
         try:
             # Configure API
+            from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
             api = get_gemini_api()
             api.configure(api_key=api_key)
 

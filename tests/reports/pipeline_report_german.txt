@@ -1,0 +1,122 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — GERMAN
+================================================================================
+  Word          : essen
+  Language       : German
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 08:12:32
+  Elapsed        : 3.21s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'de': DeAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=8, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : Ich esse jeden Morgen Brot.
+  Translation: I eat bread every morning.
+  IPA/Reading: ɪç ɛsə jeːdn̩ mɔʁɡn̩ bʁoːt
+  Keywords   : bread plate, morning breakfast
+
+  Colored HTML : <div dir="ltr" lang="de"><span style="color: #00FFCC; font-weight: bold;" title="noun | Case: nominative">Ich</span> <span style="color: #0088FF; font-weight: bold;" title="verb">esse</span> <span sty…
+  Grammar Summ : Sentence contains 3 nouns, 1 verb, 1 adjective
+  Word Explanations (5 words):
+    Ich           noun            #00FFCC   I (1st person singular subject pronoun, nominative)
+    esse          verb            #0088FF   eat (present tense, 1st person singular of essen)
+    jeden         adjective       #666666   every (accusative masculine, strong declension of jeder)
+    Morgen        noun            #00FFCC   morning (masculine noun, accusative)
+    Brot.         noun            #00FFCC   bread (neuter noun, accusative)
+
+  --- Sentence 2 ---
+  Original   : Die Kinder essen in der Schule zu Mittag.
+  Translation: The children eat lunch at school.
+  IPA/Reading: diː kɪndɐ ɛsn̩ ɪn deːɐ̯ ʃuːlə tsuː mɪtaːk
+  Keywords   : children school cafeteria, lunch
+
+  Colored HTML : <div dir="ltr" lang="de"><span style="color: #FF4444; font-weight: bold;" title="article | Case: nominative">Die</span> <span style="color: #00FFCC; font-weight: bold;" title="noun | Case: nominative"…
+  Grammar Summ : Sentence contains 2 articles, 2 nouns, 2 verbs, 1 preposition
+  Word Explanations (7 words):
+    Die           article         #FF4444   the (definite article, nominative plural)
+    Kinder        noun            #00FFCC   children (neuter plural noun, nominative)
+    essen         verb            #0088FF   eat (present tense, 3rd person plural)
+    in            preposition     #666666   in/at (dative preposition for location)
+    der           article         #FF4444   the (definite article, dative feminine)
+    Schule        noun            #00FFCC   school (feminine noun, dative)
+    zu            verb            #0088FF   for lunch (adverbial phrase)
+
+  --- Sentence 3 ---
+  Original   : Was möchtest du heute Abend essen?
+  Translation: What would you like to eat tonight?
+  IPA/Reading: vas mœçtəst duː hɔʏ̯tə aːbn̩t ɛsn̩
+  Keywords   : dinner question, evening menu
+
+  Colored HTML : <div dir="ltr" lang="de"><span style="color: #00FFCC; font-weight: bold;" title="noun">Was</span> <span style="color: #0088FF; font-weight: bold;" title="verb">möchtest</span> <span style="color: #00F…
+  Grammar Summ : Sentence contains 2 nouns, 3 verbs
+  Word Explanations (5 words):
+    Was           noun            #00FFCC   what (interrogative pronoun, accusative)
+    möchtest      verb            #0088FF   would like (Konjunktiv II of mögen, 2nd person singular)
+    du            noun            #00FFCC   you (2nd person singular, informal, nominative)
+    heute         verb            #0088FF   tonight/this evening (time adverbial)
+    Abend         verb            #0088FF   to eat (infinitive, at end of clause)
+
+  --- Sentence 4 ---
+  Original   : Meine Mutter isst einen Apfel in der Küche.
+  Translation: My mother is eating an apple in the kitchen.
+  IPA/Reading: maɪ̯nə mʊtɐ ɪst aɪ̯nən apfl̩ ɪn deːɐ̯ kʏçə
+  Keywords   : mother kitchen, apple eating
+
+  Colored HTML : <div dir="ltr" lang="de"><span style="color: #666666; font-weight: bold;" title="adjective | Case: nominative">Meine</span> <span style="color: #00FFCC; font-weight: bold;" title="noun | Case: nominat…
+  Grammar Summ : Sentence contains 1 adjective, 3 nouns, 1 verb, 2 articles, 1 preposition
+  Word Explanations (8 words):
+    Meine         adjective       #666666   my (possessive adjective, nominative feminine)
+    Mutter        noun            #00FFCC   mother (feminine noun, nominative)
+    isst          verb            #0088FF   eats (present tense, 3rd person singular of essen, vowel change e→i)
+    einen         article         #FF4444   a/an (indefinite article, accusative masculine)
+    Apfel         noun            #00FFCC   apple (masculine noun, accusative)
+    in            preposition     #666666   in (dative preposition for location)
+    der           article         #FF4444   the (definite article, dative feminine)
+    Küche.        noun            #00FFCC   kitchen (feminine noun, dative)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

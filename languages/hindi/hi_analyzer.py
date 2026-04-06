@@ -53,8 +53,7 @@ from .domain.hi_prompt_builder import HiPromptBuilder
 from .domain.hi_response_parser import HiResponseParser
 from .domain.hi_validator import HiValidator
 
-# Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+# Import centralized configuration — lazy import in _call_ai() to support test mocking
 
 logger = logging.getLogger(__name__)
 
@@ -263,6 +262,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         """
         logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
         try:
+            from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
             api = get_gemini_api()
             api.configure(api_key=gemini_api_key)
             # Try primary model first

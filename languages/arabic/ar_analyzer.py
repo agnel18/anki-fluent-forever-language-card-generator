@@ -15,11 +15,15 @@ from .domain.ar_patterns import ArPatterns
 from .domain.ar_fallbacks import ArFallbacks
 
 # Import BaseGrammarAnalyzer
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
-from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
-from shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+try:
+    from streamlit_app.language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streamlit_app'))
+    from language_analyzers.base_analyzer import BaseGrammarAnalyzer, GrammarAnalysis, LanguageConfig
+
+# shared_utils imported lazily inside _call_ai() to support test mocking
 
 logger = logging.getLogger(__name__)
 
@@ -326,6 +330,7 @@ IMPORTANT:
 
         try:
             # Configure API
+            from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
             api = get_gemini_api()
             api.configure(api_key=api_key)
 
@@ -356,8 +361,7 @@ IMPORTANT:
 
     def _select_model(self, prompt: str) -> str:
         """Select appropriate AI model based on prompt complexity"""
-        # Use shared utility functions for model selection
-        # Could add logic to use different models based on complexity
+        from streamlit_app.shared_utils import get_gemini_model
         return get_gemini_model()
 
     def _build_analysis_result(self,

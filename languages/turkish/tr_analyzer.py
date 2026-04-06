@@ -53,8 +53,7 @@ from .domain.tr_prompt_builder import TrPromptBuilder
 from .domain.tr_response_parser import TrResponseParser
 from .domain.tr_validator import TrValidator
 
-# Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+# Import centralized configuration — lazy import in _call_ai() to support test mocking
 
 logger = logging.getLogger(__name__)
 
@@ -288,6 +287,7 @@ class TrAnalyzer(BaseGrammarAnalyzer):
         """
         logger.info(f"DEBUG: _call_ai called with prompt: {prompt[:200]}...")
         try:
+            from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
             api = get_gemini_api()
             api.configure(api_key=gemini_api_key)
             # Try primary model first

@@ -53,8 +53,7 @@ from .domain.fr_response_parser import FrResponseParser
 from .domain.fr_fallbacks import FrFallbacks
 from .domain.fr_validator import FrValidator
 
-# Import centralized configuration
-from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
+# Import centralized configuration — lazy import in _call_ai() to support test mocking
 
 logger = logging.getLogger(__name__)
 
@@ -320,6 +319,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
 
         for attempt in range(max_retries):
             try:
+                from streamlit_app.shared_utils import get_gemini_model, get_gemini_fallback_model, get_gemini_api
                 api = get_gemini_api()
                 api.configure(api_key=gemini_api_key)
 

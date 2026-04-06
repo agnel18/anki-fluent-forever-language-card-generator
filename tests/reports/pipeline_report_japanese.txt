@@ -5,8 +5,8 @@
   Language       : Japanese
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-04-04 09:43:54
-  Elapsed        : 12.01s
+  Generated at   : 2026-04-06 08:11:58
+  Elapsed        : 0.10s
 ================================================================================
 
 STAGE RESULTS
@@ -48,12 +48,12 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : SOV sentence: Subject は Time Object を Verb (polite). Uses topic particle は, object particle を, listing particle と, polite -ます form.
   Word Explanations (8 words):
     私             pronoun         #FF4444   I (first person pronoun) [読み: わたし]
-    は             other           #4444FF   topic marker particle
-    毎朝            verb            #44FFFF   every morning [読み: まいあさ]
+    は             particle        #4444FF   topic marker particle
+    毎朝            adverb          #44FFFF   every morning [読み: まいあさ]
     パン            noun            #FFAA00   bread
-    と             other           #4444FF   and (listing particle)
+    と             particle        #4444FF   and (listing particle)
     たまご           noun            #FFAA00   egg
-    を             other           #4444FF   object marker particle
+    を             particle        #4444FF   object marker particle
     食べます          verb            #44FF44   eat (polite present) [読み: たべます]
 
   --- Sentence 2 ---
@@ -66,11 +66,11 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : SOV sentence: Subject は Location で Object を Verb. Uses location particle で to mark where action takes place, topic particle は, object particle を.
   Word Explanations (7 words):
     子供たち          noun            #FFAA00   children (plural) [読み: こどもたち]
-    は             other           #4444FF   topic marker particle
+    は             particle        #4444FF   topic marker particle
     学校            noun            #FFAA00   school [読み: がっこう]
-    で             other           #4444FF   location of action particle
+    で             particle        #4444FF   location of action particle
     昼ごはん          noun            #FFAA00   lunch [読み: ひるごはん]
-    を             other           #4444FF   object marker particle
+    を             particle        #4444FF   object marker particle
     食べます          verb            #44FF44   eat (polite present) [読み: たべます]
 
   --- Sentence 3 ---
@@ -83,12 +83,12 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : Interrogative SOV: Subject は WH-word を Verb-たい です か? Uses -たい desire form, question particle か, polite copula です.
   Word Explanations (7 words):
     あなた           pronoun         #FF4444   you (second person pronoun)
-    は             other           #4444FF   topic marker particle
+    は             particle        #4444FF   topic marker particle
     何             pronoun         #FF4444   what (interrogative) [読み: なに]
-    を             other           #4444FF   object marker particle
+    を             particle        #4444FF   object marker particle
     食べたい          verb            #44FF44   want to eat (desire form) [読み: たべたい]
-    です            other           #AA44FF   is/am/are (polite copula)
-    か             other           #4444FF   question marker particle
+    です            copula          #AA44FF   is/am/are (polite copula)
+    か             particle        #4444FF   question marker particle
 
   --- Sentence 4 ---
   Original   : 母は台所でりんごを食べています。
@@ -100,11 +100,11 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : SOV progressive: Subject は Location で Object を Verb-ている. Uses て-いる progressive form for ongoing action, location particle で.
   Word Explanations (7 words):
     母             noun            #FFAA00   mother (humble form) [読み: はは]
-    は             other           #4444FF   topic marker particle
+    は             particle        #4444FF   topic marker particle
     台所            noun            #FFAA00   kitchen [読み: だいどころ]
-    で             other           #4444FF   location of action particle
+    で             particle        #4444FF   location of action particle
     りんご           noun            #FFAA00   apple
-    を             other           #4444FF   object marker particle
+    を             particle        #4444FF   object marker particle
     食べています        verb            #44FF44   is eating (progressive, polite) [読み: たべています]
 
 AUDIO FILES
