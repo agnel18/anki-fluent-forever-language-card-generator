@@ -174,11 +174,124 @@ JAPANESE_MOCK_DATA: Dict[str, Any] = {
 }
 
 
+KOREAN_MOCK_DATA: Dict[str, Any] = {
+    "word": "먹다",
+    "language_name": "Korean",
+    "language_code": "ko",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 15,
+    "difficulty": "beginner",
+    # --- Mock Gemini response for content generation (sentence_generator) ---
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to eat (to consume food)
+
+        RESTRICTIONS: No specific grammatical restrictions.
+
+        SENTENCES:
+        1. 저는 매일 아침에 밥을 먹어요.
+        2. 아이들이 학교에서 점심을 먹습니다.
+        3. 무엇을 먹고 싶어요?
+        4. 어머니가 부엌에서 사과를 먹고 있어요.
+
+        TRANSLATIONS:
+        1. I eat rice every morning.
+        2. The children eat lunch at school.
+        3. What do you want to eat?
+        4. Mother is eating an apple in the kitchen.
+
+        IPA:
+        1. tɕʌnɯn mɛil atɕʰime pabɯl mʌɡʌjo
+        2. aidɯli hakkjoesʌ tɕʌmɕimɯl mʌksɯmnida
+        3. muʌsɯl mʌkko ɕipʰʌjo
+        4. ʌmʌniɡa puʌkʰesʌ saɡwarɯl mʌkko issʌjo
+
+        KEYWORDS:
+        1. rice bowl, breakfast table, morning meal
+        2. children in cafeteria, school lunch, eating together
+        3. menu card, food choices, question
+        4. woman in kitchen, red apple, eating fruit"""),
+
+    # --- Mock Gemini responses for grammar analysis ---
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "저는 매일 아침에 밥을 먹어요.",
+            "words": [
+                {"word": "저", "grammatical_role": "pronoun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "I (humble first person pronoun)"},
+                {"word": "는", "grammatical_role": "topic_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "topic marker particle"},
+                {"word": "매일", "grammatical_role": "adverb", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "every day"},
+                {"word": "아침", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "morning"},
+                {"word": "에", "grammatical_role": "locative_particle", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "at/in (time particle)"},
+                {"word": "밥", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "rice/meal"},
+                {"word": "을", "grammatical_role": "object_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "object marker particle"},
+                {"word": "먹어요", "grammatical_role": "verb", "speech_level": "polite", "tense": "present", "honorific": None, "individual_meaning": "eat (polite present form of 먹다)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV sentence: Subject 는 Time 에 Object 을 Verb (polite).",
+                "key_features": "Uses topic particle 는, time particle 에, object particle 을, polite -어요 form.",
+                "complexity_notes": "Beginner-friendly polite sentence with basic particles."
+            }
+        },
+        {
+            "sentence": "아이들이 학교에서 점심을 먹습니다.",
+            "words": [
+                {"word": "아이들", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "children"},
+                {"word": "이", "grammatical_role": "subject_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "subject marker particle"},
+                {"word": "학교", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "school"},
+                {"word": "에서", "grammatical_role": "locative_particle", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "at (location of action particle)"},
+                {"word": "점심", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "lunch"},
+                {"word": "을", "grammatical_role": "object_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "object marker particle"},
+                {"word": "먹습니다", "grammatical_role": "verb", "speech_level": "formal", "tense": "present", "honorific": None, "individual_meaning": "eat (formal polite present form)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV sentence: Subject 이 Location 에서 Object 을 Verb.",
+                "key_features": "Uses subject marker 이, location particle 에서, formal -습니다 ending.",
+                "complexity_notes": "Beginner pattern with formal speech level."
+            }
+        },
+        {
+            "sentence": "무엇을 먹고 싶어요?",
+            "words": [
+                {"word": "무엇", "grammatical_role": "pronoun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "what (interrogative pronoun)"},
+                {"word": "을", "grammatical_role": "object_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "object marker particle"},
+                {"word": "먹고", "grammatical_role": "connective_ending", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "eat + connective ending -고"},
+                {"word": "싶어요", "grammatical_role": "auxiliary_verb", "speech_level": "polite", "tense": "present", "honorific": None, "individual_meaning": "want to (auxiliary, polite form of 싶다)"}
+            ],
+            "explanations": {
+                "overall_structure": "Interrogative: WH-word 을 Verb-고 싶다 (want to)?",
+                "key_features": "Uses -고 싶다 desire pattern, polite -어요 ending, question intonation.",
+                "complexity_notes": "Beginner question pattern with -고 싶다 (want to) form."
+            }
+        },
+        {
+            "sentence": "어머니가 부엌에서 사과를 먹고 있어요.",
+            "words": [
+                {"word": "어머니", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "mother"},
+                {"word": "가", "grammatical_role": "subject_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "subject marker particle"},
+                {"word": "부엌", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "kitchen"},
+                {"word": "에서", "grammatical_role": "locative_particle", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "at (location of action particle)"},
+                {"word": "사과", "grammatical_role": "noun", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "apple"},
+                {"word": "를", "grammatical_role": "object_marker", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "object marker particle"},
+                {"word": "먹고", "grammatical_role": "connective_ending", "speech_level": None, "tense": None, "honorific": None, "individual_meaning": "eat + connective ending -고"},
+                {"word": "있어요", "grammatical_role": "auxiliary_verb", "speech_level": "polite", "tense": "present", "honorific": None, "individual_meaning": "is doing (progressive, polite form of 있다)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV progressive: Subject 가 Location 에서 Object 를 Verb-고 있다.",
+                "key_features": "Uses -고 있다 progressive form for ongoing action, location particle 에서.",
+                "complexity_notes": "Beginner level — -고 있다 progressive is common early grammar."
+            }
+        }
+    ], ensure_ascii=False),
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
 LANGUAGE_MOCK_DATA = {
     "japanese": JAPANESE_MOCK_DATA,
+    "korean": KOREAN_MOCK_DATA,
     # Future: "french": FRENCH_MOCK_DATA, "spanish": SPANISH_MOCK_DATA, etc.
 }
 
@@ -575,7 +688,13 @@ def test_end_to_end_pipeline(lang_key: str, tmp_path: Path):
 
     # ---- Render & save report ------------------------------------------------
     report_text = report.render()
-    print("\n" + report_text)
+    try:
+        import sys
+        sys.stdout.buffer.write(("\n" + report_text + "\n").encode("utf-8", errors="replace"))
+        sys.stdout.buffer.flush()
+    except Exception:
+        # Last resort: strip non-ASCII for truly broken terminals
+        print("\n" + report_text.encode("ascii", errors="replace").decode("ascii"))
 
     report_file = REPORT_DIR / f"pipeline_report_{lang_key}.txt"
     report_file.write_text(report_text, encoding="utf-8")

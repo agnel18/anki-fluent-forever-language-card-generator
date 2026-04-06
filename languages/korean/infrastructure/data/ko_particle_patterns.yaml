@@ -1,0 +1,96 @@
+# ko_particle_patterns.yaml
+# Korean Particle Patterns Configuration
+
+case_particles:
+  은:
+    role: "topic_marker"
+    description: "Topic marker (after consonant-ending noun)"
+    example: "나는 → 저는"
+  는:
+    role: "topic_marker"
+    description: "Topic marker (after vowel-ending noun)"
+    example: "저는 학생입니다"
+  이:
+    role: "subject_marker"
+    description: "Subject marker (after consonant-ending noun)"
+    example: "비가 → 날씨가"
+  가:
+    role: "subject_marker"
+    description: "Subject marker (after vowel-ending noun)"
+    example: "날씨가 좋아요"
+  을:
+    role: "object_marker"
+    description: "Object marker (after consonant-ending noun)"
+    example: "밥을 먹다"
+  를:
+    role: "object_marker"
+    description: "Object marker (after vowel-ending noun)"
+    example: "커피를 마시다"
+
+locative_particles:
+  에:
+    role: "locative_particle"
+    description: "Location/time/direction marker"
+    examples:
+      - "학교에 가다 (go to school)"
+      - "3시에 만나다 (meet at 3 o'clock)"
+  에서:
+    role: "locative_particle"
+    description: "Location of action / from"
+    examples:
+      - "집에서 공부하다 (study at home)"
+      - "서울에서 오다 (come from Seoul)"
+
+other_particles:
+  의:
+    role: "possessive_particle"
+    description: "Possessive marker (of)"
+    example: "나의 책 (my book)"
+  도:
+    role: "particle"
+    description: "Also/too"
+    example: "나도 좋아해요 (I also like it)"
+  만:
+    role: "particle"
+    description: "Only/just"
+    example: "나만 알아요 (Only I know)"
+  부터:
+    role: "particle"
+    description: "From (time/place)"
+    example: "3시부터 (from 3 o'clock)"
+  까지:
+    role: "particle"
+    description: "Until/to"
+    example: "5시까지 (until 5 o'clock)"
+  밖에:
+    role: "particle"
+    description: "Nothing but (with negative)"
+    example: "물밖에 없어요 (There's nothing but water)"
+  께서:
+    role: "honorific_particle"
+    description: "Honorific subject marker"
+    example: "선생님께서 오셨어요 (The teacher came [honorific])"
+
+comitative_particles:
+  와:
+    role: "comitative_particle"
+    description: "And/with (after vowel-ending noun)"
+    example: "사과와 배 (apples and pears)"
+  과:
+    role: "comitative_particle"
+    description: "And/with (after consonant-ending noun)"
+    example: "빵과 우유 (bread and milk)"
+  하고:
+    role: "comitative_particle"
+    description: "And/with (colloquial)"
+    example: "친구하고 같이 (together with a friend)"
+
+instrumental_particles:
+  로:
+    role: "instrumental_particle"
+    description: "By means of / toward (after vowel or ㄹ)"
+    example: "버스로 가다 (go by bus)"
+  으로:
+    role: "instrumental_particle"
+    description: "By means of / toward (after consonant)"
+    example: "연필으로 쓰다 (write with a pencil)"

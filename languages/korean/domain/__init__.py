@@ -1,0 +1,1 @@
+"""Korean analyzer domain components."""

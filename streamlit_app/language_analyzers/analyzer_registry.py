@@ -71,6 +71,7 @@ class AnalyzerRegistry:
             'turkish': 'tr',
             'french': 'fr',
             'japanese': 'ja',
+            'korean': 'ko',
             'zh': 'zh'  # Backward compatibility
         }
 

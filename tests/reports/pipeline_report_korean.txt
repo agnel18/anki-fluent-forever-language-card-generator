@@ -1,0 +1,124 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — KOREAN
+================================================================================
+  Word          : 먹다
+  Language       : Korean
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-06 07:01:43
+  Elapsed        : 4.42s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ko': KoAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=8, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=4, summary=YES
+         Sentence 4: colored=YES, explanations=8, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : 저는 매일 아침에 밥을 먹어요.
+  Translation: I eat rice every morning.
+  IPA/Reading: tɕʌnɯn mɛil atɕʰime pabɯl mʌɡʌjo
+  Keywords   : rice bowl, breakfast table, morning meal
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">저</span><span style="color: #4444FF; font-weight: bold;">는</span> <span style="color: #44FFFF; font-weight: bold;">매일</span> <span style="color: #FFAA0…
+  Grammar Summ : SOV sentence: Subject 는 Time 에 Object 을 Verb (polite). Uses topic particle 는, time particle 에, object particle 을, polite -어요 form.
+  Word Explanations (8 words):
+    저             pronoun         #FF4444   I (humble first person pronoun)
+    는             particle        #4444FF   topic marker particle
+    매일            adverb          #44FFFF   every day
+    아침            noun            #FFAA00   morning
+    에             particle        #4444FF   at/in (time particle)
+    밥             noun            #FFAA00   rice/meal
+    을             particle        #4444FF   object marker particle
+    먹어요           verb            #44FF44   eat (polite present form of 먹다) [speech level: polite]
+
+  --- Sentence 2 ---
+  Original   : 아이들이 학교에서 점심을 먹습니다.
+  Translation: The children eat lunch at school.
+  IPA/Reading: aidɯli hakkjoesʌ tɕʌmɕimɯl mʌksɯmnida
+  Keywords   : children in cafeteria, school lunch, eating together
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">아이들</span><span style="color: #4444FF; font-weight: bold;">이</span> <span style="color: #FFAA00; font-weight: bold;">학교</span><span style="color: #4444…
+  Grammar Summ : SOV sentence: Subject 이 Location 에서 Object 을 Verb. Uses subject marker 이, location particle 에서, formal -습니다 ending.
+  Word Explanations (7 words):
+    아이들           noun            #FFAA00   children
+    이             particle        #4444FF   subject marker particle
+    학교            noun            #FFAA00   school
+    에서            particle        #4444FF   at (location of action particle)
+    점심            noun            #FFAA00   lunch
+    을             particle        #4444FF   object marker particle
+    먹습니다          verb            #44FF44   eat (formal polite present form) [speech level: formal]
+
+  --- Sentence 3 ---
+  Original   : 무엇을 먹고 싶어요?
+  Translation: What do you want to eat?
+  IPA/Reading: muʌsɯl mʌkko ɕipʰʌjo
+  Keywords   : menu card, food choices, question
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">무엇</span><span style="color: #4444FF; font-weight: bold;">을</span> <span style="color: #AAAAAA; font-weight: bold;">먹고</span> <span style="color: #44FF…
+  Grammar Summ : Interrogative: WH-word 을 Verb-고 싶다 (want to)? Uses -고 싶다 desire pattern, polite -어요 ending, question intonation.
+  Word Explanations (4 words):
+    무엇            pronoun         #FF4444   what (interrogative pronoun)
+    을             particle        #4444FF   object marker particle
+    먹고            ending          #AAAAAA   eat + connective ending -고
+    싶어요           verb            #44FF44   want to (auxiliary, polite form of 싶다) [speech level: polite]
+
+  --- Sentence 4 ---
+  Original   : 어머니가 부엌에서 사과를 먹고 있어요.
+  Translation: Mother is eating an apple in the kitchen.
+  IPA/Reading: ʌmʌniɡa puʌkʰesʌ saɡwarɯl mʌkko issʌjo
+  Keywords   : woman in kitchen, red apple, eating fruit
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">어머니</span><span style="color: #4444FF; font-weight: bold;">가</span> <span style="color: #FFAA00; font-weight: bold;">부엌</span><span style="color: #4444…
+  Grammar Summ : SOV progressive: Subject 가 Location 에서 Object 를 Verb-고 있다. Uses -고 있다 progressive form for ongoing action, location particle 에서.
+  Word Explanations (8 words):
+    어머니           noun            #FFAA00   mother
+    가             particle        #4444FF   subject marker particle
+    부엌            noun            #FFAA00   kitchen
+    에서            particle        #4444FF   at (location of action particle)
+    사과            noun            #FFAA00   apple
+    를             particle        #4444FF   object marker particle
+    먹고            ending          #AAAAAA   eat + connective ending -고
+    있어요           verb            #44FF44   is doing (progressive, polite form of 있다) [speech level: polite]
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

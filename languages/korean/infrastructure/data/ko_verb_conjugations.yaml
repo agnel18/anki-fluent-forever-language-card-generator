@@ -1,0 +1,82 @@
+# ko_verb_conjugations.yaml
+# Korean Verb Conjugation Patterns
+
+verb_types:
+  regular:
+    description: "Regular verbs following standard conjugation rules"
+    examples:
+      - stem: "먹"
+        dictionary: "먹다"
+        meaning: "to eat"
+      - stem: "가"
+        dictionary: "가다"
+        meaning: "to go"
+      - stem: "마시"
+        dictionary: "마시다"
+        meaning: "to drink"
+
+  irregular:
+    ㄷ_irregular:
+      description: "ㄷ changes to ㄹ before vowel"
+      examples: ["듣다 → 들어요 (to listen)", "걷다 → 걸어요 (to walk)"]
+    ㅂ_irregular:
+      description: "ㅂ changes to 우/오 before vowel"
+      examples: ["돕다 → 도와요 (to help)", "춥다 → 추워요 (to be cold)"]
+    ㅅ_irregular:
+      description: "ㅅ drops before vowel"
+      examples: ["짓다 → 지어요 (to build)", "낫다 → 나아요 (to be better)"]
+    르_irregular:
+      description: "르 becomes ㄹ라/ㄹ러"
+      examples: ["모르다 → 몰라요 (to not know)", "빠르다 → 빨라요 (to be fast)"]
+    ㅎ_irregular:
+      description: "ㅎ drops before vowel (adjectives)"
+      examples: ["하얗다 → 하얘요 (to be white)", "빨갛다 → 빨개요 (to be red)"]
+
+speech_levels:
+  formal_polite:
+    name: "합쇼체 (Hapsyo-che)"
+    endings:
+      declarative: "-습니다/-ㅂ니다"
+      interrogative: "-습니까/-ㅂ니까"
+    usage: "Formal situations, news, presentations"
+    example: "먹습니다 (I eat [formal])"
+
+  informal_polite:
+    name: "해요체 (Haeyo-che)"
+    endings:
+      declarative: "-아요/-어요/-해요"
+      interrogative: "-아요?/-어요?/-해요?"
+    usage: "Most common in daily polite speech"
+    example: "먹어요 (I eat [polite])"
+
+  casual:
+    name: "해체 (Hae-che)"
+    endings:
+      declarative: "-아/-어/-해"
+      interrogative: "-아?/-어?/-해?"
+    usage: "Among close friends, to younger people"
+    example: "먹어 (I eat [casual])"
+
+  plain:
+    name: "해라체 (Haera-che)"
+    endings:
+      declarative: "-다/-ㄴ다/-는다"
+      interrogative: "-니/-냐"
+    usage: "Writing, reported speech, to much younger"
+    example: "먹는다 (eats [plain written])"
+
+tense_markers:
+  present: ""
+  past: "-았/었/였-"
+  future: "-(으)ㄹ 거-"
+  progressive: "-고 있-"
+  past_perfect: "-았/었었-"
+
+connective_endings:
+  sequential: "-고 (and then)"
+  reason: "-아서/어서 (because/so)"
+  contrast: "-지만 (but)"
+  conditional: "-(으)면 (if/when)"
+  background: "-는데/-(으)ㄴ데 (but/and)"
+  purpose: "-(으)러 (in order to)"
+  simultaneous: "-(으)면서 (while)"

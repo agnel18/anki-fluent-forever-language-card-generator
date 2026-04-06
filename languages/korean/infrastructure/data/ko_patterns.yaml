@@ -1,0 +1,67 @@
+# ko_patterns.yaml
+# Korean General Patterns Configuration
+
+# Script detection patterns
+script_ranges:
+  hangul_syllables:
+    start: "\\uAC00"
+    end: "\\uD7AF"
+    description: "Hangul Syllables"
+  hangul_jamo:
+    start: "\\u1100"
+    end: "\\u11FF"
+    description: "Hangul Jamo (individual consonants/vowels)"
+  hangul_compatibility_jamo:
+    start: "\\u3130"
+    end: "\\u318F"
+    description: "Hangul Compatibility Jamo"
+  punctuation:
+    chars: [".", ",", "!", "?", "~", "…", "(", ")", "「", "」"]
+
+# Sentence structure patterns
+sentence_patterns:
+  basic_sov:
+    pattern: "Subject + 은/는/이/가 + Object + 을/를 + Verb"
+    example: "나는 밥을 먹다"
+    description: "Basic Subject-Object-Verb pattern"
+  topic_comment:
+    pattern: "Topic + 은/는 + Comment"
+    example: "오늘은 날씨가 좋다"
+    description: "Topic-comment structure"
+  existence:
+    animate: "Subject + 이/가 + 있다/없다"
+    example: "고양이가 있다"
+    description: "Existence/possession pattern"
+  copula:
+    pattern: "Noun + 이다"
+    example: "학생이다"
+    description: "Noun + copula (to be)"
+
+# Common grammatical patterns by level
+beginner_patterns:
+  - "~이에요/예요 (polite copula)"
+  - "~입니다 (formal copula)"
+  - "~아요/어요 (polite verb ending)"
+  - "~습니다/ㅂ니다 (formal verb ending)"
+  - "~을/를 (object marker)"
+  - "~에 가다 (go to location)"
+  - "~을/를 좋아하다 (to like something)"
+
+intermediate_patterns:
+  - "~고 (and, sequential)"
+  - "~서/아서/어서 (because, and then)"
+  - "~(으)면 (if/when)"
+  - "~지만 (but/although)"
+  - "~고 있다 (progressive)"
+  - "~(으)ㄹ 거예요 (future intention)"
+  - "~(으)ㅂ시다 (let's, formal suggestion)"
+
+advanced_patterns:
+  - "~(으)시- (honorific suffix)"
+  - "~는데/-(으)ㄴ데 (background information)"
+  - "~(으)ㄹ 때 (when)"
+  - "~기 때문에 (because of)"
+  - "~(으)ㄹ 수 있다/없다 (can/cannot)"
+  - "~아/어/여지다 (passive/change of state)"
+  - "~게 하다 (causative)"
+  - "~고 하다 (indirect quotation)"

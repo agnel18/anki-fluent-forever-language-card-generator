@@ -1,0 +1,66 @@
+# ko_honorific_patterns.yaml
+# Korean Honorific System Patterns
+
+honorific_levels:
+  formal_polite:
+    name: "합쇼체"
+    description: "Highest politeness level used in formal situations"
+    markers: ["-습니다", "-ㅂ니다", "-습니까", "-ㅂ니까"]
+    usage: "News, presentations, interviews, to elders in formal context"
+
+  informal_polite:
+    name: "해요체"
+    description: "Standard polite level for everyday conversation"
+    markers: ["-아요", "-어요", "-해요"]
+    usage: "Default for most social interactions"
+
+  casual:
+    name: "해체"
+    description: "Casual level for close relationships"
+    markers: ["-아", "-어", "-해"]
+    usage: "Close friends, siblings, to younger people"
+
+  plain:
+    name: "해라체"
+    description: "Plain/written level"
+    markers: ["-다", "-ㄴ다", "-는다"]
+    usage: "Written Korean, reported speech"
+
+subject_honorific:
+  suffix: "-(으)시-"
+  description: "Added to verb stem to show respect for the subject"
+  examples:
+    - "가다 → 가시다 (to go [honorific])"
+    - "먹다 → 드시다 (to eat [honorific, special form])"
+    - "자다 → 주무시다 (to sleep [honorific, special form])"
+    - "있다 → 계시다 (to be [honorific, special form])"
+
+honorific_vocabulary:
+  regular_to_honorific:
+    먹다: "드시다 (to eat)"
+    마시다: "드시다 (to drink)"
+    자다: "주무시다 (to sleep)"
+    있다: "계시다 (to be/stay)"
+    죽다: "돌아가시다 (to pass away)"
+    말하다: "말씀하시다 (to speak)"
+    주다: "드리다 (to give [humble])"
+    보다: "뵙다 (to see/meet [humble])"
+    묻다: "여쭙다 (to ask [humble])"
+
+honorific_particles:
+  께서:
+    replaces: "이/가"
+    description: "Honorific subject marker"
+    example: "선생님께서 오셨어요"
+  께:
+    replaces: "에게"
+    description: "Honorific indirect object marker"
+    example: "선생님께 드렸어요"
+
+address_terms:
+  - term: "-님"
+    description: "Honorific suffix for titles"
+    examples: ["선생님 (teacher)", "사장님 (boss)", "어머님 (mother [polite])"]
+  - term: "-씨"
+    description: "Mr./Ms. (less formal than -님)"
+    examples: ["김민수씨"]
