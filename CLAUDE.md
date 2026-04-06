@@ -133,7 +133,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 ## Language Analyzers
 
 ### Status
-**9 implemented** out of 77 target languages:
+**10 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
@@ -144,6 +144,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | German | `de` | `languages/german/` | ✅ Implemented |
 | Hindi | `hi` | `languages/hindi/` | ✅ Implemented |
 | Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — runtime-verified via E2E pipeline test |
+| Korean | `ko` | `languages/korean/` | ✅ Implemented (v1.0) — 28 grammatical roles, 3-level color scheme, E2E verified |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented |
 
@@ -314,7 +315,7 @@ APIError (base)
 
 ## Open Tasks
 
-1. **Grammar analyzers for 68 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
+1. **Grammar analyzers for 67 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
 3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 9 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.
@@ -352,6 +353,7 @@ APIError (base)
 | `streamlit_app/page_modules/statistics.py` | Usage dashboard with quota health warnings (80%/100%) |
 | `languages/french/` | Gold standard analyzer implementation (v2.0, primary reference) |
 | `languages/japanese/` | Japanese analyzer implementation (v1.0, Japonic family) |
+| `languages/korean/` | Korean analyzer (v1.0, Koreanic family, 28 grammatical roles) |
 | `languages/turkish/` | Fully implemented analyzer (clean architecture) |
 | `tests/test_end_to_end_pipeline.py` | Full E2E pipeline test — parameterized by language, mocks Gemini, produces report |
 | `language_grammar_generator/` | 7-phase prompt templates + orchestrator for creating new analyzers |

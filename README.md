@@ -111,7 +111,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 
 ## 🧠 Grammar Analyzers
 
-**9 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
+**10 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
 
 | Language | Code | Status |
 |----------|------|--------|
@@ -123,6 +123,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 | Arabic | `ar` | ✅ Implemented |
 | Hindi | `hi` | ✅ Implemented |
 | Japanese | `ja` | ✅ Implemented (v1.0) |
+| Korean | `ko` | ✅ Implemented (v1.0) |
 | Turkish | `tr` | ✅ Implemented |
 
 Grammar coloring preserves **language-specific concepts** — e.g., Chinese classifiers, Japanese particles, Arabic case markers each get their own unique colors, rather than being collapsed into generic English grammar categories.

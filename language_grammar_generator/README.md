@@ -349,6 +349,7 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - ✅ **Chinese Traditional** - Sino-Tibetan family with rich word meanings dictionary
 - ✅ **Hindi** - Indo-European family gold standard reference
 - ✅ **Japanese** - Agglutinative (Japonic) with script complexity, lazy import pattern
+- ✅ **Korean** - Koreanic family, 28 grammatical roles, 3-level color scheme, particles/honorifics/speech levels
 - ✅ **Turkish** - Agglutinative (Turkic) with vowel harmony, clean architecture
 
 ### Planned
@@ -404,7 +405,7 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - ✅ **Language-Specific Color Preservation**: `grammar_processor.py` no longer re-maps analyzer POS output through `_map_pos_to_category()` — language-specific concepts (Chinese classifier, Japanese topic_particle, Arabic case_marker, etc.) now keep their unique colors instead of collapsing to generic "other" (gray)
 - ✅ **Expanded Generic Fallback**: Generic AI fallback expanded from 10 to 17 color categories: added postposition, particle, classifier, aspect_marker, copula, case_marker, honorific with distinct hex colors
 - ✅ **Summary Label Fix**: `_create_grammar_summary()` now uses original POS labels from analyzers instead of re-mapping
-- ✅ **9 Analyzers Complete**: French v2.0, Spanish, German, Arabic, Chinese Simplified, Chinese Traditional, Hindi, Japanese, Turkish all fully implemented and registered
+- ✅ **10 Analyzers Complete**: French v2.0, Spanish, German, Arabic, Chinese Simplified, Chinese Traditional, Hindi, Japanese, Korean, Turkish all fully implemented and registered
 - ✅ **Key Invariant Documented**: Analyzer output colors must never be overridden by the grammar processor
 ### Version 2026-01-20 (Previous)
 - âœ… Initial comprehensive template with gold standard examples

@@ -9,7 +9,7 @@ You are a **Language Grammar Analyzer Builder** — a specialist that creates co
 ## Context
 
 - **Project:** Language Card Generator v3 — Streamlit app generating Anki flashcard decks for 77 languages
-- **9 analyzers exist:** ar, zh, zh-tw, fr, de, hi, ja, es, tr — **68 remaining**
+- **10 analyzers exist:** ar, zh, zh-tw, fr, de, hi, ja, ko, es, tr — **67 remaining**
 - **Gold standards:** French v2.0 (LTR languages), Arabic (RTL languages)
 - **Entry point:** `CLAUDE.md` at project root has full project context — read it first if you need architecture details
 
