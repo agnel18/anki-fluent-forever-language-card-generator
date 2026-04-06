@@ -47,7 +47,7 @@ The app guides you through setup on the **"Step 0: API Keys"** page. You need **
 
 ### Content Generation
 - **AI Sentences** — Gemini AI generates 1–10 contextual sentences per word (default 4)
-- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (9 languages)
+- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (11 languages)
 - **Native Audio** — Google Cloud TTS with learner-friendly speed (0.8x default), adjustable 0.5x–1.5x
 - **Images** — Pixabay integration with AI keyword extraction
 - **IPA / Romanization** — Phonetic transcriptions for all languages; romanization for complex scripts (Hindi, Arabic, Persian, etc.)
@@ -111,7 +111,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 
 ## 🧠 Grammar Analyzers
 
-**10 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
+**11 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
 
 | Language | Code | Status |
 |----------|------|--------|
@@ -122,6 +122,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 | Chinese (Traditional) | `zh-tw` | ✅ Implemented |
 | Arabic | `ar` | ✅ Implemented |
 | Hindi | `hi` | ✅ Implemented |
+| Hungarian | `hu` | ✅ Implemented (v1.0) |
 | Japanese | `ja` | ✅ Implemented (v1.0) |
 | Korean | `ko` | ✅ Implemented (v1.0) |
 | Turkish | `tr` | ✅ Implemented |

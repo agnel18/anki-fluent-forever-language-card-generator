@@ -42,11 +42,12 @@ Try/except import fallbacks throughout the codebase for graceful degradation whe
 
 ### Grammar Processor Architecture (`grammar_processor.py`)
 ```
-grammar_processor.py → language-specific analyzer (9 languages) OR generic Gemini AI fallback (68 languages)
+grammar_processor.py → language-specific analyzer (11 languages) OR generic Gemini AI fallback (66 languages)
 ```
 - **With analyzer:** `_convert_analyzer_output_to_explanations()` **passes through** the original POS label and color from the analyzer's config — does NOT re-map via `_map_pos_to_category()`. This preserves language-specific concepts (Chinese classifiers, Japanese particles, Arabic case markers, etc.) with their unique colors.
 - **Without analyzer:** `_analyze_grammar_generic()` uses Gemini AI with an expanded 17-category color prompt (noun, verb, adjective, adverb, pronoun, preposition, conjunction, determiner, auxiliary, interjection, postposition, particle, classifier, aspect_marker, copula, case_marker, honorific).
 - **`_map_pos_to_category()`** exists but is ONLY used by the generic fallback path, never for language-specific analyzer output.
+- **`_create_grammar_summary()`** checks both `overall_structure` (French, Japanese, Korean, Hungarian) and `sentence_structure` (German, Spanish, Arabic) keys — different analyzers use different key names.
 - **Key invariant:** Analyzer output colors must never be overridden by the grammar processor.
 
 ### API Setup UI (api_setup.py + settings.py)
@@ -133,22 +134,30 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 ## Language Analyzers
 
 ### Status
-**10 implemented** out of 77 target languages:
+**11 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
-| Arabic | `ar` | `languages/arabic/` | ✅ Implemented |
-| Chinese (Simplified) | `zh` | `languages/chinese_simplified/` | ✅ Implemented |
-| Chinese (Traditional) | `zh-tw` | `languages/chinese_traditional/` | ✅ Implemented |
-| French | `fr` | `languages/french/` | ✅ Gold standard (v2.0) |
-| German | `de` | `languages/german/` | ✅ Implemented |
-| Hindi | `hi` | `languages/hindi/` | ✅ Implemented |
-| Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — runtime-verified via E2E pipeline test |
+| Arabic | `ar` | `languages/arabic/` | ✅ Implemented — E2E verified |
+| Chinese (Simplified) | `zh` | `languages/chinese_simplified/` | ✅ Implemented — E2E verified |
+| Chinese (Traditional) | `zh-tw` | `languages/chinese_traditional/` | ✅ Implemented — E2E verified |
+| French | `fr` | `languages/french/` | ✅ Gold standard (v2.0) — E2E verified |
+| German | `de` | `languages/german/` | ✅ Implemented — E2E verified |
+| Hindi | `hi` | `languages/hindi/` | ✅ Implemented — E2E verified |
+| Hungarian | `hu` | `languages/hungarian/` | ✅ Implemented (v1.0) — agglutinative, 24 case markers, definite/indefinite conjugation, E2E verified |
+| Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — E2E verified |
 | Korean | `ko` | `languages/korean/` | ✅ Implemented (v1.0) — 28 grammatical roles, 3-level color scheme, E2E verified |
-| Spanish | `es` | `languages/spanish/` | ✅ Implemented |
-| Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented |
+| Spanish | `es` | `languages/spanish/` | ✅ Implemented — E2E verified |
+| Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented — E2E verified |
 
-**68 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+**66 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+
+### E2E Pipeline Test Coverage
+All 11 analyzers have full end-to-end pipeline tests in `tests/test_end_to_end_pipeline.py`:
+- Mocks Gemini API with language-specific grammar responses
+- Tests 7 stages: Analyzer Discovery → Content Generation → Grammar Analysis → Audio → Images → Card Assembly → Difficulty Setting
+- Reports saved to `tests/reports/pipeline_report_{language}.txt`
+- Run: `pytest tests/test_end_to_end_pipeline.py -v -s`
 
 ### Gold Standards
 
@@ -315,9 +324,9 @@ APIError (base)
 
 ## Open Tasks
 
-1. **Grammar analyzers for 67 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
+1. **Grammar analyzers for 66 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
-3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 9 language outputs to confirm repair quality.
+3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 11 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.
 5. **Social media posts** — Not yet implemented.
 6. **Razorpay payment** — Currently a simple redirect link in `payment.py`. No server-side API integration, no webhook handling.
@@ -327,6 +336,10 @@ APIError (base)
 10. ~~**Japanese analyzer runtime failure**~~ — **RESOLVED (commit 61f32c7).** Root cause: `ja_analyzer.py` imported `streamlit_app.shared_utils` at module level, causing import failure during `_discover_analyzers()`. Fix: moved imports to `_call_ai()` method (lazy import). Also added `languages/japanese/__init__.py`.
 11. ~~**Hardcoded complexity in grammar_processor.py**~~ — **RESOLVED (commit 61f32c7).** `grammar_processor.py` had `complexity = "intermediate"` hardcoded in both `analyze_grammar_and_color()` and `batch_analyze_grammar_and_color()`, ignoring the user's difficulty setting. Fix: now reads `st.session_state.get("difficulty", "intermediate")`.
 12. ~~**Grammar coloring collapsed language-specific concepts**~~ — **RESOLVED.** `grammar_processor.py` was re-mapping all analyzer POS output through `_map_pos_to_category()`, collapsing language-specific concepts (Chinese classifier, Japanese topic_particle, etc.) into generic English "other" with gray color. Fix: `_convert_analyzer_output_to_explanations()` now passes through original POS label and color from the analyzer. `_create_grammar_summary()` uses original POS labels. Generic fallback expanded from 10 to 17 color categories.
+13. ~~**German grammar summaries were count-based**~~ — **RESOLVED (commit ada502d).** German E2E report showed `"Sentence contains 3 nouns, 1 verb"` instead of descriptive analysis. Two root causes: (a) `de_response_parser.py` `parse_batch_response()` read `validated_data.get('overall_analysis')` but `_validate_and_normalize_comprehensive()` stored summaries under `'explanations'` — key mismatch silently dropped data. (b) `grammar_processor.py` `_create_grammar_summary()` only checked `overall_structure` key, but German/Spanish/Arabic use `sentence_structure`. Fix: corrected key in German parser + added `sentence_structure` fallback in grammar_processor.
+14. ~~**Arabic empty template placeholders in word explanations**~~ — **RESOLVED (commit ada502d).** Arabic E2E report showed `"Personal pronoun ( person, ) in  case"` — empty f-string fields. Root cause: `ar_response_parser.py` `_construct_meaning_from_ai_fields()` used f-strings that inserted empty strings for missing `person`/`number`/`case` fields. Fix: rewrote to conditionally include only non-empty fields. Also fixed `_normalize_word_data()` to copy `individual_meaning` to `meaning` so the template path isn't reached when good explanations exist.
+15. ~~**Analyzer import patterns caused test contamination**~~ — **RESOLVED (commit c9b8745).** Two bugs: (a) Spanish/Arabic/German used `sys.path.append()` + `from shared_utils import` — different module reference than `streamlit_app.shared_utils`, so `unittest.mock.patch()` had no effect. (b) 8 analyzers with module-level `from streamlit_app.shared_utils import get_gemini_api` captured mock reference from first test during `_discover_analyzers()` — all subsequent tests showed French data. Fix: all 11 analyzers now use lazy imports inside `_call_ai()` methods.
+16. ~~**Hungarian JSON duplicate keys**~~ — **RESOLVED (commit ada502d).** `hu_word_meanings.json` had 3 duplicate keys: `"mi"` (we/what), `"egy"` (article/numeral), `"ország"` (repeated). Fix: merged meanings and removed duplicates.
 
 ---
 
@@ -352,10 +365,11 @@ APIError (base)
 | `streamlit_app/page_modules/api_setup.py` | API key setup — 3 dedicated sections (Gemini, TTS, Pixabay) |
 | `streamlit_app/page_modules/statistics.py` | Usage dashboard with quota health warnings (80%/100%) |
 | `languages/french/` | Gold standard analyzer implementation (v2.0, primary reference) |
+| `languages/hungarian/` | Hungarian analyzer (v1.0, Uralic family, 24 case markers, definite/indefinite conjugation) |
 | `languages/japanese/` | Japanese analyzer implementation (v1.0, Japonic family) |
 | `languages/korean/` | Korean analyzer (v1.0, Koreanic family, 28 grammatical roles) |
 | `languages/turkish/` | Fully implemented analyzer (clean architecture) |
-| `tests/test_end_to_end_pipeline.py` | Full E2E pipeline test — parameterized by language, mocks Gemini, produces report |
+| `tests/test_end_to_end_pipeline.py` | Full E2E pipeline test — parameterized for all 11 analyzers, mocks Gemini, produces report to `tests/reports/` |
 | `language_grammar_generator/` | 7-phase prompt templates + orchestrator for creating new analyzers |
 | `language_grammar_generator/language_analyzer_creation_guide.py` | Orchestrator — imports all phase prompts, fills placeholders per-language |
 | `language_grammar_generator/validate_implementation.py` | 11-check implementation validator (files, methods, interface, performance) |
@@ -379,5 +393,6 @@ APIError (base)
 - **API keys:** Gemini in `st.session_state.google_api_key`, TTS in `st.session_state.google_tts_api_key` — both required, no fallback between them
 - **Testing:** pytest; language-specific tests live in `languages/{lang}/tests/`; root-level test files for cross-cutting concerns
 - **Frequency lists:** Excel files in `77 Languages Frequency Word Lists/`, mapped via `languages.yaml`
-- **⚠️ Analyzer imports:** Analyzer modules (e.g., `ja_analyzer.py`) must NOT import `streamlit_app.shared_utils` at **module level**. The analyzer registry uses `importlib.import_module()` during discovery, and module-level imports of `shared_utils` can fail if Streamlit isn't fully initialized. Always use **lazy imports** inside methods (e.g., inside `_call_ai()`).
+- **⚠️ Analyzer imports:** Analyzer modules must NOT import `streamlit_app.shared_utils` at **module level**. The analyzer registry uses `importlib.import_module()` during discovery, and module-level imports of `shared_utils` capture function references at import time — incompatible with `unittest.mock.patch()` which only modifies module attributes. Always use **lazy imports** inside methods (e.g., inside `_call_ai()`). All 11 analyzers now follow this pattern. Module-level `from streamlit_app.shared_utils import get_gemini_api` will cause cross-test contamination in E2E pipeline tests.
 - **Complexity/difficulty:** `grammar_processor.py` reads `st.session_state.get("difficulty", "intermediate")` — never hardcode complexity values
+- **Grammar summary keys:** Different analyzers use different keys for grammar summaries — `overall_structure` (French, Japanese, Korean, Hungarian) vs `sentence_structure` (German, Spanish, Arabic). `grammar_processor.py` checks both.
