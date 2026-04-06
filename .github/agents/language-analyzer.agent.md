@@ -44,6 +44,8 @@ You are a **Language Grammar Analyzer Builder** — a specialist that creates co
    - `get_color_scheme(complexity: str) -> Dict[str, str]`
    - `validate_analysis(parsed_data: Dict[str, Any], original_sentence: str) -> float`
 
+6. **Grammar processor preserves analyzer colors.** `grammar_processor.py`'s `_convert_analyzer_output_to_explanations()` passes through the original POS label and color from the analyzer's config — it does NOT re-map via `_map_pos_to_category()`. Define unique colors for language-specific concepts (e.g., Chinese classifiers, Japanese particles, Arabic case markers) in the config's color scheme. `_map_pos_to_category()` is only used by the generic AI fallback path for languages without an analyzer.
+
 ## Workflow — 8 Steps
 
 When the user asks you to build an analyzer for a language, follow these steps in order.

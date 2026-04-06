@@ -341,16 +341,15 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - ✅ **Hindi** - Indo-European family reference implementation
 
 ### Completed Languages
-- âœ… **Spanish** - Indo-European family implementation
-- âœ… **Arabic** - Afro-Asiatic family implementation with **role hierarchy and complexity filtering**
-- âœ… **Chinese Simplified** - Sino-Tibetan family with Clean Architecture gold standard
-- âœ… **Chinese Traditional** - Sino-Tibetan family with rich word meanings dictionary
-- âœ… **Hindi** - Indo-European family gold standard reference
-
-### In Progress
-- ðŸš§ **French** - Advanced Indo-European features
-- ðŸš§ **German** - Complex morphology and cases
-- ðŸš§ **Japanese** - Agglutinative with script complexity
+- ✅ **French v2.0** - Primary gold standard with enterprise reliability (circuit breaker, 5-level fallbacks)
+- ✅ **Spanish** - Indo-European family implementation
+- ✅ **German** - Complex morphology and cases
+- ✅ **Arabic** - Afro-Asiatic family implementation with **role hierarchy and complexity filtering**
+- ✅ **Chinese Simplified** - Sino-Tibetan family with Clean Architecture gold standard
+- ✅ **Chinese Traditional** - Sino-Tibetan family with rich word meanings dictionary
+- ✅ **Hindi** - Indo-European family gold standard reference
+- ✅ **Japanese** - Agglutinative (Japonic) with script complexity, lazy import pattern
+- ✅ **Turkish** - Agglutinative (Turkic) with vowel harmony, clean architecture
 
 ### Planned
 - ðŸ“‹ **Russian** - Cyrillic script with cases
@@ -401,7 +400,12 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - âœ… **Compound Word Recognition**: Improved segmentation to properly identify compound words like "å¦‚æžœ" (if), "ç­”æ¡ˆ" (answer), "ç­‰æ–¼" (equals)
 - âœ… **Quality Validation**: Chinese Traditional analyzer now matches or exceeds Chinese Simplified fallback quality
 - âœ… **Documentation Updates**: Updated all guides to include word meanings dictionary pattern as critical requirement
-
+### Version 2026-02-20 (Grammar Coloring Pass-Through Fix)
+- ✅ **Language-Specific Color Preservation**: `grammar_processor.py` no longer re-maps analyzer POS output through `_map_pos_to_category()` — language-specific concepts (Chinese classifier, Japanese topic_particle, Arabic case_marker, etc.) now keep their unique colors instead of collapsing to generic "other" (gray)
+- ✅ **Expanded Generic Fallback**: Generic AI fallback expanded from 10 to 17 color categories: added postposition, particle, classifier, aspect_marker, copula, case_marker, honorific with distinct hex colors
+- ✅ **Summary Label Fix**: `_create_grammar_summary()` now uses original POS labels from analyzers instead of re-mapping
+- ✅ **9 Analyzers Complete**: French v2.0, Spanish, German, Arabic, Chinese Simplified, Chinese Traditional, Hindi, Japanese, Turkish all fully implemented and registered
+- ✅ **Key Invariant Documented**: Analyzer output colors must never be overridden by the grammar processor
 ### Version 2026-01-20 (Previous)
 - âœ… Initial comprehensive template with gold standard examples
 - âœ… Domain-driven architecture with clean separation

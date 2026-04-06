@@ -40,6 +40,15 @@ Primary model → Fallback model → AI repair → Fallback response (graceful d
 ### Import Pattern
 Try/except import fallbacks throughout the codebase for graceful degradation when optional dependencies are missing.
 
+### Grammar Processor Architecture (`grammar_processor.py`)
+```
+grammar_processor.py → language-specific analyzer (9 languages) OR generic Gemini AI fallback (68 languages)
+```
+- **With analyzer:** `_convert_analyzer_output_to_explanations()` **passes through** the original POS label and color from the analyzer's config — does NOT re-map via `_map_pos_to_category()`. This preserves language-specific concepts (Chinese classifiers, Japanese particles, Arabic case markers, etc.) with their unique colors.
+- **Without analyzer:** `_analyze_grammar_generic()` uses Gemini AI with an expanded 17-category color prompt (noun, verb, adjective, adverb, pronoun, preposition, conjunction, determiner, auxiliary, interjection, postposition, particle, classifier, aspect_marker, copula, case_marker, honorific).
+- **`_map_pos_to_category()`** exists but is ONLY used by the generic fallback path, never for language-specific analyzer output.
+- **Key invariant:** Analyzer output colors must never be overridden by the grammar processor.
+
 ### API Setup UI (api_setup.py + settings.py)
 Both pages use the same 3-section layout with self-contained instructions:
 
@@ -316,6 +325,7 @@ APIError (base)
 9. **API key retrieval duplication** — Key retrieval logic duplicated across `audio_generator.py`, `state_manager.py`, `api_setup.py`, `sync_manager.py`. Each has slightly different needs (startup vs runtime vs UI vs sync). Documented tech debt — centralizing risks breaking the delicate fallback chains. Address when building the next major feature.
 10. ~~**Japanese analyzer runtime failure**~~ — **RESOLVED (commit 61f32c7).** Root cause: `ja_analyzer.py` imported `streamlit_app.shared_utils` at module level, causing import failure during `_discover_analyzers()`. Fix: moved imports to `_call_ai()` method (lazy import). Also added `languages/japanese/__init__.py`.
 11. ~~**Hardcoded complexity in grammar_processor.py**~~ — **RESOLVED (commit 61f32c7).** `grammar_processor.py` had `complexity = "intermediate"` hardcoded in both `analyze_grammar_and_color()` and `batch_analyze_grammar_and_color()`, ignoring the user's difficulty setting. Fix: now reads `st.session_state.get("difficulty", "intermediate")`.
+12. ~~**Grammar coloring collapsed language-specific concepts**~~ — **RESOLVED.** `grammar_processor.py` was re-mapping all analyzer POS output through `_map_pos_to_category()`, collapsing language-specific concepts (Chinese classifier, Japanese topic_particle, etc.) into generic English "other" with gray color. Fix: `_convert_analyzer_output_to_explanations()` now passes through original POS label and color from the analyzer. `_create_grammar_summary()` uses original POS labels. Generic fallback expanded from 10 to 17 color categories.
 
 ---
 
@@ -328,6 +338,7 @@ APIError (base)
 | `streamlit_app/shared_utils.py` | Canonical model config, cache, retry utilities, exceptions |
 | `streamlit_app/router.py` | Page routing via session state (dict dispatch + importlib) |
 | `streamlit_app/services/generation/content_generator.py` | Gemini content generation, AI repair mechanism |
+| `streamlit_app/services/generation/grammar_processor.py` | Grammar analysis routing — analyzer pass-through or generic AI fallback (17 categories) |
 | `streamlit_app/services/generation/generation_orchestrator.py` | Orchestrates batch generation workflow |
 | `streamlit_app/audio_generator.py` | Google Cloud TTS integration (REST API, no Gemini key fallback) |
 | `streamlit_app/language_analyzers/analyzer_registry.py` | Auto-discovery of language analyzers from `languages/` directory |

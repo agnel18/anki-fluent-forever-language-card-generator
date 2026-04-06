@@ -111,7 +111,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 
 ## 🧠 Grammar Analyzers
 
-**8 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
+**9 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
 
 | Language | Code | Status |
 |----------|------|--------|
@@ -122,7 +122,10 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 | Chinese (Traditional) | `zh-tw` | ✅ Implemented |
 | Arabic | `ar` | ✅ Implemented |
 | Hindi | `hi` | ✅ Implemented |
+| Japanese | `ja` | ✅ Implemented (v1.0) |
 | Turkish | `tr` | ✅ Implemented |
+
+Grammar coloring preserves **language-specific concepts** — e.g., Chinese classifiers, Japanese particles, Arabic case markers each get their own unique colors, rather than being collapsed into generic English grammar categories.
 
 All 77 languages work for deck generation (TTS, translations, frequency lists) even without an analyzer. The [Language Grammar Generator Framework](language_grammar_generator/README.md) provides a 7-phase process for creating new analyzers.
 

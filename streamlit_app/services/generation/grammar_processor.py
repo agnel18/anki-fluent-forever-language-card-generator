@@ -118,9 +118,9 @@ class GrammarProcessor:
             for exp in analysis_result.word_explanations:
                 if len(exp) >= 4:
                     word, pos, color, explanation = exp[0], exp[1], exp[2], exp[3]
-                    # Map POS to category for consistency
-                    category = self._map_pos_to_category(pos)
-                    word_explanations.append([word, category, color, explanation])
+                    # Preserve language-specific POS categories and colors from analyzer
+                    # (e.g. classifier, topic_particle, aspect_marker, case_marker)
+                    word_explanations.append([word, pos, color, explanation])
             return word_explanations
 
         # Fallback: combine grammatical elements and explanations
@@ -186,8 +186,10 @@ class GrammarProcessor:
             categories = {}
             for exp in analysis_result.word_explanations:
                 if len(exp) >= 2:
-                    category = self._map_pos_to_category(exp[1])
-                    categories[category] = categories.get(category, 0) + 1
+                    # Use original POS from analyzer to preserve language-specific terms
+                    # (e.g. "classifier", "topic_particle" instead of generic "other")
+                    pos_label = exp[1].replace('_', ' ')
+                    categories[pos_label] = categories.get(pos_label, 0) + 1
 
             if categories:
                 category_summary = ", ".join([f"{count} {cat}{'s' if count > 1 else ''}" for cat, count in categories.items()])
@@ -210,18 +212,25 @@ class GrammarProcessor:
         api = get_gemini_api()
         api.configure(api_key=gemini_api_key)
 
-        # Color mapping for different POS categories
+        # Color mapping for different POS categories (includes cross-language concepts)
         color_map = {
-            "noun": "#FF6B6B",        # Red - things/objects
-            "verb": "#4ECDC4",        # Teal - actions
-            "adjective": "#45B7D1",   # Blue - descriptions
-            "adverb": "#96CEB4",      # Green - how/when/where
-            "pronoun": "#FFEAA7",     # Yellow - replacements
-            "preposition": "#DDA0DD", # Plum - relationships
-            "conjunction": "#98D8C8", # Mint - connections
-            "article": "#F7DC6F",     # Light yellow - determiners
-            "interjection": "#FF9999", # Light red - exclamations
-            "other": "#CCCCCC"        # Gray - other parts
+            "noun": "#FF6B6B",           # Red - things/objects
+            "verb": "#4ECDC4",           # Teal - actions
+            "adjective": "#45B7D1",      # Blue - descriptions
+            "adverb": "#96CEB4",         # Green - how/when/where
+            "pronoun": "#FFEAA7",        # Yellow - replacements
+            "preposition": "#DDA0DD",    # Plum - relationships
+            "postposition": "#DDA0DD",   # Plum - relationships (Hindi, Turkish, Japanese, Korean)
+            "conjunction": "#98D8C8",    # Mint - connections
+            "article": "#F7DC6F",        # Light yellow - determiners
+            "interjection": "#FF9999",   # Light red - exclamations
+            "particle": "#4444FF",       # Blue - grammatical particles (Japanese, Korean, Chinese)
+            "classifier": "#FF8C00",     # Dark orange - measure words/classifiers (Chinese, Japanese, Thai, Vietnamese)
+            "aspect_marker": "#8A2BE2",  # Purple - aspect markers (Chinese 了/着/过)
+            "copula": "#AA44FF",         # Violet - linking/copula (Japanese だ/です)
+            "case_marker": "#FFD700",    # Gold - case markers (Turkish, Finnish, Hungarian)
+            "honorific": "#006400",      # Dark green - honorific/humble forms (Japanese, Korean)
+            "other": "#CCCCCC"           # Gray - other parts
         }
 
         prompt = f"""You are a linguistics expert specializing in {language} grammar analysis for language learners.
@@ -237,17 +246,24 @@ INSTRUCTIONS:
 3. Assign an appropriate color based on POS
 4. Provide a brief explanation for each word's grammatical role
 
-COLOR CATEGORIES (use these exact names):
-- noun (red): people, places, things, ideas
-- verb (teal): actions, states, occurrences
-- adjective (blue): descriptions of nouns
-- adverb (green): modify verbs, adjectives, other adverbs
-- pronoun (yellow): replace nouns (he, she, it, they, etc.)
-- preposition (plum): show relationships (in, on, at, with, etc.)
-- conjunction (mint): connect clauses (and, but, or, because, etc.)
-- article (light yellow): determiners (the, a, an)
-- interjection (light red): exclamations (oh, wow, hey)
-- other (gray): numbers, punctuation, unclassified words
+COLOR CATEGORIES (use these exact names and colors):
+- noun (#FF6B6B red): people, places, things, ideas
+- verb (#4ECDC4 teal): actions, states, occurrences
+- adjective (#45B7D1 blue): descriptions of nouns
+- adverb (#96CEB4 green): modify verbs, adjectives, other adverbs
+- pronoun (#FFEAA7 yellow): replace nouns (he, she, it, they, etc.)
+- preposition (#DDA0DD plum): show relationships (in, on, at, with, etc.)
+- postposition (#DDA0DD plum): postpositional markers (Hindi, Turkish, Japanese, Korean)
+- conjunction (#98D8C8 mint): connect clauses (and, but, or, because, etc.)
+- article (#F7DC6F light yellow): determiners (the, a, an)
+- interjection (#FF9999 light red): exclamations (oh, wow, hey)
+- particle (#4444FF blue): grammatical particles (Japanese wa/ga/wo, Korean eun/neun, Chinese de/le)
+- classifier (#FF8C00 dark orange): measure words/classifiers/counters (Chinese 个/本, Japanese つ/個, Thai, Vietnamese)
+- aspect_marker (#8A2BE2 purple): aspect/tense particles (Chinese 了/着/过, Thai แล้ว)
+- copula (#AA44FF violet): linking verbs/copula (Japanese だ/です, Korean 이다)
+- case_marker (#FFD700 gold): case suffixes/markers (Turkish -i/-e/-de, Finnish, Hungarian, Korean)
+- honorific (#006400 dark green): honorific/humble/polite forms (Japanese, Korean)
+- other (#CCCCCC gray): numbers, punctuation, unclassified words
 
 OUTPUT FORMAT: Return ONLY a valid JSON object with this exact structure:
 {{
