@@ -237,6 +237,10 @@ class ArResponseParser:
         # Handle AI responses that use "other" field instead of "meaning"
         if 'other' in word_data and 'meaning' not in word_data:
             normalized['meaning'] = word_data['other']
+        
+        # Use individual_meaning as meaning if meaning is not present
+        if 'individual_meaning' in normalized and 'meaning' not in normalized:
+            normalized['meaning'] = normalized['individual_meaning']
             
         # If it's already in the expected format (has grammatical_role), return as-is
         if 'grammatical_role' in word_data:
@@ -309,30 +313,71 @@ class ArResponseParser:
         # Build explanation based on grammatical role
         if grammatical_role == 'pronoun':
             if word_type == 'independent personal pronoun':
-                explanation = f"Independent personal pronoun ({person} person, {number})"
+                parts = ["Independent personal pronoun"]
+                detail_parts = []
+                if person:
+                    detail_parts.append(f"{person} person")
+                if number:
+                    detail_parts.append(number)
+                if detail_parts:
+                    parts.append(f"({', '.join(detail_parts)})")
                 if case:
-                    explanation += f" in {case} case"
+                    parts.append(f"in {case} case")
                 if target_word:
-                    explanation += " - the main word being analyzed"
-                return explanation
+                    parts.append("- the main word being analyzed")
+                return ' '.join(parts)
             else:
-                return f"Personal pronoun ({person} person, {number}) in {case} case"
+                parts = ["Personal pronoun"]
+                detail_parts = []
+                if person:
+                    detail_parts.append(f"{person} person")
+                if number:
+                    detail_parts.append(number)
+                if detail_parts:
+                    parts.append(f"({', '.join(detail_parts)})")
+                if case:
+                    parts.append(f"in {case} case")
+                return ' '.join(parts)
                 
         elif grammatical_role == 'verb':
             if word_type == 'imperfect_verb':
-                explanation = f"Imperfect verb ({person} person, {number})"
+                parts = ["Imperfect verb"]
+                detail_parts = []
+                if person:
+                    detail_parts.append(f"{person} person")
+                if number:
+                    detail_parts.append(number)
+                if detail_parts:
+                    parts.append(f"({', '.join(detail_parts)})")
                 if case:
-                    explanation += f" in {case} case"
-                explanation += " - indicates ongoing, habitual, or future action"
-                return explanation
+                    parts.append(f"in {case} case")
+                parts.append("- indicates ongoing, habitual, or future action")
+                return ' '.join(parts)
             elif word_type == 'perfect_verb':
-                explanation = f"Perfect verb ({person} person, {number})"
+                parts = ["Perfect verb"]
+                detail_parts = []
+                if person:
+                    detail_parts.append(f"{person} person")
+                if number:
+                    detail_parts.append(number)
+                if detail_parts:
+                    parts.append(f"({', '.join(detail_parts)})")
                 if case:
-                    explanation += f" in {case} case" 
-                explanation += " - indicates completed action in the past"
-                return explanation
+                    parts.append(f"in {case} case")
+                parts.append("- indicates completed action in the past")
+                return ' '.join(parts)
             else:
-                return f"Verb ({person} person, {number}) in {case} case"
+                parts = ["Verb"]
+                detail_parts = []
+                if person:
+                    detail_parts.append(f"{person} person")
+                if number:
+                    detail_parts.append(number)
+                if detail_parts:
+                    parts.append(f"({', '.join(detail_parts)})")
+                if case:
+                    parts.append(f"in {case} case")
+                return ' '.join(parts)
                 
         elif grammatical_role == 'noun':
             explanation = f"Noun ({number})"

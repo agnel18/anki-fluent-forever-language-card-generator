@@ -171,7 +171,10 @@ class GrammarProcessor:
         # Try to get meaningful summary from explanations
         if hasattr(analysis_result, 'explanations') and analysis_result.explanations:
             # Look for overall structure or key features
-            overall = analysis_result.explanations.get('overall_structure', '')
+            # Different analyzers use different keys: overall_structure (French, Japanese, Korean, etc.)
+            # or sentence_structure (German, Spanish, Arabic)
+            overall = (analysis_result.explanations.get('overall_structure', '') or
+                       analysis_result.explanations.get('sentence_structure', ''))
             key_features = analysis_result.explanations.get('key_features', '')
 
             if overall and key_features:

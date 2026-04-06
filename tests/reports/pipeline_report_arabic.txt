@@ -5,8 +5,8 @@
   Language       : Arabic
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-04-06 08:12:18
-  Elapsed        : 3.18s
+  Generated at   : 2026-04-06 08:29:11
+  Elapsed        : 0.10s
 ================================================================================
 
 STAGE RESULTS
@@ -44,11 +44,11 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: ana aakul al-khubz kull sabaah
   Keywords   : bread plate, morning breakfast
 
-  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun ( person, ) in  case">أنا</span> <span …
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun">أنا</span> <span style="color: #FF44FF…
   Grammar Summ : VSO with fronted subject: Subject + Verb + Object + Time. Definite article ال on الخبز; present tense form آكل.
   Word Explanations (5 words):
-    أنا           pronoun (ضمير)  #9370DB   Personal pronoun ( person, ) in  case
-    آكل           verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    أنا           pronoun (ضمير)  #9370DB   Personal pronoun
+    آكل           verb (فعل)      #FF44FF   Verb
     الخبز         noun (اسم)      #4ECDC4   Noun ()
     كل            adjective (صفة)  #9370DB   every/each (quantifier)
     صباح          noun (اسم)      #4ECDC4   Noun ()
@@ -63,7 +63,7 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : SV with location: Subject + Verb + Prepositional phrase. Plural verb ending -ون for masculine plural; definite article ال.
   Word Explanations (4 words):
     الأطفال       noun (اسم)      #4ECDC4   Noun ()
-    يأكلون        verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    يأكلون        verb (فعل)      #FF44FF   Verb
     في            preposition (حرف جر)  #9370DB   in/at (preposition of location)
     المدرسة       noun (اسم)      #4ECDC4   Noun ()
 
@@ -73,13 +73,13 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: maadha turiid an ta'kul al-layla
   Keywords   : dinner question, food choices
 
-  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun ( person, ) in  case">ماذا</span> <span…
+  Colored HTML : <span dir="rtl" style="direction: rtl; font-family: Arial, sans-serif;"><span style="color: #9370DB; font-weight: bold;" title="pronoun (ضمير): Personal pronoun">ماذا</span> <span style="color: #FF44F…
   Grammar Summ : Interrogative: WH-word + Verb + أن + Subjunctive + Time. أن triggers subjunctive mood; ماذا for 'what'.
   Word Explanations (5 words):
-    ماذا          pronoun (ضمير)  #9370DB   Personal pronoun ( person, ) in  case
-    تريد          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    ماذا          pronoun (ضمير)  #9370DB   Personal pronoun
+    تريد          verb (فعل)      #FF44FF   Verb
     أن            particle        #FFAA00   to (subjunctive particle)
-    تأكل          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    تأكل          verb (فعل)      #FF44FF   Verb
     الليلة        noun (اسم)      #4ECDC4   Noun ()
 
   --- Sentence 4 ---
@@ -92,7 +92,7 @@ CONTENT GENERATION OUTPUT
   Grammar Summ : SVO: Subject + Verb + Object + Location. Possessive suffix ي on أم; feminine verb form تأكل agrees with أمي; indefinite تفاحة.
   Word Explanations (5 words):
     أمي           noun (اسم)      #4ECDC4   Noun ()
-    تأكل          verb (فعل)      #FF44FF   Verb ( person, ) in  case
+    تأكل          verb (فعل)      #FF44FF   Verb
     تفاحة         noun (اسم)      #4ECDC4   Noun ()
     في            preposition (حرف جر)  #9370DB   in (preposition of location)
     المطبخ        noun (اسم)      #4ECDC4   Noun ()

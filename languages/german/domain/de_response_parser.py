@@ -207,7 +207,7 @@ class DeResponseParser:
 
                         result = {
                             'word_explanations': validated_data.get('words', []),
-                            'explanations': validated_data.get('overall_analysis', {}),
+                            'explanations': validated_data.get('explanations', {}),
                             'elements': validated_data.get('elements', {}),
                             'confidence': result_data.get('confidence', 0.8),
                             'color_scheme': color_scheme,
