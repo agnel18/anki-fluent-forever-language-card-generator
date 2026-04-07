@@ -547,7 +547,11 @@ def _google_signin_component():
 
     On success the JS popup returns a Firebase ID token via
     ``st.query_params`` so Python can verify it server-side.
+
+    Uses Firebase compat SDK (classic <script> tags) instead of ES
+    modules for reliable execution inside Streamlit's iframe sandbox.
     """
+    import streamlit.components.v1 as _components
 
     # Read Firebase web config from secrets
     try:
@@ -560,50 +564,56 @@ def _google_signin_component():
     except Exception:
         return
 
-    firebase_config_js = (
-        "{"
-        f'apiKey:"{api_key}",'
-        f'authDomain:"{auth_domain}",'
-        f'projectId:"{project_id}"'
-        "}"
-    )
-
     html = f"""
-    <script type="module">
-      import {{ initializeApp }} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-      import {{ getAuth, signInWithPopup, GoogleAuthProvider }}
-        from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+      firebase.initializeApp({{
+        apiKey: "{api_key}",
+        authDomain: "{auth_domain}",
+        projectId: "{project_id}"
+      }});
 
-      const app  = initializeApp({firebase_config_js});
-      const auth = getAuth(app);
+      var btn = document.getElementById('google-signin-btn');
+      var msg = document.getElementById('google-signin-msg');
 
-      const btn = document.getElementById('google-signin-btn');
-      const msg = document.getElementById('google-signin-msg');
-
-      btn.addEventListener('click', async () => {{
+      btn.addEventListener('click', function() {{
         btn.disabled = true;
-        btn.textContent = 'Signing in…';
+        btn.textContent = 'Signing in\\u2026';
         msg.textContent = '';
-        try {{
-          const result = await signInWithPopup(auth, new GoogleAuthProvider());
-          const token  = await result.user.getIdToken(/* forceRefresh */ true);
-          // Hand the token to Streamlit via query-params so Python can verify it.
-          const url = new URL(window.parent.location.href);
-          url.searchParams.set('google_id_token', token);
-          window.parent.location.href = url.toString();
-        }} catch (e) {{
-          btn.disabled = false;
-          btn.textContent = '\\u200B\\u200B Sign in with Google';
-          if (e.code === 'auth/popup-closed-by-user') {{
-            msg.textContent = 'Sign-in cancelled.';
-          }} else if (e.code === 'auth/popup-blocked') {{
-            msg.textContent = 'Pop-up blocked — please allow pop-ups for this site.';
-          }} else {{
-            msg.textContent = 'Error: ' + e.message;
-          }}
-        }}
+
+        var provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+          .then(function(result) {{
+            return result.user.getIdToken(true);
+          }})
+          .then(function(token) {{
+            var url = new URL(window.parent.location.href);
+            url.searchParams.set('google_id_token', token);
+            window.parent.location.href = url.toString();
+          }})
+          .catch(function(e) {{
+            btn.disabled = false;
+            btn.innerHTML = document.getElementById('g-logo-template').innerHTML + ' Sign in with Google';
+            if (e.code === 'auth/popup-closed-by-user') {{
+              msg.textContent = 'Sign-in cancelled.';
+            }} else if (e.code === 'auth/popup-blocked') {{
+              msg.textContent = 'Pop-up blocked \\u2014 please allow pop-ups for this site.';
+            }} else {{
+              msg.textContent = 'Error: ' + e.message;
+            }}
+          }});
       }});
     </script>
+
+    <template id="g-logo-template">
+      <svg class="g-logo" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.77.9 7.35 2.56 10.56l7.97-5.97z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+    </template>
 
     <style>
       #google-signin-btn {{
@@ -617,7 +627,6 @@ def _google_signin_component():
       #google-signin-btn:hover {{ background: #f7f8f8; box-shadow: 0 1px 3px rgba(0,0,0,.15); }}
       #google-signin-btn:disabled {{ opacity: .6; cursor: wait; }}
       #google-signin-msg {{ color: #d93025; font-size: 13px; margin-top: 6px; min-height: 20px; }}
-      /* Google "G" logo inline SVG */
       .g-logo {{ width: 20px; height: 20px; }}
     </style>
 
@@ -628,12 +637,14 @@ def _google_signin_component():
         <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.77.9 7.35 2.56 10.56l7.97-5.97z"/>
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
       </svg>
-      &#8203;&#8203; Sign in with Google
+      Sign in with Google
     </button>
     <div id="google-signin-msg"></div>
     """
 
-    st.html(html)
+    # components.html allows popups (allow-popups sandbox attr) and
+    # classic script execution — needed for Firebase Auth popup flow.
+    _components.html(html, height=75)
 
 
 def render_auth_handler_page():
