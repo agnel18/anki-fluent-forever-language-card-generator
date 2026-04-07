@@ -406,3 +406,54 @@ class AuthService:
         """
         user_doc = self.get_user_profile(uid)
         return user_doc.get('preferences', {}) if user_doc else {}
+
+    def verify_id_token(self, id_token: str) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+        """
+        Verify a Firebase ID token (from client-side JS SDK) and establish
+        a server-side session.
+
+        This is the backend counterpart to the JS ``signInWithEmailAndPassword``
+        or ``signInWithPopup`` calls.  The JS SDK sends back an ID token;
+        we verify it here using the Admin SDK, then set session state.
+
+        Args:
+            id_token: Firebase ID token string from the JS client.
+
+        Returns:
+            Tuple of (success, message, user_data).
+        """
+        self._ensure_firebase_initialized()
+        try:
+            decoded = auth.verify_id_token(id_token)
+            uid = decoded["uid"]
+            email = decoded.get("email", "")
+            name = decoded.get("name", email.split("@")[0] if email else "User")
+            email_verified = decoded.get("email_verified", False)
+
+            if not email_verified:
+                return False, "Please verify your email before signing in.", None
+
+            user_data = {
+                "uid": uid,
+                "email": email,
+                "displayName": name,
+                "emailVerified": email_verified,
+            }
+
+            # Ensure Firestore profile exists
+            if not self.get_user_profile(uid):
+                self.create_user_profile(uid, email, name)
+
+            self.session_manager.set_user(user_data)
+            self.update_user_last_login(uid)
+
+            return True, f"Welcome, {name}!", user_data
+
+        except auth.ExpiredIdTokenError:
+            return False, "Session expired — please sign in again.", None
+        except auth.RevokedIdTokenError:
+            return False, "Session revoked — please sign in again.", None
+        except auth.InvalidIdTokenError:
+            return False, "Invalid authentication token.", None
+        except Exception as e:
+            return False, f"Authentication failed: {e}", None

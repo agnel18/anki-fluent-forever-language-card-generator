@@ -217,8 +217,20 @@ def get_current_user():
     return session_manager.get_current_user()
 
 def sign_out():
-    """Sign out user."""
+    """Sign out user and clear sensitive data from session."""
+    # Clear decrypted API keys from session state
+    for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+        if key in st.session_state:
+            del st.session_state[key]
     session_manager.sign_out()
+
+def verify_id_token(id_token: str):
+    """Verify a Firebase ID token (from JS client) and set up session.
+    
+    Returns:
+        Tuple of (success: bool, message: str, user_data: dict or None)
+    """
+    return auth_service.verify_id_token(id_token)
 
 def validate_email(email: str) -> bool:
     """Validate email format."""
@@ -263,27 +275,6 @@ def save_user_preferences(uid: str, preferences: Dict[str, Any]):
 def get_user_preferences(uid: str) -> Dict[str, Any]:
     """Get user preferences from Firestore."""
     return auth_service.get_user_preferences(uid)
-
-# Local auth functions
-def is_signed_in():
-    """Check if user is authenticated."""
-    return session_manager.is_signed_in()
-
-def get_current_user():
-    """Get current authenticated user info."""
-    return session_manager.get_current_user()
-
-def sign_out():
-    """Sign out user."""
-    session_manager.sign_out()
-
-def validate_email(email: str) -> bool:
-    """Validate email format."""
-    return auth_service.validate_email(email)
-
-def validate_password(password: str) -> tuple[bool, str]:
-    """Validate password strength."""
-    return auth_service.validate_password(password)
 
 # UI Components
 def login_form():

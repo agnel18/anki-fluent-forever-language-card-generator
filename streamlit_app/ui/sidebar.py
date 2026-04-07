@@ -9,13 +9,15 @@ from constants import GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_
 
 def handle_auto_sync():
     """Handle automatic sync operations."""
-    from firebase_manager import is_signed_in
-    from sync_manager import load_cloud_data, safe_sync
+    from streamlit_app.page_modules.auth_handler import is_signed_in
+    from streamlit_app.services.settings.sync_manager import SyncManager
+
+    sync = SyncManager()
 
     # Sync on app start if signed in and not done yet
     if is_signed_in() and not st.session_state.get('initial_sync_done'):
         try:
-            load_cloud_data()
+            sync.load_cloud_data()
             st.session_state.initial_sync_done = True
         except Exception as e:
             print(f"Initial sync failed: {e}")
@@ -25,7 +27,7 @@ def handle_auto_sync():
     if (is_signed_in() and last_sync and
         (datetime.datetime.now() - last_sync).seconds > 300):  # 5 minutes
         try:
-            safe_sync()
+            sync.safe_sync()
         except Exception as e:
             print(f"Periodic sync failed: {e}")
 

@@ -56,16 +56,62 @@ class SyncManager:
                 st.error("❌ Sync failed - some data may not have been saved")
                 return False
 
-            if settings_success and stats_success and progress_success:
-                st.success("✅ Data synced successfully!")
-                return True
-            else:
-                st.error("❌ Sync failed - some data may not have been saved")
-                return False
-
         except Exception as e:
             st.error(f"❌ Sync failed: {e}")
             return False
+
+    def load_cloud_data(self) -> bool:
+        """
+        Load user data from Firestore into session state (pull).
+        Handles encrypted API key decryption for signed-in users.
+
+        Returns:
+            True if data loaded successfully, False otherwise
+        """
+        try:
+            from streamlit_app.services.firebase import load_settings_from_firebase
+
+            user = st.session_state.get("user")
+            if not user:
+                return False
+
+            user_uid = user.get("uid")
+            doc_id = user_uid or st.session_state.get("session_id", "")
+            if not doc_id:
+                return False
+
+            settings = load_settings_from_firebase(doc_id, user_uid=user_uid)
+            if not settings:
+                return False
+
+            # Restore API keys to session state
+            for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+                if key in settings and settings[key]:
+                    st.session_state[key] = settings[key]
+
+            # Restore preferences
+            if "theme" in settings:
+                st.session_state["theme"] = settings["theme"]
+            if "per_language_settings" in settings:
+                st.session_state["per_language_settings"] = settings["per_language_settings"]
+
+            return True
+
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Failed to load cloud data: {e}")
+            return False
+
+    def safe_sync(self) -> bool:
+        """
+        Safe sync wrapper — checks Firebase availability and sign-in status.
+
+        Returns:
+            True if sync successful, False otherwise
+        """
+        if not self.is_firebase_available() or not self.is_user_signed_in():
+            return False
+        return self.sync_user_data()
 
     def _collect_local_settings(self) -> Dict[str, Any]:
         """

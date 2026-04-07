@@ -2,8 +2,12 @@
 Session Manager - Handles authentication session state
 """
 
+import time
 import streamlit as st
 from typing import Optional, Dict, Any
+
+# Session timeout: 30 minutes of inactivity
+SESSION_TIMEOUT_SECONDS = 30 * 60
 
 
 class SessionManager:
@@ -11,18 +15,44 @@ class SessionManager:
     Service for managing authentication-related session state.
     """
 
+    # API key fields to clear on sign-out / timeout
+    _SENSITIVE_KEYS = ("google_api_key", "google_tts_api_key", "pixabay_api_key")
+
     def __init__(self):
         """Initialize session manager."""
         pass
 
+    def _touch_activity(self):
+        """Update last activity timestamp."""
+        st.session_state["last_activity"] = time.time()
+
+    def _is_session_expired(self) -> bool:
+        """Check if session has expired due to inactivity."""
+        last = st.session_state.get("last_activity")
+        if last is None:
+            return False
+        return (time.time() - last) > SESSION_TIMEOUT_SECONDS
+
+    def _clear_sensitive_session_data(self):
+        """Clear decrypted API keys and sensitive data from session state."""
+        for key in self._SENSITIVE_KEYS:
+            if key in st.session_state:
+                del st.session_state[key]
+
     def is_signed_in(self) -> bool:
         """
-        Check if user is authenticated.
+        Check if user is authenticated. Auto-expires after inactivity timeout.
 
         Returns:
-            bool: True if user is signed in
+            bool: True if user is signed in and session not expired
         """
-        return st.session_state.get("user") is not None
+        if st.session_state.get("user") is None:
+            return False
+        if self._is_session_expired():
+            self.sign_out()
+            return False
+        self._touch_activity()
+        return True
 
     def get_current_user(self) -> Optional[Dict[str, Any]]:
         """
@@ -35,10 +65,12 @@ class SessionManager:
 
     def sign_out(self):
         """
-        Sign out user by clearing session state.
+        Sign out user by clearing session state and sensitive data.
         """
+        self._clear_sensitive_session_data()
         st.session_state.user = None
         st.session_state.is_guest = True
+        st.session_state.pop("last_activity", None)
 
     def set_user(self, user_data: Dict[str, Any]):
         """
@@ -49,6 +81,7 @@ class SessionManager:
         """
         st.session_state.user = user_data
         st.session_state.is_guest = False
+        self._touch_activity()
 
     def set_pending_verification_user(self, user_data: Dict[str, Any]):
         """
