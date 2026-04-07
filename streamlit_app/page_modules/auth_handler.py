@@ -548,7 +548,6 @@ def _google_signin_component():
     On success the JS popup returns a Firebase ID token via
     ``st.query_params`` so Python can verify it server-side.
     """
-    import streamlit.components.v1 as components
 
     # Read Firebase web config from secrets
     try:
@@ -634,7 +633,7 @@ def _google_signin_component():
     <div id="google-signin-msg"></div>
     """
 
-    components.html(html, height=70)
+    st.html(html)
 
 
 def render_auth_handler_page():
