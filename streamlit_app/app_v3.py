@@ -221,6 +221,31 @@ def main():
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
 
+        # ── Google Sign-In callback ─────────────────────────────
+        # After the Firebase popup succeeds, JS redirects with
+        # ?google_id_token=<jwt>.  Verify it server-side, then
+        # clear the param immediately so the token never lingers
+        # in the address bar or browser history.
+        _google_token = st.query_params.get("google_id_token")
+        if _google_token:
+            st.query_params.clear()
+            from streamlit_app.page_modules.auth_handler import verify_id_token
+            _ok, _msg, _user = verify_id_token(_google_token)
+            if _ok:
+                # Trigger cloud sync after sign-in
+                try:
+                    from streamlit_app.services.settings.sync_manager import SyncManager
+                    SyncManager().load_cloud_data()
+                except Exception:
+                    pass
+                st.session_state.page = "main"
+                st.toast(f"✅ {_msg}")
+                st.rerun()
+            else:
+                st.error(f"Google Sign-In failed: {_msg}")
+                current_page = "auth_handler"
+                st.session_state.page = current_page
+
         # Check for OAuth callback - if we have auth code in URL, go to auth handler
         if st.query_params.get("code"):
             current_page = "auth_handler"

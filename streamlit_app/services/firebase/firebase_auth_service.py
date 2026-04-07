@@ -15,28 +15,15 @@ logger = logging.getLogger(__name__)
 
 def sign_in_with_google():
     """
-    Handle Google OAuth sign-in flow for Streamlit.
+    Navigate to the auth handler page which contains the Google Sign-In
+    component (Firebase JS SDK ``signInWithPopup`` with ``GoogleAuthProvider``).
 
-    Note: This is a simplified implementation for Streamlit.
-    In production, implement proper OAuth flow.
+    The actual OAuth flow happens client-side in ``auth_handler.py``.
+    After the popup succeeds, the ID token is passed back via query params
+    and verified server-side in ``app_v3.py``.
     """
     try:
         import streamlit as st
-
-        # Check if Firebase is initialized
-        if not is_firebase_initialized():
-            st.error("❌ Firebase not available")
-            return
-
-        # For Streamlit Cloud, we need to use a different approach
-        # since we can't do full OAuth redirects
-
-        # For now, we'll use a simplified approach
-        # In production, you'd implement proper OAuth flow
-        st.info("🔄 Redirecting to Google sign-in...")
-
-        # This would normally redirect to Google OAuth
-        # For Streamlit, we need to handle this differently
         st.session_state.page = "auth_handler"
         st.rerun()
 
