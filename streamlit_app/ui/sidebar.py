@@ -7,7 +7,7 @@ import os
 from constants import GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_LIMIT
 
 def render_sidebar():
-    """Render the main sidebar content.""
+    """Render the main sidebar content."""
     
     # Center the logo vertically in the sidebar using HTML/CSS
     # Center the sidebar logo horizontally using HTML
