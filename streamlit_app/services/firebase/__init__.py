@@ -46,7 +46,7 @@ from .session_service import (
 )
 
 from .firebase_auth_service import (
-    sign_in_with_google,
+    sign_in_with_email,
     sign_out,
     is_signed_in,
     get_current_user,
@@ -96,7 +96,7 @@ __all__ = [
     'get_active_sessions',
 
     # Firebase Auth Service
-    'sign_in_with_google',
+    'sign_in_with_email',
     'sign_out',
     'is_signed_in',
     'get_current_user',
