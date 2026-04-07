@@ -350,7 +350,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         from firebase_manager import init_firebase
         if init_firebase():
             save_to_cloud = st.checkbox("💾 Also save API keys to cloud for cross-device sync", value=True,
-                                      help="Your API keys will be encrypted and stored securely in Firebase")
+                                      help="Your API keys are encrypted with AES-256 using a per-user key before being stored in Firebase")
     except Exception:
         pass
 
@@ -387,9 +387,14 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
             if save_to_cloud:
                 try:
-                    from firebase_manager import save_settings_to_firebase
-                    save_settings_to_firebase(st.session_state.session_id, user_secrets)
-                    st.success("✅ API keys saved locally and to cloud!")
+                    from streamlit_app.services.firebase.settings_service import save_settings_to_firebase
+                    # Use Firebase UID for encryption if signed in, else session_id without encryption
+                    uid = None
+                    if st.session_state.get("user"):
+                        uid = st.session_state.user.get("uid")
+                    doc_id = uid or st.session_state.session_id
+                    save_settings_to_firebase(doc_id, user_secrets, user_uid=uid)
+                    st.success("✅ API keys saved locally and to cloud (encrypted)!")
                 except Exception as e:
                     st.warning(f"Local save successful, but cloud save failed: {e}")
             else:

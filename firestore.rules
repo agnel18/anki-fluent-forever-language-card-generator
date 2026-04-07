@@ -1,21 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only access their own data
-    match /users/{userId} {
-      // Allow read/write for authenticated users to their own data
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-
-      // Guest users: read-only access to their own guest document
-      // Write restricted to creation only (no overwrites of other guests' data)
-      allow read: if request.auth == null && userId.matches("guest_.*");
-      allow create: if request.auth == null && userId.matches("guest_.*")
-                    && !resource.exists;
-    }
-
-    // Public read access for app configuration (if needed in future)
-    match /config/{document} {
-      allow read: if true;
+    // All Firestore access goes through the Firebase Admin SDK (server-side),
+    // which bypasses these rules entirely. Deny all direct client access
+    // to protect user data (including encrypted API keys).
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

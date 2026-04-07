@@ -66,7 +66,14 @@ class APIKeyManager:
                 "google_api_key": google_key
             }
 
-            success = save_settings_to_firebase(session_id, api_keys)
+            # Use Firebase UID for encryption if signed in
+            user_uid = None
+            user = st.session_state.get("user")
+            if user:
+                user_uid = user.get("uid")
+            doc_id = user_uid or session_id
+
+            success = save_settings_to_firebase(doc_id, api_keys, user_uid=user_uid)
             if success:
                 st.success("✅ API keys saved to cloud!")
                 return True
@@ -97,7 +104,14 @@ class APIKeyManager:
                 st.error("❌ No session ID available")
                 return False
 
-            cloud_settings = load_settings_from_firebase(session_id)
+            # Use Firebase UID for decryption if signed in
+            user_uid = None
+            user = st.session_state.get("user")
+            if user:
+                user_uid = user.get("uid")
+            doc_id = user_uid or session_id
+
+            cloud_settings = load_settings_from_firebase(doc_id, user_uid=user_uid)
             if not cloud_settings:
                 st.warning("No API keys found in cloud")
                 return False

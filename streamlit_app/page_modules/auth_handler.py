@@ -241,7 +241,7 @@ def get_user_profile(uid: str) -> Dict[str, Any]:
     return auth_service.get_user_profile(uid)
 
 def save_user_api_keys(uid: str, api_keys: Dict[str, str]):
-    """Save encrypted API keys to Firestore."""
+    """Save API keys to Firestore (encrypted at rest via encryption_service)."""
     auth_service.save_user_api_keys(uid, api_keys)
 
 def get_user_api_keys(uid: str) -> Dict[str, str]:

@@ -36,6 +36,9 @@ genanki>=0.13.0
 # IPA/Phonetic transcription
 epitran>=1.24
 
+# Security / Encryption
+cryptography>=43.0.0
+
 # Utilities
 python-dotenv>=1.0.0
 psutil>=5.9.0

@@ -32,9 +32,16 @@ class SyncManager:
                 st.error("❌ No session ID available")
                 return False
 
-            # Sync settings
+            # Determine Firebase UID for encryption (None for guests)
+            user_uid = None
+            user = st.session_state.get("user")
+            if user:
+                user_uid = user.get("uid")
+
+            # Sync settings (API keys are encrypted if user_uid is available)
             settings_data = self._collect_local_settings()
-            settings_success = save_settings_to_firebase(session_id, settings_data)
+            doc_id = user_uid or session_id
+            settings_success = save_settings_to_firebase(doc_id, settings_data, user_uid=user_uid)
 
             # Sync usage stats
             stats_success = save_usage_stats_to_firebase(session_id, self._collect_local_stats())
