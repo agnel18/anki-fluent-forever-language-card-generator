@@ -49,7 +49,7 @@ try:
         create_user_session, update_last_active,
 
         # Authentication
-        sign_in_with_google as _sign_in_with_google,
+        sign_in_with_email as _sign_in_with_email,
         sign_out as _sign_out,
         is_signed_in as _is_signed_in,
         get_current_user as _get_current_user,
@@ -404,9 +404,9 @@ def update_last_active(session_id: str) -> bool:
 # AUTHENTICATION
 # ============================================================================
 
-def sign_in_with_google():
-    """Handle Google OAuth sign-in flow for Streamlit."""
-    return _sign_in_with_google()
+def sign_in_with_email():
+    """Navigate to auth handler for email/password sign-in."""
+    return _sign_in_with_email()
 
 
 def sign_out():

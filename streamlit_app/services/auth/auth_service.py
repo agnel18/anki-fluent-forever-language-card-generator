@@ -80,20 +80,9 @@ class AuthService:
             firebase_admin.get_app()
             self._firebase_initialized = True
         except ValueError:
-            # Initialize with your Firebase config
-            cred = firebase_admin.credentials.Certificate({
-                "type": "service_account",
-                "project_id": st.secrets.get("FIREBASE_PROJECT_ID", ""),
-                "private_key_id": st.secrets.get("FIREBASE_PRIVATE_KEY_ID", ""),
-                "private_key": st.secrets.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
-                "client_email": st.secrets.get("FIREBASE_CLIENT_EMAIL", ""),
-                "client_id": st.secrets.get("FIREBASE_CLIENT_ID", ""),
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{st.secrets.get('FIREBASE_CLIENT_EMAIL', '')}"
-            })
-            firebase_admin.initialize_app(cred)
+            # Delegate to centralized init which reads [firebase] TOML section
+            from streamlit_app.services.firebase.firebase_init import init_firebase
+            init_firebase()
             self._firebase_initialized = True
 
     @property
@@ -469,7 +458,7 @@ class AuthService:
         a server-side session.
 
         This is the backend counterpart to the JS ``signInWithEmailAndPassword``
-        or ``signInWithPopup`` calls.  The JS SDK sends back an ID token;
+        call.  The JS SDK sends back an ID token;
         we verify it here using the Admin SDK, then set session state.
 
         Args:

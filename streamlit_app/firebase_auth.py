@@ -38,11 +38,10 @@ def is_signed_in() -> bool:
     except:
         return False
 
-def sign_in_with_google():
-    """Handle Google OAuth sign-in flow."""
+def sign_in_with_email():
+    """Navigate to auth handler for email/password sign-in."""
     try:
         import streamlit as st
-        # Navigate to auth handler page
         st.session_state.page = "auth_handler"
         st.rerun()
     except:

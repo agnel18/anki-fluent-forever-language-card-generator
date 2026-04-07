@@ -13,14 +13,9 @@ from .firebase_init import init_firebase, is_firebase_initialized
 logger = logging.getLogger(__name__)
 
 
-def sign_in_with_google():
+def sign_in_with_email():
     """
-    Navigate to the auth handler page which contains the Google Sign-In
-    component (Firebase JS SDK ``signInWithPopup`` with ``GoogleAuthProvider``).
-
-    The actual OAuth flow happens client-side in ``auth_handler.py``.
-    After the popup succeeds, the ID token is passed back via query params
-    and verified server-side in ``app_v3.py``.
+    Navigate to the auth handler page for email/password authentication.
     """
     try:
         import streamlit as st
@@ -28,9 +23,9 @@ def sign_in_with_google():
         st.rerun()
 
     except Exception as e:
-        logger.error(f"Error in sign_in_with_google: {e}")
+        logger.error(f"Error navigating to auth handler: {e}")
         import streamlit as st
-        st.error(f"❌ Sign-in failed: {e}")
+        st.error(f"❌ Navigation failed: {e}")
 
 
 def sign_out():

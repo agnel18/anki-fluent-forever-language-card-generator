@@ -161,9 +161,9 @@ def render_settings_page():
 
                 col1, col2 = st.columns([1, 1])
                 with col1:
-                    if st.button("🚀 Sign In with Google", use_container_width=True, type="primary"):
-                        from firebase_manager import sign_in_with_google
-                        sign_in_with_google()
+                    if st.button("� Sign In", use_container_width=True, type="primary"):
+                        st.session_state.page = "auth_handler"
+                        st.rerun()
 
                 with col2:
                     st.caption("Keep using local storage only")
