@@ -52,7 +52,7 @@ def init_firebase() -> bool:
             service_account_key = firebase_config.get("service_account_key")
 
             if service_account_key:
-                # Parse the service account key JSON
+                # Parse the service account key JSON (legacy format)
                 import json
                 creds_dict = json.loads(service_account_key)
 
@@ -61,6 +61,25 @@ def init_firebase() -> bool:
                 firebase_admin.initialize_app(cred)
                 firebase_initialized = True
                 logger.info("✅ Firebase initialized successfully with service account")
+                return True
+            elif firebase_config.get("private_key"):
+                # Individual keys in [firebase] TOML section (standard Streamlit pattern)
+                creds_dict = {
+                    "type": firebase_config.get("type", "service_account"),
+                    "project_id": firebase_config.get("project_id", ""),
+                    "private_key_id": firebase_config.get("private_key_id", ""),
+                    "private_key": firebase_config.get("private_key", ""),
+                    "client_email": firebase_config.get("client_email", ""),
+                    "client_id": firebase_config.get("client_id", ""),
+                    "auth_uri": firebase_config.get("auth_uri", "https://accounts.google.com/o/oauth2/auth"),
+                    "token_uri": firebase_config.get("token_uri", "https://oauth2.googleapis.com/token"),
+                    "auth_provider_x509_cert_url": firebase_config.get("auth_provider_x509_cert_url", "https://www.googleapis.com/oauth2/v1/certs"),
+                    "client_x509_cert_url": firebase_config.get("client_x509_cert_url", ""),
+                }
+                cred = credentials.Certificate(creds_dict)
+                firebase_admin.initialize_app(cred)
+                firebase_initialized = True
+                logger.info("✅ Firebase initialized successfully from secrets [firebase] section")
                 return True
             else:
                 logger.warning("No service account key found in secrets")
