@@ -250,23 +250,37 @@ def save_settings_to_firebase(session_id: str, settings: Dict) -> bool:
     """
     Save app settings to Firebase.
     Delegates to services.firebase.settings_service.save_settings_to_firebase()
+    Automatically passes user_uid for encryption if user is signed in.
 
     Args:
-        session_id: Anonymous session ID
-        settings: Settings dict (difficulty, audio_speed, sentences_per_word, etc.)
+        session_id: Anonymous session ID or Firebase UID
+        settings: Settings dict
 
     Returns:
         True if successful
     """
-    return save_settings_to_firebase(session_id, settings)
+    import streamlit as st
+    user_uid = None
+    user = st.session_state.get("user")
+    if user:
+        user_uid = user.get("uid")
+    doc_id = user_uid or session_id
+    return save_settings_to_firebase(doc_id, settings, user_uid=user_uid)
 
 
 def load_settings_from_firebase(session_id: str) -> Optional[Dict]:
     """
     Load settings from Firebase.
     Delegates to services.firebase.settings_service.load_settings_from_firebase()
+    Automatically passes user_uid for decryption if user is signed in.
     """
-    return load_settings_from_firebase(session_id)
+    import streamlit as st
+    user_uid = None
+    user = st.session_state.get("user")
+    if user:
+        user_uid = user.get("uid")
+    doc_id = user_uid or session_id
+    return load_settings_from_firebase(doc_id, user_uid=user_uid)
 
 
 # ============================================================================

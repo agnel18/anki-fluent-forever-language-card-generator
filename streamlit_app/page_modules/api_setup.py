@@ -33,6 +33,27 @@ def _save_keys_to_disk():
         pass
 
 
+def _push_keys_to_cloud_if_signed_in():
+    """Push API keys to cloud (encrypted) if user is signed in. Silent on failure."""
+    user = st.session_state.get("user")
+    if not user:
+        return
+    try:
+        from streamlit_app.services.firebase.settings_service import save_settings_to_firebase
+        uid = user.get("uid")
+        if not uid:
+            return
+        api_keys = {}
+        for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+            val = st.session_state.get(key, "")
+            if val:
+                api_keys[key] = val
+        if api_keys:
+            save_settings_to_firebase(uid, api_keys, user_uid=uid)
+    except Exception:
+        pass
+
+
 def render_api_setup_page():
     """Render the API keys setup page."""
 
@@ -90,19 +111,11 @@ def render_api_setup_page():
         if firebase_available:
             if st.button("📥 Load API Keys from Cloud", help="Load your previously saved API keys from Firebase"):
                 try:
-                    from firebase_manager import load_settings_from_firebase
-                    cloud_settings = load_settings_from_firebase(st.session_state.session_id)
-                    if cloud_settings and 'google_api_key' in cloud_settings:
-                        st.session_state.google_api_key = cloud_settings['google_api_key']
-                        if 'google_tts_api_key' in cloud_settings:
-                            st.session_state.google_tts_api_key = cloud_settings['google_tts_api_key']
-                        if 'pixabay_api_key' in cloud_settings:
-                            st.session_state.pixabay_api_key = cloud_settings['pixabay_api_key']
-                        st.success("✅ API keys loaded from cloud!")
+                    from streamlit_app.services.settings.api_key_manager import APIKeyManager
+                    api_mgr = APIKeyManager()
+                    if api_mgr.load_api_keys_from_cloud():
                         st.session_state.page = PAGE_LANGUAGE_SELECT
                         st.rerun()
-                    else:
-                        st.warning("No API keys found in cloud. Please enter your keys below.")
                 except Exception as e:
                     st.error(f"Failed to load from cloud: {e}")
     except Exception:
@@ -166,6 +179,7 @@ def render_api_setup_page():
             if google_key_input:
                 st.session_state.google_api_key = google_key_input
                 _save_keys_to_disk()
+                _push_keys_to_cloud_if_signed_in()
                 st.success("✅ Gemini API key saved!")
             else:
                 st.error("❌ Please enter your Gemini API key")
@@ -249,6 +263,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
             if tts_key_input:
                 st.session_state.google_tts_api_key = tts_key_input
                 _save_keys_to_disk()
+                _push_keys_to_cloud_if_signed_in()
                 st.success("✅ TTS API key saved!")
             else:
                 st.error("❌ Please enter your TTS API key")
@@ -302,6 +317,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
             if pixabay_key_input:
                 st.session_state.pixabay_api_key = pixabay_key_input
                 _save_keys_to_disk()
+                _push_keys_to_cloud_if_signed_in()
                 st.success("✅ Pixabay API key saved!")
             else:
                 st.error("❌ Please enter a Pixabay API key")
@@ -376,29 +392,13 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         st.session_state.pixabay_api_key = final_pixabay_key
 
         # Save API keys locally
-        secrets_path = Path(__file__).parent.parent / "user_secrets.json"
-        user_secrets = {
-            "google_api_key": final_google_key,
-            "google_tts_api_key": final_tts_key,
-            "pixabay_api_key": final_pixabay_key
-        }
-        with open(secrets_path, "w", encoding="utf-8") as f:
-            json.dump(user_secrets, f, indent=2)
+        _save_keys_to_disk()
 
-            if save_to_cloud:
-                try:
-                    from streamlit_app.services.firebase.settings_service import save_settings_to_firebase
-                    # Use Firebase UID for encryption if signed in, else session_id without encryption
-                    uid = None
-                    if st.session_state.get("user"):
-                        uid = st.session_state.user.get("uid")
-                    doc_id = uid or st.session_state.session_id
-                    save_settings_to_firebase(doc_id, user_secrets, user_uid=uid)
-                    st.success("✅ API keys saved locally and to cloud (encrypted)!")
-                except Exception as e:
-                    st.warning(f"Local save successful, but cloud save failed: {e}")
-            else:
-                st.success("✅ API keys saved!")
+        if save_to_cloud:
+            _push_keys_to_cloud_if_signed_in()
+            st.success("✅ API keys saved locally and to cloud (encrypted)!")
+        else:
+            st.success("✅ API keys saved!")
 
-            st.session_state.page = PAGE_LANGUAGE_SELECT
-            st.rerun()
+        st.session_state.page = PAGE_LANGUAGE_SELECT
+        st.rerun()

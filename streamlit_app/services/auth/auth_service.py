@@ -326,21 +326,18 @@ class AuthService:
 
     def save_user_api_keys(self, uid: str, api_keys: Dict[str, str]):
         """
-        Save encrypted API keys to Firestore.
+        Save API keys to Firestore via the encrypted settings path.
 
         Args:
             uid: User ID
-            api_keys: API keys dictionary
+            api_keys: API keys dictionary (google_api_key, google_tts_api_key, pixabay_api_key)
         """
-        api_keys_ref = self.db.collection('users').document(uid).collection('api_keys').document('keys')
-        api_keys_ref.set({
-            'google': api_keys.get('google', ''),
-            'lastUpdated': firestore.SERVER_TIMESTAMP
-        })
+        from streamlit_app.services.firebase.settings_service import save_settings_to_firebase
+        save_settings_to_firebase(uid, api_keys, user_uid=uid)
 
     def get_user_api_keys(self, uid: str) -> Dict[str, str]:
         """
-        Get user's API keys from Firestore.
+        Get user's API keys from Firestore (decrypted).
 
         Args:
             uid: User ID
@@ -348,9 +345,12 @@ class AuthService:
         Returns:
             API keys dictionary
         """
-        api_keys_ref = self.db.collection('users').document(uid).collection('api_keys').document('keys')
-        doc = api_keys_ref.get()
-        return doc.to_dict() if doc.exists else {}
+        from streamlit_app.services.firebase.settings_service import load_settings_from_firebase
+        settings = load_settings_from_firebase(uid, user_uid=uid)
+        if not settings:
+            return {}
+        return {k: v for k, v in settings.items()
+                if k in ('google_api_key', 'google_tts_api_key', 'pixabay_api_key') and v}
 
     def save_user_progress(self, uid: str, language: str, progress_data: Dict[str, Any]):
         """

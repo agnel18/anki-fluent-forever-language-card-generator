@@ -20,26 +20,29 @@ class APIKeyManager:
 
     def get_api_key_status(self) -> Dict[str, str]:
         """
-        Get the current status of API keys.
+        Get the current status of all API keys.
 
         Returns:
-            Dictionary with 'google' status message
+            Dictionary with status messages for each key
         """
-        google_key = st.session_state.get("google_api_key", "")
-
         status = {}
-
-        if google_key:
-            masked_google = google_key[:8] + "..." + google_key[-4:] if len(google_key) > 12 else google_key
-            status['google'] = f"✅ Google API Key: {masked_google}"
-        else:
-            status['google'] = "❌ No Google API key set"
-
+        key_labels = {
+            'google_api_key': 'Gemini AI',
+            'google_tts_api_key': 'Text-to-Speech',
+            'pixabay_api_key': 'Pixabay Images',
+        }
+        for key, label in key_labels.items():
+            val = st.session_state.get(key, "")
+            if val:
+                masked = val[:8] + "..." + val[-4:] if len(val) > 12 else val
+                status[key] = f"✅ {label}: {masked}"
+            else:
+                status[key] = f"❌ {label}: Not set"
         return status
 
     def save_api_keys_to_cloud(self) -> bool:
         """
-        Save current API keys to Firebase cloud storage.
+        Save all current API keys to Firebase cloud storage (encrypted for signed-in users).
 
         Returns:
             True if save successful, False otherwise
@@ -51,27 +54,25 @@ class APIKeyManager:
                 st.error("❌ Firebase unavailable")
                 return False
 
-            google_key = st.session_state.get("google_api_key", "")
+            api_keys = {}
+            for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+                val = st.session_state.get(key, "")
+                if val:
+                    api_keys[key] = val
 
-            if not google_key:
-                st.error("❌ Missing Google API key - required for app functionality")
+            if not api_keys.get("google_api_key"):
+                st.error("❌ Missing Gemini API key — required")
                 return False
-
-            session_id = st.session_state.get("session_id", "")
-            if not session_id:
-                st.error("❌ No session ID available")
-                return False
-
-            api_keys = {
-                "google_api_key": google_key
-            }
 
             # Use Firebase UID for encryption if signed in
             user_uid = None
             user = st.session_state.get("user")
             if user:
                 user_uid = user.get("uid")
-            doc_id = user_uid or session_id
+            doc_id = user_uid or st.session_state.get("session_id", "")
+            if not doc_id:
+                st.error("❌ No session ID available")
+                return False
 
             success = save_settings_to_firebase(doc_id, api_keys, user_uid=user_uid)
             if success:
@@ -87,7 +88,7 @@ class APIKeyManager:
 
     def load_api_keys_from_cloud(self) -> bool:
         """
-        Load API keys from Firebase cloud storage.
+        Load all API keys from Firebase cloud storage (decrypted for signed-in users).
 
         Returns:
             True if load successful, False otherwise
@@ -99,56 +100,70 @@ class APIKeyManager:
                 st.error("❌ Firebase unavailable")
                 return False
 
-            session_id = st.session_state.get("session_id", "")
-            if not session_id:
-                st.error("❌ No session ID available")
-                return False
-
             # Use Firebase UID for decryption if signed in
             user_uid = None
             user = st.session_state.get("user")
             if user:
                 user_uid = user.get("uid")
-            doc_id = user_uid or session_id
+            doc_id = user_uid or st.session_state.get("session_id", "")
+            if not doc_id:
+                st.error("❌ No session ID available")
+                return False
 
             cloud_settings = load_settings_from_firebase(doc_id, user_uid=user_uid)
             if not cloud_settings:
                 st.warning("No API keys found in cloud")
                 return False
 
-            if 'google_api_key' in cloud_settings:
-                st.session_state.google_api_key = cloud_settings['google_api_key']
+            loaded_any = False
+            for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+                if key in cloud_settings and cloud_settings[key]:
+                    st.session_state[key] = cloud_settings[key]
+                    loaded_any = True
+
+            if loaded_any:
                 # Persist to local storage
                 persist_api_keys()
                 st.success("✅ API keys loaded from cloud!")
                 return True
             else:
-                st.warning("Incomplete API keys found in cloud")
+                st.warning("No API keys found in cloud")
                 return False
 
         except Exception as e:
             st.error(f"❌ Failed to load from cloud: {e}")
             return False
 
-    def update_api_keys(self, google_key: str) -> None:
+    def update_api_keys(self, google_key: str = None, tts_key: str = None, pixabay_key: str = None) -> None:
         """
         Update API keys in session state and persist locally.
 
         Args:
-            google_key: New Google API key
+            google_key: Gemini API key (optional)
+            tts_key: TTS API key (optional)
+            pixabay_key: Pixabay API key (optional)
         """
-        st.session_state.google_api_key = google_key
+        if google_key is not None:
+            st.session_state.google_api_key = google_key
+        if tts_key is not None:
+            st.session_state.google_tts_api_key = tts_key
+        if pixabay_key is not None:
+            st.session_state.pixabay_api_key = pixabay_key
         persist_api_keys()
 
-    def get_api_keys(self) -> str:
+    def get_api_keys(self) -> Dict[str, str]:
         """
         Get current API keys from session state.
 
         Returns:
-            Google API key
+            Dictionary with all API keys
         """
-        google_key = st.session_state.get("google_api_key", "")
-        return google_key
+        keys = {}
+        for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+            val = st.session_state.get(key, "")
+            if val:
+                keys[key] = val
+        return keys
 
     def validate_api_key(self, api_key: str, service: str) -> Tuple[bool, str]:
         """

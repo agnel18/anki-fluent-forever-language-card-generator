@@ -177,9 +177,10 @@ def initialize_firebase_settings():
         st.session_state.is_guest = False
         firebase_settings = load_settings_from_firebase(st.session_state.session_id)
         if firebase_settings:
-            # Load settings from Firebase (cloud takes precedence for API keys)
-            if firebase_settings.get("google_api_key"):
-                st.session_state.google_api_key = firebase_settings["google_api_key"]
+            # Load ALL API keys from Firebase (cloud takes precedence)
+            for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+                if firebase_settings.get(key):
+                    st.session_state[key] = firebase_settings[key]
             # Load other settings if available
             if "theme" in firebase_settings:
                 st.session_state.theme = firebase_settings["theme"]

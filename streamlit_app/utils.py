@@ -44,16 +44,17 @@ def get_secret(key: str, default: str = "") -> str:
 
 
 def persist_api_keys() -> None:
-    """Persist API keys to Firebase if user is logged in."""
+    """Persist API keys to Firebase if user is logged in (encrypted via settings_service)."""
     if not st.session_state.get("is_guest", True):
         from firebase_manager import save_settings_to_firebase
-        save_settings_to_firebase(
-            st.session_state.session_id,
-            {
-                "gemini_api_key": st.session_state.get("gemini_api_key", ""),
-                "google_api_key": st.session_state.get("google_api_key", "")
-            }
-        )
+        api_keys = {}
+        for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
+            val = st.session_state.get(key, "")
+            if val:
+                api_keys[key] = val
+        if api_keys:
+            session_id = st.session_state.get("session_id", "")
+            save_settings_to_firebase(session_id, api_keys)
 
 
 def should_show_cloud_prompt() -> bool:
