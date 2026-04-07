@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 try:
     from db_setup import init_database, import_excel_to_db, remove_unsupported_languages, reset_database, delete_database
     logger.info("Successfully imported from db_setup")
-except ImportError as e:
+except (ImportError, KeyError) as e:
     logger.warning(f"Failed to import from db_setup: {e}. Using fallback implementations.")
     # Fallback implementations would go here if needed
 
@@ -30,7 +30,7 @@ try:
         mark_word_completed, mark_words_completed, increment_word_count, get_word_rank
     )
     logger.info("Successfully imported from word_manager")
-except ImportError as e:
+except (ImportError, KeyError) as e:
     logger.warning(f"Failed to import from word_manager: {e}. Using fallback implementations.")
     # Fallback implementations would go here if needed
 
@@ -38,7 +38,7 @@ except ImportError as e:
 try:
     from stats_manager import get_languages, get_word_stats, log_generation
     logger.info("Successfully imported from stats_manager")
-except ImportError as e:
+except (ImportError, KeyError) as e:
     logger.warning(f"Failed to import from stats_manager: {e}. Using fallback implementations.")
     # Fallback implementations would go here if needed
 

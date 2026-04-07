@@ -58,7 +58,7 @@ try:
         migrate_guest_data_to_user as _migrate_guest_data_to_user
     )
     logger.info("✅ Using Firebase service modules")
-except ImportError as e:
+except (ImportError, KeyError) as e:
     logger.error(f"❌ Could not import Firebase service modules: {e}")
     raise
 
