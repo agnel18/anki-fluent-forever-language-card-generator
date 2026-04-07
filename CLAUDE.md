@@ -9,8 +9,9 @@
 **Language Card Generator v3** — A Streamlit web app that generates Anki flashcard decks for **77 languages** using Google Gemini AI for content generation, Google Cloud TTS for audio, and Pixabay for images.
 
 - **Entry point:** `streamlit run streamlit_app/app_v3.py`
-- **Stack:** Streamlit, Google Gemini API (`google-genai`), Google Cloud TTS (REST), genanki (Anki decks), Firebase (optional cloud sync), SQLite (local storage)
-- **22 page modules**, session-state routing, 2 service layers (generation + sentence_generation)
+- **Stack:** Streamlit, Google Gemini API (`google-genai`), Google Cloud TTS (REST), genanki (Anki decks), SQLite (local storage)
+- **17 page modules**, session-state routing, 2 service layers (generation + sentence_generation)
+- **Pure stateless:** API keys stored only in `st.session_state` — no user accounts, no cloud storage, no login
 - **Payment:** Simple Razorpay.me redirect (`razorpay.me/@agneljosephn`) — no server-side API integration
 - **Hosting:** Streamlit Community Cloud (free tier)
 
@@ -309,9 +310,7 @@ APIError (base)
 | **Generation page** | Audio generation fails | "Audio will be skipped (cards still work)" |
 | **Generation page** | Image generation fails | "Images will be skipped (cards still work)" |
 | **Generation page** | Any partial failure | "Retry with Safer Settings" button (reduces sentences per word) |
-| **Statistics page** (`statistics.py` ~L84) | Gemini quota ≥ 100% | 🚫 "Daily Quota Reached — paused" + Cloud Console link |
-| **Statistics page** | Gemini quota ≥ 80% | ⚠️ "You've used X of Y daily requests" + rate limit advice |
-| **Statistics page** | Free tier exceeded | ⚠️ "You're now paying for Gemini API usage" |
+
 
 ### Graceful Degradation
 - **Audio/image failures never block card generation** — cards are always produced
@@ -332,7 +331,7 @@ APIError (base)
 6. **Razorpay payment** — Currently a simple redirect link in `payment.py`. No server-side API integration, no webhook handling.
 7. ~~**Model config duplication**~~ — **RESOLVED.** `config/models.py` deleted (was dead code — nothing imported from it). `shared_utils.py` is the sole canonical source. `content_generator.py` imports from `shared_utils`.
 8. **.gitignore encoding** — Last 2 entries (`ARCHIVED_PHASES.md`, `repo_backup_pre_cleanup/`) were appended in UTF-16LE encoding. Rest of file is ASCII/UTF-8. May cause Git to not ignore those entries on some systems.
-9. **API key retrieval duplication** — Key retrieval logic duplicated across `audio_generator.py`, `state_manager.py`, `api_setup.py`, `sync_manager.py`. Each has slightly different needs (startup vs runtime vs UI vs sync). Documented tech debt — centralizing risks breaking the delicate fallback chains. Address when building the next major feature.
+9. ~~**API key retrieval duplication**~~ — **RESOLVED.** Removed `state_manager.py` and `sync_manager.py` during stateless refactor. Key retrieval now lives in `audio_generator.py` and `api_setup.py` only.
 10. ~~**Japanese analyzer runtime failure**~~ — **RESOLVED (commit 61f32c7).** Root cause: `ja_analyzer.py` imported `streamlit_app.shared_utils` at module level, causing import failure during `_discover_analyzers()`. Fix: moved imports to `_call_ai()` method (lazy import). Also added `languages/japanese/__init__.py`.
 11. ~~**Hardcoded complexity in grammar_processor.py**~~ — **RESOLVED (commit 61f32c7).** `grammar_processor.py` had `complexity = "intermediate"` hardcoded in both `analyze_grammar_and_color()` and `batch_analyze_grammar_and_color()`, ignoring the user's difficulty setting. Fix: now reads `st.session_state.get("difficulty", "intermediate")`.
 12. ~~**Grammar coloring collapsed language-specific concepts**~~ — **RESOLVED.** `grammar_processor.py` was re-mapping all analyzer POS output through `_map_pos_to_category()`, collapsing language-specific concepts (Chinese classifier, Japanese topic_particle, etc.) into generic English "other" with gray color. Fix: `_convert_analyzer_output_to_explanations()` now passes through original POS label and color from the analyzer. `_create_grammar_summary()` uses original POS labels. Generic fallback expanded from 10 to 17 color categories.
@@ -363,7 +362,7 @@ APIError (base)
 | `streamlit_app/ui/theming.py` | Theme-aware CSS — dark/light mode, visible input borders |
 | `streamlit_app/languages.yaml` | 77 languages: codes, TTS voices, frequency list mappings, UI translations |
 | `streamlit_app/page_modules/api_setup.py` | API key setup — 3 dedicated sections (Gemini, TTS, Pixabay) |
-| `streamlit_app/page_modules/statistics.py` | Usage dashboard with quota health warnings (80%/100%) |
+
 | `languages/french/` | Gold standard analyzer implementation (v2.0, primary reference) |
 | `languages/hungarian/` | Hungarian analyzer (v1.0, Uralic family, 24 case markers, definite/indefinite conjugation) |
 | `languages/japanese/` | Japanese analyzer implementation (v1.0, Japonic family) |

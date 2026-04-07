@@ -4,12 +4,10 @@ import streamlit as st
 if not hasattr(st, "session_state") or st.session_state is None:
     st.session_state = {}
 import os
-from constants import GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_LIMIT
 
 def render_sidebar():
     """Render the main sidebar content."""
     
-    # Center the logo vertically in the sidebar using HTML/CSS
     # Center the sidebar logo horizontally using HTML
     logo_path = os.path.join(os.path.dirname(__file__), "..", "logo.svg")
     if os.path.exists(logo_path):
@@ -33,49 +31,6 @@ def render_sidebar():
         import webbrowser
         webbrowser.open("https://github.com/agnel18/anki-fluent-forever-language-card-generator")
         st.sidebar.success("Opening documentation...")
-
-    st.sidebar.markdown("---")
-
-    # TTS Status Indicator
-    try:
-        from audio_generator import is_google_tts_configured
-        if is_google_tts_configured():
-            st.sidebar.caption("🔊 Google TTS Active")
-        else:
-            st.sidebar.caption("🔊 TTS Not Configured")
-    except ImportError:
-        st.sidebar.caption("🔊 TTS Unavailable")
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### API Usage")
-
-    gemini_calls = st.session_state.get("gemini_api_calls", 0)
-    gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
-    google_search_calls = st.session_state.get("google_search_api_calls", 0)
-
-    def format_number_compact(num):
-        if num >= 1000000:
-            return f"{num // 1000000}M"
-        elif num >= 1000:
-            return f"{num // 1000}K"
-        else:
-            return str(num)
-
-    # Display metrics with compact formatting
-    st.sidebar.metric(
-        "Gemini Calls",
-        f"{format_number_compact(gemini_calls)} / {format_number_compact(GEMINI_CALL_LIMIT)}"
-    )
-    st.sidebar.metric(
-        "Gemini Tokens",
-        f"{format_number_compact(gemini_tokens)} / {format_number_compact(GEMINI_TOKEN_LIMIT)}"
-    )
-    st.sidebar.metric(
-        "Google Search Calls",
-        f"{format_number_compact(google_search_calls)} / {format_number_compact(GOOGLE_SEARCH_CALL_LIMIT)}"
-    )
-
-    st.sidebar.caption("Limits are approximate—check your API dashboard for exact quotas.")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🎨 Theme")

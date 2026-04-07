@@ -21,7 +21,6 @@ def render_shipping_delivery_page():
     - **Anki Decks**: Generated and delivered instantly within the application
     - **Audio Files**: Created and embedded automatically in flashcards
     - **Images**: Downloaded and integrated seamlessly into learning materials
-    - **Progress Data**: Stored locally on your device or synced to cloud
 
     ### No Physical Shipping
     - Our service requires no physical delivery
@@ -66,7 +65,6 @@ def render_shipping_delivery_page():
     ### Access Methods
     - **Direct Download**: Files downloaded to your device
     - **Local Storage**: Content remains on your computer
-    - **Cloud Sync**: Optional synchronization across devices
     - **Backup**: Generated content can be backed up manually
 
     ## 6. Delivery Issues and Troubleshooting

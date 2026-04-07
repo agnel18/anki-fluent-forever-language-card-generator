@@ -41,13 +41,3 @@ def get_secret(key: str, default: str = "") -> str:
         return st.secrets.get(key, os.getenv(key, default))
     except:
         return os.getenv(key, default)
-
-
-def persist_api_keys() -> None:
-    """No-op. API keys are session-only (no persistence)."""
-    pass
-
-
-def should_show_cloud_prompt() -> bool:
-    """Always returns False — cloud features removed."""
-    return False

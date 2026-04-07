@@ -17,8 +17,7 @@ google-cloud-texttospeech>=2.16.0
 # Image generation
 Pillow>=10.0.0
 
-# Database & Backend
-firebase-admin>=6.0.0
+# Database
 google-auth>=2.0.0
 
 # Payment Gateway - Using Razorpay.me links instead of API

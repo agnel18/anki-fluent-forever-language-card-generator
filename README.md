@@ -61,13 +61,11 @@ The app guides you through setup on the **"Step 0: API Keys"** page. You need **
 ### Smart Features
 - **30 Topic Filters** — Narrow sentences by theme (Food, Travel, Technology, Daily Life, etc.)
 - **Real-Time Progress** — Live generation tracking with cancel option
-- **Statistics Dashboard** — API quota monitoring with warnings at 80% and 100% usage
 - **AI Repair Pipeline** — Auto-fixes malformed AI output (lower temperature for deterministic repair)
 - **Graceful Degradation** — Audio/image failures never block card generation
 
 ### User Experience
-- **Guest Mode** — Full app access without an account
-- **Firebase Auth** — Optional sign-in (email/password or Google) for cloud sync
+- **No Account Required** — Full app access with no sign-up or login
 - **Per-Language Settings** — Save preferred difficulty, sentences/word, and audio speed per language
 - **Dark / Light Theme** — Toggle in settings
 - **Custom Word Lists** — Upload CSV/XLSX files with your own vocabulary
@@ -137,7 +135,7 @@ All 77 languages work for deck generation (TTS, translations, frequency lists) e
 
 ### "API keys not persisting"
 - Each section has its own **Save** button — click it after entering each key
-- Keys are saved to `user_secrets.json` and persist across sessions
+- Keys are stored in your browser session and cleared when the session ends
 
 ### "TTS not working"
 - TTS requires a **separate GCP project** with billing enabled
@@ -168,8 +166,6 @@ All 77 languages work for deck generation (TTS, translations, frequency lists) e
 | **Google Cloud TTS** | 1M characters/month (Standard voices) | Yes (to activate only) |
 | **Pixabay** | 5,000 images/month | No |
 
-The app's **Statistics** page tracks your usage in real time and warns you at 80% and 100% of daily/monthly limits.
-
 **Tip**: Generate in batches throughout the day to stay within Gemini's daily limit.
 
 ---
@@ -177,17 +173,6 @@ The app's **Statistics** page tracks your usage in real time and warns you at 80
 ## 📥 Importing to Anki
 
 Double-click the `.apkg` file — Anki opens automatically and imports everything (sentences, audio, images, IPA).
-
----
-
-## ☁️ Cloud Sync (Optional)
-
-Sign in with Firebase (email/password or Google) to sync across devices:
-- **Usage statistics** — track your learning progress
-- **Custom word lists** — access from any device
-- **Settings** — language preferences, favorites
-
-No account needed for core functionality — **Guest mode** provides full access to deck generation.
 
 ---
 
@@ -214,7 +199,6 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 - ✅ **Pixabay Images** — Replaced Google Custom Search with Pixabay for free image integration
 - ✅ **8 Grammar Analyzers** — French (gold standard), Spanish, German, Chinese (Simplified & Traditional), Arabic, Hindi, Turkish
 - ✅ **Topic Filtering** — 30 curated topics to narrow sentence generation
-- ✅ **Statistics Dashboard** — Real-time API quota tracking with 80%/100% health warnings
 - ✅ **Repository Cleanup** — Removed 21 unused test/debug files (3 had hardcoded API keys)
 
 ### v3.3 (January 2026)

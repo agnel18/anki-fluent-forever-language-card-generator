@@ -20,7 +20,6 @@ def render_privacy_policy_page():
     ## 2. Information We Collect
 
     ### Personal Information
-    - **Account Information**: Email address (if you sign in with Google)
     - **Usage Preferences**: Language preferences, API settings, theme choices
     - **Contact Information**: Information provided in contact forms or support requests
 
@@ -63,7 +62,6 @@ def render_privacy_policy_page():
 
     ## 6. Data Retention
 
-    - **Account Data**: Retained while your account is active and for 2 years after deactivation
     - **Usage Logs**: Retained for 1 year for analytics and troubleshooting
     - **Generated Content**: Stored according to your local storage preferences
     - **Legal Holds**: Data may be retained longer if required for legal proceedings
@@ -82,7 +80,7 @@ def render_privacy_policy_page():
     ## 8. Cookies and Tracking
 
     ### Essential Cookies
-    - **Session Management**: Maintain your login status and preferences
+    - **Session Management**: Maintain your preferences
     - **Security**: Prevent unauthorized access and detect fraud
 
     ### Analytics Cookies
