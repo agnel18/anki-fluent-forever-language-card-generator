@@ -1,5 +1,16 @@
 # Firebase stats module
 # Extracted from firebase_manager.py for better separation of concerns
+#
+# DEPRECATED: This module is dead code. Usage stats are handled by
+# streamlit_app/services/firebase/stats_service.py.
+# Scheduled for removal in the next major version.
+
+import warnings
+warnings.warn(
+    "firebase_stats.py is deprecated. Use streamlit_app.services.firebase.stats_service instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import logging
 from typing import Dict, List, Optional

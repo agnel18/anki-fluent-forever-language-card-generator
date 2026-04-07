@@ -1,5 +1,16 @@
 # Firebase sync module
 # Extracted from firebase_manager.py for better separation of concerns
+#
+# DEPRECATED: This module is dead code. All sync operations are handled by
+# streamlit_app/services/settings/sync_manager.py (SyncManager class).
+# Scheduled for removal in the next major version.
+
+import warnings
+warnings.warn(
+    "firebase_sync.py is deprecated. Use streamlit_app.services.settings.sync_manager.SyncManager instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import logging
 from typing import Dict, List, Optional

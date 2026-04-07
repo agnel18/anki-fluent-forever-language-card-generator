@@ -14,7 +14,15 @@ from .firebase_init import init_firebase, is_firebase_initialized, get_firestore
 
 logger = logging.getLogger(__name__)
 
-# Lazy import to avoid circular dependency at module load
+# Validation constants
+_ALLOWED_SETTINGS_KEYS = frozenset({
+    "google_api_key", "google_tts_api_key", "pixabay_api_key",
+    "theme", "difficulty", "audio_speed", "sentences_per_word",
+    "sync_preferences", "learned_languages", "per_language_settings",
+    "encrypted", "last_updated",
+})
+_MAX_VALUE_LENGTH = 4096  # Max length per string value (API keys are ~40 chars, ciphertext ~200)
+_MAX_FIELDS = 20  # Max number of top-level fields per document
 _encryption = None
 
 
@@ -50,7 +58,23 @@ def save_settings_to_firebase(session_id: str, settings: Dict[str, Any], user_ui
         if not db:
             return False
 
-        settings_with_meta = settings.copy()
+        # --- Input validation ---
+        if len(settings) > _MAX_FIELDS:
+            logger.warning("Settings rejected: too many fields (%d > %d)", len(settings), _MAX_FIELDS)
+            return False
+
+        # Filter to allowed keys only
+        settings_with_meta = {k: v for k, v in settings.items() if k in _ALLOWED_SETTINGS_KEYS}
+        if not settings_with_meta:
+            logger.warning("Settings rejected: no allowed keys found")
+            return False
+
+        # Enforce max string value length
+        for key, value in settings_with_meta.items():
+            if isinstance(value, str) and len(value) > _MAX_VALUE_LENGTH:
+                logger.warning("Settings field '%s' exceeds max length (%d > %d)", key, len(value), _MAX_VALUE_LENGTH)
+                return False
+
         settings_with_meta["last_updated"] = datetime.now().isoformat()
 
         # Encrypt API key fields if user_uid is available

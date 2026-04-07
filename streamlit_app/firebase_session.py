@@ -1,5 +1,16 @@
 # Firebase session module
 # Extracted from firebase_manager.py for better separation of concerns
+#
+# DEPRECATED: This module is dead code. Session management is handled by
+# streamlit_app/services/auth/session_manager.py (SessionManager class).
+# Scheduled for removal in the next major version.
+
+import warnings
+warnings.warn(
+    "firebase_session.py is deprecated. Use streamlit_app.services.auth.session_manager.SessionManager instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import logging
 from datetime import datetime

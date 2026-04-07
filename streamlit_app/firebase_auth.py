@@ -1,5 +1,17 @@
 # Firebase authentication module
 # Updated for Firebase Auth SDK integration
+#
+# DEPRECATED: This module is dead code. Authentication is handled by
+# streamlit_app/services/auth/auth_service.py (AuthService class) and
+# streamlit_app/page_modules/auth_handler.py.
+# Scheduled for removal in the next major version.
+
+import warnings
+warnings.warn(
+    "firebase_auth.py is deprecated. Use streamlit_app.services.auth.auth_service.AuthService instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import logging
 import uuid

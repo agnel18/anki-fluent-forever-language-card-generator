@@ -1,4 +1,15 @@
 # sync_manager.py - Data synchronization between local and cloud storage
+#
+# DEPRECATED: This module is dead code. All sync operations are handled by
+# streamlit_app/services/settings/sync_manager.py (SyncManager class).
+# Scheduled for removal in the next major version.
+
+import warnings
+warnings.warn(
+    "sync_manager.py is deprecated. Use streamlit_app.services.settings.sync_manager.SyncManager instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import streamlit as st
 from datetime import datetime

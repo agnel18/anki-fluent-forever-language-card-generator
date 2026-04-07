@@ -2,6 +2,7 @@
 Auth Service - Core authentication logic and user management
 """
 
+import time
 import firebase_admin
 from firebase_admin import auth, firestore, exceptions
 import streamlit as st
@@ -9,6 +10,11 @@ from typing import Optional, Dict, Any, Tuple
 import re
 from .email_service import EmailService
 from .session_manager import SessionManager
+
+# Rate limiting: max attempts per window
+_MAX_AUTH_ATTEMPTS = 5
+_AUTH_WINDOW_SECONDS = 300  # 5 minutes
+_LOCKOUT_SECONDS = 600  # 10-minute lockout after exceeding limit
 
 
 class AuthService:
@@ -28,6 +34,42 @@ class AuthService:
         self.session_manager = session_manager
         self._db = None
         self._firebase_initialized = False
+
+    def _check_rate_limit(self, action: str = "auth") -> Tuple[bool, str]:
+        """
+        Check if the current session has exceeded the auth attempt rate limit.
+        Uses st.session_state to track attempts per-session.
+
+        Returns:
+            Tuple of (allowed, message). If not allowed, message explains why.
+        """
+        key = f"_rate_limit_{action}"
+        now = time.time()
+
+        if key not in st.session_state:
+            st.session_state[key] = []
+
+        # Clean old attempts outside the window
+        attempts = [t for t in st.session_state[key] if now - t < _AUTH_WINDOW_SECONDS]
+        st.session_state[key] = attempts
+
+        # Check lockout
+        if len(attempts) >= _MAX_AUTH_ATTEMPTS:
+            oldest = attempts[0]
+            wait = int(_LOCKOUT_SECONDS - (now - oldest))
+            if wait > 0:
+                return False, f"Too many attempts. Please wait {wait // 60} minutes before trying again."
+            # Lockout expired — clear
+            st.session_state[key] = []
+
+        return True, ""
+
+    def _record_attempt(self, action: str = "auth"):
+        """Record an auth attempt for rate limiting."""
+        key = f"_rate_limit_{action}"
+        if key not in st.session_state:
+            st.session_state[key] = []
+        st.session_state[key].append(time.time())
 
     def _ensure_firebase_initialized(self):
         """Ensure Firebase Admin is initialized. Called lazily."""
@@ -98,6 +140,7 @@ class AuthService:
     def authenticate_user(self, email: str, password: str) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
         """
         Authenticate user with email and password.
+        Rate-limited to 5 attempts per 5-minute window.
 
         Args:
             email: User email
@@ -106,6 +149,12 @@ class AuthService:
         Returns:
             Tuple of (success, message, user_data)
         """
+        allowed, msg = self._check_rate_limit("login")
+        if not allowed:
+            return False, msg, None
+
+        self._record_attempt("login")
+
         try:
             user = auth.get_user_by_email(email)
 
@@ -143,6 +192,7 @@ class AuthService:
     def register_user(self, email: str, password: str, display_name: str = None) -> Tuple[bool, str]:
         """
         Register a new user.
+        Rate-limited to 5 attempts per 5-minute window.
 
         Args:
             email: User email
@@ -152,6 +202,12 @@ class AuthService:
         Returns:
             Tuple of (success, message)
         """
+        allowed, msg = self._check_rate_limit("register")
+        if not allowed:
+            return False, msg
+
+        self._record_attempt("register")
+
         try:
             # Use Firebase Admin SDK for more reliable user creation
             user = auth.create_user(
