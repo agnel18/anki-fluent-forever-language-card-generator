@@ -4,36 +4,10 @@ import streamlit as st
 if not hasattr(st, "session_state") or st.session_state is None:
     st.session_state = {}
 import os
-import datetime
 from constants import GEMINI_CALL_LIMIT, GEMINI_TOKEN_LIMIT, GOOGLE_SEARCH_CALL_LIMIT
 
-def handle_auto_sync():
-    """Handle automatic sync operations."""
-    from streamlit_app.page_modules.auth_handler import is_signed_in
-    from streamlit_app.services.settings.sync_manager import SyncManager
-
-    sync = SyncManager()
-
-    # Sync on app start if signed in and not done yet
-    if is_signed_in() and not st.session_state.get('initial_sync_done'):
-        try:
-            sync.load_cloud_data()
-            st.session_state.initial_sync_done = True
-        except Exception as e:
-            print(f"Initial sync failed: {e}")
-
-    # Periodic sync (every 5 minutes) if signed in
-    last_sync = st.session_state.get('last_sync_time')
-    if (is_signed_in() and last_sync and
-        (datetime.datetime.now() - last_sync).seconds > 300):  # 5 minutes
-        try:
-            sync.safe_sync()
-        except Exception as e:
-            print(f"Periodic sync failed: {e}")
-
 def render_sidebar():
-    """Render the main sidebar content."""
-    from streamlit_app.page_modules.auth_handler import is_signed_in, sign_out
+    """Render the main sidebar content.""
     
     # Center the logo vertically in the sidebar using HTML/CSS
     # Center the sidebar logo horizontally using HTML
@@ -54,17 +28,6 @@ def render_sidebar():
         st.session_state.page = "settings"
         st.rerun()
 
-    # Statistics button full width
-    if st.sidebar.button("📊 Statistics", key="sidebar_stats", use_container_width=True):
-        st.session_state.page = "statistics"
-        st.rerun()
-
-    # My Word Lists button (only for signed-in users)
-    if is_signed_in():
-        if st.sidebar.button("📝 My Lists", key="sidebar_lists", use_container_width=True):
-            st.session_state.page = "my_word_lists"
-            st.rerun()
-
     # Documentation button
     if st.sidebar.button("📖 Documentation", key="sidebar_docs", use_container_width=True):
         import webbrowser
@@ -83,68 +46,12 @@ def render_sidebar():
     except ImportError:
         st.sidebar.caption("🔊 TTS Unavailable")
 
-    # Authentication section - prominent placement
-    if is_signed_in():
-        user = st.session_state.get("user", {})
-        import html as _html
-        st.sidebar.markdown(f"**👋 Welcome, {_html.escape(user.get('displayName', 'User'))}!**")
-        if st.sidebar.button("🚪 Sign Out", key="sidebar_sign_out", use_container_width=True):
-            sign_out()
-            st.rerun()
-    else:
-        if st.sidebar.button("🔐 Sign In", key="sidebar_sign_in", use_container_width=True):
-            st.session_state.page = "auth_handler"
-            st.rerun()
-        st.sidebar.caption("Save progress across devices")
-
-    # Achievements section (only for signed-in users)
-    if is_signed_in():
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### Achievements")
-
-        try:
-            from achievements_manager import get_user_achievements, get_achievement_stats
-            user_id = st.session_state.user['uid']
-            achievements = get_user_achievements(user_id)
-            stats = get_achievement_stats(user_id)
-
-            # Show completion percentage
-            completion_pct = stats.get('completion_percentage', 0)
-            st.sidebar.metric("Progress", f"{completion_pct:.1f}%")
-
-            # Show recent unlocks
-            from achievements_manager import get_recent_unlocks
-            recent = get_recent_unlocks(user_id, days=7)
-            if recent:
-                st.sidebar.markdown("**Recent Unlocks:**")
-                for achievement in recent[:3]:  # Show up to 3 recent
-                    st.sidebar.caption(f"{achievement['icon']} {achievement['title']}")
-
-            # Show next achievable
-            locked_achievements = [a for a in achievements if not a['unlocked']]
-            if locked_achievements:
-                next_achievement = min(locked_achievements, key=lambda x: x['target'] - x['progress'])
-                progress_pct = next_achievement['progress_percentage']
-                st.sidebar.markdown(f"**Next:** {next_achievement['icon']} {next_achievement['title']}")
-                st.sidebar.progress(progress_pct / 100)
-                st.sidebar.caption(f"{next_achievement['progress']}/{next_achievement['target']}")
-
-        except Exception as e:
-            st.sidebar.caption("Could not load achievements")
-
     st.sidebar.markdown("---")
     st.sidebar.markdown("### API Usage")
 
-    # Use persistent stats if logged in, else session stats
-    stats = st.session_state.get("persistent_usage_stats") if not st.session_state.get("is_guest", True) else None
-    if stats:
-        gemini_calls = stats.get("gemini_calls", 0)
-        gemini_tokens = stats.get("gemini_tokens", 0)
-        google_search_calls = stats.get("google_search_calls", 0)
-    else:
-        gemini_calls = st.session_state.get("gemini_api_calls", 0)
-        gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
-        google_search_calls = st.session_state.get("google_search_api_calls", 0)
+    gemini_calls = st.session_state.get("gemini_api_calls", 0)
+    gemini_tokens = st.session_state.get("gemini_tokens_used", 0)
+    google_search_calls = st.session_state.get("google_search_api_calls", 0)
 
     def format_number_compact(num):
         if num >= 1000000:

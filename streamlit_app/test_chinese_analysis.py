@@ -11,14 +11,11 @@ sys.path.append(os.path.dirname(__file__))
 from services.generation.grammar_processor import GrammarProcessor
 
 def load_api_key():
-    """Load API key from user_secrets.json"""
-    try:
-        with open('user_secrets.json', 'r') as f:
-            secrets = json.load(f)
-            return secrets.get('gemini_api_key')
-    except Exception as e:
-        print(f"Failed to load API key: {e}")
-        return None
+    """Load API key from environment variables."""
+    api_key = os.environ.get('GOOGLE_API_KEY') or os.environ.get('GEMINI_API_KEY')
+    if not api_key:
+        print("Could not load API key from environment")
+    return api_key
 
 def test_chinese_analyzer():
     print("Testing Chinese grammar analyzer integration...")

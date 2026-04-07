@@ -44,37 +44,10 @@ def get_secret(key: str, default: str = "") -> str:
 
 
 def persist_api_keys() -> None:
-    """Persist API keys to Firebase if user is logged in (encrypted via settings_service)."""
-    if not st.session_state.get("is_guest", True):
-        from firebase_manager import save_settings_to_firebase
-        api_keys = {}
-        for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
-            val = st.session_state.get(key, "")
-            if val:
-                api_keys[key] = val
-        if api_keys:
-            session_id = st.session_state.get("session_id", "")
-            save_settings_to_firebase(session_id, api_keys)
+    """No-op. API keys are session-only (no persistence)."""
+    pass
 
 
 def should_show_cloud_prompt() -> bool:
-    """Determine if we should prompt for cloud features.
-    
-    Returns True if:
-    - User has generated at least 1 deck (indicating success)
-    - Not already signed in
-    - Hasn't dismissed the prompt
-    - Firebase is available
-    """
-    from firebase_manager import get_sync_status
-    
-    # Check if user has had success with the app
-    decks_generated = st.session_state.get('decks_generated', 0)
-    has_success = decks_generated >= 1
-    
-    # Check other conditions
-    not_signed_in = get_sync_status() != "enabled"
-    not_dismissed = not st.session_state.get('dismissed_cloud_prompt', False)
-    firebase_available = get_sync_status() != "unavailable"
-    
-    return has_success and not_signed_in and not_dismissed and firebase_available
+    """Always returns False — cloud features removed."""
+    return False

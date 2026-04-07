@@ -2,10 +2,6 @@
 streamlit>=1.28.0
 streamlit-option-menu>=0.3.6
 
-# Authentication
-httpx-oauth>=0.13.0
-firebase-admin>=6.0.0
-
 # Core dependencies
 pandas>=2.0.0
 requests>=2.31.0
@@ -24,9 +20,6 @@ beautifulsoup4>=4.12.0
 # Image generation
 Pillow>=10.0.0
 
-# Database & Backend
-firebase-admin>=6.0.0
-
 # File handling
 openpyxl>=3.0.0
 
@@ -35,9 +28,6 @@ genanki>=0.13.0
 
 # IPA/Phonetic transcription
 epitran>=1.24
-
-# Security / Encryption
-cryptography>=43.0.0
 
 # Utilities
 python-dotenv>=1.0.0

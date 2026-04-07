@@ -15,14 +15,11 @@ PAGE_REGISTRY = {
     "generating":         ("streamlit_app.page_modules.generating",         "render_generating_page"),
     "complete":           ("streamlit_app.page_modules.complete",           "render_complete_page"),
     "settings":           ("streamlit_app.page_modules.settings",           "render_settings_page"),
-    "statistics":         ("streamlit_app.page_modules.statistics",         "render_statistics_page"),
-    "my_word_lists":      ("streamlit_app.page_modules.my_word_lists",      "render_my_word_lists_page"),
     "privacy_policy":     ("streamlit_app.page_modules.privacy_policy",     "render_privacy_policy_page"),
     "terms_conditions":   ("streamlit_app.page_modules.terms_conditions",   "render_terms_conditions_page"),
     "refund_policy":      ("streamlit_app.page_modules.refund_policy",      "render_refund_policy_page"),
     "shipping_delivery":  ("streamlit_app.page_modules.shipping_delivery",  "render_shipping_delivery_page"),
     "contact_us":         ("streamlit_app.page_modules.contact_us",         "render_contact_us_page"),
-    "auth_handler":       ("streamlit_app.page_modules.auth_handler",       "render_auth_handler_page"),
 }
 
 def route_to_page(current_page):

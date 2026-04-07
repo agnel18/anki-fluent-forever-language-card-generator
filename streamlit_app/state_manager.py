@@ -13,7 +13,7 @@ from constants import (
     SESSION_COMPLETED_WORDS, SESSION_SELECTION_MODE, SESSION_SENTENCES_PER_WORD,
     SESSION_AUDIO_SPEED, SESSION_DIFFICULTY, SESSION_SELECTED_VOICE_DISPLAY,
     SESSION_SELECTED_VOICE, SESSION_LOG_STREAM, SESSION_ENABLE_TOPICS,
-    SESSION_SELECTED_TOPICS, SESSION_CUSTOM_TOPICS, PAGE_LOGIN, PAGE_MAIN
+    SESSION_SELECTED_TOPICS, SESSION_CUSTOM_TOPICS, PAGE_MAIN
 )
 
 
@@ -24,38 +24,18 @@ def initialize_session_state():
     if SESSION_PAGE not in st.session_state:
         st.session_state[SESSION_PAGE] = PAGE_MAIN
 
-    # API keys - load from saved secrets if available
+    # API keys - load from environment / st.secrets if available
     if SESSION_GOOGLE_API_KEY not in st.session_state:
         st.session_state[SESSION_GOOGLE_API_KEY] = ""
 
-    # Try to load saved API keys from user_secrets.json
-    try:
-        secrets_path = Path(__file__).parent / "user_secrets.json"
-        if secrets_path.exists():
-            import json
-            with open(secrets_path, "r", encoding="utf-8") as f:
-                user_secrets = json.load(f)
-            if user_secrets.get("google_api_key") and not st.session_state[SESSION_GOOGLE_API_KEY]:
-                st.session_state[SESSION_GOOGLE_API_KEY] = user_secrets["google_api_key"]
-            if user_secrets.get("google_tts_api_key") and not st.session_state.get("google_tts_api_key"):
-                st.session_state.google_tts_api_key = user_secrets["google_tts_api_key"]
-            if user_secrets.get("pixabay_api_key") and not st.session_state.get("pixabay_api_key"):
-                st.session_state.pixabay_api_key = user_secrets["pixabay_api_key"]
-    except Exception:
-        # If loading fails, continue with empty keys
-        pass
-
-    # Cloud sync state
-    if "cloud_sync_enabled" not in st.session_state:
-        st.session_state.cloud_sync_enabled = False
-    if "last_sync_time" not in st.session_state:
-        st.session_state.last_sync_time = None
-    if "sync_errors" not in st.session_state:
-        st.session_state.sync_errors = []
-    if "dismissed_cloud_prompt" not in st.session_state:
-        st.session_state.dismissed_cloud_prompt = False
-    if "initial_sync_done" not in st.session_state:
-        st.session_state.initial_sync_done = False
+    # Load API keys from environment variables or st.secrets
+    import os
+    if not st.session_state[SESSION_GOOGLE_API_KEY]:
+        st.session_state[SESSION_GOOGLE_API_KEY] = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
+    if not st.session_state.get("google_tts_api_key"):
+        st.session_state.google_tts_api_key = os.environ.get("GOOGLE_TTS_API_KEY", "")
+    if not st.session_state.get("pixabay_api_key"):
+        st.session_state.pixabay_api_key = os.environ.get("PIXABAY_API_KEY", "")
 
     # Batch settings
     if SESSION_CURRENT_BATCH_SIZE not in st.session_state:
@@ -157,32 +137,3 @@ def initialize_languages_config():
     # Always set all_languages if not already set
     if "all_languages" not in st.session_state:
         st.session_state.all_languages = config["all_languages"]
-
-
-def initialize_firebase_settings():
-    """Initialize Firebase settings and session ID."""
-    from firebase_manager import load_settings_from_firebase, get_session_id, is_signed_in
-
-    if "session_id" not in st.session_state:
-        st.session_state.session_id = get_session_id()
-    if "current_page" not in st.session_state:
-        st.session_state.current_page = {}
-
-    # Set default guest status
-    if "is_guest" not in st.session_state:
-        st.session_state.is_guest = True
-
-    # Auto-load settings for signed-in users
-    if is_signed_in():
-        st.session_state.is_guest = False
-        firebase_settings = load_settings_from_firebase(st.session_state.session_id)
-        if firebase_settings:
-            # Load ALL API keys from Firebase (cloud takes precedence)
-            for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
-                if firebase_settings.get(key):
-                    st.session_state[key] = firebase_settings[key]
-            # Load other settings if available
-            if "theme" in firebase_settings:
-                st.session_state.theme = firebase_settings["theme"]
-            if "audio_speed" in firebase_settings:
-                st.session_state.audio_speed = firebase_settings["audio_speed"]

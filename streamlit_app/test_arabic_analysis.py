@@ -26,28 +26,13 @@ except ImportError as e:
     print(f"✗ Failed to import ArAnalyzer: {e}")
     sys.exit(1)
 
-# Try to load API key from multiple possible locations
+# Try to load API key from environment
 def load_api_key():
-    """Load API key from various possible locations."""
-    possible_paths = [
-        current_dir / "user_secrets.json",
-        current_dir.parent / "user_secrets.json",
-        Path("user_secrets.json"),
-        Path("../user_secrets.json"),
-    ]
-
-    for path in possible_paths:
-        if path.exists():
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    secrets = json.load(f)
-                    api_key = secrets.get('GEMINI_API_KEY') or secrets.get('GOOGLE_API_KEY') or secrets.get('google_api_key')
-                    if api_key:
-                        print(f"✓ Loaded API key from {path}")
-                        return api_key
-            except Exception as e:
-                print(f"✗ Error reading {path}: {e}")
-                continue
+    """Load API key from environment variables."""
+    api_key = os.environ.get('GOOGLE_API_KEY') or os.environ.get('GEMINI_API_KEY')
+    if api_key:
+        print("✓ Loaded API key from environment")
+        return api_key
 
     print("✗ Could not find API key in any expected location")
     return None

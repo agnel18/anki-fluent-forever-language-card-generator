@@ -1,57 +1,10 @@
 # pages/api_setup.py - API setup page for the language learning app
 
 import streamlit as st
-import json
-from pathlib import Path
-from utils import get_secret
 from constants import PAGE_LANGUAGE_SELECT
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
-
-
-def _save_keys_to_disk():
-    """Persist current session API keys to user_secrets.json."""
-    secrets_path = Path(__file__).parent.parent / "user_secrets.json"
-    user_secrets = {}
-    # Load existing secrets first
-    try:
-        if secrets_path.exists():
-            with open(secrets_path, "r", encoding="utf-8") as f:
-                user_secrets = json.load(f)
-    except Exception:
-        pass
-    # Update with current keys
-    for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
-        val = st.session_state.get(key, "")
-        if val:
-            user_secrets[key] = val
-    try:
-        with open(secrets_path, "w", encoding="utf-8") as f:
-            json.dump(user_secrets, f, indent=2)
-    except Exception:
-        pass
-
-
-def _push_keys_to_cloud_if_signed_in():
-    """Push API keys to cloud (encrypted) if user is signed in. Silent on failure."""
-    user = st.session_state.get("user")
-    if not user:
-        return
-    try:
-        from streamlit_app.services.firebase.settings_service import save_settings_to_firebase
-        uid = user.get("uid")
-        if not uid:
-            return
-        api_keys = {}
-        for key in ("google_api_key", "google_tts_api_key", "pixabay_api_key"):
-            val = st.session_state.get(key, "")
-            if val:
-                api_keys[key] = val
-        if api_keys:
-            save_settings_to_firebase(uid, api_keys, user_uid=uid)
-    except Exception:
-        pass
 
 
 def render_api_setup_page():
@@ -103,23 +56,6 @@ def render_api_setup_page():
     # ==========================================
     st.markdown("# Step 0: API Keys")
     st.divider()
-
-    # Firebase sync
-    try:
-        from firebase_manager import init_firebase
-        firebase_available = init_firebase()
-        if firebase_available:
-            if st.button("📥 Load API Keys from Cloud", help="Load your previously saved API keys from Firebase"):
-                try:
-                    from streamlit_app.services.settings.api_key_manager import APIKeyManager
-                    api_mgr = APIKeyManager()
-                    if api_mgr.load_api_keys_from_cloud():
-                        st.session_state.page = PAGE_LANGUAGE_SELECT
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to load from cloud: {e}")
-    except Exception:
-        pass
 
     # --- Status Overview (vertical — mobile friendly) ---
     google_key = st.session_state.get("google_api_key", "")
@@ -178,11 +114,7 @@ def render_api_setup_page():
         if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
             if google_key_input:
                 st.session_state.google_api_key = google_key_input
-                _save_keys_to_disk()
-                _push_keys_to_cloud_if_signed_in()
-                st.success("✅ Gemini API key saved!")
-            else:
-                st.error("❌ Please enter your Gemini API key")
+
 
     with col_test:
         if google_key_input or google_key:
@@ -262,8 +194,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         if st.button("💾 Save TTS Key", help="Save the TTS API key"):
             if tts_key_input:
                 st.session_state.google_tts_api_key = tts_key_input
-                _save_keys_to_disk()
-                _push_keys_to_cloud_if_signed_in()
                 st.success("✅ TTS API key saved!")
             else:
                 st.error("❌ Please enter your TTS API key")
@@ -316,8 +246,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         if st.button("💾 Save Pixabay Key", help="Save the Pixabay API key"):
             if pixabay_key_input:
                 st.session_state.pixabay_api_key = pixabay_key_input
-                _save_keys_to_disk()
-                _push_keys_to_cloud_if_signed_in()
                 st.success("✅ Pixabay API key saved!")
             else:
                 st.error("❌ Please enter a Pixabay API key")
@@ -350,7 +278,8 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     st.markdown("---")
 
     # Auto-load from environment (dev mode)
-    google_env = get_secret("GOOGLE_API_KEY", "")
+    import os
+    google_env = os.environ.get("GOOGLE_API_KEY", "")
     if (google_env and not google_key and not google_env.startswith("sk-fallback")):
         st.info("ℹ️ **Development Mode** — API key auto-loaded from environment")
         st.session_state.google_api_key = google_env
@@ -359,16 +288,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         return
 
     st.divider()
-
-    # Cloud sync option
-    save_to_cloud = False
-    try:
-        from firebase_manager import init_firebase
-        if init_firebase():
-            save_to_cloud = st.checkbox("💾 Also save API keys to cloud for cross-device sync", value=True,
-                                      help="Your API keys are encrypted with AES-256 using a per-user key before being stored in Firebase")
-    except Exception:
-        pass
 
     if st.button("🚀 Next: Select Language", use_container_width=True):
         final_google_key = google_key_input or google_key
@@ -391,14 +310,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         st.session_state.google_tts_api_key = final_tts_key
         st.session_state.pixabay_api_key = final_pixabay_key
 
-        # Save API keys locally
-        _save_keys_to_disk()
-
-        if save_to_cloud:
-            _push_keys_to_cloud_if_signed_in()
-            st.success("✅ API keys saved locally and to cloud (encrypted)!")
-        else:
-            st.success("✅ API keys saved!")
+        st.success("✅ API keys saved!")
 
         st.session_state.page = PAGE_LANGUAGE_SELECT
         st.rerun()

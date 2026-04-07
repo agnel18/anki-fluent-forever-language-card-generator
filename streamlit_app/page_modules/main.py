@@ -4,16 +4,12 @@
 import streamlit as st
 import os
 import json
-from firebase_manager import is_signed_in, get_current_user, sign_out
 
 def render_main_page():
     """Render the main overview page with introduction and start button."""
 
-    # Check if user is in session state or firebase_manager
-    current_user = st.session_state.get("user") or (get_current_user() if is_signed_in() else None)
-
-    # Header with authentication status
-    col_logo, col_title, col_auth = st.columns([0.3, 1, 0.4])
+    # Header
+    col_logo, col_title = st.columns([0.3, 1])
     with col_logo:
         logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo.svg")
         if os.path.exists(logo_path):
@@ -23,9 +19,6 @@ def render_main_page():
     with col_title:
         st.markdown("# Language Anki Deck Generator")
         st.markdown("*Create personalized Anki decks for language learning with AI-generated sentences and images.*")
-    with col_auth:
-        from streamlit_app.page_modules.auth_handler import firebase_auth_component
-        firebase_auth_component()
 
     st.markdown("---")
 
@@ -42,7 +35,7 @@ def render_main_page():
             **📊 Smart Word Selection**
             - Frequency-based word lists for natural learning
             - Custom word uploads for specialized vocabulary
-            - Progress tracking across learning sessions
+            - 77 languages supported
 
             **🤖 AI-Powered Generation**
             - Natural sentence creation with context
@@ -57,10 +50,10 @@ def render_main_page():
             - Adjustable speed for learning pace
             - Native pronunciation practice
 
-            **📈 Usage Tracking**
-            - API call monitoring for cost control
-            - Progress statistics and analytics
-            - Session-based usage tracking
+            **🎨 Grammar Coloring**
+            - Color-coded grammar overlays on sentences
+            - 11 language-specific grammar analyzers
+            - Word-by-word explanations
             """)
 
     st.markdown("---")

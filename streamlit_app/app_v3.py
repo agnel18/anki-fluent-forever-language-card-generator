@@ -49,12 +49,6 @@ except (ImportError, KeyError) as e:
     def get_completed_words(): return []
     def get_word_stats(): return {}
 
-try:
-    from firebase_manager import get_session_id
-except (ImportError, KeyError) as e:
-    print(f"Warning: Could not import firebase_manager: {e}")
-    def get_session_id(): return None
-
 # Import our new modular components
 try:
     from constants import *
@@ -70,19 +64,17 @@ except (ImportError, KeyError) as e:
     def usage_bar(current, max_val): return ""
 
 try:
-    from state_manager import initialize_session_state, initialize_languages_config, initialize_firebase_settings
+    from state_manager import initialize_session_state, initialize_languages_config
 except (ImportError, KeyError) as e:
     print(f"Warning: Could not import state_manager: {e}")
     def initialize_session_state(): pass
     def initialize_languages_config(): pass
-    def initialize_firebase_settings(): pass
 
 try:
-    from ui.sidebar import render_sidebar, handle_auto_sync
+    from ui.sidebar import render_sidebar
 except (ImportError, KeyError) as e:
     print(f"Warning: Could not import ui.sidebar: {e}")
     def render_sidebar(): return False
-    def handle_auto_sync(): pass
 
 try:
     from ui.theming import apply_theme_css
@@ -101,8 +93,6 @@ try:
     # Check if we're in a Streamlit context
     if hasattr(st, 'session_state'):
         initialize_session_state()
-        # Move languages config initialization inside main() function to avoid import-time issues
-        # Move firebase initialization inside main() function to avoid import-time issues
 except Exception as e:
     # If not in Streamlit context or initialization fails, skip
     print(f"Initialization skipped: {e}")
@@ -208,23 +198,14 @@ def main():
         from streamlit_app.page_modules.generating import render_generating_page
         from streamlit_app.page_modules.complete import render_complete_page
         from streamlit_app.page_modules.settings import render_settings_page
-        from streamlit_app.page_modules.statistics import render_statistics_page
         from streamlit_app.page_modules.privacy_policy import render_privacy_policy_page
         from streamlit_app.page_modules.terms_conditions import render_terms_conditions_page
         from streamlit_app.page_modules.refund_policy import render_refund_policy_page
         from streamlit_app.page_modules.shipping_delivery import render_shipping_delivery_page
         from streamlit_app.page_modules.contact_us import render_contact_us_page
 
-        # Handle auto sync
-        handle_auto_sync()
-
         # Determine which section to show based on session state
         current_page = st.session_state.get("page")
-
-        # Check for OAuth callback - if we have auth code in URL, go to auth handler
-        if st.query_params.get("code"):
-            current_page = "auth_handler"
-            st.session_state.page = current_page
 
         # If no page is set, determine default based on API key availability
         if current_page is None:
@@ -237,41 +218,16 @@ def main():
             import time
             st.session_state.session_start_time = time.time()
 
-        # Add sidebar navigation (except on login page)
-        if current_page != "login":
-            # Apply theme CSS before rendering sidebar
-            apply_theme_css()
-            
-            theme_changed = render_sidebar()
+        # Add sidebar navigation
+        apply_theme_css()
+        theme_changed = render_sidebar()
 
-            # Apply theme change if needed
-            if theme_changed:
-                st.rerun()
+        # Apply theme change if needed
+        if theme_changed:
+            st.rerun()
 
-
-        # Ensure critical session state variables are initialized (mobile compatibility)
-        if "sentence_length_range" not in st.session_state:
-            st.session_state.sentence_length_range = (8, 16)
-        if "sentences_per_word" not in st.session_state:
-            st.session_state.sentences_per_word = 10
-        if "difficulty" not in st.session_state:
-            st.session_state.difficulty = "intermediate"
-        if "audio_speed" not in st.session_state:
-            st.session_state.audio_speed = 0.8
-        if "selected_voice" not in st.session_state:
-            st.session_state.selected_voice = None
-        if "selected_voice_display" not in st.session_state:
-            st.session_state.selected_voice_display = None
-        if "enable_topics" not in st.session_state:
-            st.session_state.enable_topics = False
-        if "selected_topics" not in st.session_state:
-            st.session_state.selected_topics = []
-        if "custom_topics" not in st.session_state:
-            st.session_state.custom_topics = []
-
-        # Initialize languages and firebase settings
+        # Initialize languages config
         initialize_languages_config()
-        initialize_firebase_settings()
 
         # Route to the appropriate page
         route_to_page(current_page)
@@ -309,8 +265,6 @@ def main():
         st.markdown("""
         <link rel="dns-prefetch" href="//fonts.googleapis.com">
         <link rel="dns-prefetch" href="//fonts.gstatic.com">
-        <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-        <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
         """, unsafe_allow_html=True)
         
         # Cache static assets
@@ -362,16 +316,6 @@ console.error = function(...args) {
 // Clean up on page unload
 window.addEventListener('beforeunload', function() {
     // Clear any lingering timers or listeners
-    if (window.firebaseAuth) {
-        // Clean up Firebase auth listeners if they exist
-        try {
-            if (window.firebaseAuth.cleanup) {
-                window.firebaseAuth.cleanup();
-            }
-        } catch (e) {
-            // Ignore cleanup errors
-        }
-    }
 });
 </script>
 """, unsafe_allow_html=True)

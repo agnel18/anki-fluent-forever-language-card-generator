@@ -696,30 +696,6 @@ Combine all components into a professional Anki deck.
                 status_text.success("🎉 Deck generation completed successfully!")
                 detail_text.markdown("*Your Anki deck is ready. Moving to export...*")
 
-                # Track usage for achievements and analytics
-                try:
-                    from firebase_manager import is_signed_in
-                    if is_signed_in() and 'user' in st.session_state and st.session_state.user:
-                        user_id = st.session_state.user.get('uid')
-                        if user_id:
-                            # Log app usage
-                            from usage_tracker import log_app_usage
-                            log_app_usage(
-                                user_id=user_id,
-                                decks_generated=1,
-                                words_generated=len(selected_words),
-                                languages_used=[selected_lang],
-                                session_duration=int(time.time() - st.session_state.get('session_start_time', time.time()))
-                            )
-
-                        # Update achievements
-                        from achievements_manager import check_and_update_achievements
-                        check_and_update_achievements(user_id)
-
-                        log_message(f"[DEBUG] Usage tracked for user {user_id}: 1 deck, {len(selected_words)} words")
-                except Exception as e:
-                    log_message(f"[WARNING] Failed to track usage: {e}")
-
                 # Use APKG file created by generate_complete_deck
                 st.session_state['log_manager'].log_message("<b>📦 Using APKG file from generation...</b>")
                 log_message("[DEBUG] Using APKG file from generate_complete_deck")
@@ -737,47 +713,6 @@ Combine all components into a professional Anki deck.
                         if not file_manager.load_apkg_file(apkg_path):
                             st.error("Failed to load APKG file for download")
                             return
-                        
-                        # Save deck metadata to Firebase (for logged-in users)
-                        try:
-                            from firebase_manager import is_signed_in
-                            if is_signed_in():
-                                deck_metadata = {
-                                    'deck_name': selected_lang,
-                                    'language': selected_lang,
-                                    'word_count': len(selected_words),
-                                    'card_count': len(selected_words) * 3,  # 3 cards per word
-                                    'created_at': datetime.datetime.now().isoformat(),
-                                    'file_size': len(st.session_state.apkg_file),
-                                    'filename': st.session_state.apkg_filename,
-                                    'generation_settings': {
-                                        'sentences_per_word': num_sentences,
-                                        'sentence_length_range': [min_length, max_length],
-                                        'difficulty': difficulty,
-                                        'audio_speed': audio_speed,
-                                        'voice': voice,
-                                        'enable_topics': st.session_state.get('enable_topics', False),
-                                        'selected_topics': st.session_state.get('selected_topics', [])
-                                    },
-                                    'words_used': selected_words
-                                }
-                                
-                                # Save to Firebase
-                                import firebase_admin
-                                from firebase_admin import firestore
-                                db = firestore.client()
-                                
-                                # Create deck document with auto-generated ID
-                                deck_ref = db.collection('users').document(st.session_state.user['uid']).collection('decks').document()
-                                deck_ref.set(deck_metadata)
-                                
-                                st.session_state['log_manager'].log_message(f"<b>💾 Deck metadata saved to cloud</b>")
-                                log_message(f"[DEBUG] Deck metadata saved for user {st.session_state.user['uid']}: {deck_metadata['deck_name']}")
-                            else:
-                                log_message(f"[DEBUG] User not signed in, skipping deck metadata save")
-                        except Exception as e:
-                            st.session_state['log_manager'].log_message(f"<b>⚠️ Could not save deck metadata:</b> {e}")
-                            log_message(f"[WARNING] Failed to save deck metadata: {e}")
                         
                     else:
                         st.session_state['log_manager'].log_message(f"<b>⚠️ APKG file not found at path:</b> {apkg_path}")
