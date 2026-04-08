@@ -109,7 +109,12 @@ def _get_bcp47_code(language_name: str) -> str:
 
 def render_sentence_settings_page():
     """Render the sentence settings page."""
-
+    if "sentence_length_range" not in st.session_state:
+        st.session_state.sentence_length_range = (8, 12)
+    if "sentences_per_word" not in st.session_state:
+        st.session_state.sentences_per_word = 5
+    if "difficulty" not in st.session_state:
+        st.session_state.difficulty = "beginner"
     with st.container():
         st.markdown("# ✍️ Step 3: Adjust Output Settings")
         st.markdown("Customize how your Anki cards will be generated. These settings control sentence complexity and audio pronunciation.")
