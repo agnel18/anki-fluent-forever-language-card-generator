@@ -649,6 +649,7 @@ def get_google_voices_for_language(language_name: str) -> tuple[List[str], bool,
             "de": ["Anna (Female, Standard)", "Max (Male, Standard)"],  # German
             "el": ["A (Female, Standard)", "B (Male, Standard)"],  # Greek
             "hu": ["A (Female, Standard)", "B (Male, Standard)"],  # Hungarian
+            "he": ["A (Female, Standard)", "B (Male, Standard)"],  # Hebrew
             "is": ["A (Female, Standard)", "B (Male, Standard)"],  # Icelandic
             "ga": ["A (Female, Standard)", "B (Male, Standard)"],  # Irish
             "it": ["Giulia (Female, Standard)", "Marco (Male, Standard)"],  # Italian

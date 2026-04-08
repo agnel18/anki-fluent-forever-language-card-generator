@@ -24,7 +24,6 @@ def _get_bcp47_code(language_name: str) -> str:
         "Chinese (Simplified)": "cmn-CN",
         "Chinese (Traditional)": "cmn-TW",
         "Mandarin Chinese": "cmn-CN",
-        "Cantonese": "yue-HK",
 
         # Major European languages
         "English": "en-US",
@@ -62,6 +61,7 @@ def _get_bcp47_code(language_name: str) -> str:
         "Thai": "th-TH",
         "Vietnamese": "vi-VN",
         "Indonesian": "id-ID",
+        "Malayalam": "ml-IN",
         "Malay": "ms-MY",
         "Tamil": "ta-IN",
         "Telugu": "te-IN",
@@ -70,21 +70,17 @@ def _get_bcp47_code(language_name: str) -> str:
         "Gujarati": "gu-IN",
         "Marathi": "mr-IN",
         "Urdu": "ur-IN",
-        "Persian": "fa-IR",  # Not supported by Google TTS - keep for compatibility
-        "Pashto": "ps-AF",  # Not supported by Google TTS - keep for compatibility
-
+        
         # Other languages - using closest supported alternatives for unsupported languages
         "Afrikaans": "af-ZA",
-        "Albanian": "sq-AL",  # Not supported by Google TTS - keep for compatibility
         "Amharic": "am-ET",
-        "Armenian": "hy-AM",  # Not supported - keep for compatibility
         "Azerbaijani": "az-AZ",  # Not supported - keep for compatibility
         "Basque": "eu-ES",
-        "Belarusian": "be-BY",  # Not supported - keep for compatibility
+        "Catalan": "ca-ES",
         "Estonian": "et-EE",
         "Georgian": "ka-GE",  # Not supported - keep for compatibility
+        "Galician": "gl-ES",
         "Icelandic": "is-IS",
-        "Irish": "ga-IE",  # Not supported - keep for compatibility
         "Kazakh": "kk-KZ",  # Not supported - keep for compatibility
         "Khmer": "km-KH",  # Not supported - keep for compatibility
         "Lao": "lo-LA",  # Not supported - keep for compatibility
@@ -96,12 +92,19 @@ def _get_bcp47_code(language_name: str) -> str:
         "Nepali": "ne-NP",  # Not supported - keep for compatibility
         "Sinhala": "si-LK",  # Not supported - keep for compatibility
         "Swahili": "sw-KE",
-        "Welsh": "cy-GB",  # Not supported - keep for compatibility
+        "Somali": "so-SO",
         "Zulu": "zu-ZA",  # Not supported - keep for compatibility
         "Burmese": "my-MM",  # Not supported - keep for compatibility
         "Javanese": "jv-ID",  # Not supported - keep for compatibility
         "Sundanese": "su-ID",  # Not supported - keep for compatibility
         "Uzbek": "uz-UZ",  # Not supported - keep for compatibility
+
+# NEED TO BE REMOVED LATER - these languages are not supported by Google TTS but we want to keep them in the dropdown for compatibility with existing users who may have selected them before
+        "Albanian": "sq-AL",
+        "Welsh": "cy-GB",
+        "Irish": "ga-IE",
+        "Persian": "fa-IR",
+        "Pashto": "ps-AF",
     }
 
     return bcp47_map.get(language_name, "en-US")
