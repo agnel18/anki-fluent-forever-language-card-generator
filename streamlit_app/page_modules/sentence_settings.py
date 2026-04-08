@@ -107,14 +107,48 @@ def _get_bcp47_code(language_name: str) -> str:
     return bcp47_map.get(language_name, "en-US")
 
 
-def render_sentence_settings_page():
-    """Render the sentence settings page."""
+def initialize_sentence_settings_state():
+    """
+    Initialize all required session state variables for the sentence settings page.
+    """
     if "sentence_length_range" not in st.session_state:
         st.session_state.sentence_length_range = (8, 12)
     if "sentences_per_word" not in st.session_state:
         st.session_state.sentences_per_word = 5
     if "difficulty" not in st.session_state:
         st.session_state.difficulty = "beginner"
+    if "enable_topics" not in st.session_state:
+        st.session_state.enable_topics = False
+    if "selected_topics" not in st.session_state:
+        st.session_state.selected_topics = []
+    if "custom_topics" not in st.session_state:
+        st.session_state.custom_topics = []
+    if "audio_speed" not in st.session_state:
+        st.session_state.audio_speed = 0.8
+    # Voice defaults: use English as fallback if language not set yet
+    lang = st.session_state.get("selected_language", "English")
+    # Map of language to default standard voice and display name
+    default_voice_map = {
+        "English": ("en-US-Standard-D", "D (Female, Standard)"),
+        "Spanish": ("es-ES-Standard-A", "A (Female, Standard)"),
+        "French": ("fr-FR-Standard-A", "A (Female, Standard)"),
+        "German": ("de-DE-Standard-A", "A (Female, Standard)"),
+        "Italian": ("it-IT-Standard-A", "A (Female, Standard)"),
+        "Portuguese": ("pt-BR-Standard-A", "A (Female, Standard)"),
+        "Russian": ("ru-RU-Standard-A", "A (Female, Standard)"),
+        "Japanese": ("ja-JP-Standard-A", "A (Female, Standard)"),
+        "Korean": ("ko-KR-Standard-A", "A (Female, Standard)"),
+        "Hindi": ("hi-IN-Standard-A", "A (Female, Standard)")
+    }
+    default_voice, default_voice_display = default_voice_map.get(lang, ("en-US-Standard-D", "D (Female, Standard)"))
+    if "selected_voice" not in st.session_state:
+        st.session_state.selected_voice = default_voice
+    if "selected_voice_display" not in st.session_state:
+        st.session_state.selected_voice_display = default_voice_display
+
+def render_sentence_settings_page():
+    """Render the sentence settings page."""
+    initialize_sentence_settings_state()
     with st.container():
         st.markdown("# ✍️ Step 3: Adjust Output Settings")
         st.markdown("Customize how your Anki cards will be generated. These settings control sentence complexity and audio pronunciation.")
