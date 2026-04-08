@@ -1123,6 +1123,109 @@ TURKISH_MOCK_DATA: Dict[str, Any] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# MALAYALAM
+# ---------------------------------------------------------------------------
+MALAYALAM_MOCK_DATA: Dict[str, Any] = {
+    "word": "കഴിക്കുക",
+    "language_name": "Malayalam",
+    "language_code": "ml",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 8,
+    "max_length": 13,
+    "difficulty": "beginner",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to eat (to consume food)
+
+        RESTRICTIONS: No specific grammatical restrictions.
+
+        SENTENCES:
+        1. ഞാൻ എല്ലാ ദിവസവും ചോറ് കഴിക്കുന്നു.
+        2. കുട്ടികൾ സ്കൂളിൽ ഉച്ചഭക്ഷണം കഴിക്കുന്നു.
+        3. നിങ്ങൾ എന്ത് കഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു?
+        4. അമ്മ അടുക്കളയിൽ ആപ്പിൾ കഴിക്കുന്നു.
+
+        TRANSLATIONS:
+        1. I eat rice every day.
+        2. The children eat lunch at school.
+        3. What do you like to eat?
+        4. Mother is eating an apple in the kitchen.
+
+        IPA:
+        1. ɲaːn ellaː d̪ivasavum t͡ʃoːɾɨ kaɻikkunnɨ
+        2. kuʈʈikaɭ skuːɭil ut͡ʃːabʰakʂaɳam kaɻikkunnɨ
+        3. niŋːaɭ entɨ kaɻikkaːn iʂʈappeɖunnɨ
+        4. amːa aɖukkaɭajil aːpːiɭ kaɻikkunnɨ
+
+        KEYWORDS:
+        1. rice plate, daily meal, eating rice
+        2. children in cafeteria, school lunch, eating together
+        3. food choices, question, restaurant menu
+        4. woman in kitchen, red apple, eating fruit"""),
+
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "ഞാൻ എല്ലാ ദിവസവും ചോറ് കഴിക്കുന്നു.",
+            "words": [
+                {"word": "ഞാൻ", "grammatical_role": "pronoun", "case": "nominative", "tense": None, "individual_meaning": "I (first person singular pronoun, nominative)"},
+                {"word": "എല്ലാ", "grammatical_role": "determiner", "case": None, "tense": None, "individual_meaning": "every, all (determiner modifying ദിവസം)"},
+                {"word": "ദിവസവും", "grammatical_role": "noun", "case": "nominative", "tense": None, "individual_meaning": "day + -ഉം (emphatic/inclusive particle meaning 'also/every')"},
+                {"word": "ചോറ്", "grammatical_role": "noun", "case": "accusative", "tense": None, "individual_meaning": "rice (direct object, unmarked accusative for inanimate)"},
+                {"word": "കഴിക്കുന്നു", "grammatical_role": "verb", "case": None, "tense": "present", "individual_meaning": "eat (present tense, habitual — stem കഴിക്ക + present suffix -ഉന്നു)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV sentence: Subject (ഞാൻ) + Time (എല്ലാ ദിവസവും) + Object (ചോറ്) + Verb (കഴിക്കുന്നു).",
+                "key_features": "SOV word order; emphatic particle -ഉം on time expression; present tense suffix -ഉന്നു; unmarked accusative for inanimate object.",
+                "complexity_notes": "Beginner-friendly sentence with basic SOV order and present tense."
+            }
+        },
+        {
+            "sentence": "കുട്ടികൾ സ്കൂളിൽ ഉച്ചഭക്ഷണം കഴിക്കുന്നു.",
+            "words": [
+                {"word": "കുട്ടികൾ", "grammatical_role": "noun", "case": "nominative", "tense": None, "individual_meaning": "children (plural — കുട്ടി + plural suffix -കൾ, nominative subject)"},
+                {"word": "സ്കൂളിൽ", "grammatical_role": "noun", "case": "locative", "tense": None, "individual_meaning": "in school (സ്കൂൾ + locative case suffix -ഇൽ)"},
+                {"word": "ഉച്ചഭക്ഷണം", "grammatical_role": "noun", "case": "accusative", "tense": None, "individual_meaning": "lunch (compound noun: ഉച്ച 'noon' + ഭക്ഷണം 'food', direct object)"},
+                {"word": "കഴിക്കുന്നു", "grammatical_role": "verb", "case": None, "tense": "present", "individual_meaning": "eat (present tense, habitual)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV with location: Subject (കുട്ടികൾ) + Location-LOC (സ്കൂളിൽ) + Object (ഉച്ചഭക്ഷണം) + Verb (കഴിക്കുന്നു).",
+                "key_features": "Locative case suffix -ഇൽ on സ്കൂൾ; plural suffix -കൾ; compound noun ഉച്ചഭക്ഷണം.",
+                "complexity_notes": "Beginner pattern with locative case and plural noun."
+            }
+        },
+        {
+            "sentence": "നിങ്ങൾ എന്ത് കഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു?",
+            "words": [
+                {"word": "നിങ്ങൾ", "grammatical_role": "pronoun", "case": "nominative", "tense": None, "individual_meaning": "you (polite/plural second person pronoun)"},
+                {"word": "എന്ത്", "grammatical_role": "pronoun", "case": "accusative", "tense": None, "individual_meaning": "what (interrogative pronoun)"},
+                {"word": "കഴിക്കാൻ", "grammatical_role": "infinitive", "case": None, "tense": None, "individual_meaning": "to eat (infinitive — stem കഴിക്ക + infinitive suffix -ാൻ)"},
+                {"word": "ഇഷ്ടപ്പെടുന്നു", "grammatical_role": "verb", "case": None, "tense": "present", "individual_meaning": "like (present tense — ഇഷ്ടപ്പെടുക 'to like' + present suffix -ഉന്നു)"}
+            ],
+            "explanations": {
+                "overall_structure": "Question: Subject (നിങ്ങൾ) + WH-word (എന്ത്) + Infinitive (കഴിക്കാൻ) + Main Verb (ഇഷ്ടപ്പെടുന്നു).",
+                "key_features": "Polite pronoun നിങ്ങൾ; infinitive complement with -ാൻ suffix; WH-question without special marking.",
+                "complexity_notes": "Beginner question with infinitive complement."
+            }
+        },
+        {
+            "sentence": "അമ്മ അടുക്കളയിൽ ആപ്പിൾ കഴിക്കുന്നു.",
+            "words": [
+                {"word": "അമ്മ", "grammatical_role": "noun", "case": "nominative", "tense": None, "individual_meaning": "mother (nominative subject)"},
+                {"word": "അടുക്കളയിൽ", "grammatical_role": "noun", "case": "locative", "tense": None, "individual_meaning": "in the kitchen (അടുക്കള + locative suffix -യിൽ)"},
+                {"word": "ആപ്പിൾ", "grammatical_role": "noun", "case": "accusative", "tense": None, "individual_meaning": "apple (direct object, loanword from English)"},
+                {"word": "കഴിക്കുന്നു", "grammatical_role": "verb", "case": None, "tense": "present", "individual_meaning": "eat (present tense, ongoing action)"}
+            ],
+            "explanations": {
+                "overall_structure": "SOV with location: Subject (അമ്മ) + Location-LOC (അടുക്കളയിൽ) + Object (ആപ്പിൾ) + Verb (കഴിക്കുന്നു).",
+                "key_features": "Locative -യിൽ after vowel-ending stem; loanword ആപ്പിൾ; basic SOV.",
+                "complexity_notes": "Beginner — locative case and SOV word order."
+            }
+        }
+    ], ensure_ascii=False),
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
@@ -1138,6 +1241,7 @@ LANGUAGE_MOCK_DATA = {
     "japanese": JAPANESE_MOCK_DATA,
     "korean": KOREAN_MOCK_DATA,
     "hungarian": HUNGARIAN_MOCK_DATA,
+    "malayalam": MALAYALAM_MOCK_DATA,
 }
 
 

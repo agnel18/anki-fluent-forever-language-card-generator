@@ -1,0 +1,45 @@
+# ml_patterns.yaml
+# Malayalam Grammar Patterns
+
+sentence_patterns:
+  basic_sov:
+    pattern: "Subject + Object + Verb"
+    description: "Basic Malayalam SOV word order"
+    example: "ഞാൻ വെള്ളം കുടിക്കുന്നു (I water drink)"
+
+  sov_with_location:
+    pattern: "Subject + Location-LOC + Object + Verb"
+    description: "SOV with locative case marker"
+    example: "കുട്ടി സ്കൂളിൽ പുസ്തകം വായിക്കുന്നു"
+
+  question:
+    pattern: "Question word + Subject + (Object) + Verb + -ഓ"
+    description: "Question formation with interrogative"
+    example: "നിങ്ങൾ എന്ത് കഴിക്കുന്നു?"
+
+  negative:
+    pattern: "Subject + (Object) + Verb-stem + ഇല്ല"
+    description: "Negation pattern"
+    example: "ഞാൻ വെള്ളം കുടിക്കുന്നില്ല"
+
+  existential:
+    pattern: "Location-LOC + Subject + ഉണ്ട്/ഇല്ല"
+    description: "Existential sentence"
+    example: "വീട്ടിൽ ആളുകൾ ഉണ്ട്"
+
+word_order:
+  primary: "SOV"
+  description: "Subject-Object-Verb is the default order"
+  modifiers: "Adjectives and relative clauses precede nouns"
+  postpositions: "Follow the noun they modify"
+  negation: "Negative particle follows verb or replaces verb ending"
+
+agglutination_patterns:
+  - type: "noun + case"
+    example: "വീട് + ഇൽ → വീട്ടിൽ (in the house)"
+  - type: "verb + tense"
+    example: "വായിക്ക + ഉന്നു → വായിക്കുന്നു (reads)"
+  - type: "verb + mood"
+    example: "വായിക്ക + ണം → വായിക്കണം (must read)"
+  - type: "noun + postposition"
+    example: "മേശയുടെ മുകളിൽ (on the table)"

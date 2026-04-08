@@ -1,0 +1,136 @@
+# ml_verb_conjugations.yaml
+# Malayalam Verb Conjugation Patterns
+
+tenses:
+  present:
+    suffix: "-ഉന്നു"
+    description: "Present tense (habitual/continuous)"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിക്കുന്നു"
+        meaning: "reads / is reading"
+      - stem: "കുടിക്ക"
+        form: "കുടിക്കുന്നു"
+        meaning: "drinks / is drinking"
+
+  past:
+    suffix: "-ഇ/-ത്ത"
+    description: "Past tense (completed action)"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിച്ചു"
+        meaning: "read (past)"
+      - stem: "കുടിക്ക"
+        form: "കുടിച്ചു"
+        meaning: "drank"
+
+  future:
+    suffix: "-ഉം"
+    description: "Future tense"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിക്കും"
+        meaning: "will read"
+      - stem: "കുടിക്ക"
+        form: "കുടിക്കും"
+        meaning: "will drink"
+
+moods:
+  indicative:
+    description: "Statement of fact"
+  imperative:
+    suffix: "-ൂ/-ക"
+    description: "Command or request"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിക്കൂ"
+        meaning: "read! (polite)"
+  compulsive:
+    suffix: "-ണം"
+    description: "Must, should, have to"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിക്കണം"
+        meaning: "must read"
+  permissive:
+    suffix: "-ാം"
+    description: "May, can"
+    examples:
+      - stem: "വായിക്ക"
+        form: "വായിക്കാം"
+        meaning: "may read"
+
+aspects:
+  continuous:
+    pattern: "stem + കൊണ്ടിരിക്ക-"
+    description: "Ongoing action"
+    examples:
+      - form: "വായിച്ചുകൊണ്ടിരിക്കുന്നു"
+        meaning: "is (continuously) reading"
+  perfect:
+    pattern: "stem + ഇട്ടുണ്ട്"
+    description: "Completed action with present relevance"
+    examples:
+      - form: "വായിച്ചിട്ടുണ്ട്"
+        meaning: "has read"
+
+negation:
+  present_past:
+    pattern: "stem + ഇല്ല"
+    examples:
+      - form: "വായിക്കുന്നില്ല"
+        meaning: "does not read"
+      - form: "വായിച്ചില്ല"
+        meaning: "did not read"
+  future:
+    pattern: "stem + ഇല്ല"
+    examples:
+      - form: "വായിക്കില്ല"
+        meaning: "will not read"
+  imperative:
+    particle: "വേണ്ട"
+    examples:
+      - form: "വായിക്കേണ്ട"
+        meaning: "need not read"
+
+causative:
+  suffix: "-ഇപ്പിക്ക-"
+  description: "Causing someone to do something"
+  examples:
+    - stem: "വായിക്ക"
+      form: "വായിപ്പിക്ക"
+      meaning: "make (someone) read"
+
+passive:
+  suffix: "-പ്പെടുക"
+  description: "Action received"
+  examples:
+    - stem: "ചെയ്യ"
+      form: "ചെയ്യപ്പെടുക"
+      meaning: "to be done"
+
+verbal_participles:
+  conjunctive:
+    suffix: "-ഇട്ട്/-ച്ച്"
+    description: "Past participle for chaining actions"
+    examples:
+      - form: "വായിച്ച്"
+        meaning: "having read"
+  conditional:
+    suffix: "-ആൽ"
+    description: "If (condition)"
+    examples:
+      - form: "വായിച്ചാൽ"
+        meaning: "if (one) reads"
+  concessive:
+    suffix: "-ആലും"
+    description: "Even if"
+    examples:
+      - form: "വായിച്ചാലും"
+        meaning: "even if (one) reads"
+  simultaneous:
+    suffix: "-ഉമ്പോൾ"
+    description: "While, when"
+    examples:
+      - form: "വായിക്കുമ്പോൾ"
+        meaning: "while reading"

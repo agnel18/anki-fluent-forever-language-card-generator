@@ -1,0 +1,109 @@
+# ml_grammatical_roles.yaml
+# Malayalam Grammatical Roles Configuration
+
+role_hierarchy:
+  # Verb hierarchy
+  auxiliary_verb: "verb"
+  causative_verb: "verb"
+  passive_verb: "verb"
+  verbal_participle: "verb"
+  conditional_form: "verb"
+  concessive_form: "verb"
+  infinitive: "verb"
+
+  # Particle hierarchy
+  negative_particle: "negative_particle"
+  question_particle: "question_particle"
+  emphatic_particle: "emphatic_particle"
+
+  # Pronoun hierarchy
+  honorific_pronoun: "pronoun"
+
+  # Participle hierarchy
+  relative_participle: "adjective"
+
+complexity_filters:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - postposition
+    - conjunction
+    - copula
+    - demonstrative
+
+  intermediate:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - postposition
+    - conjunction
+    - case_marker
+    - verbal_participle
+    - auxiliary_verb
+    - copula
+    - negative_particle
+    - question_particle
+    - emphatic_particle
+    - honorific_pronoun
+    - demonstrative
+    - determiner
+    - infinitive
+
+  advanced:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - postposition
+    - conjunction
+    - case_marker
+    - verbal_participle
+    - auxiliary_verb
+    - causative_verb
+    - passive_verb
+    - copula
+    - negative_particle
+    - question_particle
+    - emphatic_particle
+    - honorific_pronoun
+    - relative_participle
+    - conditional_form
+    - concessive_form
+    - infinitive
+    - classifier
+    - demonstrative
+    - determiner
+    - interjection
+
+role_descriptions:
+  noun: "Content word representing a person, place, thing, or concept (നാമം)"
+  verb: "Word expressing action, state, or occurrence (ക്രിയ)"
+  adjective: "Word modifying a noun, typically precedes the noun (വിശേഷണം)"
+  adverb: "Word modifying a verb, adjective, or clause (ക്രിയാവിശേഷണം)"
+  pronoun: "Word replacing a noun (സർവ്വനാമം)"
+  postposition: "Word following a noun to express spatial/temporal/logical relations (ഗതി)"
+  conjunction: "Word connecting words, phrases, or clauses (സമുച്ചയം)"
+  case_marker: "Suffix indicating grammatical case relationship (വിഭക്തി പ്രത്യയം)"
+  verbal_participle: "Verb form connecting clauses (ക്രിയാ വിഭക്തി)"
+  auxiliary_verb: "Helper verb adding tense, aspect, or mood (സഹായ ക്രിയ)"
+  causative_verb: "Verb form indicating causing an action (-ഇപ്പിക്ക-)"
+  passive_verb: "Verb form indicating receiving an action (-പ്പെടുക)"
+  copula: "Linking word 'ആണ്' (is/am/are) (സംയോജക ക്രിയ)"
+  negative_particle: "Negation word (ഇല്ല, അല്ല, വേണ്ട)"
+  question_particle: "Question marker (-ഓ, -എ)"
+  emphatic_particle: "Emphasis marker (-ഉം, -തന്നെ, -ആണ്)"
+  honorific_pronoun: "Respectful form of address (താങ്കൾ, നിങ്ങൾ)"
+  relative_participle: "Adjectival verb form modifying a noun"
+  conditional_form: "Verb form expressing condition (-ആൽ)"
+  concessive_form: "Verb form expressing concession (-ആലും)"
+  infinitive: "Base verb form (-ുക, -ാൻ)"
+  classifier: "Numeral classifier (പേർ, എണ്ണം)"
+  demonstrative: "Demonstrative pointer (ഈ, ആ, ഇത്, അത്)"
+  determiner: "Word specifying a noun (ഓരോ, എല്ലാ, ചില)"
+  interjection: "Exclamation (അയ്യോ, ശരി)"

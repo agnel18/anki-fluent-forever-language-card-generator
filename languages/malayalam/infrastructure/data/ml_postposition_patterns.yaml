@@ -1,0 +1,58 @@
+# ml_postposition_patterns.yaml
+# Malayalam Postposition Patterns
+
+spatial:
+  - word: "മുകളിൽ"
+    meaning: "on top of, above"
+    case_required: "genitive"
+  - word: "താഴെ"
+    meaning: "below, under"
+    case_required: "genitive"
+  - word: "അടുത്ത്"
+    meaning: "near, close to"
+    case_required: "genitive"
+  - word: "പിന്നിൽ"
+    meaning: "behind"
+    case_required: "genitive"
+  - word: "മുന്നിൽ"
+    meaning: "in front of"
+    case_required: "genitive"
+  - word: "ഇടയിൽ"
+    meaning: "between, among"
+    case_required: "genitive"
+  - word: "അകത്ത്"
+    meaning: "inside"
+    case_required: "genitive"
+  - word: "പുറത്ത്"
+    meaning: "outside"
+    case_required: "genitive"
+
+temporal:
+  - word: "മുമ്പ്"
+    meaning: "before"
+    case_required: "genitive"
+  - word: "ശേഷം"
+    meaning: "after"
+    case_required: "genitive"
+  - word: "മുതൽ"
+    meaning: "since, from"
+    case_required: "nominative"
+  - word: "വരെ"
+    meaning: "until, up to"
+    case_required: "nominative"
+
+purpose:
+  - word: "വേണ്ടി"
+    meaning: "for, for the sake of"
+    case_required: "dative"
+  - word: "കുറിച്ച്"
+    meaning: "about, regarding"
+    case_required: "nominative"
+
+accompaniment:
+  - word: "കൂടെ"
+    meaning: "with, together with"
+    case_required: "genitive"
+  - word: "ഒപ്പം"
+    meaning: "together, along with"
+    case_required: "genitive"

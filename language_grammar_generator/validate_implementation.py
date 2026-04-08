@@ -479,7 +479,11 @@ class ImplementationValidator:
             "ar": "arabic",
             "de": "german",
             "tr": "turkish",
-            "fr": "french"
+            "fr": "french",
+            "hu": "hungarian",
+            "ja": "japanese",
+            "ko": "korean",
+            "ml": "malayalam"
         }
         return mapping.get(normalized_code, normalized_code)
 
@@ -494,7 +498,11 @@ class ImplementationValidator:
             "es": "es",
             "ar": "ar",
             "de": "de",
-            "tr": "tr"
+            "tr": "tr",
+            "hu": "hu",
+            "ja": "ja",
+            "ko": "ko",
+            "ml": "ml"
         }
         return mapping.get(normalized_code, normalized_code)
 
@@ -509,7 +517,11 @@ class ImplementationValidator:
             "es": "Es",
             "ar": "Ar",
             "de": "De",
-            "tr": "Tr"
+            "tr": "Tr",
+            "hu": "Hu",
+            "ja": "Ja",
+            "ko": "Ko",
+            "ml": "Ml"
         }
         return mapping.get(normalized_code, normalized_code.title())
 

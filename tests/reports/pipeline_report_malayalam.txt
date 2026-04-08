@@ -1,0 +1,114 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — MALAYALAM
+================================================================================
+  Word          : കഴിക്കുക
+  Language       : Malayalam
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-04-08 09:09:18
+  Elapsed        : 3.90s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ml': MlAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to eat (to consume food)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=4, summary=YES
+         Sentence 3: colored=YES, explanations=4, summary=YES
+         Sentence 4: colored=YES, explanations=4, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to eat (to consume food)
+
+  --- Sentence 1 ---
+  Original   : ഞാൻ എല്ലാ ദിവസവും ചോറ് കഴിക്കുന്നു.
+  Translation: I eat rice every day.
+  IPA/Reading: ɲaːn ellaː d̪ivasavum t͡ʃoːɾɨ kaɻikkunnɨ
+  Keywords   : rice plate, daily meal, eating rice
+
+  Colored HTML : <span style="color: #4FC3F7; font-weight: bold;">ഞാൻ</span><span style="color: #AAAAAA; font-weight: bold;"> </span><span style="color: #A5D6A7; font-weight: bold;">എല്ലാ</span><span style="color: #AA…
+  Grammar Summ : SOV sentence: Subject (ഞാൻ) + Time (എല്ലാ ദിവസവും) + Object (ചോറ്) + Verb (കഴിക്കുന്നു). SOV word order; emphatic particle -ഉം on time expression; present tense suffix -ഉന്നു; unmarked accusative for inanimate object.
+  Word Explanations (5 words):
+    ഞാൻ           pronoun         #4FC3F7   I (first person singular pronoun, nominative)
+    എല്ലാ         determiner      #A5D6A7   every, all (determiner modifying ദിവസം)
+    ദിവസവും       noun            #FFAA00   day + -ഉം (emphatic/inclusive particle meaning 'also/every')
+    ചോറ്          noun            #FFAA00   rice (direct object, unmarked accusative for inanimate) [accusative case]
+    കഴിക്കുന്നു   verb            #44FF44   eat (present tense, habitual — stem കഴിക്ക + present suffix -ഉന്നു)
+
+  --- Sentence 2 ---
+  Original   : കുട്ടികൾ സ്കൂളിൽ ഉച്ചഭക്ഷണം കഴിക്കുന്നു.
+  Translation: The children eat lunch at school.
+  IPA/Reading: kuʈʈikaɭ skuːɭil ut͡ʃːabʰakʂaɳam kaɻikkunnɨ
+  Keywords   : children in cafeteria, school lunch, eating together
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">കുട്ടികൾ</span><span style="color: #AAAAAA; font-weight: bold;"> </span><span style="color: #FFAA00; font-weight: bold;">സ്കൂളിൽ</span><span style="col…
+  Grammar Summ : SOV with location: Subject (കുട്ടികൾ) + Location-LOC (സ്കൂളിൽ) + Object (ഉച്ചഭക്ഷണം) + Verb (കഴിക്കുന്നു). Locative case suffix -ഇൽ on സ്കൂൾ; plural suffix -കൾ; compound noun ഉച്ചഭക്ഷണം.
+  Word Explanations (4 words):
+    കുട്ടികൾ      noun            #FFAA00   children (plural — കുട്ടി + plural suffix -കൾ, nominative subject)
+    സ്കൂളിൽ       noun            #FFAA00   in school (സ്കൂൾ + locative case suffix -ഇൽ) [locative case]
+    ഉച്ചഭക്ഷണം    noun            #FFAA00   lunch (compound noun: ഉച്ച 'noon' + ഭക്ഷണം 'food', direct object) [accusative case]
+    കഴിക്കുന്നു   verb            #44FF44   eat (present tense, habitual)
+
+  --- Sentence 3 ---
+  Original   : നിങ്ങൾ എന്ത് കഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു?
+  Translation: What do you like to eat?
+  IPA/Reading: niŋːaɭ entɨ kaɻikkaːn iʂʈappeɖunnɨ
+  Keywords   : food choices, question, restaurant menu
+
+  Colored HTML : <span style="color: #4FC3F7; font-weight: bold;">നിങ്ങൾ</span><span style="color: #AAAAAA; font-weight: bold;"> </span><span style="color: #4FC3F7; font-weight: bold;">എന്ത്</span><span style="color: …
+  Grammar Summ : Question: Subject (നിങ്ങൾ) + WH-word (എന്ത്) + Infinitive (കഴിക്കാൻ) + Main Verb (ഇഷ്ടപ്പെടുന്നു). Polite pronoun നിങ്ങൾ; infinitive complement with -ാൻ suffix; WH-question without special marking.
+  Word Explanations (4 words):
+    നിങ്ങൾ        pronoun         #4FC3F7   you (polite/plural second person pronoun)
+    എന്ത്         pronoun         #4FC3F7   what (interrogative pronoun) [accusative case]
+    കഴിക്കാൻ      verb            #44FF44   to eat (infinitive — stem കഴിക്ക + infinitive suffix -ാൻ)
+    ഇഷ്ടപ്പെടുന്നു  verb            #44FF44   like (present tense — ഇഷ്ടപ്പെടുക 'to like' + present suffix -ഉന്നു)
+
+  --- Sentence 4 ---
+  Original   : അമ്മ അടുക്കളയിൽ ആപ്പിൾ കഴിക്കുന്നു.
+  Translation: Mother is eating an apple in the kitchen.
+  IPA/Reading: amːa aɖukkaɭajil aːpːiɭ kaɻikkunnɨ
+  Keywords   : woman in kitchen, red apple, eating fruit
+
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">അമ്മ</span><span style="color: #AAAAAA; font-weight: bold;"> </span><span style="color: #FFAA00; font-weight: bold;">അടുക്കളയിൽ</span><span style="colo…
+  Grammar Summ : SOV with location: Subject (അമ്മ) + Location-LOC (അടുക്കളയിൽ) + Object (ആപ്പിൾ) + Verb (കഴിക്കുന്നു). Locative -യിൽ after vowel-ending stem; loanword ആപ്പിൾ; basic SOV.
+  Word Explanations (4 words):
+    അമ്മ          noun            #FFAA00   mother (nominative subject)
+    അടുക്കളയിൽ    noun            #FFAA00   in the kitchen (അടുക്കള + locative suffix -യിൽ) [locative case]
+    ആപ്പിൾ        noun            #FFAA00   apple (direct object, loanword from English) [accusative case]
+    കഴിക്കുന്നു   verb            #44FF44   eat (present tense, ongoing action)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

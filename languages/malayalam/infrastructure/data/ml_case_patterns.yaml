@@ -1,0 +1,71 @@
+# ml_case_patterns.yaml
+# Malayalam Case System Patterns
+
+cases:
+  nominative:
+    description: "Subject marker (no suffix)"
+    suffixes: []
+    examples:
+      - stem: "കുട്ടി"
+        form: "കുട്ടി"
+        meaning: "child (subject)"
+
+  accusative:
+    description: "Direct object marker"
+    suffixes: ["-എ", "-യെ", "-നെ", "-ത്തെ"]
+    examples:
+      - stem: "പുസ്തകം"
+        form: "പുസ്തകം"
+        meaning: "book (object, unmarked)"
+      - stem: "കുട്ടി"
+        form: "കുട്ടിയെ"
+        meaning: "child (accusative, animate)"
+
+  dative:
+    description: "Indirect object, purpose, recipient"
+    suffixes: ["-ക്കു", "-ക്ക്", "-ന്", "-ഇന്"]
+    examples:
+      - stem: "കുട്ടി"
+        form: "കുട്ടിക്ക്"
+        meaning: "to/for the child"
+      - stem: "ഞാൻ"
+        form: "എനിക്ക്"
+        meaning: "to/for me"
+
+  genitive:
+    description: "Possession, relationship"
+    suffixes: ["-ന്റെ", "-ഉടെ", "-ടെ"]
+    examples:
+      - stem: "കുട്ടി"
+        form: "കുട്ടിയുടെ"
+        meaning: "of the child, child's"
+      - stem: "വീട്"
+        form: "വീടിന്റെ"
+        meaning: "of the house"
+
+  instrumental:
+    description: "By means of, with (instrument)"
+    suffixes: ["-ആൽ", "-കൊണ്ട്"]
+    examples:
+      - stem: "കത്തി"
+        form: "കത്തികൊണ്ട്"
+        meaning: "with a knife"
+
+  locative:
+    description: "Location, place"
+    suffixes: ["-ഇൽ", "-ത്ത്", "-ത്തിൽ"]
+    examples:
+      - stem: "വീട്"
+        form: "വീട്ടിൽ"
+        meaning: "in the house"
+      - stem: "സ്കൂൾ"
+        form: "സ്കൂളിൽ"
+        meaning: "in school"
+
+  sociative:
+    description: "With, together, towards (person)"
+    suffixes: ["-ഓട്", "-ഓടു"]
+    examples:
+      - stem: "കുട്ടി"
+        form: "കുട്ടിയോട്"
+        meaning: "to/with the child"

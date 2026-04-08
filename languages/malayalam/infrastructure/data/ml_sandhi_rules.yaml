@@ -1,0 +1,32 @@
+# ml_sandhi_rules.yaml
+# Malayalam Sandhi (Phonological Joining) Rules
+
+vowel_sandhi:
+  description: "When two vowels meet at morpheme boundaries"
+  rules:
+    - pattern: "അ + അ → ആ"
+      example: "മഹ + അൻ → മഹാൻ"
+    - pattern: "അ + ഇ → എ"
+      example: "മഹ + ഇന്ദ്രൻ → മഹേന്ദ്രൻ"
+    - pattern: "അ + ഉ → ഓ"
+      example: "മഹ + ഉത്സവം → മഹോത്സവം"
+
+consonant_sandhi:
+  description: "Consonant changes at morpheme boundaries"
+  rules:
+    - pattern: "Consonant doubling in agglutination"
+      example: "വീട് + -ഇൽ → വീട്ടിൽ (gemination)"
+    - pattern: "Nasal assimilation"
+      example: "ൻ before labial → ം"
+
+agglutination_sandhi:
+  description: "Sound changes when suffixes are added"
+  common_patterns:
+    - stem_ending: "ം"
+      before: "case suffix"
+      change: "ം → ത്ത"
+      example: "പുസ്തകം + ഇൽ → പുസ്തകത്തിൽ"
+    - stem_ending: "ട്"
+      before: "case suffix"
+      change: "ട് → ട്ട"
+      example: "വീട് + ഇൽ → വീട്ടിൽ"

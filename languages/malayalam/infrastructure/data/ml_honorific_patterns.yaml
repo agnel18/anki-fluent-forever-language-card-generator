@@ -1,0 +1,45 @@
+# ml_honorific_patterns.yaml
+# Malayalam Honorific System (3 levels)
+
+levels:
+  informal:
+    pronoun: "നീ"
+    description: "Intimate/informal — used with close friends, children, younger people"
+    verb_suffix: "-ക/-ൂ (familiar imperative)"
+    examples:
+      - pronoun: "നീ"
+        verb: "വരൂ"
+        meaning: "you come (informal)"
+
+  polite:
+    pronoun: "നിങ്ങൾ"
+    description: "Neutral/polite — standard address for peers and general use"
+    verb_suffix: "-ൂ (polite imperative)"
+    examples:
+      - pronoun: "നിങ്ങൾ"
+        verb: "വരൂ"
+        meaning: "you come (polite)"
+
+  formal:
+    pronoun: "താങ്കൾ"
+    description: "Respectful/formal — for elders, officials, strangers"
+    verb_suffix: "-ണം (request form)"
+    examples:
+      - pronoun: "താങ്കൾ"
+        verb: "വരണം"
+        meaning: "please come (formal)"
+
+third_person:
+  respectful_male: "അദ്ദേഹം"
+  respectful_female: "അവർ"
+  neutral_male: "അവൻ"
+  neutral_female: "അവൾ"
+  inanimate: "അത്"
+
+honorific_suffixes:
+  - suffix: "-ജി"
+    usage: "North Indian influence, rarely used"
+  - suffix: "ശ്രീ"
+    usage: "Mr. / respected (prefix)"
+  - suffix: "ശ്രീമതി"
+    usage: "Mrs. / respected woman (prefix)"

@@ -8,14 +8,13 @@ import re
 from typing import Dict, Optional, Any, List
 from translate import Translator
 from bs4 import BeautifulSoup
-try:
-    from circuit_breaker import WIKTIONARY_BREAKER, GOOGLE_TRANSLATE_BREAKER, call_with_circuit_breaker, CircuitBreakerOpenException
-except ImportError:
-    # circuit_breaker removed — passthrough: just call the function directly
-    WIKTIONARY_BREAKER = None
-    GOOGLE_TRANSLATE_BREAKER = None
-    class CircuitBreakerOpenException(Exception): pass
-    def call_with_circuit_breaker(_breaker, func): return func()
+
+# circuit_breaker was removed — passthrough stubs
+WIKTIONARY_BREAKER = None
+GOOGLE_TRANSLATE_BREAKER = None
+class CircuitBreakerOpenException(Exception): pass
+def call_with_circuit_breaker(_breaker, func): return func()
+
 from persistent_cache import WIKTIONARY_CACHE, TRANSLATION_CACHE, get_cached_response
 
 logger = logging.getLogger(__name__)

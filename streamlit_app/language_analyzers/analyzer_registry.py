@@ -73,6 +73,7 @@ class AnalyzerRegistry:
             'japanese': 'ja',
             'korean': 'ko',
             'hungarian': 'hu',
+            'malayalam': 'ml',
             'zh': 'zh'  # Backward compatibility
         }
 
