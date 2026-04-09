@@ -1045,7 +1045,6 @@ def init_metrics():
 # Encrypted API keys - use tools like sops or vault
 # Never store plaintext API keys in repository
 GEMINI_API_KEY: ENC[AES256_GCM,data:...,type:str]
-FIREBASE_API_KEY: ENC[AES256_GCM,data:...,type:str]
 REDIS_PASSWORD: ENC[AES256_GCM,data:...,type:str]
 ```
 
@@ -1059,7 +1058,6 @@ type: Opaque
 data:
   # Base64 encoded values
   gemini-api-key: <base64-encoded-key>
-  firebase-api-key: <base64-encoded-key>
   redis-password: <base64-encoded-password>
 ```
 

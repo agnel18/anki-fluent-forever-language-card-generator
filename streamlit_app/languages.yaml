@@ -32,7 +32,7 @@ top_5:
     google_tts_voice: "ar-XA-Neural2-D"
     flag: "🇸🇦"
 
-# Full list of 109 languages (subset shown; extend as needed)
+# Full list of 77 supported languages (matches frequency_list_map)
 all_languages:
   - code: "en"
     name: "English"
@@ -152,7 +152,7 @@ all_languages:
     
   - code: "ml"
     name: "Malayalam"
-    google_tts_voice: "ml-IN-AadhiNeural"
+    google_tts_voice: "ml-IN-Standard-A"
     
   - code: "uk"
     name: "Ukrainian"

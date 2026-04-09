@@ -403,20 +403,26 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - âœ… **Documentation Updates**: Updated all guides to include word meanings dictionary pattern as critical requirement
 ### Version 2026-04-06 (Hungarian Analyzer + E2E Test Suite + Bug Fixes)
 - ✅ **Hungarian Analyzer (v1.0)**: Uralic (Finno-Ugric) family — 24 case markers, vowel harmony, definite/indefinite conjugation, 55 unit tests passing
-- ✅ **E2E Pipeline Tests for All 11 Analyzers**: `tests/test_end_to_end_pipeline.py` now has mock data for all 11 languages. Tests 7 stages: Analyzer Discovery → Content Generation → Grammar Analysis → Audio → Images → Card Assembly → Difficulty Setting
+- ✅ **E2E Pipeline Tests for All 12 Analyzers**: `tests/test_end_to_end_pipeline.py` now has mock data for all 12 languages. Tests 7 stages: Analyzer Discovery → Content Generation → Grammar Analysis → Audio → Images → Card Assembly → Difficulty Setting
 - ✅ **Lazy Import Fix (All Analyzers)**: All 11 analyzers now use lazy imports inside `_call_ai()` methods. Module-level `from streamlit_app.shared_utils import` caused cross-test contamination (captured stale mock references during `_discover_analyzers()`)
 - ✅ **sys.path Import Hack Fix**: Spanish/Arabic/German used `sys.path.append()` + `from shared_utils import` which bypassed test mocks. Fixed to use `from streamlit_app.shared_utils import` with try/except
 - ✅ **German Summary Key Mismatch Fix**: `de_response_parser.py` `parse_batch_response()` read `overall_analysis` but data was stored under `explanations`. Grammar summaries now show descriptive "SVO: Subject + Verb + Object" instead of generic "Sentence contains 3 nouns"
 - ✅ **Grammar Summary Multi-Key Support**: `grammar_processor.py` `_create_grammar_summary()` now checks both `overall_structure` and `sentence_structure` keys — different analyzers use different key names
 - ✅ **Arabic Template Placeholder Fix**: `ar_response_parser.py` `_construct_meaning_from_ai_fields()` no longer shows empty placeholders like "( person, )" when AI omits fields. Also fixed `_normalize_word_data()` to copy `individual_meaning` to `meaning`
 - ✅ **Hungarian JSON Duplicate Keys Fix**: Merged 3 duplicate keys in `hu_word_meanings.json`: "mi" (we/what), "egy" (article/numeral), "ország" (repeated)
-- ✅ **11 Analyzers Total**: fr, es, de, ar, zh, zh-tw, hi, hu, ja, ko, tr — all E2E verified
+- ✅ **12 Analyzers Total**: fr, es, de, ar, zh, zh-tw, hi, hu, ja, ko, tr, ml — all E2E verified
 
 ### Version 2026-02-20 (Grammar Coloring Pass-Through Fix)
 - ✅ **Language-Specific Color Preservation**: `grammar_processor.py` no longer re-maps analyzer POS output through `_map_pos_to_category()` — language-specific concepts (Chinese classifier, Japanese topic_particle, Arabic case_marker, etc.) now keep their unique colors instead of collapsing to generic "other" (gray)
 - ✅ **Expanded Generic Fallback**: Generic AI fallback expanded from 10 to 17 color categories: added postposition, particle, classifier, aspect_marker, copula, case_marker, honorific with distinct hex colors
 - ✅ **Summary Label Fix**: `_create_grammar_summary()` now uses original POS labels from analyzers instead of re-mapping
-- ✅ **11 Analyzers Complete**: French v2.0, Spanish, German, Arabic, Chinese Simplified, Chinese Traditional, Hindi, Hungarian, Japanese, Korean, Turkish all fully implemented, registered, and E2E verified
+- ✅ **12 Analyzers Complete**: French v2.0, Spanish, German, Arabic, Chinese Simplified, Chinese Traditional, Hindi, Hungarian, Japanese, Korean, Turkish, Malayalam all fully implemented, registered, and E2E verified
+## E2E Test Sentence Difficulty Coverage
+All E2E pipeline tests for analyzers must cover all three difficulty levels:
+- 1 beginner sentence
+- 1 intermediate sentence
+- 2 advanced sentences
+This ensures grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer. This is a checklist item for E2E pipeline tests and a requirement for new analyzers in the analyzer creation guide.
 - ✅ **Key Invariant Documented**: Analyzer output colors must never be overridden by the grammar processor
 ### Version 2026-01-20 (Previous)
 - âœ… Initial comprehensive template with gold standard examples

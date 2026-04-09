@@ -141,7 +141,33 @@ def initialize_sentence_settings_state():
         "Russian": ("ru-RU-Standard-A", "A (Female, Standard)"),
         "Japanese": ("ja-JP-Standard-A", "A (Female, Standard)"),
         "Korean": ("ko-KR-Standard-A", "A (Female, Standard)"),
-        "Hindi": ("hi-IN-Standard-A", "A (Female, Standard)")
+        "Chinese": ("cmn-CN-Standard-A", "A (Female, Standard)"),   # Mandarin
+        "Arabic": ("ar-XA-Standard-A", "A (Female, Standard)"),
+        "Hindi": ("hi-IN-Standard-A", "A (Female, Standard)"),
+        "Malayalam": ("ml-IN-Standard-A", "A (Female, Standard)"),
+        "Tamil": ("ta-IN-Standard-A", "A (Female, Standard)"),
+        "Telugu": ("te-IN-Standard-A", "A (Female, Standard)"),
+        "Kannada": ("kn-IN-Standard-A", "A (Female, Standard)"),
+        "Bengali": ("bn-IN-Standard-A", "A (Female, Standard)"),
+        "Gujarati": ("gu-IN-Standard-A", "A (Female, Standard)"),
+        "Marathi": ("mr-IN-Standard-A", "A (Female, Standard)"),
+        "Punjabi": ("pa-IN-Standard-A", "A (Female, Standard)"),
+        "Thai": ("th-TH-Standard-A", "A (Female, Standard)"),
+        "Vietnamese": ("vi-VN-Standard-A", "A (Female, Standard)"),
+        "Indonesian": ("id-ID-Standard-A", "A (Female, Standard)"),
+        "Malay": ("ms-MY-Standard-A", "A (Female, Standard)"),
+        "Dutch": ("nl-NL-Standard-A", "A (Female, Standard)"),
+        "Polish": ("pl-PL-Standard-A", "A (Female, Standard)"),
+        "Swedish": ("sv-SE-Standard-A", "A (Female, Standard)"),
+        "Danish": ("da-DK-Standard-A", "A (Female, Standard)"),
+        "Norwegian": ("no-NO-Standard-A", "A (Female, Standard)"),
+        "Finnish": ("fi-FI-Standard-A", "A (Female, Standard)"),
+        "Turkish": ("tr-TR-Standard-A", "A (Female, Standard)"),
+        "Hungarian": ("hu-HU-Standard-A", "A (Female, Standard)"),
+        "Czech": ("cs-CZ-Standard-A", "A (Female, Standard)"),
+        "Greek": ("el-GR-Standard-A", "A (Female, Standard)"),
+        "Ukrainian": ("uk-UA-Standard-A", "A (Female, Standard)"),
+        # Add any remaining languages from your languages.yaml here in the same format
     }
     default_voice, default_voice_display = default_voice_map.get(lang, ("en-US-Standard-D", "D (Female, Standard)"))
     if "selected_voice" not in st.session_state:
@@ -397,7 +423,31 @@ def render_sentence_settings_page():
                         "ko": ["A (Female, Standard)", "B (Male, Standard)"],
                         "zh": ["A (Female, Standard)", "B (Male, Standard)"],
                         "ar": ["A (Female, Standard)", "B (Male, Standard)"],
-                        "hi": ["A (Female, Standard)", "B (Male, Standard)"]
+                        "hi": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ml": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ta": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "te": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "kn": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "bn": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "gu": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "mr": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "pa": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "th": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "vi": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "id": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ms": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "nl": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "pl": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "sv": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "da": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "no": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "fi": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "tr": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "hu": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "cs": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "el": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "uk": ["A (Female, Standard)", "B (Male, Standard)"],
+                        # Add any extra 2-letter codes here if your languages.yaml has more obscure languages
                     }
                     voice_options = fallback_voices.get(lang_prefix, ["D (Female, Standard)"])
                     voice_display_map = {voice: f"{bcp47_code}-Standard-{voice.split(' ')[0]}" for voice in voice_options}
@@ -416,231 +466,291 @@ def render_sentence_settings_page():
                         "ru": ["Olga (Female, Standard)", "Dmitri (Male, Standard)"],
                         "ja": ["Yumi (Female, Standard)", "Hiroshi (Male, Standard)"],
                         "ko": ["Ji-yeon (Female, Standard)", "Min-jun (Male, Standard)"],
-                        "cmn": ["Li (Female, Standard)", "Wang (Male, Standard)"],
+                        "zh": ["Li (Female, Standard)", "Wang (Male, Standard)"],
                         "ar": ["Fatima (Female, Standard)", "Ahmed (Male, Standard)"],
                         "hi": ["Priya (Female, Standard)", "Raj (Male, Standard)"],
+
+                        "bn": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "te": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ta": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "mr": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "gu": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "kn": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ml": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ur": ["A (Female, Standard)", "B (Male, Standard)"],
+
+                        "tr": ["Ayşe (Female, Standard)", "Mehmet (Male, Standard)"],
+                        "vi": ["Lan (Female, Standard)", "Minh (Male, Standard)"],
+                        "pl": ["Zofia (Female, Standard)", "Adam (Male, Standard)"],
                         "nl": ["Eva (Female, Standard)", "Jan (Male, Standard)"],
                         "sv": ["Ingrid (Female, Standard)", "Erik (Male, Standard)"],
-                        "da": ["Freja (Female, Standard)", "Magnus (Male, Standard)"],
-                        "no": ["Astrid (Female, Standard)", "Bjørn (Male, Standard)"],
-                        "fi": ["Aino (Female, Standard)", "Eero (Male, Standard)"],
-                        "pl": ["Zofia (Female, Standard)", "Adam (Male, Standard)"],
-                        "cs": ["Marie (Female, Standard)", "Jan (Male, Standard)"],
-                        "sk": ["Lucia (Female, Standard)", "Peter (Male, Standard)"],
-                        "hu": ["Anna (Female, Standard)", "Béla (Male, Standard)"],
-                        "tr": ["Ayşe (Female, Standard)", "Mehmet (Male, Standard)"],
                         "el": ["Maria (Female, Standard)", "Dimitris (Male, Standard)"],
-                        "he": ["Rachel (Female, Standard)", "David (Male, Standard)"],
+                        "cs": ["Marie (Female, Standard)", "Jan (Male, Standard)"],
+                        "hu": ["Anna (Female, Standard)", "Béla (Male, Standard)"],
+                        "ro": ["Maria (Female, Standard)", "Ion (Male, Standard)"],
                         "th": ["Siriporn (Female, Standard)", "Somchai (Male, Standard)"],
-                        "vi": ["Lan (Female, Standard)", "Minh (Male, Standard)"],
                         "id": ["Siti (Female, Standard)", "Ahmad (Male, Standard)"],
-                        "ms": ["Aisyah (Female, Standard)", "Muhammad (Male, Standard)"],
-                        "fil": ["Maria (Female, Standard)", "Juan (Male, Standard)"],
                         "uk": ["Oksana (Female, Standard)", "Oleksiy (Male, Standard)"],
+
+                        "af": ["Anna (Female, Standard)", "Jan (Male, Standard)"],
+                        "sq": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "am": ["Meseret (Female, Standard)", "Dawit (Male, Standard)"],
+                        "az": ["A (Female, Standard)", "B (Male, Standard)"],
                         "bg": ["Maria (Female, Standard)", "Ivan (Male, Standard)"],
-                        "hr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
-                        "sr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
-                        "sl": ["Ana (Female, Standard)", "Janez (Male, Standard)"],
+                        "ca": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "cy": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "da": ["Freja (Female, Standard)", "Magnus (Male, Standard)"],
                         "et": ["Liisi (Female, Standard)", "Jaan (Male, Standard)"],
+                        "fi": ["Aino (Female, Standard)", "Eero (Male, Standard)"],
+                        "gl": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ka": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "he": ["Rachel (Female, Standard)", "David (Male, Standard)"],
+                        "is": ["Guðrún (Female, Standard)", "Jón (Male, Standard)"],
+                        "ga": ["A (Female, Standard)", "B (Male, Standard)"],
                         "lv": ["Līga (Female, Standard)", "Jānis (Male, Standard)"],
                         "lt": ["Ona (Female, Standard)", "Jonas (Male, Standard)"],
-                        "ro": ["Maria (Female, Standard)", "Ion (Male, Standard)"],
-                        "mt": ["Maria (Female, Standard)", "Joseph (Male, Standard)"],
-                        "is": ["Guðrún (Female, Standard)", "Jón (Male, Standard)"],
-                        "ga": ["Siobhán (Female, Standard)", "Seán (Male, Standard)"],
-                        "cy": ["Megan (Female, Standard)", "Rhys (Male, Standard)"],
-                        "sq": ["Ana (Female, Standard)", "Arben (Male, Standard)"],
-                        "mk": ["Marija (Female, Standard)", "Aleksandar (Male, Standard)"],
-                        "bs": ["Aida (Female, Standard)", "Adnan (Male, Standard)"],
-                        "az": ["Aygün (Female, Standard)", "Rəsul (Male, Standard)"],
-                        "ka": ["Nino (Female, Standard)", "Giorgi (Male, Standard)"],
-                        "hy": ["Ani (Female, Standard)", "Armen (Male, Standard)"],
-                        "mn": ["Sarangerel (Female, Standard)", "Bat-Erdene (Male, Standard)"],
-                        "kk": ["Aigül (Female, Standard)", "Nurlan (Male, Standard)"],
-                        "uz": ["Gulnora (Female, Standard)", "Rustam (Male, Standard)"],
-                        "ky": ["Aida (Female, Standard)", "Asan (Male, Standard)"],
-                        "tg": ["Zuhra (Female, Standard)", "Rustam (Male, Standard)"],
-                        "tk": ["Aýgül (Female, Standard)", "Myrat (Male, Standard)"],
-                        "tt": ["Aygül (Female, Standard)", "Ildar (Male, Standard)"],
-                        "cv": ["Anna (Female, Standard)", "Ivan (Male, Standard)"],
-                        "ba": ["Aygül (Female, Standard)", "Rustem (Male, Standard)"],
-                        "xh": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"],
-                        "zu": ["Nomusa (Female, Standard)", "Sipho (Male, Standard)"],
-                        "af": ["Anna (Female, Standard)", "Jan (Male, Standard)"],
-                        "st": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "tn": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "ts": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "ss": ["Nomvula (Female, Standard)", "Sibusiso (Male, Standard)"],
-                        "ve": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "nr": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"],
+                        "mk": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "nb": ["Astrid (Female, Standard)", "Bjørn (Male, Standard)"],
+                        "fa": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "sk": ["Lucia (Female, Standard)", "Peter (Male, Standard)"],
+                        "sl": ["Ana (Female, Standard)", "Janez (Male, Standard)"],
+                        "sr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
+                        "bs": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "my": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "hr": ["Ana (Female, Standard)", "Marko (Male, Standard)"],
+                        "kk": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "km": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "lo": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ms": ["Aisyah (Female, Standard)", "Muhammad (Male, Standard)"],
+                        "mt": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "mn": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ne": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "ps": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "si": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "so": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "su": ["A (Female, Standard)", "B (Male, Standard)"],
                         "sw": ["Asha (Female, Standard)", "Jafari (Male, Standard)"],
-                        "am": ["Meseret (Female, Standard)", "Dawit (Male, Standard)"],
-                        "ti": ["Senait (Female, Standard)", "Habtom (Male, Standard)"],
-                        "om": ["Amina (Female, Standard)", "Ahmed (Male, Standard)"],
-                        "so": ["Amina (Female, Standard)", "Ahmed (Male, Standard)"],
-                        "rw": ["Jeanne (Female, Standard)", "Jean (Male, Standard)"],
-                        "lg": ["Nakato (Female, Standard)", "Kato (Male, Standard)"],
-                        "ny": ["Grace (Female, Standard)", "John (Male, Standard)"],
-                        "sn": ["Rumbidzai (Female, Standard)", "Tafadzwa (Male, Standard)"],
-                        "st": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "tn": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "ts": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "ss": ["Nomvula (Female, Standard)", "Sibusiso (Male, Standard)"],
-                        "ve": ["Mpho (Female, Standard)", "Thabo (Male, Standard)"],
-                        "nr": ["Nomhle (Female, Standard)", "Siyabonga (Male, Standard)"]
+                        "uz": ["A (Female, Standard)", "B (Male, Standard)"],
+                        "zu": ["Nomusa (Female, Standard)", "Sipho (Male, Standard)"],
+                        "jv": ["A (Female, Standard)", "B (Male, Standard)"]
                     }
                     # Map descriptive names to voice IDs
                     voice_name_to_id = {
                         # English
-                        "Emma (Female, Standard)": "D", "Liam (Male, Standard)": "C",
+                        "English - Emma (Female, Standard)": "D", "English - Liam (Male, Standard)": "C",
+
                         # Spanish
-                        "Maria (Female, Standard)": "A", "Carlos (Male, Standard)": "B",
+                        "Spanish - Maria (Female, Standard)": "A", "Spanish - Carlos (Male, Standard)": "B",
+
                         # French
-                        "Sophie (Female, Standard)": "A", "Pierre (Male, Standard)": "B",
+                        "French - Sophie (Female, Standard)": "A", "French - Pierre (Male, Standard)": "B",
+
                         # German
-                        "Anna (Female, Standard)": "A", "Max (Male, Standard)": "B",
+                        "German - Anna (Female, Standard)": "A", "German - Max (Male, Standard)": "B",
+
                         # Italian
-                        "Giulia (Female, Standard)": "A", "Marco (Male, Standard)": "B",
+                        "Italian - Giulia (Female, Standard)": "A", "Italian - Marco (Male, Standard)": "B",
+
                         # Portuguese
-                        "Ana (Female, Standard)": "A", "João (Male, Standard)": "B",
+                        "Portuguese - Ana (Female, Standard)": "A", "Portuguese - João (Male, Standard)": "B",
+
                         # Russian
-                        "Olga (Female, Standard)": "A", "Dmitri (Male, Standard)": "B",
+                        "Russian - Olga (Female, Standard)": "A", "Russian - Dmitri (Male, Standard)": "B",
+
                         # Japanese
-                        "Yumi (Female, Standard)": "A", "Hiroshi (Male, Standard)": "B",
+                        "Japanese - Yumi (Female, Standard)": "A", "Japanese - Hiroshi (Male, Standard)": "B",
+
                         # Korean
-                        "Ji-yeon (Female, Standard)": "A", "Min-jun (Male, Standard)": "B",
+                        "Korean - Ji-yeon (Female, Standard)": "A", "Korean - Min-jun (Male, Standard)": "B",
+
                         # Chinese
-                        "Li (Female, Standard)": "C", "Wang (Male, Standard)": "B",
+                        "Chinese - Li (Female, Standard)": "C", "Chinese - Wang (Male, Standard)": "B",
+
                         # Arabic
-                        "Fatima (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
+                        "Arabic - Fatima (Female, Standard)": "A", "Arabic - Ahmed (Male, Standard)": "B",
+
                         # Hindi
-                        "Priya (Female, Standard)": "A", "Raj (Male, Standard)": "B",
-                        # Dutch
-                        "Eva (Female, Standard)": "A", "Jan (Male, Standard)": "B",
-                        # Swedish
-                        "Ingrid (Female, Standard)": "A", "Erik (Male, Standard)": "B",
-                        # Danish
-                        "Freja (Female, Standard)": "A", "Magnus (Male, Standard)": "B",
-                        # Norwegian
-                        "Astrid (Female, Standard)": "A", "Bjørn (Male, Standard)": "B",
-                        # Finnish
-                        "Aino (Female, Standard)": "A", "Eero (Male, Standard)": "B",
-                        # Polish
-                        "Zofia (Female, Standard)": "A", "Adam (Male, Standard)": "B",
-                        # Czech
-                        "Marie (Female, Standard)": "A", "Jan (Male, Standard)": "B",
-                        # Slovak
-                        "Lucia (Female, Standard)": "A", "Peter (Male, Standard)": "B",
-                        # Hungarian
-                        "Anna (Female, Standard)": "A", "Béla (Male, Standard)": "B",
+                        "Hindi - Priya (Female, Standard)": "A", "Hindi - Raj (Male, Standard)": "B",
+
+                        # Bengali
+                        "Bengali - A (Female, Standard)": "A", "Bengali - B (Male, Standard)": "B",
+
+                        # Telugu
+                        "Telugu - A (Female, Standard)": "A", "Telugu - B (Male, Standard)": "B",
+
+                        # Tamil
+                        "Tamil - A (Female, Standard)": "A", "Tamil - B (Male, Standard)": "B",
+
+                        # Marathi
+                        "Marathi - A (Female, Standard)": "A", "Marathi - B (Male, Standard)": "B",
+
+                        # Gujarati
+                        "Gujarati - A (Female, Standard)": "A", "Gujarati - B (Male, Standard)": "B",
+
+                        # Kannada
+                        "Kannada - A (Female, Standard)": "A", "Kannada - B (Male, Standard)": "B",
+
+                        # Malayalam
+                        "Malayalam - A (Female, Standard)": "A", "Malayalam - B (Male, Standard)": "B",
+
+                        # Urdu
+                        "Urdu - A (Female, Standard)": "A", "Urdu - B (Male, Standard)": "B",
+
                         # Turkish
-                        "Ayşe (Female, Standard)": "A", "Mehmet (Male, Standard)": "B",
-                        # Greek
-                        "Maria (Female, Standard)": "A", "Dimitris (Male, Standard)": "B",
-                        # Hebrew
-                        "Rachel (Female, Standard)": "A", "David (Male, Standard)": "B",
-                        # Thai
-                        "Siriporn (Female, Standard)": "A", "Somchai (Male, Standard)": "B",
+                        "Turkish - Ayşe (Female, Standard)": "A", "Turkish - Mehmet (Male, Standard)": "B",
+
                         # Vietnamese
-                        "Lan (Female, Standard)": "A", "Minh (Male, Standard)": "B",
-                        # Indonesian
-                        "Siti (Female, Standard)": "A", "Ahmad (Male, Standard)": "B",
-                        # Malay
-                        "Aisyah (Female, Standard)": "A", "Muhammad (Male, Standard)": "B",
-                        # Filipino
-                        "Maria (Female, Standard)": "A", "Juan (Male, Standard)": "B",
-                        # Ukrainian
-                        "Oksana (Female, Standard)": "A", "Oleksiy (Male, Standard)": "B",
-                        # Bulgarian
-                        "Maria (Female, Standard)": "A", "Ivan (Male, Standard)": "B",
-                        # Croatian
-                        "Ana (Female, Standard)": "A", "Marko (Male, Standard)": "B",
-                        # Serbian
-                        "Ana (Female, Standard)": "A", "Marko (Male, Standard)": "B",
-                        # Slovenian
-                        "Ana (Female, Standard)": "A", "Janez (Male, Standard)": "B",
-                        # Estonian
-                        "Liisi (Female, Standard)": "A", "Jaan (Male, Standard)": "B",
-                        # Latvian
-                        "Līga (Female, Standard)": "A", "Jānis (Male, Standard)": "B",
-                        # Lithuanian
-                        "Ona (Female, Standard)": "A", "Jonas (Male, Standard)": "B",
+                        "Vietnamese - Lan (Female, Standard)": "A", "Vietnamese - Minh (Male, Standard)": "B",
+
+                        # Polish
+                        "Polish - Zofia (Female, Standard)": "A", "Polish - Adam (Male, Standard)": "B",
+
+                        # Dutch
+                        "Dutch - Eva (Female, Standard)": "A", "Dutch - Jan (Male, Standard)": "B",
+
+                        # Swedish
+                        "Swedish - Ingrid (Female, Standard)": "A", "Swedish - Erik (Male, Standard)": "B",
+
+                        # Greek
+                        "Greek - Maria (Female, Standard)": "A", "Greek - Dimitris (Male, Standard)": "B",
+
+                        # Czech
+                        "Czech - Marie (Female, Standard)": "A", "Czech - Jan (Male, Standard)": "B",
+
+                        # Hungarian
+                        "Hungarian - Anna (Female, Standard)": "A", "Hungarian - Béla (Male, Standard)": "B",
+
                         # Romanian
-                        "Maria (Female, Standard)": "A", "Ion (Male, Standard)": "B",
-                        # Maltese
-                        "Maria (Female, Standard)": "A", "Joseph (Male, Standard)": "B",
-                        # Icelandic
-                        "Guðrún (Female, Standard)": "A", "Jón (Male, Standard)": "B",
-                        # Irish
-                        "Siobhán (Female, Standard)": "A", "Seán (Male, Standard)": "B",
-                        # Welsh
-                        "Megan (Female, Standard)": "A", "Rhys (Male, Standard)": "B",
-                        # Albanian
-                        "Ana (Female, Standard)": "A", "Arben (Male, Standard)": "B",
-                        # Macedonian
-                        "Marija (Female, Standard)": "A", "Aleksandar (Male, Standard)": "B",
-                        # Bosnian
-                        "Aida (Female, Standard)": "A", "Adnan (Male, Standard)": "B",
-                        # Azerbaijani
-                        "Aygün (Female, Standard)": "A", "Rəsul (Male, Standard)": "B",
-                        # Georgian
-                        "Nino (Female, Standard)": "A", "Giorgi (Male, Standard)": "B",
-                        # Armenian
-                        "Ani (Female, Standard)": "A", "Armen (Male, Standard)": "B",
-                        # Mongolian
-                        "Sarangerel (Female, Standard)": "A", "Bat-Erdene (Male, Standard)": "B",
-                        # Kazakh
-                        "Aigül (Female, Standard)": "A", "Nurlan (Male, Standard)": "B",
-                        # Uzbek
-                        "Gulnora (Female, Standard)": "A", "Rustam (Male, Standard)": "B",
-                        # Kyrgyz
-                        "Aida (Female, Standard)": "A", "Asan (Male, Standard)": "B",
-                        # Tajik
-                        "Zuhra (Female, Standard)": "A", "Rustam (Male, Standard)": "B",
-                        # Turkmen
-                        "Aýgül (Female, Standard)": "A", "Myrat (Male, Standard)": "B",
-                        # Tatar
-                        "Aygül (Female, Standard)": "A", "Ildar (Male, Standard)": "B",
-                        # Chuvash
-                        "Anna (Female, Standard)": "A", "Ivan (Male, Standard)": "B",
-                        # Bashkir
-                        "Aygül (Female, Standard)": "A", "Rustem (Male, Standard)": "B",
-                        # Xhosa
-                        "Nomhle (Female, Standard)": "A", "Siyabonga (Male, Standard)": "B",
-                        # Zulu
-                        "Nomusa (Female, Standard)": "A", "Sipho (Male, Standard)": "B",
+                        "Romanian - Maria (Female, Standard)": "A", "Romanian - Ion (Male, Standard)": "B",
+
+                        # Thai
+                        "Thai - Siriporn (Female, Standard)": "A", "Thai - Somchai (Male, Standard)": "B",
+
+                        # Indonesian
+                        "Indonesian - Siti (Female, Standard)": "A", "Indonesian - Ahmad (Male, Standard)": "B",
+
+                        # Ukrainian
+                        "Ukrainian - Oksana (Female, Standard)": "A", "Ukrainian - Oleksiy (Male, Standard)": "B",
+
                         # Afrikaans
-                        "Anna (Female, Standard)": "A", "Jan (Male, Standard)": "B",
-                        # Sesotho
-                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
-                        # Setswana
-                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
-                        # Xitsonga
-                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
-                        # Siswati
-                        "Nomvula (Female, Standard)": "A", "Sibusiso (Male, Standard)": "B",
-                        # Venda
-                        "Mpho (Female, Standard)": "A", "Thabo (Male, Standard)": "B",
-                        # Ndebele
-                        "Nomhle (Female, Standard)": "A", "Siyabonga (Male, Standard)": "B",
-                        # Swahili
-                        "Asha (Female, Standard)": "A", "Jafari (Male, Standard)": "B",
+                        "Afrikaans - Anna (Female, Standard)": "A", "Afrikaans - Jan (Male, Standard)": "B",
+
+                        # Albanian
+                        "Albanian - A (Female, Standard)": "A", "Albanian - B (Male, Standard)": "B",
+
                         # Amharic
-                        "Meseret (Female, Standard)": "A", "Dawit (Male, Standard)": "B",
-                        # Tigrinya
-                        "Senait (Female, Standard)": "A", "Habtom (Male, Standard)": "B",
-                        # Oromo
-                        "Amina (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
+                        "Amharic - Meseret (Female, Standard)": "A", "Amharic - Dawit (Male, Standard)": "B",
+
+                        # Azerbaijani
+                        "Azerbaijani - A (Female, Standard)": "A", "Azerbaijani - B (Male, Standard)": "B",
+
+                        # Bulgarian
+                        "Bulgarian - Maria (Female, Standard)": "A", "Bulgarian - Ivan (Male, Standard)": "B",
+
+                        # Catalan
+                        "Catalan - A (Female, Standard)": "A", "Catalan - B (Male, Standard)": "B",
+
+                        # Welsh
+                        "Welsh - A (Female, Standard)": "A", "Welsh - B (Male, Standard)": "B",
+
+                        # Danish
+                        "Danish - Freja (Female, Standard)": "A", "Danish - Magnus (Male, Standard)": "B",
+
+                        # Estonian
+                        "Estonian - Liisi (Female, Standard)": "A", "Estonian - Jaan (Male, Standard)": "B",
+
+                        # Finnish
+                        "Finnish - Aino (Female, Standard)": "A", "Finnish - Eero (Male, Standard)": "B",
+
+                        # Galician
+                        "Galician - A (Female, Standard)": "A", "Galician - B (Male, Standard)": "B",
+
+                        # Georgian
+                        "Georgian - A (Female, Standard)": "A", "Georgian - B (Male, Standard)": "B",
+
+                        # Hebrew
+                        "Hebrew - Rachel (Female, Standard)": "A", "Hebrew - David (Male, Standard)": "B",
+
+                        # Icelandic
+                        "Icelandic - Guðrún (Female, Standard)": "A", "Icelandic - Jón (Male, Standard)": "B",
+
+                        # Irish
+                        "Irish - A (Female, Standard)": "A", "Irish - B (Male, Standard)": "B",
+
+                        # Latvian
+                        "Latvian - Līga (Female, Standard)": "A", "Latvian - Jānis (Male, Standard)": "B",
+
+                        # Lithuanian
+                        "Lithuanian - Ona (Female, Standard)": "A", "Lithuanian - Jonas (Male, Standard)": "B",
+
+                        # Macedonian
+                        "Macedonian - A (Female, Standard)": "A", "Macedonian - B (Male, Standard)": "B",
+
+                        # Norwegian
+                        "Norwegian - Astrid (Female, Standard)": "A", "Norwegian - Bjørn (Male, Standard)": "B",
+
+                        # Persian
+                        "Persian - A (Female, Standard)": "A", "Persian - B (Male, Standard)": "B",
+
+                        # Slovak
+                        "Slovak - Lucia (Female, Standard)": "A", "Slovak - Peter (Male, Standard)": "B",
+
+                        # Slovenian
+                        "Slovenian - Ana (Female, Standard)": "A", "Slovenian - Janez (Male, Standard)": "B",
+
+                        # Serbian
+                        "Serbian - Ana (Female, Standard)": "A", "Serbian - Marko (Male, Standard)": "B",
+
+                        # Bosnian
+                        "Bosnian - A (Female, Standard)": "A", "Bosnian - B (Male, Standard)": "B",
+
+                        # Burmese
+                        "Burmese - A (Female, Standard)": "A", "Burmese - B (Male, Standard)": "B",
+
+                        # Kazakh
+                        "Kazakh - A (Female, Standard)": "A", "Kazakh - B (Male, Standard)": "B",
+
+                        # Khmer
+                        "Khmer - A (Female, Standard)": "A", "Khmer - B (Male, Standard)": "B",
+
+                        # Lao
+                        "Lao - A (Female, Standard)": "A", "Lao - B (Male, Standard)": "B",
+
+                        # Malay
+                        "Malay - Aisyah (Female, Standard)": "A", "Malay - Muhammad (Male, Standard)": "B",
+
+                        # Maltese
+                        "Maltese - A (Female, Standard)": "A", "Maltese - B (Male, Standard)": "B",
+
+                        # Mongolian
+                        "Mongolian - A (Female, Standard)": "A", "Mongolian - B (Male, Standard)": "B",
+
+                        # Nepali
+                        "Nepali - A (Female, Standard)": "A", "Nepali - B (Male, Standard)": "B",
+
+                        # Pashto
+                        "Pashto - A (Female, Standard)": "A", "Pashto - B (Male, Standard)": "B",
+
+                        # Sinhala
+                        "Sinhala - A (Female, Standard)": "A", "Sinhala - B (Male, Standard)": "B",
+
                         # Somali
-                        "Amina (Female, Standard)": "A", "Ahmed (Male, Standard)": "B",
-                        # Kinyarwanda
-                        "Jeanne (Female, Standard)": "A", "Jean (Male, Standard)": "B",
-                        # Luganda
-                        "Nakato (Female, Standard)": "A", "Kato (Male, Standard)": "B",
-                        # Chichewa
-                        "Grace (Female, Standard)": "A", "John (Male, Standard)": "B",
-                        # Shona
-                        "Rumbidzai (Female, Standard)": "A", "Tafadzwa (Male, Standard)": "B"
+                        "Somali - A (Female, Standard)": "A", "Somali - B (Male, Standard)": "B",
+
+                        # Sundanese
+                        "Sundanese - A (Female, Standard)": "A", "Sundanese - B (Male, Standard)": "B",
+
+                        # Swahili
+                        "Swahili - Asha (Female, Standard)": "A", "Swahili - Jafari (Male, Standard)": "B",
+
+                        # Uzbek
+                        "Uzbek - A (Female, Standard)": "A", "Uzbek - B (Male, Standard)": "B",
+
+                        # Zulu
+                        "Zulu - Nomusa (Female, Standard)": "A", "Zulu - Sipho (Male, Standard)": "B",
+
+                        # Javanese
+                        "Javanese - A (Female, Standard)": "A", "Javanese - B (Male, Standard)": "B"
                     }
                     voice_options = list(voice_name_to_id.keys())
                     voice_display_map = {}

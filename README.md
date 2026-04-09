@@ -47,7 +47,7 @@ The app guides you through setup on the **"Step 0: API Keys"** page. You need **
 
 ### Content Generation
 - **AI Sentences** — Gemini AI generates 1–10 contextual sentences per word (default 4)
-- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (11 languages)
+- **Grammar Analysis** — Color-coded grammatical breakdown with word-by-word explanations (12 languages)
 - **Native Audio** — Google Cloud TTS with learner-friendly speed (0.8x default), adjustable 0.5x–1.5x
 - **Images** — Pixabay integration with AI keyword extraction
 - **IPA / Romanization** — Phonetic transcriptions for all languages; romanization for complex scripts (Hindi, Arabic, Persian, etc.)
@@ -109,7 +109,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 
 ## 🧠 Grammar Analyzers
 
-**11 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
+**12 of 77 languages** have dedicated grammar analyzers that add color-coded sentence overlays with word-by-word explanations to your cards:
 
 | Language | Code | Status |
 |----------|------|--------|
@@ -124,6 +124,7 @@ For languages with complex scripts (Hindi, Arabic, Persian, Urdu, Bengali, and 8
 | Japanese | `ja` | ✅ Implemented (v1.0) |
 | Korean | `ko` | ✅ Implemented (v1.0) |
 | Turkish | `tr` | ✅ Implemented |
+| Malayalam | `ml` | ✅ Implemented (v1.0) |
 
 Grammar coloring preserves **language-specific concepts** — e.g., Chinese classifiers, Japanese particles, Arabic case markers each get their own unique colors, rather than being collapsed into generic English grammar categories.
 
@@ -192,6 +193,11 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 ---
 
 ## 🚀 Changelog
+### v3.5 (2026-04-08)
+- Pure Stateless Architecture — removed Firebase, cloud sync, statistics, achievements. Premium features (backup, statistics, voice recording, inter-language explanations) planned for future subscription app.
+- Malayalam Analyzer — 12th language, Dravidian family
+- Hungarian, Japanese, Korean Analyzers
+- Security Cleanup — removed Firebase credentials, deleted dead code (654 lines)
 
 ### v3.4 (April 2026)
 - ✅ **API Key Persistence** — All 3 Save buttons now persist keys to disk (previously session-only)
@@ -208,6 +214,12 @@ MIT License. Not affiliated with Fluent Forever or Anki.
 - ✅ **Enhanced Error Recovery** — AI repair pipeline with exponential backoff retries
 - ✅ **Documentation Restructuring** — Modular guides (research, architecture, implementation, testing, deployment)
 
+## E2E Test Sentence Difficulty Coverage
+All E2E pipeline tests for analyzers must cover all three difficulty levels:
+- 1 beginner sentence
+- 1 intermediate sentence
+- 2 advanced sentences
+This ensures grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer.
 ---
 
 **Ready to start learning?**

@@ -25,7 +25,10 @@ languages/
 | French | fr | french/ |
 | German | de | german/ |
 | Hindi | hi | hindi/ |
+| Hungarian | hu | hungarian/ |
 | Japanese | ja | japanese/ |
+| Korean | ko | korean/ |
+| Malayalam | ml | malayalam/ |
 | Spanish | es | spanish/ |
 | Turkish | tr | turkish/ |
 

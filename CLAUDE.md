@@ -135,7 +135,8 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 ## Language Analyzers
 
 ### Status
-**11 implemented** out of 77 target languages:
+
+**12 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
@@ -148,13 +149,14 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | Hungarian | `hu` | `languages/hungarian/` | ✅ Implemented (v1.0) — agglutinative, 24 case markers, definite/indefinite conjugation, E2E verified |
 | Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — E2E verified |
 | Korean | `ko` | `languages/korean/` | ✅ Implemented (v1.0) — 28 grammatical roles, 3-level color scheme, E2E verified |
+| Malayalam | `ml` | `languages/malayalam/` | ✅ Implemented (v1.0) — Dravidian family, E2E verified |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented — E2E verified |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented — E2E verified |
 
-**66 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+**65 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
 
 ### E2E Pipeline Test Coverage
-All 11 analyzers have full end-to-end pipeline tests in `tests/test_end_to_end_pipeline.py`:
+All 12 analyzers have full end-to-end pipeline tests in `tests/test_end_to_end_pipeline.py`:
 - Mocks Gemini API with language-specific grammar responses
 - Tests 7 stages: Analyzer Discovery → Content Generation → Grammar Analysis → Audio → Images → Card Assembly → Difficulty Setting
 - Reports saved to `tests/reports/pipeline_report_{language}.txt`
@@ -323,7 +325,15 @@ APIError (base)
 
 ## Open Tasks
 
-1. **Grammar analyzers for 66 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
+1. **Grammar analyzers for 65 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.
+| `languages/malayalam/` | Malayalam analyzer (v1.0, Dravidian family, E2E verified) |
+> **Stateless Architecture Decision (April 2026):** Firebase Auth, Firestore, statistics, achievements removed — planned for future subscription companion app with proper security.
+## E2E Test Sentence Difficulty Coverage
+All documentation and E2E pipeline tests must ensure that for each analyzer, all three difficulty levels are covered:
+- 1 beginner sentence
+- 1 intermediate sentence
+- 2 advanced sentences
+This ensures grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer. This is a checklist item for E2E pipeline tests and a requirement for new analyzers in the analyzer creation guide.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
 3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 11 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.

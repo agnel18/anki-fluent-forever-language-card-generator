@@ -872,6 +872,7 @@ def _get_bcp47_code(language_name: str) -> str:
         "Bengali": "bn-IN",
         "Gujarati": "gu-IN",
         "Marathi": "mr-IN",
+        "Malayalam": "ml-IN",
         "Urdu": "ur-IN",
         "Persian": "fa-IR",  # Not supported by Google TTS - keep for compatibility
         "Pashto": "ps-AF",  # Not supported by Google TTS - keep for compatibility
