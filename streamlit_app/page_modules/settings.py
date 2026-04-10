@@ -294,6 +294,150 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
     st.markdown("---")
 
+     # ==========================================================
+    # NEW SECTION: PER-LANGUAGE DEFAULT OUTPUT SETTINGS
+    # (restores what was removed when Firebase was deleted)
+    # ==========================================================
+    st.markdown("---")
+    st.markdown("## 🌍 Per-Language Default Output Settings")
+    st.caption("These defaults are automatically loaded in Step 1 → Step 3. Perfect for batch jobs on the same language.")
+
+    # Initialize if missing (stateless)
+    if "per_language_settings" not in st.session_state:
+        st.session_state.per_language_settings = {}
+
+    # Language selector
+    all_languages = st.session_state.get("all_languages", [])
+    lang_names = [lang["name"] for lang in all_languages] if all_languages else ["English", "Spanish", "French", "German", "Italian"]
+
+    config_lang = st.selectbox(
+        "Language to configure defaults for",
+        options=lang_names,
+        key="per_lang_default_select"
+    )
+
+    # Current defaults for this language
+    defaults = st.session_state.per_language_settings.get(config_lang, {})
+    sentence_range = defaults.get("sentence_length_range", (4, 20))
+    if isinstance(sentence_range, (list, tuple)) and len(sentence_range) == 2:
+        min_val, max_val = sentence_range
+    else:
+        min_val, max_val = 4, 20
+
+    # --- Sentence Settings ---
+    st.markdown("### ✍️ Sentence Settings")
+    col1, col2 = st.columns(2)
+    with col1:
+        sentence_min = st.slider(
+            "Sentence Length (words) – Min",
+            min_value=3,
+            max_value=20,
+            value=int(min_val),
+            key=f"def_min_{config_lang}"
+        )
+    with col2:
+        sentence_max = st.slider(
+            "Sentence Length (words) – Max",
+            min_value=8,
+            max_value=30,
+            value=int(max_val),
+            key=f"def_max_{config_lang}"
+        )
+
+    sentences_per_word = st.slider(
+        "Sentences Per Word",
+        min_value=3,
+        max_value=15,
+        value=defaults.get("sentences_per_word", 5),
+        key=f"def_spw_{config_lang}"
+    )
+
+    # --- Difficulty ---
+    st.markdown("### 🎯 Difficulty Level")
+    difficulty_options = ["beginner", "intermediate", "advanced"]
+    difficulty_idx = difficulty_options.index(defaults.get("difficulty", "beginner"))
+    difficulty = st.selectbox(
+        "Select Difficulty",
+        options=difficulty_options,
+        index=difficulty_idx,
+        format_func=lambda x: {
+            "beginner": "Beginner - Simple vocabulary and basic sentence structures for absolute beginners",
+            "intermediate": "Intermediate - Moderate vocabulary with varied sentence patterns",
+            "advanced": "Advanced - Complex vocabulary and sophisticated sentence structures"
+        }[x],
+        key=f"def_diff_{config_lang}"
+    )
+
+    # --- Audio Settings (simple & robust - matches your original screenshot) ---
+    st.markdown("### 🎵 Audio Settings")
+    
+    defaults = st.session_state.per_language_settings.get(config_lang, {})
+    
+    # Voice (text input is the most reliable for defaults)
+    selected_voice_display = st.text_input(
+        "Voice (Google TTS)",
+        value=defaults.get("selected_voice_display", ""),
+        help="Exact voice name shown in Step 3, e.g. es-ES-Standard-E (Male) or es-ES-Neural2-F",
+        key=f"def_voice_display_{config_lang}"
+    )
+    
+    selected_voice = st.text_input(
+        "Voice Code (technical)",
+        value=defaults.get("selected_voice", ""),
+        help="Internal voice ID used by Google TTS (usually auto-filled from above)",
+        key=f"def_voice_{config_lang}"
+    )
+
+    audio_speed = st.slider(
+        "Audio Speed",
+        min_value=0.5,
+        max_value=1.5,
+        value=defaults.get("audio_speed", 1.0),
+        step=0.05,
+        key=f"def_speed_{config_lang}"
+    )
+
+    # Save button
+    if st.button(f"💾 Save as DEFAULT settings for **{config_lang}**", type="primary", use_container_width=True, key=f"save_def_{config_lang}"):
+        st.session_state.per_language_settings[config_lang] = {
+            "sentence_length_range": (sentence_min, sentence_max),
+            "sentences_per_word": sentences_per_word,
+            "difficulty": difficulty,
+            "selected_voice": selected_voice,
+            "selected_voice_display": selected_voice_display,
+            "audio_speed": audio_speed
+        }
+        st.success(f"✅ Defaults saved for **{config_lang}**! They will now auto-load in Step 1 → Step 3.")
+        time.sleep(0.8)
+        st.rerun()
+
+    # === JSON BACKUP / RESTORE ===
+    st.markdown("---")
+    st.subheader("💾 Backup & Restore All Language Defaults")
+    col_dl, col_ul = st.columns(2)
+    with col_dl:
+        if st.button("⬇️ Download all defaults as JSON"):
+            import json
+            data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
+            st.download_button(
+                label="Click to download language_defaults.json",
+                data=data,
+                file_name="language_defaults.json",
+                mime="application/json",
+                key="download_defaults_json"
+            )
+    with col_ul:
+        uploaded_file = st.file_uploader("📥 Upload language_defaults.json", type=["json"], key="upload_defaults_json")
+        if uploaded_file is not None:
+            try:
+                imported = json.load(uploaded_file)
+                st.session_state.per_language_settings.update(imported)
+                st.success("✅ All language defaults restored!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to load JSON: {e}")
+
+
     # --- Cache Management Section ---
     st.markdown("## 💾 API Response Cache")
     st.info("Caching reduces API costs and speeds up deck generation by reusing previous results.")

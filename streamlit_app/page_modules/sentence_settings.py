@@ -113,7 +113,9 @@ def _get_bcp47_code(language_name: str) -> str:
 def initialize_sentence_settings_state():
     """
     Initialize all required session state variables for the sentence settings page.
+    Respect per-language defaults that were loaded in Step 1.
     """
+    # Only set defaults if they don't already exist from per-language settings
     if "sentence_length_range" not in st.session_state:
         st.session_state.sentence_length_range = (8, 12)
     if "sentences_per_word" not in st.session_state:
@@ -128,52 +130,97 @@ def initialize_sentence_settings_state():
         st.session_state.custom_topics = []
     if "audio_speed" not in st.session_state:
         st.session_state.audio_speed = 0.8
-    # Voice defaults: use English as fallback if language not set yet
-    lang = st.session_state.get("selected_language", "English")
-    # Map of language to default standard voice and display name
-    default_voice_map = {
-        "English": ("en-US-Standard-D", "D (Female, Standard)"),
-        "Spanish": ("es-ES-Standard-A", "A (Female, Standard)"),
-        "French": ("fr-FR-Standard-A", "A (Female, Standard)"),
-        "German": ("de-DE-Standard-A", "A (Female, Standard)"),
-        "Italian": ("it-IT-Standard-A", "A (Female, Standard)"),
-        "Portuguese": ("pt-BR-Standard-A", "A (Female, Standard)"),
-        "Russian": ("ru-RU-Standard-A", "A (Female, Standard)"),
-        "Japanese": ("ja-JP-Standard-A", "A (Female, Standard)"),
-        "Korean": ("ko-KR-Standard-A", "A (Female, Standard)"),
-        "Chinese": ("cmn-CN-Standard-A", "A (Female, Standard)"),   # Mandarin
-        "Arabic": ("ar-XA-Standard-A", "A (Female, Standard)"),
-        "Hindi": ("hi-IN-Standard-A", "A (Female, Standard)"),
-        "Malayalam": ("ml-IN-Standard-A", "A (Female, Standard)"),
-        "Tamil": ("ta-IN-Standard-A", "A (Female, Standard)"),
-        "Telugu": ("te-IN-Standard-A", "A (Female, Standard)"),
-        "Kannada": ("kn-IN-Standard-A", "A (Female, Standard)"),
-        "Bengali": ("bn-IN-Standard-A", "A (Female, Standard)"),
-        "Gujarati": ("gu-IN-Standard-A", "A (Female, Standard)"),
-        "Marathi": ("mr-IN-Standard-A", "A (Female, Standard)"),
-        "Punjabi": ("pa-IN-Standard-A", "A (Female, Standard)"),
-        "Thai": ("th-TH-Standard-A", "A (Female, Standard)"),
-        "Vietnamese": ("vi-VN-Standard-A", "A (Female, Standard)"),
-        "Indonesian": ("id-ID-Standard-A", "A (Female, Standard)"),
-        "Malay": ("ms-MY-Standard-A", "A (Female, Standard)"),
-        "Dutch": ("nl-NL-Standard-A", "A (Female, Standard)"),
-        "Polish": ("pl-PL-Standard-A", "A (Female, Standard)"),
-        "Swedish": ("sv-SE-Standard-A", "A (Female, Standard)"),
-        "Danish": ("da-DK-Standard-A", "A (Female, Standard)"),
-        "Norwegian": ("no-NO-Standard-A", "A (Female, Standard)"),
-        "Finnish": ("fi-FI-Standard-A", "A (Female, Standard)"),
-        "Turkish": ("tr-TR-Standard-A", "A (Female, Standard)"),
-        "Hungarian": ("hu-HU-Standard-A", "A (Female, Standard)"),
-        "Czech": ("cs-CZ-Standard-A", "A (Female, Standard)"),
-        "Greek": ("el-GR-Standard-A", "A (Female, Standard)"),
-        "Ukrainian": ("uk-UA-Standard-A", "A (Female, Standard)"),
-        # Add any remaining languages from your languages.yaml here in the same format
-    }
-    default_voice, default_voice_display = default_voice_map.get(lang, ("en-US-Standard-D", "D (Female, Standard)"))
-    if "selected_voice" not in st.session_state:
-        st.session_state.selected_voice = default_voice
-    if "selected_voice_display" not in st.session_state:
-        st.session_state.selected_voice_display = default_voice_display
+
+    # Voice - only set default if per-language settings haven't already loaded one
+    if "selected_voice" not in st.session_state or "selected_voice_display" not in st.session_state:
+        lang = st.session_state.get("selected_language", "English")
+        # FULL default_voice_map for all 77 languages (from languages.yaml)
+        # Key = language name exactly as shown in the app
+        # Value = (voice_code, display_name)
+        default_voice_map = {
+            "English": ("en-US-AvaNeural", "AvaNeural (Female)"),
+            "Spanish": ("es-ES-ElviraNeural", "ElviraNeural (Female)"),
+            "French": ("fr-FR-DeniseNeural", "DeniseNeural (Female)"),
+            "German": ("de-DE-Neural2-B", "Neural2-B (Male)"),
+            "Italian": ("it-IT-IsabellaNeural", "IsabellaNeural (Female)"),
+            "Portuguese": ("pt-BR-FranciscaNeural", "FranciscaNeural (Female)"),
+            "Russian": ("ru-RU-DmitryNeural", "DmitryNeural (Male)"),
+            "Japanese": ("ja-JP-NanamiNeural", "NanamiNeural (Female)"),
+            "Korean": ("ko-KR-SunHiNeural", "SunHiNeural (Female)"),
+            "Chinese (Simplified)": ("zh-CN-XiaoxiaoNeural", "XiaoxiaoNeural (Female)"),
+            "Chinese (Traditional)": ("zh-TW-HsiaoChenNeural", "HsiaoChenNeural (Female)"),
+            "Arabic": ("ar-SA-ZariyahNeural", "ZariyahNeural (Female)"),
+            "Hindi": ("hi-IN-SwatiNeural", "SwatiNeural (Female)"),
+            "Bengali": ("bn-IN-TithiNeural", "TithiNeural (Female)"),
+            "Telugu": ("te-IN-ValluvasalaNeural", "ValluvasalaNeural (Female)"),
+            "Tamil": ("ta-IN-VeenaNeural", "VeenaNeural (Female)"),
+            "Marathi": ("mr-IN-AnanyaNeural", "AnanyaNeural (Female)"),
+            "Gujarati": ("gu-IN-AarohiNeural", "AarohiNeural (Female)"),
+            "Turkish": ("tr-TR-EmelNeural", "EmelNeural (Female)"),
+            "Vietnamese": ("vi-VN-HoaiMyNeural", "HoaiMyNeural (Female)"),
+            "Polish": ("pl-PL-ZofiaNeural", "ZofiaNeural (Female)"),
+            "Dutch": ("nl-NL-MayaNeural", "MayaNeural (Female)"),
+            "Swedish": ("sv-SE-SofieNeural", "SofieNeural (Female)"),
+            "Greek": ("el-GR-AthinaNeural", "AthinaNeural (Female)"),
+            "Czech": ("cs-CZ-VlastaNeural", "VlastaNeural (Female)"),
+            "Hungarian": ("hu-HU-NoemiNeural", "NoemiNeural (Female)"),
+            "Romanian": ("ro-RO-AleaNeural", "AleaNeural (Female)"),
+            "Thai": ("th-TH-PremwadeeNeural", "PremwadeeNeural (Female)"),
+            "Indonesian": ("id-ID-GadisNeural", "GadisNeural (Female)"),
+            "Malayalam": ("ml-IN-Standard-A", "Standard-A (Female)"),
+            "Ukrainian": ("uk-UA-OstapNeural", "OstapNeural (Male)"),
+            "Afrikaans": ("af-ZA-WillemNeural", "WillemNeural (Male)"),
+            "Albanian": ("sq-AL-IlseNeural", "IlseNeural (Female)"),
+            "Amharic": ("am-ET-MekdesNeural", "MekdesNeural (Female)"),
+            "Armenian": ("hy-AM-AnahitNeural", "AnahitNeural (Female)"),
+            "Azerbaijani": ("az-AZ-BanuNeural", "BanuNeural (Female)"),
+            "Bulgarian": ("bg-BG-KrystalNeural", "KrystalNeural (Female)"),
+            "Catalan": ("ca-ES-JoanaNeural", "JoanaNeural (Female)"),
+            "Welsh": ("cy-GB-NiaNeural", "NiaNeural (Female)"),
+            "Danish": ("da-DK-ChristelNeural", "ChristelNeural (Female)"),
+            "Estonian": ("et-EE-AnuNeural", "AnuNeural (Female)"),
+            "Finnish": ("fi-FI-NooraNeural", "NooraNeural (Female)"),
+            "Galician": ("gl-ES-RosamariaNeural", "RosamariaNeural (Female)"),
+            "Georgian": ("ka-GE-EkaNeural", "EkaNeural (Female)"),
+            "Hebrew": ("he-IL-HilaNeural", "HilaNeural (Female)"),
+            "Icelandic": ("is-IS-GudrunNeural", "GudrunNeural (Female)"),
+            "Irish": ("ga-IE-OrlaNeural", "OrlaNeural (Female)"),
+            "Latvian": ("lv-LV-EvitaNeural", "EvitaNeural (Female)"),
+            "Lithuanian": ("lt-LT-LiepaNeural", "LiepaNeural (Female)"),
+            "Macedonian": ("mk-MK-MarijaNeural", "MarijaNeural (Female)"),
+            "Norwegian": ("nb-NO-PernilleNeural", "PernilleNeural (Female)"),
+            "Persian": ("fa-IR-DilaNeural", "DilaNeural (Female)"),
+            "Slovak": ("sk-SK-VioletaNeural", "VioletaNeural (Female)"),
+            "Slovenian": ("sl-SI-PetraNeural", "PetraNeural (Female)"),
+            "Serbian": ("sr-RS-SophieNeural", "SophieNeural (Female)"),
+            "Bosnian": ("bs-BA-GoranNeural", "GoranNeural (Male)"),
+            "Basque": ("eu-ES-AinhoaNeural", "AinhoaNeural (Female)"),
+            "Belarusian": ("be-BY-NatashaSergeyevichNeural", "NatashaSergeyevichNeural (Female)"),
+            "Burmese": ("my-MM-NilarNeural", "NilarNeural (Female)"),
+            "Croatian": ("hr-HR-GabrijelaNeural", "GabrijelaNeural (Female)"),
+            "Kannada": ("kn-IN-GaganNeural", "GaganNeural (Male)"),
+            "Kazakh": ("kk-KZ-AigulNeural", "AigulNeural (Female)"),
+            "Khmer": ("km-KH-PisethNeural", "PisethNeural (Male)"),
+            "Lao": ("lo-LA-ChanthavongNeural", "ChanthavongNeural (Male)"),
+            "Malay": ("ms-MY-OsmanNeural", "OsmanNeural (Male)"),
+            "Maltese": ("mt-MT-GraceNeural", "GraceNeural (Female)"),
+            "Mongolian": ("mn-MN-BataaNeural", "BataaNeural (Male)"),
+            "Nepali": ("ne-NP-HemkalaNeural", "HemkalaNeural (Female)"),
+            "Pashto": ("ps-AF-GulNawazNeural", "GulNawazNeural (Male)"),
+            "Sinhala": ("si-LK-SameeraNeural", "SameeraNeural (Male)"),
+            "Somali": ("so-SO-MuuseNeural", "MuuseNeural (Male)"),
+            "Sundanese": ("su-ID-JajangNeural", "JajangNeural (Male)"),
+            "Swahili": ("sw-KE-RafikiNeural", "RafikiNeural (Male)"),
+            "Urdu": ("ur-IN-GulNeural", "GulNeural (Female)"),
+            "Uzbek": ("uz-UZ-MadinaNeural", "MadinaNeural (Female)"),
+            "Zulu": ("zu-ZA-ThandoNeural", "ThandoNeural (Female)"),
+            "Javanese": ("jv-ID-DimasNeural", "DimasNeural (Male)"),
+        }
+        default_voice, default_voice_display = default_voice_map.get(lang, ("en-US-Standard-D", "D (Female, Standard)"))
+        if "selected_voice" not in st.session_state:
+            st.session_state.selected_voice = default_voice
+        if "selected_voice_display" not in st.session_state:
+            st.session_state.selected_voice_display = default_voice_display
 
 def render_sentence_settings_page():
     """Render the sentence settings page."""
@@ -891,6 +938,23 @@ def render_sentence_settings_page():
         st.markdown(f"**Audio Preview:** {st.session_state.audio_speed}x speed, **Voice:** {st.session_state.selected_voice_display}")
 
     st.markdown("---")
+
+    # === SAVE CURRENT SETTINGS AS DEFAULTS ===
+    st.markdown("---")
+    if st.button(f"💾 Save these settings as DEFAULTS for **{st.session_state.get('selected_language', 'this language')}**", 
+                type="secondary", use_container_width=True):
+        current_lang = st.session_state.get("selected_language")
+        if current_lang:
+            st.session_state.per_language_settings[current_lang] = {
+                "sentence_length_range": st.session_state.sentence_length_range,
+                "sentences_per_word": st.session_state.sentences_per_word,
+                "difficulty": st.session_state.difficulty,
+                "selected_voice": st.session_state.get("selected_voice", "en-US-Standard-D"),
+                "selected_voice_display": st.session_state.get("selected_voice_display", "D (Female, Standard)"),
+                "audio_speed": st.session_state.audio_speed
+            }
+            st.success(f"✅ Saved as defaults for **{current_lang}**")
+            st.rerun()  
 
     # Navigation buttons at bottom
     col_back, col_next = st.columns([1, 1])

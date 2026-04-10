@@ -7,19 +7,23 @@ from frequency_utils import get_available_frequency_lists
 
 
 def load_per_language_settings(selected_lang):
-    """Load per-language settings for the selected language."""
+    """Load per-language default settings (now fully restored)."""
     if "per_language_settings" in st.session_state:
         lang_settings = st.session_state.per_language_settings.get(selected_lang, {})
         if lang_settings:
-            # Apply the per-language settings to session state
-            if "difficulty" in lang_settings:
-                st.session_state.difficulty = lang_settings["difficulty"]
             if "sentence_length_range" in lang_settings:
-                st.session_state.sentence_length_range = lang_settings["sentence_length_range"]
+                st.session_state.sentence_length_range = tuple(lang_settings["sentence_length_range"])
             if "sentences_per_word" in lang_settings:
                 st.session_state.sentences_per_word = lang_settings["sentences_per_word"]
+            if "difficulty" in lang_settings:
+                st.session_state.difficulty = lang_settings["difficulty"]
             if "audio_speed" in lang_settings:
                 st.session_state.audio_speed = lang_settings["audio_speed"]
+            if "selected_voice" in lang_settings:
+                st.session_state.selected_voice = lang_settings["selected_voice"]
+            if "selected_voice_display" in lang_settings:
+                st.session_state.selected_voice_display = lang_settings["selected_voice_display"]
+            st.info(f"✅ Loaded default settings for **{selected_lang}**")
             return True
     return False
 
