@@ -337,9 +337,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     # Language selector
     all_languages = st.session_state.get("all_languages", [])
     lang_names = [lang["name"] for lang in all_languages] if all_languages else ["English", "Spanish", "French", "German", "Italian"]
-
-    # Clean, professional language selector
-    st.markdown("### 🔹 Edit Defaults for:")
     
     config_lang = st.selectbox(
         "Language",                    # hidden label
