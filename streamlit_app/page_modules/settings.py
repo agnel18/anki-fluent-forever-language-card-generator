@@ -441,7 +441,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
                 imported = json.load(uploaded_file)
                 st.session_state.per_language_settings.update(imported)
                 st.success("✅ All language defaults restored from JSON!")
-                st.rerun()
+                
             except Exception as e:
                 st.error(f"Failed to load JSON: {e}")
 
