@@ -3,7 +3,9 @@
 import streamlit as st
 import time
 import os
+import json
 from pathlib import Path
+
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model
@@ -322,7 +324,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
     with col_download:
         if st.button("⬇️ Download Global JSON", use_container_width=True):
-            import json
             data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
             st.download_button(
                 label="language_defaults.json",
@@ -426,7 +427,6 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
     with col_dl:
         if st.button("⬇️ Download Global Defaults JSON"):
-            import json
             data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
             st.download_button(
                 label="Click to download language_defaults.json",
