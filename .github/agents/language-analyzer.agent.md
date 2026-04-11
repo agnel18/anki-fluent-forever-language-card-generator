@@ -61,6 +61,9 @@ Determine from the language name/code:
 
 Verify the language exists in `streamlit_app/languages.yaml` and note its TTS voice code. Verify the frequency list exists in `77 Languages Frequency Word Lists/`.
 
+- **CRITICAL:** Always use the **exact code** from `languages.yaml` (e.g. "ml" for Malayalam, never "ma").
+- Verify the folder name matches the key in `analyzer_registry.py` → `folder_to_code`.
+
 ### Step 2: Create Grammar Concepts Document
 
 Create `languages/{lang}/{code}_grammar_concepts.md` with:
@@ -146,7 +149,8 @@ Create 7 test files + conftest following the Japanese pattern:
 ### Step 8: Register, Validate, and Test
 
 **8a. Register the analyzer:**
-Add `'{folder_name}': '{code}'` to the `folder_to_code` dict in `streamlit_app/language_analyzers/analyzer_registry.py`.
+- Add exactly: `"{folder_name}": "{code}"` to the `folder_to_code` dict in `analyzer_registry.py`
+- **Verify immediately** after editing that the code matches the one in `languages.yaml`.
 
 **8b. Run unit tests:**
 ```bash
