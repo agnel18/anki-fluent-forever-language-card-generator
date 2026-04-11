@@ -338,10 +338,14 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     all_languages = st.session_state.get("all_languages", [])
     lang_names = [lang["name"] for lang in all_languages] if all_languages else ["English", "Spanish", "French", "German", "Italian"]
 
+    # Clean, professional language selector
+    st.markdown("### 🔹 Edit Defaults for:")
+    
     config_lang = st.selectbox(
-        "🔹 Edit defaults for",
+        "Language",                    # hidden label
         options=lang_names,
-        key="per_lang_default_select"
+        key="per_lang_default_select",
+        label_visibility="collapsed"   # removes the default label
     )
 
     defaults = st.session_state.per_language_settings.get(config_lang, {})
@@ -455,6 +459,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
     st.caption("Tip: After saving in Step 3, use the button at the top or here to download the updated global file.")
 
+    st.markdown("---")
 
     # --- Cache Management Section ---
     st.markdown("## 💾 API Response Cache")
