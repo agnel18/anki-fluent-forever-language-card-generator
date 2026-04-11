@@ -295,24 +295,42 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     st.markdown("---")
 
     # ==========================================================
-    # PER-LANGUAGE DEFAULT OUTPUT SETTINGS (Global single JSON)
+    # PER-LANGUAGE DEFAULT OUTPUT SETTINGS — Final Improved UX
+    # Single global JSON file for all languages
     # ==========================================================
     st.markdown("---")
     st.markdown("## 🌍 Per-Language Default Output Settings")
-    st.caption("Set once. Reuse forever. All languages share one global JSON file.")
+    st.caption("Set once. Reuse forever. All languages share one global `language_defaults.json` file.")
 
     # Safe initialization
     if "per_language_settings" not in st.session_state:
         st.session_state.per_language_settings = {}
 
-    # === Friendly Summary (what the user asked for) ===
-    total_custom = len(st.session_state.per_language_settings)
+    # === Friendly Summary + Quick Actions ===
+    configured_langs = list(st.session_state.per_language_settings.keys())
+    total_custom = len(configured_langs)
     total_langs = len(st.session_state.get("all_languages", []))
 
-    if total_custom == 0:
-        st.info("📭 No custom defaults saved yet. Settings from Step 3 will be used.")
-    else:
-        st.success(f"✅ **{total_custom}** out of {total_langs} languages have custom defaults saved")
+    col_summary, col_download = st.columns([3, 1])
+    with col_summary:
+        if total_custom == 0:
+            st.info("📭 No custom defaults saved yet.")
+        else:
+            st.success(f"✅ **{total_custom}** of {total_langs} languages have custom defaults")
+            if configured_langs:
+                st.caption("Configured: " + " • ".join(configured_langs[:8]) + (" …" if len(configured_langs) > 8 else ""))
+
+    with col_download:
+        if st.button("⬇️ Download Global JSON", use_container_width=True):
+            import json
+            data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
+            st.download_button(
+                label="language_defaults.json",
+                data=data,
+                file_name="language_defaults.json",
+                mime="application/json",
+                key="global_download_top"
+            )
 
     st.markdown("---")
 
@@ -321,7 +339,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     lang_names = [lang["name"] for lang in all_languages] if all_languages else ["English", "Spanish", "French", "German", "Italian"]
 
     config_lang = st.selectbox(
-        "🔹 Choose language to edit defaults for",
+        "🔹 Edit defaults for",
         options=lang_names,
         key="per_lang_default_select"
     )
@@ -350,26 +368,55 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
         key=f"def_diff_{config_lang}"
     )
 
-    # Audio
+    # Audio Settings — proper dropdown
     st.markdown("### 🎵 Audio Settings")
-    selected_voice_display = st.text_input("Voice (Google TTS)", value=defaults.get("selected_voice_display", ""), key=f"def_voice_display_{config_lang}")
-    selected_voice = st.text_input("Voice Code", value=defaults.get("selected_voice", ""), key=f"def_voice_{config_lang}")
+    try:
+        from audio_generator import get_google_voices_for_language
+        voice_options, _, voice_display_map = get_google_voices_for_language(config_lang)
+        current_display = defaults.get("selected_voice_display", voice_options[0] if voice_options else "")
+        idx = voice_options.index(current_display) if current_display in voice_options else 0
+
+        selected_voice_display = st.selectbox(
+            "Voice",
+            options=voice_options,
+            index=idx,
+            key=f"def_voice_display_{config_lang}"
+        )
+        selected_voice = voice_display_map.get(selected_voice_display, "en-US-Standard-D")
+    except Exception:
+        selected_voice_display = st.text_input("Voice (Google TTS)", value=defaults.get("selected_voice_display", ""), key=f"def_voice_display_{config_lang}")
+        selected_voice = st.text_input("Voice Code", value=defaults.get("selected_voice", ""), key=f"def_voice_{config_lang}")
+
     audio_speed = st.slider("Audio Speed", 0.5, 1.5, value=defaults.get("audio_speed", 1.0), step=0.05, key=f"def_speed_{config_lang}")
 
-    # Save button
-    if st.button(f"💾 Save as Defaults for **{config_lang}**", type="primary", use_container_width=True, key=f"save_def_{config_lang}"):
-        st.session_state.per_language_settings[config_lang] = {
-            "sentence_length_range": (sentence_min, sentence_max),
-            "sentences_per_word": sentences_per_word,
-            "difficulty": difficulty,
-            "selected_voice": selected_voice,
-            "selected_voice_display": selected_voice_display,
-            "audio_speed": audio_speed
-        }
-        st.success(f"✅ Defaults saved for **{config_lang}** (global file updated)")
-        st.rerun()
+    # Save + Recommended
+    col_save, col_recommend = st.columns([2, 1])
+    with col_save:
+        if st.button(f"💾 Save as Defaults for **{config_lang}**", type="primary", use_container_width=True, key=f"save_def_{config_lang}"):
+            st.session_state.per_language_settings[config_lang] = {
+                "sentence_length_range": (sentence_min, sentence_max),
+                "sentences_per_word": sentences_per_word,
+                "difficulty": difficulty,
+                "selected_voice": selected_voice,
+                "selected_voice_display": selected_voice_display,
+                "audio_speed": audio_speed
+            }
+            st.success(f"✅ Defaults saved for **{config_lang}**")
+            st.rerun()
 
-    # === Global JSON Backup / Restore (single file for all languages) ===
+    with col_recommend:
+        if st.button("🔄 Use Recommended Defaults", use_container_width=True):
+            rec = {
+                "sentence_length_range": (6, 14),
+                "sentences_per_word": 5,
+                "difficulty": "beginner",
+                "audio_speed": 0.85
+            }
+            st.session_state.per_language_settings[config_lang] = rec
+            st.success("✅ Recommended defaults applied")
+            st.rerun()
+
+    # === GLOBAL BACKUP / RESTORE (kept exactly as you had it) ===
     st.markdown("---")
     st.subheader("💾 Global Backup & Restore (All Languages)")
     st.caption("One file contains defaults for every language.")
@@ -406,7 +453,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
                 st.success("All defaults have been reset.")
                 st.rerun()
 
-    st.caption("Tip: After saving in Step 3, come here to download the updated global file.")
+    st.caption("Tip: After saving in Step 3, use the button at the top or here to download the updated global file.")
 
 
     # --- Cache Management Section ---
