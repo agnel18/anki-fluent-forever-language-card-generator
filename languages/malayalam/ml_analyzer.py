@@ -173,6 +173,132 @@ class MlAnalyzer(BaseGrammarAnalyzer):
                     word_explanations=fallback_result.get('word_explanations', [])
                 ))
             return fallback_analyses
+        
+    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                     enriched_meaning: str = "", min_length: int = 6,
+                                     max_length: int = 10, difficulty: str = "intermediate",
+                                     topics: Optional[List[str]] = None) -> Optional[str]:
+        """
+        Malayalam-specific sentence generation prompt.
+        Modeled exactly after Hindi gold standard for high-quality natural sentences.
+        """
+        # Build context instruction based on topics
+        if topics:
+            context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
+        else:
+            context_instruction = "- Use diverse real-life contexts: family, school, travel, food, daily life, emotions, work, social situations, nature, festivals, temple, market"
+
+        # Build meaning instruction based on enriched data
+        if enriched_meaning and enriched_meaning != 'N/A':
+            if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+                context_lines = enriched_meaning[1:-1].split('\n')
+                definitions = []
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Definition'):
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+                if definitions:
+                    meaning_summary = '; '.join(definitions[:4])
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings and provide a comprehensive meaning.'
+                else:
+                    enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning.'
+            else:
+                enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this.'
+        else:
+            enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
+        # Custom prompt for Malayalam (Dravidian agglutinative language)
+        prompt = f"""You are a native-level expert linguist in Malayalam (മലയാളം).
+
+Your task: Generate a complete learning package for the Malayalam word "{word}" in ONE response.
+
+===========================
+STEP 1: WORD MEANING
+===========================
+{enriched_meaning_instruction}
+Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+===========================
+WORD-SPECIFIC RESTRICTIONS
+===========================
+Based on the meaning above, identify any grammatical constraints for "{word}".
+Examples: case markers (ന്, ല്, etc.), verb conjugation rules, postpositions, sandhi, honorific level.
+If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+
+===========================
+STEP 2: SENTENCES
+===========================
+Generate exactly {num_sentences} highly natural, idiomatic sentences in Malayalam for the word "{word}".
+
+QUALITY RULES:
+- Every sentence must use proper Malayalam script (മലയാളം)
+- Grammar, morphology, and sandhi must be correct
+- The target word "{word}" MUST be used correctly according to restrictions
+- Each sentence must be between {min_length} and {max_length} words long
+- COUNT words precisely; if outside the range, regenerate internally
+- Difficulty: {difficulty}
+
+VARIETY REQUIREMENTS:
+- Use different case markers, verb conjugations, and postpositions where appropriate
+- Include different sentence types (declarative, interrogative, negative, etc.)
+- Show natural spoken-style Malayalam when possible
+{context_instruction}
+
+===========================
+STEP 3: ENGLISH TRANSLATIONS
+===========================
+For EACH sentence above, provide a natural, fluent English translation.
+- Translation should be natural English, not literal word-for-word
+
+===========================
+STEP 4: IPA
+===========================
+For EACH sentence above, provide accurate IPA transcription.
+- Use standard IPA symbols (including retroflex sounds like ṟ, ɭ, etc.)
+
+===========================
+STEP 5: IMAGE KEYWORDS
+===========================
+For EACH sentence above, generate exactly 3 specific keywords for image search.
+- Keywords should be concrete and specific
+- Keywords in English only
+
+===========================
+OUTPUT FORMAT - FOLLOW EXACTLY
+===========================
+Return your response in this exact text format:
+
+MEANING: [brief English meaning]
+
+RESTRICTIONS: [grammatical restrictions]
+
+SENTENCES:
+1. [sentence 1 in Malayalam script]
+2. [sentence 2 in Malayalam script]
+...
+
+TRANSLATIONS:
+1. [natural English translation for sentence 1]
+...
+
+IPA:
+1. [IPA for sentence 1]
+...
+
+KEYWORDS:
+1. [keyword1, keyword2, keyword3]
+...
+
+IMPORTANT:
+- Return ONLY the formatted text, no extra explanation
+- Sentences must be in proper Malayalam script only
+- Ensure exactly {num_sentences} sentences, translations, IPA, and keywords"""
+
+        return prompt        
 
     def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
         """Call Google Gemini AI for Malayalam grammar analysis."""
@@ -286,6 +412,8 @@ class MlAnalyzer(BaseGrammarAnalyzer):
             html_parts.append(f'<span style="color: {default_color}; font-weight: bold;">{remaining}</span>')
 
         return ''.join(html_parts)
+
+
 
     def _map_grammatical_role_to_category(self, role: str) -> str:
         """Map specific grammatical roles to color categories."""

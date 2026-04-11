@@ -64,6 +64,7 @@ Verify the language exists in `streamlit_app/languages.yaml` and note its TTS vo
 - **CRITICAL:** Always use the **exact code** from `languages.yaml` (e.g. "ml" for Malayalam, never "ma").
 - Verify the folder name matches the key in `analyzer_registry.py` → `folder_to_code`.
 - **Also register in LanguageRegistry:** The language must be added to `_load_language_configs()` in `streamlit_app/language_registry.py` (using the exact same style as the other 14 entries).
+- **Custom prompt requirement:** Confirm that `{code}_prompt_builder.py` will contain language-specific sentence generation templates (required to avoid generic prompt fallback in content generation).
 
 ### Step 2: Create Grammar Concepts Document
 
@@ -112,10 +113,12 @@ languages/{lang}/
 Generate all 5 domain files by adapting the gold standard. Read the corresponding French/Arabic file first, then adapt:
 
 - **`{code}_config.py`** — Language config, grammatical roles, color schemes, complexity filters. Load from external YAML/JSON in `infrastructure/data/`.
-- **`{code}_prompt_builder.py`** — AI prompt templates for single and batch sentence analysis. Include language-specific grammar instructions.
+- **`{code}_prompt_builder.py`** — **MUST** contain rich language-specific templates for BOTH grammar analysis AND sentence generation (meaning, sentences, keywords, IPA). Copy the pattern from `hi_prompt_builder.py` or `fr_prompt_builder.py` and adapt for this language’s grammar and vocabulary style.
 - **`{code}_response_parser.py`** — 5-level fallback parsing: direct JSON → markdown code block → JSON repair → text pattern extraction → rule-based fallback.
 - **`{code}_validator.py`** — Validation with natural 0.0–1.0 scoring. Check word coverage, role validity, explanation quality. Must achieve ≥ 0.85 threshold.
 - **`{code}_fallbacks.py`** (in infrastructure/) — Rule-based grammar analysis when AI is unavailable. Uses patterns from YAML data files.
+
+**CRITICAL:** Every new analyzer **must** have a custom `prompt_builder.py` with sentence-generation templates so that “No custom prompt available” never appears.
 
 ### Step 5: Implement Main Analyzer
 
