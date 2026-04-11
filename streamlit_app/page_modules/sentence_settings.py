@@ -939,22 +939,51 @@ def render_sentence_settings_page():
 
     st.markdown("---")
 
-    # === SAVE CURRENT SETTINGS AS DEFAULTS ===
     st.markdown("---")
-    if st.button(f"💾 Save these settings as DEFAULTS for **{st.session_state.get('selected_language', 'this language')}**", 
-                type="secondary", use_container_width=True):
-        current_lang = st.session_state.get("selected_language")
-        if current_lang:
+
+    # === GLOBAL DEFAULTS MANAGEMENT (single shared JSON file) ===
+    # Safe initialization to prevent the previous error
+    if "per_language_settings" not in st.session_state:
+        st.session_state.per_language_settings = {}
+
+    current_lang = st.session_state.get("selected_language", "this language")
+
+    st.markdown("### 💾 Persist These Settings for Future Sessions")
+    st.caption("All languages share one global JSON file. Changes here update the master file.")
+
+    col_save, col_download = st.columns([1.6, 1])
+
+    with col_save:
+        if st.button(
+            f"💾 Save These Settings as Defaults for **{current_lang}**",
+            type="secondary",
+            use_container_width=True,
+            key="save_as_defaults_btn"
+        ):
             st.session_state.per_language_settings[current_lang] = {
                 "sentence_length_range": st.session_state.sentence_length_range,
                 "sentences_per_word": st.session_state.sentences_per_word,
                 "difficulty": st.session_state.difficulty,
-                "selected_voice": st.session_state.get("selected_voice", "en-US-Standard-D"),
-                "selected_voice_display": st.session_state.get("selected_voice_display", "D (Female, Standard)"),
+                "selected_voice": st.session_state.get("selected_voice", ""),
+                "selected_voice_display": st.session_state.get("selected_voice_display", ""),
                 "audio_speed": st.session_state.audio_speed
             }
-            st.success(f"✅ Saved as defaults for **{current_lang}**")
-            st.rerun()  
+            st.success(f"✅ Saved for **{current_lang}** and updated the global defaults file")
+            st.rerun()
+
+    with col_download:
+        if st.button("📤 Download Global Defaults JSON", use_container_width=True):
+            import json
+            data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
+            st.download_button(
+                label="⬇️ Download language_defaults.json",
+                data=data,
+                file_name="language_defaults.json",
+                mime="application/json",
+                key="global_download_from_step3"
+            )
+
+    st.caption("💡 Full backup / restore + summary of all languages is in **Settings → Per-Language Default Output Settings**")
 
     # Navigation buttons at bottom
     col_back, col_next = st.columns([1, 1])
