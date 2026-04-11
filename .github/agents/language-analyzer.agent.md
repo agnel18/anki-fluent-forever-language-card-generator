@@ -63,6 +63,7 @@ Verify the language exists in `streamlit_app/languages.yaml` and note its TTS vo
 
 - **CRITICAL:** Always use the **exact code** from `languages.yaml` (e.g. "ml" for Malayalam, never "ma").
 - Verify the folder name matches the key in `analyzer_registry.py` → `folder_to_code`.
+- **Also register in LanguageRegistry:** The language must be added to `_load_language_configs()` in `streamlit_app/language_registry.py` (using the exact same style as the other 14 entries).
 
 ### Step 2: Create Grammar Concepts Document
 
@@ -148,8 +149,9 @@ Create 7 test files + conftest following the Japanese pattern:
 
 ### Step 8: Register, Validate, and Test
 
-**8a. Register the analyzer:**
-- Add exactly: `"{folder_name}": "{code}"` to the `folder_to_code` dict in `analyzer_registry.py`
+**8a. Register the analyzer in BOTH registries:**
+- Add exactly: `"{folder_name}": "{code}"` to the `folder_to_code` dict in `streamlit_app/language_analyzers/analyzer_registry.py`
+- **Also register in LanguageRegistry:** Add the language to the `_load_language_configs()` method in `streamlit_app/language_registry.py` using the **exact same style** as the other entries (iso_code from languages.yaml, full_name, epitran_code, phonemizer_code, family, script_type, complexity).
 - **Verify immediately** after editing that the code matches the one in `languages.yaml`.
 
 **8b. Run unit tests:**
