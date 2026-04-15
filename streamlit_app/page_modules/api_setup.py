@@ -78,31 +78,28 @@ def render_api_setup_page():
     st.markdown("---")
 
     # ==========================================================
-    # SECTION 1: Gemini AI — FREE (no billing needed)
+    # SECTION 1: Gemini AI — FREE & SUPER SIMPLE (30 seconds)
     # ==========================================================
     st.markdown("### 🤖 Gemini AI — FREE (no billing needed)")
 
-    with st.expander("📖 How to get your Gemini API key", expanded=not bool(google_key)):
+    with st.expander("📖 How to get your Gemini API key (30 seconds)", expanded=not bool(google_key)):
         st.markdown("""
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Click **"Select a project"** → **"New Project"**
-3. Name it **"Language Cards - Gemini"** → click **"Create"**
-4. **Do NOT enable billing** — this keeps Gemini free!
-5. Go to **APIs & Services** → **Enable APIs and Services**
-6. Search for **"Generative Language API"** → click **"Enable"**
-7. Go to **APIs & Services** → **Credentials**
-8. Click **"Create Credentials"** → **"API key"**
-9. Copy the key and paste it below
-10. Click on the key → **"API restrictions"** → **"Restrict key"** → select only **"Generative Language API"** → **"Save"**
+    **✅ Easiest way — no projects, no billing, no OAuth consent screen:**
 
-> ✅ **Free tier: ~1,500 requests/day, 1 million tokens/day — no credit card needed!**
+    1. Go to **[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)**
+    2. Sign in with your Google account (Gmail works)
+    3. Click **"Create API key"**
+    4. Copy the key (it starts with `AIza...`)
+    5. Paste it below
+
+    > **Free tier: ~1,500 requests/day** — perfect for creating Malayalam (and all 77 languages) decks.
         """)
 
     google_key_input = st.text_input(
         "Gemini API Key",
         value=google_key,
         type="password",
-        help="Your API key from the billing-free Gemini project",
+        help="Get it instantly at aistudio.google.com/app/apikey",
         key="google_api_key_input"
     )
 
@@ -112,9 +109,11 @@ def render_api_setup_page():
     col_save, col_test = st.columns([1, 1])
     with col_save:
         if st.button("💾 Save Gemini Key", help="Save the Gemini API key"):
-            if google_key_input:
-                st.session_state.google_api_key = google_key_input
-
+            if google_key_input.strip():
+                st.session_state.google_api_key = google_key_input.strip()
+                st.success("✅ Gemini key saved!")
+            else:
+                st.error("Please enter a key")
 
     with col_test:
         if google_key_input or google_key:
