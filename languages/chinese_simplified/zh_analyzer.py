@@ -340,15 +340,9 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             })
         return '{"sentence": "' + sentence + '", "words": ' + str(word_data).replace("'", '"') + '}'
 
-    # Legacy compatibility methods - delegate to new implementation
-    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str, native_language: str = "English") -> str:
-        """
-        Legacy method - use analyze_grammar instead.
-
-        DEPRECATED: This method is maintained for backward compatibility.
-        New code should use the analyze_grammar() method directly.
-        """
-        return self.prompt_builder.build_single_prompt(sentence, complexity, native_language)
+    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
+        """Gold-standard: Delegate to prompt builder (soft guidance + complexity-aware)."""
+        return self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """
@@ -365,123 +359,7 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         - Intermediate: More distinctions (classifiers, aspect markers, pronouns)
         - Advanced: Full granularity (all particle types, structural elements)
         """
-        return self.zh_config.get_color_scheme(complexity)
-
-    # Abstract method implementations required by BaseGrammarAnalyzer
-
-    def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
-        """Generate Chinese-specific AI prompt for grammar analysis with complexity-aware logic."""
-        if complexity == "beginner":
-            return self._get_beginner_prompt(sentence, target_word)
-        elif complexity == "intermediate":
-            return self._get_intermediate_prompt(sentence, target_word)
-        elif complexity == "advanced":
-            return self._get_advanced_prompt(sentence, target_word)
-        else:
-            return self._get_beginner_prompt(sentence, target_word)
-
-    def _get_beginner_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate beginner-level grammar analysis prompt for Chinese."""
-        return f"""Analyze this ENTIRE Chinese sentence WORD BY WORD: {sentence}
-
-For EACH AND EVERY INDIVIDUAL WORD/CHARACTER in the sentence, provide:
-- Its individual meaning and pronunciation (if applicable)
-- Its basic grammatical role (noun, verb, adjective, particle, etc.)
-- How it functions in this simple sentence
-- Basic relationships with other words
-
-Pay special attention to the target word: {target_word}
-
-Focus on basic Chinese features:
-- Basic particles (çš„, äº†, å—, etc.)
-- Simple subject-verb-object structure
-- Basic classifiers and measure words
-
-Return a JSON object with detailed word analysis for ALL words in the sentence:
-{{
-  "words": [
-    {{
-      "word": "example_word",
-      "individual_meaning": "translation/meaning",
-      "grammatical_role": "noun/verb/adjective/particle/etc",
-      "basic_function": "subject/object/modifier",
-      "importance": "learning significance"
-    }}
-  ],
-  "explanations": {{
-    "overall_structure": "Basic sentence structure explanation",
-    "key_features": "Simple Chinese grammatical features"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence, not just the target word! Provide COMPREHENSIVE explanations for basic Chinese grammar."""
-
-    def _get_intermediate_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate intermediate-level grammar analysis prompt for Chinese."""
-        return f"""Analyze this Chinese sentence with INTERMEDIATE grammar focus: {sentence}
-
-Provide detailed analysis including:
-- Aspect markers (äº†, ç€, è¿‡) and their functions
-- Classifier usage and selection
-- Pronoun systems and reference
-- Complex particle functions (æŠŠ, è¢«, ç»™, etc.)
-- Topic-comment structure
-
-Pay special attention to the target word: {target_word}
-
-Return a JSON object with comprehensive analysis:
-{{
-  "words": [
-    {{
-      "word": "example",
-      "grammatical_role": "role",
-      "aspect_info": "aspect marking if applicable",
-      "classifier_info": "classifier usage",
-      "syntactic_role": "function in sentence"
-    }}
-  ],
-  "explanations": {{
-    "aspect_system": "aspect marker usage in sentence",
-    "classifier_usage": "classifier selection and function",
-    "complex_structures": "intermediate Chinese syntax"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for Chinese-specific features."""
-
-    def _get_advanced_prompt(self, sentence: str, target_word: str) -> str:
-        """Generate advanced-level grammar analysis prompt for Chinese."""
-        return f"""Perform advanced grammatical analysis of this Chinese sentence: {sentence}
-
-Analyze complex linguistic phenomena:
-- Multiple aspect markers and their interactions
-- Complex classifier systems and quantification
-- Discourse particles and pragmatic functions (å‘¢, å§, å•Š, etc.)
-- Topic chains and information structure
-- Serial verb constructions
-- Resultative compounds and directional complements
-
-Pay special attention to the target word: {target_word}
-
-Return detailed JSON analysis with advanced Chinese linguistic features:
-{{
-  "words": [
-    {{
-      "word": "example",
-      "grammatical_role": "detailed_role",
-      "aspect_complexity": "multiple aspect interactions",
-      "discourse_function": "pragmatic particle usage",
-      "syntactic_complexity": "advanced structure analysis"
-    }}
-  ],
-  "explanations": {{
-    "aspect_interactions": "complex aspect marker combinations",
-    "discourse_structure": "information packaging and topic-comment",
-    "advanced_syntax": "serial verbs, compounds, complements"
-  }}
-}}
-
-CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations for advanced Chinese grammar phenomena."""
+        return self.zh_config.get_color_scheme(complexity)   
 
     def parse_grammar_response(self, ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]:
         """Parse AI response into standardized Chinese grammar analysis format."""
@@ -492,50 +370,50 @@ CRITICAL: Analyze EVERY word in the sentence! Provide COMPREHENSIVE explanations
         return self.validator.validate_result(parsed_data, original_sentence)['confidence']
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Generate HTML output for Chinese text with inline color styling for Anki compatibility"""
+        """Gold-standard HTML generator: complexity-aware + prefers pre-computed color."""
         explanations = parsed_data.get('word_explanations', [])
 
         print(f"DEBUG Chinese HTML Gen - Input explanations count: {len(explanations)}")
-        print("DEBUG Chinese HTML Gen - Input sentence: '" + str(sentence) + "'")
+        print(f"DEBUG Chinese HTML Gen - Input sentence: '{sentence}'")
+        print(f"DEBUG Chinese HTML Gen - Complexity level: {complexity}")
 
-        # For Chinese (logographic script without spaces), use position-based replacement
-        color_scheme = self.get_color_scheme('intermediate')
+        # Use the ACTUAL complexity level the user chose
+        color_scheme = self.get_color_scheme(complexity)
 
         # Sort explanations by position in sentence to avoid conflicts
         sorted_explanations = sorted(explanations, key=lambda x: sentence.find(x[0]) if len(x) >= 3 else len(sentence))
 
-        # Build HTML by processing the sentence character by character
         html_parts = []
         i = 0
         sentence_len = len(sentence)
 
         while i < sentence_len:
-            # Check if current position matches any word explanation
             matched = False
             for exp in sorted_explanations:
                 if len(exp) >= 3:
                     word = exp[0]
                     word_len = len(word)
 
-                    # Check if word matches at current position
                     if i + word_len <= sentence_len and sentence[i:i + word_len] == word:
-                        pos = exp[1]
-                        category = self._map_grammatical_role_to_category(pos)
-                        color = color_scheme.get(category, '#888888')
+                        # Prefer color already computed by the parser (best)
+                        if len(exp) >= 3 and isinstance(exp[2], str) and exp[2].startswith('#'):
+                            color = exp[2]
+                        else:
+                            pos = exp[1]
+                            category = self._map_grammatical_role_to_category(pos)
+                            color = color_scheme.get(category, '#888888')
 
-                        # Escape curly braces in word to prevent f-string issues
                         safe_word_display = word.replace('{', '{{').replace('}', '}}')
                         colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
                         html_parts.append(colored_word)
 
-                        print("DEBUG Chinese HTML Gen - Replaced '" + str(word) + "' with category '" + str(category) + "' and color '" + str(color) + "'")
+                        print(f"DEBUG Chinese HTML Gen - Replaced '{word}' with color '{color}' (role: {exp[1]})")
 
                         i += word_len
                         matched = True
                         break
 
             if not matched:
-                # No match, add character with default styling
                 default_color = color_scheme.get('default', '#000000')
                 html_parts.append(f'<span style="color: {default_color}; font-weight: bold;">{sentence[i]}</span>')
                 i += 1
@@ -686,38 +564,34 @@ IMPORTANT:
         return prompt
 
     def _map_grammatical_role_to_category(self, grammatical_role: str) -> str:
-        """Map Chinese grammatical roles to color scheme categories"""
-        # Convert to lowercase for case-insensitive matching
-        role_lower = grammatical_role.lower()
+        """Robust mapping that handles beginner-level verbose roles after soft guidance."""
+        if not grammatical_role:
+            return 'other'
         
-        # Handle compound roles and variations - order matters (more specific first)
-        if 'pronoun' in role_lower:
+        role = grammatical_role.lower().strip()
+        # Strip all parentheticals (e.g. "Adverb (negation marker)" → "adverb")
+        role = re.sub(r'\s*\([^)]*\)', '', role).strip()
+
+        # Most specific first
+        if 'pronoun' in role or 'demonstrative' in role:
             return 'pronoun'
-        elif 'classifier' in role_lower or 'measure' in role_lower:
+        elif any(x in role for x in ['classifier', 'measure word', 'measure']):
             return 'classifier'
-        elif 'noun' in role_lower:
+        elif 'noun' in role:
             return 'noun'
-        elif 'adverb' in role_lower:
+        elif any(x in role for x in ['adverb', 'negation']):
             return 'adverb'
-        elif 'verb' in role_lower:
+        elif 'verb' in role or 'copula' in role:
             return 'verb'
-        elif 'adjective' in role_lower:
+        elif 'adjective' in role:
             return 'adjective'
-        elif 'particle' in role_lower:
+        elif any(x in role for x in ['particle', 'structural']):
             return 'particle'
-        elif 'aspect' in role_lower:
+        elif 'aspect' in role:
             return 'aspect_marker'
-        elif 'modal' in role_lower:
+        elif 'modal' in role:
             return 'modal_particle'
-        elif 'structural' in role_lower:
-            return 'structural_particle'
-        elif 'numeral' in role_lower or 'number' in role_lower:
+        elif any(x in role for x in ['numeral', 'number']):
             return 'numeral'
-        elif 'preposition' in role_lower:
-            return 'preposition'
-        elif 'conjunction' in role_lower:
-            return 'conjunction'
-        elif 'interjection' in role_lower:
-            return 'interjection'
         else:
             return 'other'

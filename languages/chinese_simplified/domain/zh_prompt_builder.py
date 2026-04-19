@@ -74,34 +74,43 @@ class ZhPromptBuilder:
         self.batch_template = Template(self.config.prompt_templates['batch'])
 
     def build_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str:
-        """Build prompt for single sentence analysis."""
+        """Build prompt for single sentence analysis (gold-standard style)."""
         try:
+            grammatical_roles = self.config._get_grammatical_roles_list(complexity)  # ← soft guidance
+
             context = {
                 'sentence': sentence,
                 'target_word': target_word,
                 'complexity': complexity,
+                'grammatical_roles_list': grammatical_roles,
                 'native_language': 'English',
                 'patterns': self.config.patterns,
             }
             prompt = self.single_template.render(**context)
-            logger.debug(f"Built single prompt for complexity {complexity}")
+            logger.debug(f"Built single Chinese prompt for complexity {complexity}")
             return prompt
         except Exception as e:
             logger.error(f"Failed to build single prompt for '{sentence}': {e}")
             return f"Analyze this Chinese sentence: {sentence}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide JSON response with grammatical analysis."
 
     def build_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str:
-        """Build prompt for batch analysis."""
+        """Build prompt for batch analysis (gold-standard style)."""
         try:
+            grammatical_roles = self.config._get_grammatical_roles_list(complexity)  # ← soft guidance
+
+            sentences_text = '\n'.join([f'{i+1}. {sentence}' for i, sentence in enumerate(sentences)])
+
             context = {
                 'sentences': sentences,
+                'sentences_text': sentences_text,
                 'target_word': target_word,
                 'complexity': complexity,
+                'grammatical_roles_list': grammatical_roles,
                 'native_language': 'English',
                 'patterns': self.config.patterns,
             }
             prompt = self.batch_template.render(**context)
-            logger.debug(f"Built batch prompt for {len(sentences)} sentences")
+            logger.debug(f"Built batch Chinese prompt for {len(sentences)} sentences")
             return prompt
         except Exception as e:
             logger.error(f"Failed to build batch prompt: {e}")

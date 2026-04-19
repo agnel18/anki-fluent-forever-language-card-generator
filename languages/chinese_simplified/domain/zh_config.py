@@ -115,17 +115,18 @@ class ZhConfig:
         # For simplicity, define templates inline or load from file
         self.prompt_templates = {
             "single": """
-Analyze this Chinese sentence and provide DETAILED grammatical breakdown.
+Analyze this Chinese sentence and provide a detailed grammatical breakdown.
 
 Sentence: {{sentence}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
 
-For EACH word/character in the sentence, provide:
-- Its specific grammatical function and role
-- How it contributes to the sentence meaning
-- Relationships with adjacent words
-- Chinese-specific features (aspect, classifiers, particles)
+Use ONLY these grammatical roles when possible:
+{{grammatical_roles_list}}
+
+For EACH word/character, provide:
+- Its specific grammatical function
+- Chinese-specific features (classifiers, aspect markers, particles)
 
 Return a JSON object with exactly this structure:
 {
@@ -133,17 +134,17 @@ Return a JSON object with exactly this structure:
   "words": [
     {
       "word": "character/word",
-      "grammatical_role": "noun|verb|aspect_marker|classifier|particle|...",
-      "individual_meaning": "Detailed explanation of this element's function, relationships, and contribution to sentence meaning"
+      "grammatical_role": "noun|verb|adjective|adverb|pronoun|particle|classifier|numeral|aspect_marker|structural_particle|modal_particle|...",
+      "individual_meaning": "Detailed explanation of this element's function and relationships"
     }
   ],
   "explanations": {
-    "overall_structure": "Detailed explanation of sentence structure and word relationships",
-    "key_features": "Notable Chinese grammatical features like aspect usage, classifier selection, particle functions"
+    "overall_structure": "Detailed explanation of sentence structure",
+    "key_features": "Notable Chinese grammatical features"
   }
 }
 
-CRITICAL: Provide COMPREHENSIVE explanations for EVERY element, explaining relationships and functions in detail.
+CRITICAL: Analyze EVERY word. Use only the roles from the list above.
 """,
             "batch": """
 Analyze these Chinese sentences and provide detailed grammatical breakdowns for each.
@@ -152,33 +153,21 @@ Sentences: {{sentences}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
 
-For EACH sentence, provide comprehensive analysis including:
-- Word-by-word grammatical breakdown
-- Chinese-specific features (aspect markers, classifiers, particles)
-- Relationships between sentence elements
-- Overall sentence structure and function
+Use ONLY these grammatical roles when possible:
+{{grammatical_roles_list}}
 
 Return a JSON object with exactly this structure:
 {
   "batch_results": [
     {
       "sentence": "first sentence",
-      "words": [
-        {
-          "word": "character/word",
-          "grammatical_role": "noun|verb|aspect_marker|classifier|particle|...",
-          "individual_meaning": "Detailed explanation of function and relationships"
-        }
-      ],
-      "explanations": {
-        "overall_structure": "Detailed structural analysis",
-        "key_features": "Chinese grammatical features and their functions"
-      }
+      "words": [ ... ],
+      "explanations": { ... }
     }
   ]
 }
 
-CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
+CRITICAL: Analyze every sentence separately. Use only the roles from the list above.
 """
         }
         self.patterns = self._load_yaml(config_dir / "zh_patterns.yaml")
@@ -277,3 +266,31 @@ CRITICAL: Provide COMPREHENSIVE explanations for ALL elements in EACH sentence.
             }
         }
         return schemes.get(complexity, schemes["intermediate"])
+    
+    def _get_grammatical_roles_list(self, complexity: str) -> str:
+        """
+        Gold-standard: Return formatted bullet list of allowed roles (soft guidance).
+        Beginner = simple list, Advanced = full Chinese-specific roles.
+        """
+        if complexity == "beginner":
+            role_list = [
+                "noun", "verb", "adjective", "adverb", "pronoun",
+                "particle", "classifier", "numeral"
+            ]
+        elif complexity == "intermediate":
+            role_list = [
+                "noun", "verb", "adjective", "adverb", "pronoun",
+                "particle", "classifier", "numeral", "aspect_marker",
+                "structural_particle", "modal_particle"
+            ]
+        else:  # advanced
+            role_list = [
+                "noun", "verb", "adjective", "adverb", "pronoun",
+                "particle", "classifier", "numeral", "aspect_marker",
+                "structural_particle", "modal_particle", "determiner",
+                "preposition", "conjunction", "interjection"
+            ]
+
+        formatted_list = '\n'.join([f'- {role}' for role in role_list])
+        return formatted_list    
+
