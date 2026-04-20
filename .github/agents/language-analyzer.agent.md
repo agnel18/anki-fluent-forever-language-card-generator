@@ -38,6 +38,18 @@ You are a **Language Grammar Analyzer Builder** — a specialist that creates co
        complexity = "intermediate"
    ```
 
+5. **MANDATORY: Implement `get_sentence_generation_prompt`.**
+   - Every new analyzer **must** implement a `get_sentence_generation_prompt` method in the main analyzer class.
+   - This method must delegate to the language's prompt builder (e.g., `self.prompt_builder.get_sentence_generation_prompt(...)`).
+   - This prevents fallback to the generic prompt and ensures language-specific sentence generation.
+   - **Template:**
+     ```python
+     def get_sentence_generation_prompt(self, word, language, num_sentences, enriched_meaning="", min_length=3, max_length=15, difficulty="intermediate", topics=None):
+         return self.prompt_builder.get_sentence_generation_prompt(
+             word, language, num_sentences, enriched_meaning, min_length, max_length, difficulty, topics
+         )
+     ```
+
 5. **Inherit from `BaseGrammarAnalyzer`** and implement exactly 4 abstract methods:
    - `get_grammar_prompt(complexity: str, sentence: str, target_word: str) -> str`
    - `parse_grammar_response(ai_response: str, complexity: str, sentence: str) -> Dict[str, Any]`
@@ -120,12 +132,14 @@ Generate all 5 domain files by adapting the gold standard. Read the correspondin
 
 **CRITICAL:** Every new analyzer **must** have a custom `prompt_builder.py` with sentence-generation templates so that “No custom prompt available” never appears.
 
+
 ### Step 5: Implement Main Analyzer
 
 Create `{code}_analyzer.py`:
 - Inherit from `BaseGrammarAnalyzer`
 - Initialize all domain components in `__init__()`
 - Implement the 4 abstract methods by delegating to domain components
+- **MANDATORY:** Implement `get_sentence_generation_prompt` as described in the Critical Rules above, delegating to the prompt builder.
 - Add `analyze_grammar()` method for full pipeline: prompt → AI call → parse → validate → HTML output
 - Add `_call_ai()` with **LAZY IMPORTS** for `shared_utils`
 - Add batch analysis support (`analyze_batch()`)

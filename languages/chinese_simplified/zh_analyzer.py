@@ -86,6 +86,18 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
         self.response_parser = ZhResponseParser(self.zh_config)
         self.validator = ZhValidator(self.zh_config)
 
+    def get_sentence_generation_prompt(self, word, language, num_sentences, enriched_meaning="", min_length=3, max_length=15, difficulty="intermediate", topics=None):
+        return self.prompt_builder.get_sentence_generation_prompt(
+            word=word,
+            language=language,
+            num_sentences=num_sentences,
+            enriched_meaning=enriched_meaning,
+            min_length=min_length,
+            max_length=max_length,
+            difficulty=difficulty,
+            topics=topics
+        )
+
     def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
         logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
         try:
