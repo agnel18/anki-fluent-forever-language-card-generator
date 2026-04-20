@@ -1,118 +1,170 @@
-﻿# languages/chinese_simplified/domain/zh_prompt_builder.py
-"""
+﻿"""
 Chinese Simplified Prompt Builder - Domain Component
 
-CHINESE PROMPT BUILDING:
-This component demonstrates how to construct effective AI prompts for Chinese grammar analysis.
-It uses Jinja2 templates for maintainable, parameterized prompts.
-
-RESPONSIBILITIES:
-1. Build single-sentence analysis prompts
-2. Build batch analysis prompts for multiple sentences
-3. Parameterize prompts with Chinese-specific context
-4. Ensure prompts produce consistent JSON output
-5. Handle template rendering errors gracefully
-
-PROMPT ENGINEERING PRINCIPLES:
-- Clear instructions: Explicit JSON structure requirements
-- Contextual information: Include complexity level and target word
-- Error prevention: Specify exact field names and formats
-- Language specificity: Chinese-appropriate grammatical categories
-- Consistency: Same structure for single and batch prompts
-
-USAGE FOR CHINESE:
-1. Copy template structure and modify content
-2. Update grammatical role lists for Chinese features
-3. Adjust examples and instructions for Chinese-specific features
-4. Test prompts produce valid JSON with expected structure
-5. Include Chinese-specific prompt context and examples
-
-INTEGRATION:
-- Called by main analyzer for prompt generation
-- Receives configuration from ZhConfig
-- Templates support parameterization for different contexts
-- Error handling prevents crashes from template issues
+Handles ALL prompt generation:
+- Grammar analysis (single + batch)
+- Sentence generation (moved from zh_analyzer.py)
 """
 
 import logging
-from typing import List
-from jinja2 import Template
+from typing import List, Optional
+
 from .zh_config import ZhConfig
 
 logger = logging.getLogger(__name__)
 
 class ZhPromptBuilder:
     """
-    Builds prompts for Chinese Simplified grammar analysis using templates.
-
-    CHINESE TEMPLATE SYSTEM:
-    - Jinja2 templates: Maintainable and parameterized
-    - Language-specific: Chinese-appropriate instructions and examples
-    - Structured output: Explicit JSON format requirements
-    - Error handling: Graceful fallbacks for template failures
-
-    TEMPLATE FEATURES:
-    - Complexity-aware: Different instructions for different levels
-    - Target word highlighting: Special handling for focus words
-    - Batch support: Efficient multi-sentence processing
-    - JSON validation: Clear structure requirements
-    - Chinese-specific: Aspect markers, classifiers, particles
+    Builds Chinese-specific prompts for grammar analysis and sentence creation.
+    Follows clean architecture - no AI logic, only prompt templating.
     """
 
     def __init__(self, config: ZhConfig):
-        """
-        Initialize with configuration.
-
-        TEMPLATE INITIALIZATION:
-        1. Store config reference for access to templates and settings
-        2. Pre-compile templates for performance
-        3. Validate template availability
-        4. Set up error handling for template rendering
-        """
         self.config = config
-        self.single_template = Template(self.config.prompt_templates['single'])
-        self.batch_template = Template(self.config.prompt_templates['batch'])
 
     def build_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str:
-        """Build prompt for single sentence analysis (gold-standard style)."""
-        try:
-            grammatical_roles = self.config._get_grammatical_roles_list(complexity)  # ← soft guidance
+        """Build single-sentence grammar analysis prompt."""
+        roles_list = self.config._get_grammatical_roles_list(complexity)
+        template = self.config.prompt_templates.get("single", "")
 
-            context = {
-                'sentence': sentence,
-                'target_word': target_word,
-                'complexity': complexity,
-                'grammatical_roles_list': grammatical_roles,
-                'native_language': 'English',
-                'patterns': self.config.patterns,
-            }
-            prompt = self.single_template.render(**context)
-            logger.debug(f"Built single Chinese prompt for complexity {complexity}")
-            return prompt
-        except Exception as e:
-            logger.error(f"Failed to build single prompt for '{sentence}': {e}")
-            return f"Analyze this Chinese sentence: {sentence}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide JSON response with grammatical analysis."
+        prompt = template.replace("{{sentence}}", sentence) \
+                         .replace("{{target_word}}", target_word or "") \
+                         .replace("{{complexity}}", complexity) \
+                         .replace("{{grammatical_roles_list}}", roles_list)
+        return prompt
 
     def build_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str:
-        """Build prompt for batch analysis (gold-standard style)."""
-        try:
-            grammatical_roles = self.config._get_grammatical_roles_list(complexity)  # ← soft guidance
+        """Build batch grammar analysis prompt."""
+        roles_list = self.config._get_grammatical_roles_list(complexity)
+        sentences_str = "\n".join([f"- {s}" for s in sentences])
 
-            sentences_text = '\n'.join([f'{i+1}. {sentence}' for i, sentence in enumerate(sentences)])
+        template = self.config.prompt_templates.get("batch", self.config.prompt_templates.get("single", ""))
+        prompt = template.replace("{{sentences}}", sentences_str) \
+                         .replace("{{target_word}}", target_word or "") \
+                         .replace("{{complexity}}", complexity) \
+                         .replace("{{grammatical_roles_list}}", roles_list)
+        return prompt
 
-            context = {
-                'sentences': sentences,
-                'sentences_text': sentences_text,
-                'target_word': target_word,
-                'complexity': complexity,
-                'grammatical_roles_list': grammatical_roles,
-                'native_language': 'English',
-                'patterns': self.config.patterns,
-            }
-            prompt = self.batch_template.render(**context)
-            logger.debug(f"Built batch Chinese prompt for {len(sentences)} sentences")
-            return prompt
-        except Exception as e:
-            logger.error(f"Failed to build batch prompt: {e}")
-            sentences_text = '\n'.join(sentences)
-            return f"Analyze these Chinese sentences:\n{sentences_text}\nTarget word: {target_word}\nComplexity: {complexity}\nProvide batch JSON response."
+    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                     enriched_meaning: str = "", min_length: int = 3,
+                                     max_length: int = 15, difficulty: str = "intermediate",
+                                     topics: Optional[List[str]] = None) -> str:
+        """
+        Chinese Simplified-specific sentence generation prompt.
+        (Moved here from zh_analyzer.py to follow clean architecture)
+        """
+        # Build context instruction
+        if topics:
+            context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
+        else:
+            context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions"
+
+        # Build meaning instruction
+        if enriched_meaning and enriched_meaning != 'N/A':
+            if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+                context_lines = enriched_meaning[1:-1].split('\n')
+                definitions = []
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Definition'):
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+                if definitions:
+                    meaning_summary = '; '.join(definitions[:4])
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings and provide a comprehensive meaning.'
+                else:
+                    enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning.'
+            else:
+                enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this.'
+        else:
+            enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
+        # Full Chinese-specific prompt
+        prompt = f"""You are a native-level expert linguist in Simplified Chinese (简体中文).
+
+Your task: Generate a complete learning package for the Simplified Chinese word "{word}" in ONE response.
+
+===========================
+STEP 1: WORD MEANING
+===========================
+{enriched_meaning_instruction}
+Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+===========================
+WORD-SPECIFIC RESTRICTIONS
+===========================
+Based on the meaning above, identify any grammatical constraints for "{word}".
+Examples: particles only (的/了/吗), specific measure words required, character-based restrictions.
+If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+
+===========================
+STEP 2: SENTENCES
+===========================
+Generate exactly {num_sentences} highly natural, idiomatic sentences in Simplified Chinese for the word "{word}".
+
+QUALITY RULES:
+- Every sentence must use proper Simplified Chinese characters
+- Grammar, syntax, and character usage must be correct
+- The target word "{word}" MUST be used correctly according to restrictions
+- Each sentence must be between {min_length} and {max_length} words/characters long
+- Difficulty: {difficulty}
+
+VARIETY REQUIREMENTS:
+- Use different aspect particles (了, 着, 过) and sentence structures
+- Use different sentence types: declarative, interrogative, imperative
+- Include appropriate measure words/classifiers when needed
+{context_instruction}
+
+===========================
+STEP 3: ENGLISH TRANSLATIONS
+===========================
+For EACH sentence above, provide a natural, fluent English translation.
+
+===========================
+STEP 4: PINYIN TRANSCRIPTION
+===========================
+For EACH sentence above, provide accurate Pinyin transcription with tone marks.
+
+===========================
+STEP 5: IMAGE KEYWORDS
+===========================
+For EACH sentence above, generate exactly 3 specific keywords for image search (English only).
+
+===========================
+OUTPUT FORMAT - FOLLOW EXACTLY
+===========================
+Return your response in this exact text format:
+
+MEANING: [brief English meaning]
+
+RESTRICTIONS: [grammatical restrictions]
+
+SENTENCES:
+1. [sentence 1 in Simplified Chinese]
+2. [sentence 2 in Simplified Chinese]
+...
+
+TRANSLATIONS:
+1. [natural English translation for sentence 1]
+2. [natural English translation for sentence 2]
+...
+
+PINYIN:
+1. [Pinyin for sentence 1]
+2. [Pinyin for sentence 2]
+...
+
+KEYWORDS:
+1. [keyword1, keyword2, keyword3]
+2. [keyword1, keyword2, keyword3]
+...
+
+IMPORTANT:
+- Return ONLY the formatted text, no extra explanation
+- Sentences must be in Simplified Chinese characters only
+- Ensure exactly {num_sentences} sentences, translations, Pinyin, and keywords"""
+
+        return prompt

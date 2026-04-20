@@ -147,7 +147,6 @@ class ZhResponseParser:
 
     def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
         """Transform parsed data to standard format."""
-        # Simplified: apply role mapping, etc. from config
         words = data.get('words', [])
         elements = {}
         word_explanations = []
@@ -155,13 +154,23 @@ class ZhResponseParser:
 
         for word_data in words:
             word = word_data.get('word', '')
-            role = word_data.get('grammatical_role', 'other')
+            # FIXED: Support both keys that Gemini actually returns
+            role = (word_data.get('grammatical_role') or 
+                    word_data.get('role') or 
+                    'other')
+            
             if target_word and word == target_word:
                 role = 'target_word'
-            # Map role using config
+            
+            # Map role using config (now gets real roles like "pronoun", "classifier", etc.)
             standard_role = self.config.grammatical_roles.get(role, role)
             color = colors.get(standard_role, '#AAAAAA')
-            explanation = word_data.get('individual_meaning', standard_role)
+            
+            # FIXED: Better explanation fallback — use top-level explanations dict if per-word missing
+            explanation = (word_data.get('individual_meaning') or
+                          data.get('explanations', {}).get(word) or
+                          standard_role)
+            
             word_explanations.append([word, standard_role, color, explanation])
 
             if standard_role not in elements:

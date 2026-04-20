@@ -212,6 +212,7 @@ CRITICAL: Analyze every sentence separately. Use only the roles from the list ab
         """
         schemes = {
             "beginner": {
+                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
                 "noun": "#FFAA00",          # Orange - content words
                 "adjective": "#FF44FF",     # Magenta - modifiers
                 "verb": "#44FF44",          # Green - actions
@@ -227,6 +228,7 @@ CRITICAL: Analyze every sentence separately. Use only the roles from the list ab
                 "other": "#AAAAAA"          # Light gray - miscellaneous
             },
             "intermediate": {
+                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
                 "noun": "#FFAA00",
                 "adjective": "#FF44FF",
                 "verb": "#44FF44",          # Bright green - main verbs
@@ -245,6 +247,7 @@ CRITICAL: Analyze every sentence separately. Use only the roles from the list ab
                 "other": "#AAAAAA"
             },
             "advanced": {
+                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
                 "noun": "#FFAA00",
                 "adjective": "#FF44FF",
                 "verb": "#44FF44",
