@@ -154,40 +154,48 @@ class ZhResponseParser:
 
         for word_data in words:
             word = word_data.get('word', '')
-            # FIXED: Support both keys that Gemini actually returns
-            role = (word_data.get('grammatical_role') or 
-                    word_data.get('role') or 
-                    'other')
+            
+            # Surgical role normalization (gold-standard style)
+            raw_role = (word_data.get('grammatical_role') or 
+                       word_data.get('role') or 
+                       'other')
             
             if target_word and word == target_word:
-                role = 'target_word'
+                standard_role = 'target_word'
+            else:
+                # Normalize common Gemini variations → exact config/color keys
+                role_map = {
+                    "Pronoun": "pronoun",
+                    "Adverb": "adverb",
+                    "Verb": "verb",
+                    "Adjective": "adjective",
+                    "Noun": "noun",
+                    "Structural particle": "structural_particle",
+                    "Modal particle": "modal_particle",
+                    "Particle": "particle",
+                    "Classifier": "classifier",
+                    "Aspect marker": "aspect_marker",
+                    "Interrogative pronoun": "pronoun",
+                    "Demonstrative pronoun": "pronoun",
+                    "Personal pronoun": "pronoun",
+                }
+                normalized = role_map.get(raw_role.strip(), raw_role.lower().replace(" ", "_").replace("-", "_"))
+                standard_role = self.config.grammatical_roles.get(normalized, normalized)
             
-            # Map role using config (now gets real roles like "pronoun", "classifier", etc.)
-            standard_role = self.config.grammatical_roles.get(role, role)
             color = colors.get(standard_role, '#AAAAAA')
             
-            # Surgical fix v3: target word gets full AI explanation; other words get readable short description
-            explanations_dict = data.get('explanations', {})
-            explanation = (word_data.get('individual_meaning') or
-                          explanations_dict.get(word) or
-                          explanations_dict.get('explanation') or
-                          (explanations_dict.get('target_word') == word and explanations_dict.get('explanation')))
-
-            if explanation == standard_role or not explanation:
-                short_desc = {
-                    'pronoun': 'personal pronoun',
-                    'adverb': 'adverb / time word',
-                    'verb': 'verb / action word',
-                    'noun': 'noun',
-                    'adjective': 'adjective / descriptor',
-                    'particle': 'grammatical particle',
-                    'classifier': 'classifier / measure word',
-                    'aspect_marker': 'aspect particle (completion)',
-                    'modal_particle': 'modal particle (suggestion / tone)',
-                    'preposition': 'preposition / location marker',
-                    'target_word': 'target word (focus of this card)'
-                }
-                explanation = short_desc.get(standard_role, standard_role)
+            # Explanation (keep your existing rich logic)
+            explanation = word_data.get('individual_meaning')
+            if not explanation or str(explanation).strip() in ("", standard_role):
+                explanations_dict = data.get('explanations', {})
+                explanation = (
+                    explanations_dict.get(word) or
+                    explanations_dict.get('explanation') or
+                    explanations_dict.get('overall_structure') or
+                    standard_role
+                )
+            else:
+                explanation = str(explanation).strip()
             
             word_explanations.append([word, standard_role, color, explanation])
 

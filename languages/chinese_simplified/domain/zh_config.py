@@ -121,19 +121,14 @@ Sentence: {{sentence}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
 
-CHINESE GRAMMAR ANALYSIS REQUIREMENTS:
-- Pay special attention to classifiers (measure words), aspect markers (了, 着, 过), particles (的, 地, 得, 吗, 呢, 吧, etc.)
-- Note topic-comment structure, word order flexibility, and how context determines meaning
-- Identify structural particles, modal particles, and their exact function in this sentence
-- Recognize measure words, reduplication, and complement structures
+**STRICT OUTPUT RULES (must follow exactly):**
+- For EVERY word/character you MUST return BOTH:
+  - "grammatical_role": exactly one of these lowercase values: noun, verb, adjective, adverb, pronoun, particle, classifier, numeral, aspect_marker, structural_particle, modal_particle, preposition, conjunction, interjection, determiner, other
+  - "individual_meaning": rich 1-2 sentence learner-friendly explanation of its function in THIS sentence
+- Do NOT capitalize roles. Do NOT use phrases like "Structural particle" or "Personal pronoun".
+- Target word gets the richest explanation, but ALL words must have meaningful explanations.
 
-**CRITICAL REQUIREMENT FOR EVERY WORD:**
-For **EVERY** word/character in the sentence (not just the target word), you MUST provide a rich, informative, learner-friendly `individual_meaning` (1-2 full sentences). 
-Explain its specific grammatical function **in this exact sentence**, any Chinese-specific features (classifiers, particles, aspect markers, word order, etc.), and how it contributes to the overall meaning.
-Do NOT repeat the role name or give generic answers like "noun" or "pronoun".
-The target word must receive the most detailed explanation, but ALL words must be useful for Anki learners.
-
-Return a JSON object with exactly this structure:
+Return valid JSON with this EXACT structure:
 {
   "sentence": "{{sentence}}",
   "words": [
@@ -149,7 +144,7 @@ Return a JSON object with exactly this structure:
   }
 }
 
-CRITICAL: Analyze EVERY word with a meaningful individual_meaning. Use only the roles from the list above.
+CRITICAL: Every word object MUST contain grammatical_role (lowercase) and individual_meaning.
 """,
             "batch": """
 Analyze these Chinese sentences and provide detailed grammatical breakdowns for each.
@@ -158,14 +153,10 @@ Sentences: {{sentences}}
 Target word: {{target_word}}
 Complexity level: {{complexity}}
 
-CHINESE GRAMMAR ANALYSIS REQUIREMENTS:
-- Same requirements as the single-sentence prompt above (classifiers, aspect markers, particles, topic-comment structure, etc.)
+**STRICT OUTPUT RULES (must follow exactly):**
+Same rules as single prompt above. Every word in every sentence must have lowercase "grammatical_role" + rich "individual_meaning".
 
-**CRITICAL REQUIREMENT FOR EVERY WORD:**
-For **EVERY** word/character in **EVERY** sentence, provide a rich `individual_meaning` exactly as described in the single-sentence prompt above.
-The target word gets extra detail, but all words must have useful explanations.
-
-Return a JSON object with exactly this structure:
+Return valid JSON with this EXACT structure:
 {
   "batch_results": [
     {
@@ -176,7 +167,7 @@ Return a JSON object with exactly this structure:
   ]
 }
 
-CRITICAL: Every word in every sentence must have a meaningful individual_meaning.
+CRITICAL: Every word object MUST contain grammatical_role (lowercase) and individual_meaning.
 """
         }
         self.patterns = self._load_yaml(config_dir / "zh_patterns.yaml")
