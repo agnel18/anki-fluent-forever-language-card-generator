@@ -455,6 +455,57 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     st.caption("Tip: After saving in Step 3, use the button at the top or here to download the updated global file.")
 
     st.markdown("---")
+    st.markdown("## ⭐ Favorite Languages (reorder for quick access in Step 1)")
+
+    # Load master settings or create default
+    master_path = Path(__file__).parent.parent / "master_settings.json"
+    if "favorites_order" not in st.session_state:
+        if master_path.exists():
+            with open(master_path, "r", encoding="utf-8") as f:
+                master = json.load(f)
+                st.session_state.favorites_order = master.get("favorites_order", [])
+        else:
+            # Default from learned_languages
+            st.session_state.favorites_order = [lang["name"] for lang in st.session_state.get("learned_languages", [])]
+
+    favorites = st.session_state.favorites_order
+
+    st.info("Use ↑ ↓ to reorder. These will appear at the top in Step 1.")
+
+    for i, lang_name in enumerate(favorites[:]):
+        cols = st.columns([5, 1, 1])
+        cols[0].write(f"**{lang_name}**")
+        if cols[1].button("↑", key=f"fav_up_{i}"):
+            if i > 0:
+                favorites[i], favorites[i-1] = favorites[i-1], favorites[i]
+                st.rerun()
+        if cols[2].button("↓", key=f"fav_down_{i}"):
+            if i < len(favorites) - 1:
+                favorites[i], favorites[i+1] = favorites[i+1], favorites[i]
+                st.rerun()
+
+    col_save_fav, col_export = st.columns([1, 1])
+    with col_save_fav:
+        if st.button("💾 Save Favorites Order", type="primary", key="save_favorites_order"):
+            st.session_state.favorites_order = favorites
+            st.success("✅ Favorites order saved!")
+            st.rerun()
+
+    # Master JSON export/import (already in Step 3, but duplicated here for convenience)
+    with col_export:
+        if st.button("📤 Export Full Master Settings JSON"):
+            if master_path.exists():
+                with open(master_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                st.download_button(
+                    label="⬇️ Download master_settings.json",
+                    data=json.dumps(data, indent=2, ensure_ascii=False),
+                    file_name="master_settings.json",
+                    mime="application/json",
+                    key="master_export_btn"
+                )
+            else:
+                st.warning("No master_settings.json yet — generate a deck first.")
 
     # --- Cache Management Section ---
     st.markdown("## 💾 API Response Cache")

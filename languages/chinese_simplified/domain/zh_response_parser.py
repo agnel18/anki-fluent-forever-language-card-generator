@@ -166,9 +166,12 @@ class ZhResponseParser:
             standard_role = self.config.grammatical_roles.get(role, role)
             color = colors.get(standard_role, '#AAAAAA')
             
-            # FIXED: Better explanation fallback — use top-level explanations dict if per-word missing
+            # Surgical fix for Gemini's actual Chinese response structure (fixes role-name-only explanations)
+            explanations_dict = data.get('explanations', {})
             explanation = (word_data.get('individual_meaning') or
-                          data.get('explanations', {}).get(word) or
+                          explanations_dict.get(word) or
+                          explanations_dict.get('explanation') or
+                          (explanations_dict.get('target_word') == word and explanations_dict.get('explanation')) or
                           standard_role)
             
             word_explanations.append([word, standard_role, color, explanation])
