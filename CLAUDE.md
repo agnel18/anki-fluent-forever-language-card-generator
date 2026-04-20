@@ -329,11 +329,14 @@ APIError (base)
 | `languages/malayalam/` | Malayalam analyzer (v1.0, Dravidian family, E2E verified) |
 > **Stateless Architecture Decision (April 2026):** Firebase Auth, Firestore, statistics, achievements removed — planned for future subscription companion app with proper security.
 ## E2E Test Sentence Difficulty Coverage
-All documentation and E2E pipeline tests must ensure that for each analyzer, all three difficulty levels are covered:
+All documentation and E2E pipeline tests must ensure that for each analyzer, **all three difficulty levels are covered and validated**:
 - 1 beginner sentence
 - 1 intermediate sentence
 - 2 advanced sentences
-This ensures grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer. This is a checklist item for E2E pipeline tests and a requirement for new analyzers in the analyzer creation guide.
+**The E2E pipeline test must assert that grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer.**
+This is a checklist item for E2E pipeline tests and a requirement for new analyzers in the analyzer creation guide.
+
+> **Known Gap (April 2026):** The current E2E test implementation only checks the beginner level for some analyzers. The test suite must be updated to assert and validate all three levels (beginner, intermediate, advanced) for every analyzer.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
 3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 11 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.

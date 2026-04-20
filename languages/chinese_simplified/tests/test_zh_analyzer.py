@@ -40,8 +40,42 @@ from languages.chinese_simplified.domain.zh_fallbacks import ZhFallbacks
 from languages.chinese_simplified.domain.zh_patterns import ZhPatterns
 
 
+
 class TestZhAnalyzer:
     """Test Chinese Simplified analyzer functionality."""
+
+    def test_single_sentence_analysis_beginner(self):
+        """Test single sentence grammar analysis for beginner level (crash reproduction)."""
+        sentence = "我吃了一个苹果"
+        target_word = "苹果"
+
+        # Mock the AI call with a minimal beginner-level response
+        with patch.object(self.analyzer, '_call_ai') as mock_ai:
+            mock_ai.return_value = '''
+            {
+              "sentence": "我吃了一个苹果",
+              "words": [
+                {"word": "我", "grammatical_role": "pronoun", "individual_meaning": "I, the speaker"},
+                {"word": "吃", "grammatical_role": "verb", "individual_meaning": "to eat, consume"},
+                {"word": "了", "grammatical_role": "aspect_marker", "individual_meaning": "perfective aspect, completed action"},
+                {"word": "一个", "grammatical_role": "classifier", "individual_meaning": "one (with general classifier 个)"},
+                {"word": "苹果", "grammatical_role": "noun", "individual_meaning": "apple, a type of fruit"}
+              ],
+              "explanations": {
+                "overall_structure": "Subject-Verb-Object sentence with aspect marker and classifier",
+                "key_features": "Uses perfective aspect 了 and classifier construction 一个"
+              }
+            }
+            '''
+
+            result = self.analyzer.analyze_grammar(sentence, target_word, "beginner", self.test_api_key)
+
+            assert result is not None
+            assert result.sentence == sentence
+            assert result.target_word == target_word
+            assert result.language_code == "zh"
+            assert len(result.word_explanations) > 0
+            assert result.confidence_score >= 0.0
 
     def setup_method(self):
         """Set up test fixtures."""

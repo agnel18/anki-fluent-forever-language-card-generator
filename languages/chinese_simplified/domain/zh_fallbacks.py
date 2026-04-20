@@ -79,17 +79,26 @@ class ZhFallbacks:
         word_explanations = []
         elements = {}
 
-        for word in words:
-            # Try to get meaning from config
-            meaning = self.config.word_meanings.get(word, self._generate_fallback_explanation(word))
-            role = self._guess_role(word)
+        # Always ensure at least one word explanation (prevents UI/test crash)
+        if not words or all(w.strip() == '' for w in words):
+            word = sentence if sentence.strip() else '[EMPTY]'
+            role = 'other'
             color = self._get_fallback_color(role)
-
+            meaning = 'No analysis available.'
             word_explanations.append([word, role, color, meaning])
+            elements[role] = [{'word': word, 'grammatical_role': role}]
+        else:
+            for word in words:
+                # Try to get meaning from config
+                meaning = self.config.word_meanings.get(word, self._generate_fallback_explanation(word))
+                role = self._guess_role(word)
+                color = self._get_fallback_color(role)
 
-            if role not in elements:
-                elements[role] = []
-            elements[role].append({'word': word, 'grammatical_role': role})
+                word_explanations.append([word, role, color, meaning])
+
+                if role not in elements:
+                    elements[role] = []
+                elements[role].append({'word': word, 'grammatical_role': role})
 
         result = {
             'sentence': sentence,

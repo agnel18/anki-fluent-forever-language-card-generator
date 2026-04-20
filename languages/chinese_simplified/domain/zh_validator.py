@@ -72,6 +72,12 @@ class ZhValidator:
 
     def validate_result(self, result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
         """Validate and enhance result with confidence scores."""
+        # If this is a fallback result, always set low confidence
+        if result.get('is_fallback'):
+            result['confidence'] = 0.3
+            logger.warning(f"Fallback result: forcing low confidence (0.3) for sentence: {sentence}")
+            return result
+
         confidence = self._calculate_confidence(result, sentence)
         result['confidence'] = confidence
 

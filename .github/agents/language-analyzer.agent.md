@@ -150,6 +150,7 @@ Create 7 test files + conftest following the Japanese pattern:
 - **`test_{code}_validator.py`** — Scoring accuracy, threshold enforcement, edge cases
 - **`test_integration.py`** — Full pipeline: prompt → parse → validate → HTML
 
+
 ### Step 8: Register, Validate, and Test
 
 **8a. Register the analyzer in BOTH registries:**
@@ -175,12 +176,14 @@ Add a `{LANGUAGE}_MOCK_DATA` dict to `tests/test_end_to_end_pipeline.py` with:
 - 4 mock sentences with translations
 - Mock Gemini response in `MEANING:/RESTRICTIONS:/SENTENCES:/TRANSLATIONS:/IPA:/KEYWORDS:` format
 - Mock grammar batch response as JSON array
+- **Ensure at least 1 beginner, 1 intermediate, and 2 advanced sentences are included and clearly labeled.**
 Add `@pytest.mark.parametrize` entry for the new language.
 
 **8e. Run E2E test:**
 ```bash
 pytest tests/test_end_to_end_pipeline.py -v -s
 ```
+- **The E2E test must assert and validate results for all three difficulty levels (beginner, intermediate, advanced) for every analyzer.**
 All 7 stages must pass.
 
 **8f. Commit:**

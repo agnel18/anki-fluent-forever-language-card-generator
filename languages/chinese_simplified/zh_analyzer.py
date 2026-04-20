@@ -16,6 +16,49 @@ from .domain.zh_validator import ZhValidator
 logger = logging.getLogger(__name__)
 
 class ZhAnalyzer(BaseGrammarAnalyzer):
+
+    def analyze_grammar(self, sentence: str, target_word: str, complexity: str, gemini_api_key: str) -> GrammarAnalysis:
+        """Full pipeline: prompt → AI call → parse → validate → HTML output, with robust fallback."""
+        try:
+            prompt = self.get_grammar_prompt(complexity, sentence, target_word)
+            ai_response = self._call_ai(prompt, gemini_api_key)
+            parsed = self.parse_grammar_response(ai_response, complexity, sentence)
+            validated = self.validator.validate_result(parsed, sentence)
+            # If word_explanations is empty, force fallback
+            if not validated.get('word_explanations'):
+                logger.warning("AI/parse returned empty word_explanations, using fallback.")
+                fallback = self.response_parser.fallbacks.create_fallback(sentence, complexity)
+                validated = self.validator.validate_result(fallback, sentence)
+            html_output = self._generate_html_output(validated, sentence, complexity)
+            return GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word or "",
+                language_code=self.LANGUAGE_CODE,
+                complexity_level=complexity,
+                grammatical_elements=validated.get('elements', {}),
+                explanations=validated.get('explanations', {}),
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=validated.get('confidence', 0.0),
+                word_explanations=validated.get('word_explanations', [])
+            )
+        except Exception as e:
+            logger.error(f"analyze_grammar failed: {e}")
+            fallback = self.response_parser.fallbacks.create_fallback(sentence, complexity)
+            validated = self.validator.validate_result(fallback, sentence)
+            html_output = self._generate_html_output(validated, sentence, complexity)
+            return GrammarAnalysis(
+                sentence=sentence,
+                target_word=target_word or "",
+                language_code=self.LANGUAGE_CODE,
+                complexity_level=complexity,
+                grammatical_elements=validated.get('elements', {}),
+                explanations=validated.get('explanations', {}),
+                color_scheme=self.get_color_scheme(complexity),
+                html_output=html_output,
+                confidence_score=validated.get('confidence', 0.3),
+                word_explanations=validated.get('word_explanations', [])
+            )
     # === ABSTRACT METHODS REQUIRED BY BASE CLASS ===
     def get_grammar_prompt(self, complexity: str, sentence: str, target_word: str) -> str:
         return self.prompt_builder.build_single_prompt(sentence, target_word, complexity)
