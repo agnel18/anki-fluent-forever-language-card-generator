@@ -166,13 +166,28 @@ class ZhResponseParser:
             standard_role = self.config.grammatical_roles.get(role, role)
             color = colors.get(standard_role, '#AAAAAA')
             
-            # Surgical fix for Gemini's actual Chinese response structure (fixes role-name-only explanations)
+            # Surgical fix v3: target word gets full AI explanation; other words get readable short description
             explanations_dict = data.get('explanations', {})
             explanation = (word_data.get('individual_meaning') or
                           explanations_dict.get(word) or
                           explanations_dict.get('explanation') or
-                          (explanations_dict.get('target_word') == word and explanations_dict.get('explanation')) or
-                          standard_role)
+                          (explanations_dict.get('target_word') == word and explanations_dict.get('explanation')))
+
+            if explanation == standard_role or not explanation:
+                short_desc = {
+                    'pronoun': 'personal pronoun',
+                    'adverb': 'adverb / time word',
+                    'verb': 'verb / action word',
+                    'noun': 'noun',
+                    'adjective': 'adjective / descriptor',
+                    'particle': 'grammatical particle',
+                    'classifier': 'classifier / measure word',
+                    'aspect_marker': 'aspect particle (completion)',
+                    'modal_particle': 'modal particle (suggestion / tone)',
+                    'preposition': 'preposition / location marker',
+                    'target_word': 'target word (focus of this card)'
+                }
+                explanation = short_desc.get(standard_role, standard_role)
             
             word_explanations.append([word, standard_role, color, explanation])
 
