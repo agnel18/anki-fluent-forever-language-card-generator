@@ -1,128 +1,129 @@
-﻿# languages/chinese_simplified/domain/zh_validator.py
-"""
-Chinese Simplified Validator - Domain Component
+﻿from .zh_types import ValidationResult, ParseResult
 
-CHINESE VALIDATION:
-This component demonstrates how to validate Chinese grammar analysis results and calculate confidence scores.
-It ensures result quality and provides confidence metrics for decision-making.
 
-RESPONSIBILITIES:
-1. Validate parsed grammar analysis results
-2. Calculate confidence scores based on multiple heuristics
-3. Check for valid Chinese grammar patterns
-4. Apply quality thresholds and warnings
-5. Enhance results with validation metadata
-
-VALIDATION HEURISTICS:
-- Word/character count matching: Results should match sentence breakdown
-- Role distribution: Check for appropriate Chinese grammatical elements
-- Pattern recognition: Validate aspect markers, classifiers, particles
-- Confidence scoring: Multi-factor quality assessment
-- Threshold application: Warn on low-confidence results
-
-USAGE FOR CHINESE:
-1. Copy validation structure and heuristics
-2. Implement Chinese-specific pattern checks (aspect, classifiers, particles)
-3. Adjust confidence scoring weights for Chinese grammar
-4. Define appropriate quality thresholds
-5. Test validation catches common AI errors in Chinese analysis
-
-INTEGRATION:
-- Called after response parsing in main analyzer
-- Results include confidence scores for UI display
-- Low confidence triggers warnings/logging
-- Validation doesn't block processing (graceful degradation)
-"""
-
-import logging
-from typing import Dict, Any, List
+from typing import List, Dict, Any
 from .zh_config import ZhConfig
-
-logger = logging.getLogger(__name__)
 
 class ZhValidator:
     """
-    Validates parsed Chinese grammar analysis results.
-
-    CHINESE VALIDATION APPROACH:
-    - Multi-heuristic scoring: Combine multiple quality indicators
-    - Language-specific checks: Chinese grammar pattern validation
-    - Confidence thresholds: Clear quality boundaries
-    - Non-blocking: Validation enhances but doesn't prevent results
-    - Logging: Detailed feedback for debugging and monitoring
-
-    VALIDATION PHILOSOPHY:
-    - Trust but verify: AI results are good but need validation
-    - Graceful degradation: Poor results still better than no results
-    - Continuous improvement: Validation guides AI prompt refinement
-    - User transparency: Confidence scores inform user trust
+    Validates parsed Chinese grammar analysis results using dataclasses for type safety.
     """
-
     def __init__(self, config: ZhConfig):
-        """
-        Initialize validator with configuration.
+        self.config: ZhConfig = config
 
-        CONFIGURATION DEPENDENCY:
-        1. Access to grammatical roles and patterns
-        2. Chinese-specific validation rules
-        3. Quality thresholds and scoring weights
-        4. Pattern definitions for rule-based checks
-        """
-        self.config = config
+    def validate_result(self, parse_result, sentence: str) -> ValidationResult:
+        # Accept both ParseResult objects and dicts
+        success = getattr(parse_result, 'success', None)
+        fallback_used = getattr(parse_result, 'fallback_used', None)
+        confidence = getattr(parse_result, 'confidence', None)
+        # If dict, fallback to key access
+        if success is None and isinstance(parse_result, dict):
+            success = parse_result.get('success', True)
+        if fallback_used is None and isinstance(parse_result, dict):
+            fallback_used = parse_result.get('fallback_used', False)
+        if confidence is None and isinstance(parse_result, dict):
+            confidence = parse_result.get('confidence', 0.3)
 
-    def validate_result(self, result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
-        """Validate and enhance result with confidence scores."""
-        # If this is a fallback result, always set low confidence
-        if result.get('is_fallback'):
-            result['confidence'] = 0.3
-            logger.warning(f"Fallback result: forcing low confidence (0.3) for sentence: {sentence}")
-            return result
+        if not success or fallback_used:
+            return ValidationResult(is_valid=False, confidence_score=confidence, issues=["Fallback or failed parse"], suggestions=["Check sentence structure or try a simpler sentence."])
+        # Use _calculate_confidence if possible
+        if hasattr(parse_result, 'sentences'):
+            confidence = self._calculate_confidence(parse_result, sentence)
+        is_valid = confidence >= 0.5
+        issues = [] if is_valid else ["Low confidence"]
+        return ValidationResult(is_valid=is_valid, confidence_score=confidence, issues=issues, suggestions=[])
 
-        confidence = self._calculate_confidence(result, sentence)
-        result['confidence'] = confidence
-
-        if confidence < 0.5:
-            logger.warning(f"Low confidence ({confidence}) for sentence: {sentence}")
-
-        return result
-
-    def _calculate_confidence(self, result: Dict[str, Any], sentence: str) -> float:
-        """Calculate confidence score based on various heuristics."""
+    def _calculate_confidence(self, parse_result: ParseResult, sentence: str) -> float:
         score = 1.0
-
-        # Check if words match sentence breakdown
-        word_explanations = result.get('word_explanations', [])
-        # For Chinese, we might have characters or words, so be flexible
-        sentence_parts = sentence.split()  # Basic split, could be improved
-
+        if not parse_result.sentences:
+            return 0.0
+        word_explanations = []
+        for sent in parse_result.sentences:
+            for word in sent.words:
+                word_explanations.append([word.word, word.grammatical_role, word.individual_meaning])
         if len(word_explanations) == 0:
             return 0.0
-
-        # Check role distribution
         roles = [item[1] for item in word_explanations if len(item) > 1]
         if not roles:
             return 0.0
-
-        # Penalize too many 'other' roles
         other_count = roles.count('other')
         if other_count / len(roles) > 0.5:
             score *= 0.7
-
-        # Check for valid Chinese patterns
-        if self._has_valid_patterns(word_explanations):
+        if self._has_valid_patterns(roles):
             score *= 1.1
         else:
             score *= 0.9
-
-        # Bonus for aspect markers and classifiers (important in Chinese)
         has_aspect = any(role in ['aspect_marker'] for role in roles)
         has_classifier = any(role in ['classifier'] for role in roles)
         has_particles = any(role in ['particle', 'modal_particle', 'structural_particle'] for role in roles)
-
         if has_aspect or has_classifier or has_particles:
             score *= 1.05
-
         return min(max(score, 0.0), 1.0)
+
+    def _has_valid_patterns(self, roles: list) -> bool:
+        has_noun = any(role in ['noun', 'pronoun'] for role in roles)
+        has_verb = 'verb' in roles
+        has_particles = any(role in ['particle', 'aspect_marker', 'modal_particle', 'structural_particle'] for role in roles)
+        return has_noun and (has_verb or has_particles)
+
+
+    def validate_explanation_quality(self, result) -> dict:
+        """Validate the quality and comprehensiveness of explanations in the analysis result (ParseResult or dict)."""
+        quality_score = 1.0
+        issues = []
+
+        # Handle both ParseResult and dict
+        if hasattr(result, 'sentences'):
+            # ParseResult/dataclass path
+            word_explanations = []
+            for sent in getattr(result, 'sentences', []):
+                for word in getattr(sent, 'words', []):
+                    word_explanations.append([getattr(word, 'word', ''), getattr(word, 'grammatical_role', ''), '', getattr(word, 'individual_meaning', '')])
+            explanations = getattr(result, 'explanations', {}) if hasattr(result, 'explanations') else {}
+        else:
+            # dict path
+            word_explanations = result.get('word_explanations', []) if isinstance(result, dict) else []
+            explanations = result.get('explanations', {}) if isinstance(result, dict) else {}
+
+        for i, explanation in enumerate(word_explanations):
+            if len(explanation) < 4:
+                quality_score *= 0.8
+                issues.append(f"Word explanation {i} missing meaning component")
+                continue
+            word, role, color, meaning = explanation[:4]
+            if len(str(meaning).strip()) < 10:
+                quality_score *= 0.9
+                issues.append(f"Word '{word}' has too brief explanation: '{meaning}'")
+            relationship_keywords = ['relates to', 'connects to', 'with', 'and', 'relationship', 'function']
+            has_relationship = any(keyword in str(meaning).lower() for keyword in relationship_keywords)
+            if not has_relationship and len(word_explanations) > 1:
+                quality_score *= 0.95
+                issues.append(f"Word '{word}' explanation lacks relationship context")
+
+        if not explanations:
+            quality_score *= 0.7
+            issues.append("Missing overall explanations section")
+        else:
+            overall_structure = explanations.get('overall_structure', '') if isinstance(explanations, dict) else ''
+            if len(str(overall_structure).strip()) < 20:
+                quality_score *= 0.9
+                issues.append("Overall structure explanation too brief")
+            key_features = explanations.get('key_features', '') if isinstance(explanations, dict) else ''
+            if len(str(key_features).strip()) < 15:
+                quality_score *= 0.9
+                issues.append("Key features explanation too brief")
+            chinese_features = ['aspect', 'classifier', 'particle', 'topic-comment', 'measure word']
+            has_chinese_specific = any(feature in (str(overall_structure) + str(key_features)).lower() for feature in chinese_features)
+            if not has_chinese_specific:
+                quality_score *= 0.9
+                issues.append("Explanations lack Chinese-specific grammatical features")
+
+        quality_score = min(max(quality_score, 0.0), 1.0)
+        return {
+            'quality_score': quality_score,
+            'issues': issues,
+            'recommendations': self._generate_quality_recommendations(issues)
+        }
 
     def _has_valid_patterns(self, word_explanations: List[List[str]]) -> bool:
         """Check if result has valid Chinese grammar patterns."""

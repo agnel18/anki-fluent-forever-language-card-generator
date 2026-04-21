@@ -6,9 +6,10 @@ Handles ALL prompt generation:
 - Sentence generation (moved from zh_analyzer.py)
 """
 
+
 import logging
 from typing import List, Optional
-
+from jinja2 import Template, Environment, BaseLoader
 from .zh_config import ZhConfig
 
 logger = logging.getLogger(__name__)
@@ -20,39 +21,70 @@ class ZhPromptBuilder:
     """
 
     def __init__(self, config: ZhConfig):
-        self.config = config
+        self.config: ZhConfig = config
+        self.jinja_env = Environment(loader=BaseLoader())
 
-    def build_single_prompt(self, sentence: str, target_word: str, complexity: str) -> str:
-        """Build single-sentence grammar analysis prompt."""
-        roles_list = self.config._get_grammatical_roles_list(complexity)
-        template = self.config.prompt_templates.get("single", "")
+    def build_single_prompt(self, sentence: str, target_word: Optional[str], complexity: str) -> str:
+        template_str = self.config.prompt_templates.get("single", "")
+        if not template_str:
+            logger.error("Single analysis template not found in config")
+            return f"Analyze the following sentence: {sentence} (target word: {target_word}, complexity: {complexity})"
+        template = self.jinja_env.from_string(template_str)
+        context = {
+            "sentence": sentence,
+            "target_word": target_word or "",
+            "complexity": complexity,
+            "language": "Chinese Simplified",
+            "grammatical_roles": self.config.grammatical_roles,
+            "aspect_markers": self.config.aspect_markers,
+            "modal_particles": self.config.modal_particles,
+            "structural_particles": self.config.structural_particles
+        }
+        try:
+            prompt = template.render(**context)
+            logger.debug(f"Generated single analysis prompt for sentence: {sentence[:50]}...")
+            return prompt
+        except Exception as e:
+            logger.error(f"Failed to render single analysis template: {e}")
+            return f"Analyze the following sentence: {sentence} (target word: {target_word}, complexity: {complexity})"
 
-        prompt = template.replace("{{sentence}}", sentence) \
-                         .replace("{{target_word}}", target_word or "") \
-                         .replace("{{complexity}}", complexity) \
-                         .replace("{{grammatical_roles_list}}", roles_list)
-        return prompt
+    def build_batch_prompt(self, sentences: List[str], target_word: Optional[str], complexity: str) -> str:
+        template_str = self.config.prompt_templates.get("batch", self.config.prompt_templates.get("single", ""))
+        if not template_str:
+            logger.error("Batch analysis template not found in config")
+            return f"Analyze the following sentences: {'; '.join(sentences)} (target word: {target_word}, complexity: {complexity})"
+        template = self.jinja_env.from_string(template_str)
+        sentences_text = "\n".join(f"{i+1}. {sent}" for i, sent in enumerate(sentences))
+        context = {
+            "sentences": sentences_text,
+            "target_word": target_word or "",
+            "complexity": complexity,
+            "language": "Chinese Simplified",
+            "sentence_count": len(sentences),
+            "grammatical_roles": self.config.grammatical_roles,
+            "aspect_markers": self.config.aspect_markers,
+            "modal_particles": self.config.modal_particles,
+            "structural_particles": self.config.structural_particles
+        }
+        try:
+            prompt = template.render(**context)
+            logger.debug(f"Generated batch analysis prompt for {len(sentences)} sentences.")
+            return prompt
+        except Exception as e:
+            logger.error(f"Failed to render batch analysis template: {e}")
+            return f"Analyze the following sentences: {'; '.join(sentences)} (target word: {target_word}, complexity: {complexity})"
 
-    def build_batch_prompt(self, sentences: List[str], target_word: str, complexity: str) -> str:
-        """Build batch grammar analysis prompt."""
-        roles_list = self.config._get_grammatical_roles_list(complexity)
-        sentences_str = "\n".join([f"- {s}" for s in sentences])
-
-        template = self.config.prompt_templates.get("batch", self.config.prompt_templates.get("single", ""))
-        prompt = template.replace("{{sentences}}", sentences_str) \
-                         .replace("{{target_word}}", target_word or "") \
-                         .replace("{{complexity}}", complexity) \
-                         .replace("{{grammatical_roles_list}}", roles_list)
-        return prompt
-
-    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
-                                     enriched_meaning: str = "", min_length: int = 3,
-                                     max_length: int = 15, difficulty: str = "intermediate",
-                                     topics: Optional[List[str]] = None) -> str:
-        """
-        Chinese Simplified-specific sentence generation prompt.
-        (Moved here from zh_analyzer.py to follow clean architecture)
-        """
+    def get_sentence_generation_prompt(
+        self,
+        word: str,
+        language: str,
+        num_sentences: int,
+        enriched_meaning: str = "",
+        min_length: int = 3,
+        max_length: int = 15,
+        difficulty: str = "intermediate",
+        topics: Optional[List[str]] = None
+    ) -> str:
         # Build context instruction
         if topics:
             context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."

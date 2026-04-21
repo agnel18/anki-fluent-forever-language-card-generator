@@ -35,107 +35,68 @@ INTEGRATION:
 
 import json
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .zh_config import ZhConfig
 from .zh_fallbacks import ZhFallbacks
 
 logger = logging.getLogger(__name__)
 
+from .zh_types import ParseResult, ParsedSentence, ParsedWord
+
 class ZhResponseParser:
     """
     Parses AI responses, cleans data, and applies fallbacks.
-
-    CHINESE PARSING STRATEGY:
-    - JSON extraction: Handle various response formats (clean, markdown, malformed)
-    - Error detection: Identify and handle AI error responses
-    - Batch processing: Parse multiple results with individual fallbacks
-    - Data transformation: Convert to internal standard format
-    - Fallback integration: Seamless degradation when parsing fails
-
-    PARSING ROBUSTNESS:
-    - Multiple JSON extraction methods (direct, markdown, cleaned)
-    - Per-item validation in batch processing
-    - Meaningful error logging for debugging
-    - Consistent output format regardless of success/failure
+    Uses dataclasses for type safety and stricter schema validation.
     """
-
     def __init__(self, config: ZhConfig):
-        """
-        Initialize parser with configuration and fallbacks.
-
-        DEPENDENCY INJECTION:
-        1. Config provides role mappings and validation rules
-        2. Fallbacks component provides error recovery
-        3. Maintains separation of concerns
-        4. Enables testing with mock components
-        """
-        self.config = config
+        self.config: ZhConfig = config
         self.fallbacks = ZhFallbacks(config)
 
-    def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: str = None) -> Dict[str, Any]:
-        """Parse single response with fallbacks."""
+    def parse_response(self, ai_response: str, complexity: str, sentence: str, target_word: Optional[str] = None) -> ParseResult:
         logger.info(f"DEBUG: Raw AI response for sentence '{sentence}': {ai_response[:500]}")
         try:
             json_data = self._extract_json(ai_response)
-
-            # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
-
             return self._transform_to_standard_format(json_data, complexity, target_word)
         except Exception as e:
             logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
-            return self.fallbacks.create_fallback(sentence, complexity)
+            fallback = self.fallbacks.create_fallback(sentence, complexity)
+            return ParseResult(sentences=[], success=False, error_message=str(e), fallback_used=True)
 
-    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
-        """Parse batch response with per-result fallbacks."""
+    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: Optional[str] = None) -> ParseResult:
         logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
         try:
             json_data = self._extract_json(ai_response)
-
-            # Check if this looks like an error response
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
-
             if isinstance(json_data, list):
                 batch_results = json_data
             else:
                 batch_results = json_data.get('batch_results', [])
-
-            # If no valid batch results, treat as error
             if not batch_results:
                 raise ValueError("No valid batch results in AI response")
-
-            results = []
+            parsed_sentences = []
             for i, item in enumerate(batch_results):
                 if i < len(sentences):
                     try:
                         parsed = self._transform_to_standard_format(item, complexity, target_word)
-                        results.append(parsed)
+                        if parsed.sentences:
+                            parsed_sentences.extend(parsed.sentences)
                     except Exception as e:
                         logger.warning(f"Batch item {i} failed: {e}")
-                        results.append(self.fallbacks.create_fallback(sentences[i], complexity))
-                else:
-                    results.append(self.fallbacks.create_fallback(sentences[i], complexity))
-
-            # If we don't have results for all sentences, add fallbacks
-            while len(results) < len(sentences):
-                results.append(self.fallbacks.create_fallback(sentences[len(results)], complexity))
-
-            return results
+            return ParseResult(sentences=parsed_sentences, success=True)
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
-            return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
+            return ParseResult(sentences=[], success=False, error_message=str(e), fallback_used=True)
 
     def _extract_json(self, response: str) -> Dict[str, Any]:
-        """Extract JSON from AI response."""
         logger.info(f"DEBUG: Extracting JSON from response: {response[:1000]}...")
         try:
-            # Strip markdown if present
             if "```json" in response:
-                response = response.split("```json")[1].split("```")[0].strip()
+                response = response.split("```json")[1].split("```" )[0].strip()
             elif "```" in response:
-                response = response.split("```")[1].split("```")[0].strip()
+                response = response.split("```" )[1].split("```" )[0].strip()
             logger.info(f"DEBUG: Cleaned response: {response[:1000]}...")
             result = json.loads(response)
             logger.info(f"DEBUG: Parsed JSON: {result}")
@@ -145,25 +106,18 @@ class ZhResponseParser:
             logger.error(f"DEBUG: Response that failed: {response}")
             raise
 
-    def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
-        """Transform parsed data to standard format."""
+    def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: Optional[str] = None) -> ParseResult:
+        # Validate schema strictly
         words = data.get('words', [])
-        elements = {}
-        word_explanations = []
+        parsed_words = []
         colors = self._get_color_scheme(complexity)
-
         for word_data in words:
             word = word_data.get('word', '')
-            
-            # Surgical role normalization (gold-standard style)
-            raw_role = (word_data.get('grammatical_role') or 
-                       word_data.get('role') or 
-                       'other')
-            
+            raw_role = (word_data.get('grammatical_role') or word_data.get('role') or 'other')
+            # Always define standard_role
             if target_word and word == target_word:
                 standard_role = 'target_word'
             else:
-                # Normalize common Gemini variations → exact config/color keys
                 role_map = {
                     "Pronoun": "pronoun",
                     "Adverb": "adverb",
@@ -181,10 +135,7 @@ class ZhResponseParser:
                 }
                 normalized = role_map.get(raw_role.strip(), raw_role.lower().replace(" ", "_").replace("-", "_"))
                 standard_role = self.config.grammatical_roles.get(normalized, normalized)
-            
-            color = colors.get(standard_role, '#AAAAAA')
-            
-            # Explanation (keep your existing rich logic)
+            # Always define explanation
             explanation = word_data.get('individual_meaning')
             if not explanation or str(explanation).strip() in ("", standard_role):
                 explanations_dict = data.get('explanations', {})
@@ -196,20 +147,14 @@ class ZhResponseParser:
                 )
             else:
                 explanation = str(explanation).strip()
-            
-            word_explanations.append([word, standard_role, color, explanation])
-
-            if standard_role not in elements:
-                elements[standard_role] = []
-            elements[standard_role].append(word_data)
-
-        return {
-            'sentence': data.get('sentence', ''),
-            'elements': elements,
-            'explanations': data.get('explanations', {}),
-            'word_explanations': word_explanations
-        }
-
+            parsed_words.append(ParsedWord(word=word, grammatical_role=standard_role, individual_meaning=explanation))
+        parsed_sentence = ParsedSentence(
+            sentence=data.get('sentence', ''),
+            words=parsed_words,
+            overall_structure=data.get('explanations', {}).get('overall_structure', ''),
+            key_features=data.get('explanations', {}).get('key_features', ''),
+            confidence=1.0
+        )
+        return ParseResult(sentences=[parsed_sentence], success=True)
     def _get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """Get color scheme based on complexity."""
         return self.config.get_color_scheme(complexity)

@@ -3,10 +3,16 @@
 Test the grammar analyzer integration with actual API call
 """
 
+
 import sys
 import os
-import json
-sys.path.append(os.path.dirname(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+except ImportError:
+    pass
 
 from services.generation.grammar_processor import GrammarProcessor
 
@@ -46,7 +52,7 @@ def test_chinese_analyzer():
             sentence=sentence,
             word=word,
             language=language,
-            google_api_key=google_api_key
+            gemini_api_key=google_api_key
         )
 
         print("✓ Analysis successful!")

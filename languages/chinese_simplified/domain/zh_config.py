@@ -34,77 +34,35 @@ INTEGRATION:
 - Supports multiple complexity levels with appropriate distinctions
 """
 
+
 import json
 import logging
 import yaml
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Any
-from dataclasses import dataclass
-from pydantic import BaseModel, Field
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, field
+from .zh_types import AnalysisRequest, AnalysisResult, BatchAnalysisResult, ParsedWord, ParsedSentence, ParseResult, ValidationResult
 
 logger = logging.getLogger(__name__)
-
-class ComplexityLevel(Enum):
-    """Standard complexity levels for grammar analysis."""
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
-
-class GrammaticalRole(Enum):
-    """Chinese grammatical roles - comprehensive coverage."""
-    NOUN = "noun"
-    VERB = "verb"
-    PRONOUN = "pronoun"
-    ADJECTIVE = "adjective"
-    ADVERB = "adverb"
-    NUMERAL = "numeral"
-    CLASSIFIER = "classifier"
-    PARTICLE = "particle"
-    PREPOSITION = "preposition"
-    CONJUNCTION = "conjunction"
-    INTERJECTION = "interjection"
-    ASPECT_MARKER = "aspect_marker"
-    MODAL_PARTICLE = "modal_particle"
-    STRUCTURAL_PARTICLE = "structural_particle"
-    # Add more as needed
 
 @dataclass
 class ZhConfig:
     """
     Configuration for Chinese Simplified analyzer, loaded from external files.
-
-    CHINESE CONFIGURATION:
-    - External files: Keep configuration separate from code
-    - Error handling: Graceful fallbacks for missing files
-    - Type safety: Use dataclasses and enums for validation
-    - Modularity: Separate concerns (roles, colors, patterns)
-
-    CONFIGURATION PHILOSOPHY:
-    - Complexity progression: Beginner â†’ Intermediate â†’ Advanced
-    - Inclusive design: Support different learning levels
-    - Maintainability: Easy to modify without code changes
+    Uses dataclasses for type safety and maintainability.
     """
-    grammatical_roles: Dict[str, str]
-    common_classifiers: List[str]
-    aspect_markers: Dict[str, str]
-    structural_particles: Dict[str, str]
-    modal_particles: Dict[str, str]
-    word_meanings: Dict[str, str]
-    prompt_templates: Dict[str, str]
-    patterns: Dict[str, Any]  # For regex patterns, etc.
+    grammatical_roles: Dict[str, str] = field(default_factory=dict)
+    common_classifiers: List[str] = field(default_factory=list)
+    aspect_markers: Dict[str, str] = field(default_factory=dict)
+    structural_particles: Dict[str, str] = field(default_factory=dict)
+    modal_particles: Dict[str, str] = field(default_factory=dict)
+    word_meanings: Dict[str, str] = field(default_factory=dict)
+    prompt_templates: Dict[str, str] = field(default_factory=dict)
+    patterns: Dict[str, Any] = field(default_factory=dict)
+    classifiers: List[str] = field(default_factory=list)
 
-    def __init__(self):
-        """
-        Initialize configuration by loading external files.
-
-        CONFIGURATION LOADING STRATEGY:
-        1. Define file paths relative to this module
-        2. Load YAML files for structured data (roles, patterns)
-        3. Load JSON files for key-value data (meanings)
-        4. Provide empty dicts as fallbacks for missing files
-        5. Log errors but don't crash - maintain functionality
-        """
+    def __post_init__(self):
         config_dir = Path(__file__).parent.parent / "infrastructure" / "data"
         self.grammatical_roles = self._load_yaml(config_dir / "zh_grammatical_roles.yaml")
         self.common_classifiers = self._load_yaml(config_dir / "zh_common_classifiers.yaml")
@@ -112,7 +70,6 @@ class ZhConfig:
         self.structural_particles = self._load_yaml(config_dir / "zh_structural_particles.yaml")
         self.modal_particles = self._load_yaml(config_dir / "zh_modal_particles.yaml")
         self.word_meanings = self._load_json(config_dir / "zh_word_meanings.json")
-        # For simplicity, define templates inline or load from file
         self.prompt_templates = {
             "single": """
 Analyze this Chinese sentence and provide a detailed grammatical breakdown.
