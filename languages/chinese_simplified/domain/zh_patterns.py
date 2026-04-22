@@ -1,166 +1,301 @@
-﻿# languages/chinese_simplified/domain/zh_patterns.py
-"""
+﻿"""
 Chinese Simplified Patterns - Domain Component
 
-CHINESE PATTERN SYSTEM:
-This component demonstrates how to implement regex-based linguistic pattern recognition for Chinese.
-It provides rule-based validation and enhancement for Chinese grammar analysis.
+Following Chinese Traditional Clean Architecture gold standard:
+- Centralized pattern definitions for Chinese Simplified processing
+- Regex patterns for text analysis and validation
+- Integration with external configuration files
+- Support for different analysis types and complexity levels
 
 RESPONSIBILITIES:
-1. Define regex patterns for Chinese linguistic features
-2. Provide pattern-based validation and enhancement
-3. Support morphological and syntactic pattern recognition
-4. Enable rule-based fallback and validation logic
-5. Maintain patterns separate from business logic
-
-PATTERN CATEGORIES:
-- Aspect markers: äº†, ç€, è¿‡ recognition
-- Particles: Structural (çš„, åœ°, å¾—), modal (å—, å‘¢, å§)
-- Classifiers: Common measure words
-- Character patterns: Han character validation
-- Compound recognition: Multi-character word patterns
-
-USAGE FOR CHINESE:
-1. Copy pattern structure for similar languages
-2. Implement Chinese-specific regex patterns
-3. Focus on most frequent and distinctive features
-4. Test patterns against real language data
-5. Balance complexity with maintainability
+1. Define regex patterns for Chinese Simplified text processing
+2. Provide pattern matching for grammatical elements
+3. Support validation of character and word patterns
+4. Handle Simplified vs Traditional character distinctions
+5. Provide patterns for sentence segmentation and analysis
 
 INTEGRATION:
-- Used by validator for pattern-based quality checks
-- Referenced by fallbacks for rule-based role assignment
-- Loaded from configuration files for maintainability
-- Supports both validation and generation tasks
+- Used by ZhResponseParser for fallback parsing
+- Depends on ZhConfig for pattern configuration
+- Works with ZhValidator for pattern-based validation
+- Supports ZhAnalyzer facade operations
+
+PATTERN CATEGORIES:
+1. Character classification (Simplified Chinese, punctuation)
+2. Word boundary detection
+3. Grammatical element recognition
+4. Sentence structure patterns
+5. Validation and sanity checking
 """
 
 import re
-from typing import Dict, Pattern
+import logging
+from typing import Dict, List, Any, Optional, Pattern, Match
+from dataclasses import dataclass
+
 from .zh_config import ZhConfig
+
+logger = logging.getLogger(__name__)
+
+@dataclass
+class PatternMatch:
+    """Represents a pattern matching result."""
+    pattern_name: str
+    matched_text: str
+    start_pos: int
+    end_pos: int
+    confidence: float
+    metadata: Dict[str, Any]
 
 class ZhPatterns:
     """
-    Regex patterns and markers for Chinese analysis.
+    Manages regex patterns for Chinese Simplified text processing.
 
-    CHINESE PATTERN DESIGN:
-    - Compiled regex: Pre-compiled for performance
-    - Configuration-driven: Patterns loaded from external files
-    - Focused scope: Most important patterns only
-    - Validation-oriented: Support quality checking
-    - Extensible: Easy to add new patterns
-
-    PATTERN PHILOSOPHY:
-    - Quality over quantity: Few high-signal patterns
-    - Maintainable: Clear naming and documentation
-    - Testable: Patterns can be unit tested
-    - Performance-conscious: Compiled and cached
+    Following Chinese Traditional Clean Architecture gold standard.
     """
 
     def __init__(self, config: ZhConfig):
         """
-        Initialize patterns from configuration.
-
-        PATTERN INITIALIZATION:
-        1. Load patterns from config YAML files
-        2. Compile regex patterns for performance
-        3. Validate pattern syntax
-        4. Set up pattern collections by category
-        5. Handle missing patterns gracefully
+        Initialize patterns with configuration.
         """
         self.config = config
+        self._compiled_patterns = {}
+        self._init_patterns()
 
-        # Aspect markers - critical for Chinese grammar
-        self.aspect_pattern: Pattern[str] = re.compile(r'(?:\u4e86|\u7740|\u8fc7)')
+    def _init_patterns(self):
+        """Initialize and compile regex patterns."""
+        # Load patterns from config
+        pattern_definitions = self.config.patterns
 
-        # Modal particles
-        self.modal_particle_pattern: Pattern[str] = re.compile(r'(?:\u5417|\u5462|\u5427|\u554a|\u54e6|\u5566|\u561b)')
+        # Character and text patterns
+        self._init_character_patterns()
+        self._init_word_patterns()
+        self._init_grammatical_patterns()
+        self._init_structural_patterns()
 
-        # Structural particles
-        self.structural_particle_pattern: Pattern[str] = re.compile(r'(?:\u7684|\u5730|\u5f97)')
+        # Compile config-based patterns
+        for pattern_name, pattern_data in pattern_definitions.items():
+            if isinstance(pattern_data, dict) and "regex" in pattern_data:
+                try:
+                    self._compiled_patterns[pattern_name] = re.compile(
+                        pattern_data["regex"],
+                        re.UNICODE | re.IGNORECASE
+                    )
+                    logger.debug(f"Compiled pattern: {pattern_name}")
+                except re.error as e:
+                    logger.error(f"Failed to compile pattern {pattern_name}: {e}")
 
-        # General particles (combination)
-        self.particle_pattern: Pattern[str] = re.compile(r'(?:\u7684|\u5730|\u5f97|\u4e86|\u7740|\u8fc7|\u5417|\u5462|\u5427|\u554a|\u54e6|\u5566|\u561b)')
+    def _init_character_patterns(self):
+        """Initialize Chinese Simplified character recognition patterns."""
+        # CJK Unified Ideographs (covers both Simplified and Traditional)
+        chinese_ranges = [
+            r'\u4E00-\u9FFF',  # CJK Unified Ideographs
+            r'\u3400-\u4DBF',  # CJK Extension A
+        ]
 
-        # Classifiers - common ones
-        if hasattr(config, 'classifiers') and config.classifiers:
-            self.classifier_pattern: Pattern[str] = re.compile(r'(?:' + '|'.join(re.escape(c) for c in config.classifiers) + r')')
-        else:
-            # Fallback common classifiers
-            self.classifier_pattern: Pattern[str] = re.compile(r'(?:\u4e2a|\u672c|\u676f|\u53ea|\u5f20|\u4ef6|\u628a|\u8f86|\u53f0|\u4f4d)')
+        # Compile character validation pattern
+        char_pattern = f'[{"".join(chinese_ranges)}]'
+        self._compiled_patterns['chinese_character'] = re.compile(char_pattern, re.UNICODE)
 
-        # Han character validation (basic)
-        self.han_character_pattern: Pattern[str] = re.compile(r'[\u4e00-\u9fff]')
+        # Chinese punctuation (same for Simplified/Traditional)
+        self._compiled_patterns['chinese_punctuation'] = re.compile(
+            r'[，。！？；：""''（）【】《》〈〉「」『』〖〗〔〕]',
+            re.UNICODE
+        )
 
-        # Numbers (Chinese characters)
-        self.chinese_number_pattern: Pattern[str] = re.compile(r'(?:\u4e00|\u4e8c|\u4e09|\u56db|\u4e94|\u516d|\u4e03|\u516b|\u4e5d|\u5341|\u767e|\u5343|\u4e07|\u96f6)')
+        # Combined Chinese text pattern
+        chinese_chars = "".join(chinese_ranges)
+        punctuation = r'，。！？；：""\'\'（）【】《》'
+        combined_pattern = f'[{chinese_chars}{punctuation}]+'
+        self._compiled_patterns['chinese_text'] = re.compile(combined_pattern, re.UNICODE)
 
-        # Pronouns
-        self.pronoun_pattern: Pattern[str] = re.compile(r'(?:\u6211|\u4f60|\u4ed6|\u5979|\u5b83|\u6211\u4eec|\u4f60\u4eec|\u4ed6\u4eec|\u5979\u4eec|\u8fd9|\u90a3|\u8fd9\u4e9b|\u90a3\u4e9b)')
+    def _init_word_patterns(self):
+        """Initialize word and compound recognition patterns (Simplified)."""
+        # Aspect marker combinations
+        self._compiled_patterns['aspect_construction'] = re.compile(
+            r'\b\w+(了|着|过)\b',
+            re.UNICODE
+        )
 
-        # Question words
-        self.interrogative_pattern: Pattern[str] = re.compile(r'(?:\u4ec0\u4e48|\u8c01|\u54ea\u91cc|\u4ec0\u4e48\u65f6\u5019|\u600e\u4e48|\u4e3a\u4ec0\u4e48|\u591a\u5c11|\u51e0|\u54ea|\u600e\u4e48\u6837)')
+        # Modal particle patterns
+        self._compiled_patterns['modal_construction'] = re.compile(
+            r'\b\w+([吗呢吧啊哦嘛啦呀哇])\b',
+            re.UNICODE
+        )
 
-    def is_particle(self, word: str) -> bool:
-        """Check if word is a particle."""
-        normalized = self._normalize_text(word)
-        return bool(self.particle_pattern.search(normalized))
+        # Measure word constructions
+        self._compiled_patterns['classifier_construction'] = re.compile(
+            r'\b(\d+|一|二|两|三|四|五|六|七|八|九|十)+([个本杯张件位名座间])\b',
+            re.UNICODE
+        )
 
-    def is_aspect_marker(self, word: str) -> bool:
-        """Check if word is an aspect marker."""
-        normalized = self._normalize_text(word)
-        return bool(self.aspect_pattern.search(normalized))
+    def _init_grammatical_patterns(self):
+        """Initialize grammatical element recognition patterns (Simplified)."""
+        # Function word patterns
+        self._compiled_patterns['structural_particles'] = re.compile(
+            r'\b(的|地|得|了|着|过)\b',
+            re.UNICODE
+        )
 
-    def is_classifier(self, word: str) -> bool:
-        """Check if word is a classifier."""
-        normalized = self._normalize_text(word)
-        return bool(self.classifier_pattern.search(normalized))
+        self._compiled_patterns['modal_particles'] = re.compile(
+            r'\b(吗|呢|吧|啊|哦|嘛|啦|呀|哇)\b',
+            re.UNICODE
+        )
 
-    def is_han_character(self, text: str) -> bool:
-        """Check if text contains Han characters."""
-        normalized = self._normalize_text(text)
-        return bool(self.han_character_pattern.search(normalized))
+        # Aspect markers
+        self._compiled_patterns['aspect_markers'] = re.compile(
+            r'\b(了|着|过)\b',
+            re.UNICODE
+        )
 
-    def _normalize_text(self, text: str) -> str:
-        """Normalize mojibake-encoded Chinese text to Unicode if needed."""
-        if not text:
-            return text
-        replacements = {
-            "ç€": "\u7740",
-            "å—": "\u5417",
-            "æ¯": "\u676f"
+        # Question patterns
+        self._compiled_patterns['question_pattern'] = re.compile(
+            r'.*[吗呢吧][？?]$',
+            re.UNICODE
+        )
+
+        # Negation patterns
+        self._compiled_patterns['negation_pattern'] = re.compile(
+            r'\b(不|没|没有|不是|不会|不能)\b',
+            re.UNICODE
+        )
+
+    def _init_structural_patterns(self):
+        """Initialize sentence and clause structure patterns."""
+        # Sentence boundary patterns
+        self._compiled_patterns['sentence_end'] = re.compile(
+            r'[。！？]$',
+            re.UNICODE
+        )
+
+        # Clause boundary patterns
+        self._compiled_patterns['clause_boundary'] = re.compile(
+            r'[，；：]',
+            re.UNICODE
+        )
+
+        # Subject-verb-object basic pattern
+        self._compiled_patterns['svo_pattern'] = re.compile(
+            r'.*?(?:是|有|在|去|来|做|说|看|听|吃|喝|玩|学|写|读).*',
+            re.UNICODE
+        )
+
+    def match_pattern(self, pattern_name: str, text: str) -> List[PatternMatch]:
+        """Match a specific pattern against text."""
+        if pattern_name not in self._compiled_patterns:
+            logger.warning(f"Pattern '{pattern_name}' not found")
+            return []
+
+        pattern = self._compiled_patterns[pattern_name]
+        matches = []
+
+        for match in pattern.finditer(text):
+            pattern_match = PatternMatch(
+                pattern_name=pattern_name,
+                matched_text=match.group(),
+                start_pos=match.start(),
+                end_pos=match.end(),
+                confidence=1.0,
+                metadata=self._extract_match_metadata(match, pattern_name)
+            )
+            matches.append(pattern_match)
+
+        return matches
+
+    def validate_text(self, text: str) -> Dict[str, Any]:
+        """Validate Chinese Simplified text using multiple patterns."""
+        validation_results = {
+            'is_valid': True,
+            'issues': [],
+            'confidence': 1.0,
+            'pattern_matches': {}
         }
-        if any(0x80 <= ord(ch) <= 0x9f for ch in text):
-            text = ''.join(ch for ch in text if not (0x80 <= ord(ch) <= 0x9f))
-        for bad, good in replacements.items():
-            if bad in text:
-                text = text.replace(bad, good)
-        if any('\u4e00' <= ch <= '\u9fff' for ch in text):
-            return text
-        for encoding in ('latin-1', 'cp1252'):
-            try:
-                repaired = text.encode(encoding).decode('utf-8')
-            except UnicodeError:
-                continue
-            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
-                return repaired
-        if all(ord(ch) < 256 for ch in text):
-            try:
-                repaired = bytes(ord(ch) for ch in text).decode('utf-8')
-            except UnicodeError:
-                return text
-            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
-                return repaired
-        return text
 
-    def has_valid_chinese_structure(self, sentence: str) -> bool:
-        """Basic validation of Chinese sentence structure."""
-        # Must contain Han characters
-        if not self.is_han_character(sentence):
-            return False
+        # Character validation
+        non_chinese_chars = []
+        for char in text:
+            if not self._compiled_patterns['chinese_character'].match(char) and char not in ' \t\n\r':
+                if not self._compiled_patterns['chinese_punctuation'].match(char):
+                    non_chinese_chars.append(char)
 
-        # Should have some particles (common in Chinese)
-        words = sentence.split()
-        has_particles = any(self.is_particle(word) for word in words)
+        if non_chinese_chars:
+            validation_results['issues'].append(
+                f"Found non-Chinese characters: {set(non_chinese_chars)}"
+            )
+            validation_results['confidence'] *= 0.8
 
-        # Should have some content words (basic check)
-        return len(words) > 0 and (has_particles or len(words) > 1)
+        # Structural validation
+        if not self._compiled_patterns['sentence_end'].search(text):
+            validation_results['issues'].append("Text may be incomplete (no sentence ending)")
+            validation_results['confidence'] *= 0.9
+
+        # Pattern analysis
+        validation_results['pattern_matches'] = {
+            'aspect_constructions': len(self.match_pattern('aspect_construction', text)),
+            'modal_constructions': len(self.match_pattern('modal_construction', text)),
+            'classifier_constructions': len(self.match_pattern('classifier_construction', text)),
+            'questions': len(self.match_pattern('question_pattern', text)),
+            'negations': len(self.match_pattern('negation_pattern', text))
+        }
+
+        validation_results['is_valid'] = len(validation_results['issues']) == 0
+
+        return validation_results
+
+    def segment_sentence(self, sentence: str) -> List[str]:
+        """Segment Chinese Simplified sentence into words/elements."""
+        # Remove punctuation first
+        clean_sentence = re.sub(r'[。！？，、；：「」『』（）《》〈〉【】]', '', sentence)
+
+        # Start with character-level segmentation
+        elements = list(clean_sentence)
+
+        # Merge common compounds
+        merged_elements = []
+        i = 0
+        while i < len(elements):
+            if i + 1 < len(elements):
+                compound = elements[i] + elements[i + 1]
+                if self._is_compound_word(compound):
+                    merged_elements.append(compound)
+                    i += 2
+                    continue
+            merged_elements.append(elements[i])
+            i += 1
+
+        return merged_elements
+
+    def _is_compound_word(self, compound: str) -> bool:
+        """Check if a two-character sequence is a compound word (Simplified)."""
+        simplified_compounds = [
+            '着书', '里面', '借口', '征求', '并且', '只有',  # Common words
+            '一个', '一本', '一杯', '一张', '一件',          # Numbers + classifiers
+            '去了', '看了', '吃了', '学了', '写了',          # Verb + aspect
+            '着呢', '着吗', '着吧', '着啊',                  # Aspect + modal
+        ]
+        return compound in simplified_compounds
+
+    def _extract_match_metadata(self, match: Match, pattern_name: str) -> Dict[str, Any]:
+        """Extract metadata from a regex match."""
+        metadata = {
+            'groups': match.groups(),
+            'groupdict': match.groupdict(),
+            'span': match.span()
+        }
+
+        if pattern_name == 'aspect_construction':
+            metadata['aspect_type'] = match.group(1) if match.groups() else 'unknown'
+        elif pattern_name == 'modal_construction':
+            metadata['modal_type'] = match.group(1) if match.groups() else 'unknown'
+        elif pattern_name == 'classifier_construction':
+            metadata['classifier'] = match.group(2) if len(match.groups()) > 1 else 'unknown'
+
+        return metadata
+
+    def get_pattern_info(self) -> Dict[str, Any]:
+        """Get information about available patterns."""
+        return {
+            'available_patterns': list(self._compiled_patterns.keys()),
+            'pattern_count': len(self._compiled_patterns),
+            'config_patterns': list(self.config.patterns.keys())
+        }

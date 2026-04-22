@@ -1,14 +1,13 @@
-﻿# languages/chinese_simplified/domain/zh_fallbacks.py
-"""
+﻿"""
 Chinese Simplified Fallbacks - Domain Component
 
-CHINESE FALLBACK SYSTEM:
-This component demonstrates comprehensive error recovery for Chinese grammar analysis.
+CHINESE SIMPLIFIED FALLBACK SYSTEM:
+This component provides comprehensive error recovery for Chinese Simplified grammar analysis.
 It provides rule-based fallbacks when AI parsing fails, ensuring users always get results.
 
 RESPONSIBILITIES:
 1. Generate basic grammar analysis when AI fails
-2. Apply rule-based role assignment using Chinese patterns
+2. Apply rule-based role assignment using Chinese Simplified patterns
 3. Provide meaningful explanations for fallback results
 4. Maintain consistent output format with AI results
 5. Use configuration data for accurate fallback assignments
@@ -20,9 +19,9 @@ FALLBACK STRATEGIES:
 4. Contextual defaults: Chinese-appropriate default assignments
 5. Color coding: Consistent with main analyzer color schemes
 
-USAGE FOR CHINESE:
+USAGE FOR CHINESE SIMPLIFIED:
 1. Copy fallback structure and pattern logic
-2. Implement Chinese-specific role guessing rules (particles, aspect, classifiers)
+2. Implement Chinese Simplified-specific role guessing rules (particles, aspect, classifiers)
 3. Create comprehensive word lists for target language
 4. Test fallbacks provide reasonable quality
 5. Ensure fallbacks maintain user experience continuity
@@ -44,16 +43,16 @@ class ZhFallbacks:
     """
     Provides fallback responses when parsing fails.
 
-    CHINESE FALLBACK DESIGN:
+    CHINESE SIMPLIFIED FALLBACK DESIGN:
     - Rule-based analysis: Linguistic patterns over random guessing
-    - Configuration-driven: Uses Chinese-specific data and patterns
+    - Configuration-driven: Uses Chinese Simplified-specific data and patterns
     - Quality preservation: Better than no analysis, guides improvement
     - Consistent format: Same output structure as AI results
     - Logging: Tracks fallback usage for monitoring
 
     FALLBACK QUALITY PRINCIPLES:
     - Better than nothing: Useful even if not perfect
-    - Language-aware: Uses real Chinese grammar patterns
+    - Language-aware: Uses real Chinese Simplified grammar patterns
     - Consistent: Same logic produces same results
     - Maintainable: Easy to improve with new patterns
     """
@@ -63,7 +62,7 @@ class ZhFallbacks:
         Initialize fallbacks with configuration.
 
         CONFIGURATION INTEGRATION:
-        1. Access to pre-defined word meanings
+        1. Access to pre-defined word meanings (now much richer)
         2. Common classifiers and particles
         3. Aspect markers and structural particles
         4. Pattern definitions for rule-based analysis
@@ -74,22 +73,23 @@ class ZhFallbacks:
     def create_fallback(self, sentence: str, complexity: str) -> Dict[str, Any]:
         """Create a basic fallback analysis."""
         logger.info(f"Creating fallback analysis for sentence: '{sentence}'")
-        # For Chinese, split by spaces (assuming pre-segmented) or by characters
-        words = sentence.split() if ' ' in sentence else list(sentence)  # Character-level fallback
+        
+        # For Chinese Simplified, split by spaces (if pre-segmented) or by characters
+        words = sentence.split() if ' ' in sentence else list(sentence)
         word_explanations = []
         elements = {}
 
         # Always ensure at least one word explanation (prevents UI/test crash)
         if not words or all(w.strip() == '' for w in words):
-            word = sentence if sentence.strip() else '[EMPTY]'
+            word = sentence.strip() if sentence.strip() else '[EMPTY]'
             role = 'other'
             color = self._get_fallback_color(role)
-            meaning = 'No analysis available.'
+            meaning = self._generate_fallback_explanation(word)
             word_explanations.append([word, role, color, meaning])
             elements[role] = [{'word': word, 'grammatical_role': role}]
         else:
             for word in words:
-                # Try to get meaning from config
+                # Try to get meaning from the rich dictionary first
                 meaning = self.config.word_meanings.get(word, self._generate_fallback_explanation(word))
                 role = self._guess_role(word)
                 color = self._get_fallback_color(role)
@@ -112,74 +112,73 @@ class ZhFallbacks:
         return result
 
     def _guess_role(self, word: str) -> str:
-        """Guess grammatical role based on word characteristics."""
-        word = self._normalize_text(word)
-        # Clean the word
-        clean_word = word.strip("\u3002\uff01\uff1f\uff0c\u3001\uff1b\uff1a\"'\uff08\uff09\u3010\u3011{}")
+        """Guess grammatical role based on word characteristics (Simplified Chinese)."""
+        # Normalize mojibake / encoding issues first (defensive feature)
+        clean_word = self._normalize_text(word).strip('。！？，、；："\'（）【】{}')
 
-        # Aspect markers (very important in Chinese)
-        if clean_word in ['\u4e86', '\u7740', '\u8fc7']:
+        # Aspect markers
+        if clean_word in ['了', '着', '过']:
             return 'aspect_marker'
 
         # Modal particles
-        if clean_word in ['\u5417', '\u5462', '\u5427', '\u554a', '\u54e6', '\u5566', '\u561b']:
+        if clean_word in ['吗', '呢', '吧', '啊', '呀', '啦', '嘛']:
             return 'modal_particle'
 
         # Structural particles
-        if clean_word in ['\u7684', '\u5730', '\u5f97']:
+        if clean_word in ['的', '地', '得']:
             return 'structural_particle'
 
         # General particles
-        if clean_word in ['\u4e86', '\u7740', '\u8fc7', '\u7684', '\u5730', '\u5f97', '\u5417', '\u5462', '\u5427', '\u554a']:
+        if clean_word in ['了', '着', '过', '的', '地', '得', '吗', '呢', '吧', '啊']:
             return 'particle'
 
-        # Common classifiers
-        if clean_word in self.config.classifiers:
+        # Common classifiers (Simplified)
+        if clean_word in self.config.common_classifiers:
             return 'classifier'
 
         # Pronouns
-        if clean_word in ['\u6211', '\u4f60', '\u4ed6', '\u5979', '\u5b83', '\u6211\u4eec', '\u4f60\u4eec', '\u4ed6\u4eec', '\u5979\u4eec', '\u8fd9', '\u90a3', '\u8fd9\u4e9b', '\u90a3\u4e9b']:
+        if clean_word in ['我', '你', '他', '她', '它', '我们', '你们', '他们', '她们', '这', '那', '这些', '那些']:
             return 'pronoun'
 
         # Question words
-        if clean_word in ['\u4ec0\u4e48', '\u8c01', '\u54ea\u91cc', '\u4ec0\u4e48\u65f6\u5019', '\u600e\u4e48', '\u4e3a\u4ec0\u4e48', '\u591a\u5c11', '\u51e0']:
+        if clean_word in ['什么', '谁', '哪里', '什么时候', '怎么', '为什么', '多少', '几']:
             return 'interrogative'
 
         # Conjunctions
-        if clean_word in ['\u548c', '\u4e0e', '\u6216', '\u4f46\u662f', '\u56e0\u4e3a', '\u6240\u4ee5', '\u5982\u679c', '\u867d\u7136']:
+        if clean_word in ['和', '与', '或', '但是', '因为', '所以', '如果', '虽然']:
             return 'conjunction'
 
         # Prepositions
-        if clean_word in ['\u5728', '\u4ece', '\u5230', '\u7ed9', '\u5bf9', '\u5411', '\u8ddf', '\u88ab']:
+        if clean_word in ['在', '从', '到', '给', '对', '向', '跟', '被']:
             return 'preposition'
 
         # Numbers
-        if clean_word.isdigit() or clean_word in ['\u4e00', '\u4e8c', '\u4e09', '\u56db', '\u4e94', '\u516d', '\u4e03', '\u516b', '\u4e5d', '\u5341', '\u767e', '\u5343', '\u4e07']:
+        if clean_word.isdigit() or clean_word in ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '百', '千', '万', '零']:
             return 'numeral'
 
         # Interjections
-        if clean_word in ['\u554a', '\u54e6', '\u54ce\u54ce', '\u55ef', '\u54ce']:
+        if clean_word in ['啊', '哦', '哎呀', '嗯', '唉']:
             return 'interjection'
 
-        # Verb-like endings or common verbs (basic heuristics)
-        if len(clean_word) >= 2 and any(clean_word.endswith(suffix) for suffix in ['\u4e86', '\u7740', '\u8fc7', '\u6765', '\u53bb', '\u5230']):
+        # Verb-like endings or common verbs
+        if len(clean_word) >= 2 and any(clean_word.endswith(suffix) for suffix in ['了', '着', '过', '来', '去', '到']):
             return 'verb'
 
-        # Adjective-like (basic heuristics - adjectives often end with çš„ or are single syllable)
-        if len(clean_word) == 1 or clean_word.endswith('\u7684'):
+        # Adjective-like
+        if len(clean_word) == 1 or clean_word.endswith('的'):
             return 'adjective'
 
-        # Default to noun for most other words (most common in Chinese)
+        # Default to noun (most common in Chinese)
         return 'noun'
 
     def _normalize_text(self, text: str) -> str:
-        """Normalize mojibake-encoded Chinese text to Unicode if needed."""
+        """Normalize mojibake-encoded Chinese text to Unicode if needed (defensive robustness)."""
         if not text:
             return text
         replacements = {
-            "ç€": "\u7740",
-            "å—": "\u5417",
-            "æ¯": "\u676f"
+            "ç€": "\u7740",  # 着
+            "å—": "\u5417",  # 吗
+            "æ¯": "\u676f",  # 杯
         }
         if any(0x80 <= ord(ch) <= 0x9f for ch in text):
             text = ''.join(ch for ch in text if not (0x80 <= ord(ch) <= 0x9f))
@@ -191,22 +190,21 @@ class ZhFallbacks:
         for encoding in ('latin-1', 'cp1252'):
             try:
                 repaired = text.encode(encoding).decode('utf-8')
+                if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
+                    return repaired
             except UnicodeError:
                 continue
-            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
-                return repaired
         if all(ord(ch) < 256 for ch in text):
             try:
                 repaired = bytes(ord(ch) for ch in text).decode('utf-8')
+                if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
+                    return repaired
             except UnicodeError:
-                return text
-            if any('\u4e00' <= ch <= '\u9fff' for ch in repaired):
-                return repaired
+                pass
         return text
 
     def _get_fallback_color(self, role: str) -> str:
         """Get color for fallback role."""
-        # Use the same color scheme as the main analyzer
         colors = self.config.get_color_scheme('intermediate')
         return colors.get(role, '#AAAAAA')
 
