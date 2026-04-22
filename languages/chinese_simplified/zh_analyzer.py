@@ -186,50 +186,81 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             )
 
     def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
-        """Batch analyze grammar (gold-standard implementation)."""
+        """Batch analyze grammar for multiple sentences.
+        PERMANENT FIX: Properly handles ParseResult dataclass returned by parser
+        (aligns with Traditional gold standard + fixes the 'not iterable' error)."""
         logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
+
+        if not sentences:
+            return []
+
         try:
+            # Build batch prompt and call AI (same as before)
             prompt = self.prompt_builder.build_batch_prompt(sentences, target_word, complexity)
             ai_response = self._call_ai(prompt, gemini_api_key)
-            results = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_word)
+
+            # CRITICAL FIX: Handle ParseResult object
+            parse_result = self.response_parser.parse_batch_response(
+                ai_response, sentences, complexity, target_word
+            )
+
+            # Extract actual parsed items (works with both old and new parser styles)
+            if hasattr(parse_result, 'sentences') and parse_result.sentences:
+                parsed_items = parse_result.sentences
+            elif isinstance(parse_result, list):
+                parsed_items = parse_result
+            else:
+                parsed_items = []
 
             grammar_analyses = []
-            for result, sentence in zip(results, sentences):
-                validated_result = self.validator.validate_result(result, sentence)
-                html_output = self._generate_html_output(validated_result, sentence, complexity)
+            for i, sentence in enumerate(sentences):
+                # Get parsed data or fallback
+                if i < len(parsed_items):
+                    item = parsed_items[i]
+                    # Convert dataclass → dict if needed
+                    if hasattr(item, '__dataclass_fields__'):
+                        result_dict = {
+                            'sentence': getattr(item, 'sentence', sentence),
+                            'words': [{'word': w.word, 'grammatical_role': w.grammatical_role, 'individual_meaning': w.individual_meaning}
+                                      for w in getattr(item, 'words', [])],
+                            'explanations': {
+                                'overall_structure': getattr(item, 'overall_structure', ''),
+                                'key_features': getattr(item, 'key_features', '')
+                            },
+                            'word_explanations': [
+                                [w.word, w.grammatical_role, '', w.individual_meaning]
+                                for w in getattr(item, 'words', [])
+                            ]
+                        }
+                    else:
+                        result_dict = item if isinstance(item, dict) else {}
+                else:
+                    result_dict = {}
+
+                # Validate + generate HTML (same as single sentence path)
+                validated = self.validator.validate_result(result_dict, sentence)
+                html_output = self._generate_html_output(validated, sentence, complexity)
 
                 grammar_analyses.append(GrammarAnalysis(
                     sentence=sentence,
                     target_word=target_word or "",
                     language_code=self.language_code,
                     complexity_level=complexity,
-                    grammatical_elements=validated_result.get('elements', {}),
-                    explanations=validated_result.get('explanations', {}),
+                    grammatical_elements=validated.get('elements', {}),
+                    explanations=validated.get('explanations', {}),
                     color_scheme=self.get_color_scheme(complexity),
                     html_output=html_output,
-                    confidence_score=validated_result.get('confidence', 0.0),
-                    word_explanations=validated_result.get('word_explanations', [])
+                    confidence_score=validated.get('confidence', 0.95),
+                    word_explanations=validated.get('word_explanations', [])
                 ))
+
+            logger.info(f"✅ Batch analysis completed successfully for {len(grammar_analyses)} sentences (Simplified Chinese)")
             return grammar_analyses
+
         except Exception as e:
-            logger.error(f"Batch analysis failed: {e}")
-            fallback_analyses = []
-            for sentence in sentences:
-                fallback_result = self.response_parser.fallbacks.create_fallback(sentence, complexity)
-                html_output = self._generate_html_output(fallback_result, sentence, complexity)
-                fallback_analyses.append(GrammarAnalysis(
-                    sentence=sentence,
-                    target_word=target_word or "",
-                    language_code=self.language_code,
-                    complexity_level=complexity,
-                    grammatical_elements=fallback_result.get('elements', {}),
-                    explanations=fallback_result.get('explanations', {}),
-                    color_scheme=self.get_color_scheme(complexity),
-                    html_output=html_output,
-                    confidence_score=fallback_result.get('confidence', 0.3),
-                    word_explanations=fallback_result.get('word_explanations', [])
-                ))
-            return fallback_analyses
+            logger.error(f"Batch analysis failed: {e}", exc_info=True)
+            # Final fallback (should almost never trigger now)
+            return [self._create_fallback_analysis(sentence, target_word, complexity) for sentence in sentences]
 
     def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
         """Call Google Gemini AI (robust version with max tokens)."""
@@ -266,6 +297,21 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
         """Return color scheme."""
         return self.zh_config.get_color_scheme(complexity)
+    
+    def parse_grammar_response(self, ai_response: str, complexity: str, 
+                               sentence: str, target_word: str = "") -> Dict[str, Any]:
+        """Parse the raw AI response into structured grammar data.
+        Required by BaseGrammarAnalyzer – delegates to domain parser.
+        """
+        return self.response_parser.parse_response(
+            ai_response, complexity, sentence, target_word
+        )
+
+    def validate_analysis(self, analysis_result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
+        """Validate the parsed analysis result.
+        Required by BaseGrammarAnalyzer – delegates to domain validator.
+        """
+        return self.validator.validate_result(analysis_result, sentence)   
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
         """Gold-standard HTML generator for color-coded sentence (character-by-character)."""

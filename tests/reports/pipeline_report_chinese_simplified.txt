@@ -5,8 +5,8 @@
   Language       : Chinese (Simplified)
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-04-21 09:57:44
-  Elapsed        : 0.02s
+  Generated at   : 2026-04-22 12:07:33
+  Elapsed        : 0.03s
 ================================================================================
 
 STAGE RESULTS
@@ -17,10 +17,10 @@ STAGE RESULTS
          Meaning: to eat (to consume food)
          Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
   [PASS] 3. Grammar Analysis (Batch)
-         Sentence 1: colored=YES, explanations=1, summary=YES
-         Sentence 2: colored=YES, explanations=1, summary=YES
-         Sentence 3: colored=YES, explanations=1, summary=YES
-         Sentence 4: colored=YES, explanations=1, summary=YES
+         Sentence 1: colored=YES, explanations=9, summary=YES
+         Sentence 2: colored=YES, explanations=10, summary=YES
+         Sentence 3: colored=YES, explanations=6, summary=YES
+         Sentence 4: colored=YES, explanations=10, summary=YES
   [PASS] 4. Audio Generation (mocked)
          Generated 4 audio file paths
   [PASS] 5. Image Generation (mocked)
@@ -44,10 +44,18 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: wǒ měitiān zǎoshang chī miànbāo
   Keywords   : bread plate, morning breakfast
 
-  Colored HTML : <span style='color: #CCCCCC'>我每天早上吃面包。</span>
-  Grammar Summ : Basic analysis of Chinese (Simplified) sentence structure
-  Word Explanations (1 words):
-    我每天早上吃面包。     other           #CCCCCC   Other word in sentence
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">我</span><span style="color: #FF44FF; font-weight: bold;">每</span><span style="color: #FF44FF; font-weight: bold;">天</span><span style="color: #FF44FF; …
+  Grammar Summ : Sentence contains 1 pronoun, 7 adjectives, 1 noun
+  Word Explanations (9 words):
+    我             pronoun         #FF4444   I, me (first person singular pronoun)
+    每             adjective       #FF44FF   a word that describes a noun
+    天             adjective       #FF44FF   a word that describes a noun
+    早             adjective       #FF44FF   a word that describes a noun
+    上             adjective       #FF44FF   a word that describes a noun
+    吃             adjective       #FF44FF   to eat (verb)
+    面             adjective       #FF44FF   a word that describes a noun
+    包             adjective       #FF44FF   a word that describes a noun
+    。             noun            #FFAA00   a thing, person, or concept
 
   --- Sentence 2 ---
   Original   : 孩子们在学校吃午饭。
@@ -55,10 +63,19 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: háizimen zài xuéxiào chī wǔfàn
   Keywords   : children school, lunch tray
 
-  Colored HTML : <span style='color: #CCCCCC'>孩子们在学校吃午饭。</span>
-  Grammar Summ : Basic analysis of Chinese (Simplified) sentence structure
-  Word Explanations (1 words):
-    孩子们在学校吃午饭。    other           #CCCCCC   Other word in sentence
+  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">孩</span><span style="color: #FF44FF; font-weight: bold;">子</span><span style="color: #FF44FF; font-weight: bold;">们</span><span style="color: #4444FF; …
+  Grammar Summ : Sentence contains 8 adjectives, 1 preposition, 1 noun
+  Word Explanations (10 words):
+    孩             adjective       #FF44FF   a word that describes a noun
+    子             adjective       #FF44FF   a word that describes a noun
+    们             adjective       #FF44FF   a word that describes a noun
+    在             preposition     #4444FF   at, in, on (preposition)
+    学             adjective       #FF44FF   to study, learn (verb)
+    校             adjective       #FF44FF   a word that describes a noun
+    吃             adjective       #FF44FF   to eat (verb)
+    午             adjective       #FF44FF   a word that describes a noun
+    饭             adjective       #FF44FF   meal, rice (noun)
+    。             noun            #FFAA00   a thing, person, or concept
 
   --- Sentence 3 ---
   Original   : 你想吃什么？
@@ -66,10 +83,15 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: nǐ xiǎng chī shénme
   Keywords   : food question, menu choices
 
-  Colored HTML : <span style='color: #CCCCCC'>你想吃什么？</span>
-  Grammar Summ : Basic analysis of Chinese (Simplified) sentence structure
-  Word Explanations (1 words):
-    你想吃什么？        other           #CCCCCC   Other word in sentence
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">你</span><span style="color: #FF44FF; font-weight: bold;">想</span><span style="color: #FF44FF; font-weight: bold;">吃</span><span style="color: #FF44FF; …
+  Grammar Summ : Sentence contains 1 pronoun, 4 adjectives, 1 noun
+  Word Explanations (6 words):
+    你             pronoun         #FF4444   you (second person singular pronoun)
+    想             adjective       #FF44FF   a word that describes a noun
+    吃             adjective       #FF44FF   to eat (verb)
+    什             adjective       #FF44FF   a word that describes a noun
+    么             adjective       #FF44FF   a word that describes a noun
+    ？             noun            #FFAA00   a thing, person, or concept
 
   --- Sentence 4 ---
   Original   : 妈妈在厨房里吃苹果。
@@ -77,10 +99,19 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: māma zài chúfáng lǐ chī píngguǒ
   Keywords   : mother kitchen, apple fruit
 
-  Colored HTML : <span style='color: #CCCCCC'>妈妈在厨房里吃苹果。</span>
-  Grammar Summ : Basic analysis of Chinese (Simplified) sentence structure
-  Word Explanations (1 words):
-    妈妈在厨房里吃苹果。    other           #CCCCCC   Other word in sentence
+  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">妈</span><span style="color: #FF44FF; font-weight: bold;">妈</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FF44FF; …
+  Grammar Summ : Sentence contains 8 adjectives, 1 preposition, 1 noun
+  Word Explanations (10 words):
+    妈             adjective       #FF44FF   a word that describes a noun
+    妈             adjective       #FF44FF   a word that describes a noun
+    在             preposition     #4444FF   at, in, on (preposition)
+    厨             adjective       #FF44FF   a word that describes a noun
+    房             adjective       #FF44FF   a word that describes a noun
+    里             adjective       #FF44FF   a word that describes a noun
+    吃             adjective       #FF44FF   to eat (verb)
+    苹             adjective       #FF44FF   a word that describes a noun
+    果             adjective       #FF44FF   a word that describes a noun
+    。             noun            #FFAA00   a thing, person, or concept
 
 AUDIO FILES
 --------------------------------------------------------------------------------
