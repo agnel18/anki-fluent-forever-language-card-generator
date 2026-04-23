@@ -58,6 +58,8 @@ You are a **Language Grammar Analyzer Builder** — a specialist that creates co
 
 6. **Grammar processor preserves analyzer colors.** `grammar_processor.py`'s `_convert_analyzer_output_to_explanations()` passes through the original POS label and color from the analyzer's config — it does NOT re-map via `_map_pos_to_category()`. Define unique colors for language-specific concepts (e.g., Chinese classifiers, Japanese particles, Arabic case markers) in the config's color scheme. `_map_pos_to_category()` is only used by the generic AI fallback path for languages without an analyzer.
 
+7. **Fallback consistency:** Always store fallbacks as `self.fallbacks` in `__init__` and call `self.fallbacks.create_fallback` in error paths.
+
 ## Workflow — 8 Steps
 
 When the user asks you to build an analyzer for a language, follow these steps in order.
@@ -144,6 +146,7 @@ Create `{code}_analyzer.py`:
 - Add `_call_ai()` with **LAZY IMPORTS** for `shared_utils`
 - Add batch analysis support (`analyze_batch()`)
 - Add `_generate_html_output()` for color-coded sentence display
+- **Critical batch & fallback pattern:** `batch_analyze_grammar` must accept `target_words: List[str]` and return `List[Dict[str, Any]]` with keys `"colored_sentence"`, `"word_explanations"`, `"grammar_summary"`. In `analyze_grammar` except block, always use `self.fallbacks.create_fallback(...)` (never `self.response_parser.fallbacks` or `self.zh_fallbacks`). `validate_analysis` **must** return `float`.
 
 ### Step 6: Create Data Files
 

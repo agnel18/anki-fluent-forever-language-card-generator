@@ -208,6 +208,8 @@ All tooling lives in `language_grammar_generator/`. Each phase script exports a 
 
 **Phase 3 is the most critical** — produces all 4 core domain components + fallbacks.
 
+When implementing the main facade (`{code}_analyzer.py`), follow the **Japanese** `ja_analyzer.py` pattern exactly for `batch_analyze_grammar`, `_call_ai` lazy imports, `_generate_html_output` + `_map_grammatical_role_to_category`, and fallback handling.
+
 ### Key Requirements for New Analyzers
 
 | Requirement | Details |

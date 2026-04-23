@@ -10,6 +10,31 @@ from pathlib import Path
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model
 
+def _load_user_settings():
+    """Load unified user settings from JSON."""
+    path = Path(__file__).parent.parent / "user_settings.json"
+    if path.exists():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data.get("favorites_order", []), data.get("per_language_settings", {})
+        except Exception:
+            return [], {}
+    return [], {}
+
+def _save_user_settings(favorites_order: list, per_language_settings: dict):
+    """Save unified user settings to single JSON file."""
+    path = Path(__file__).parent.parent / "user_settings.json"
+    data = {
+        "favorites_order": favorites_order,
+        "per_language_settings": per_language_settings
+    }
+    try:
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        return True
+    except Exception as e:
+        st.error(f"Failed to save user_settings.json: {e}")
+        return False
 
 def render_settings_page():
     """Render the settings page with API keys, theme, and cache management."""
@@ -21,6 +46,48 @@ def render_settings_page():
         st.rerun()
 
     st.markdown("---")
+
+    # === SINGLE UNIFIED SAVE / EXPORT + IMPORT ===
+    st.markdown("### 💾 Save & Restore All Your Settings")
+    st.caption("Favorites order + all per-language defaults are saved together in one file")
+
+    col_save_export, col_import = st.columns([2, 1])
+
+    with col_save_export:
+        if st.button("💾 Save & Export All Settings", type="primary", use_container_width=True):
+            # Save current state
+            favorites_order = st.session_state.get("favorites_order", [])
+            per_lang = st.session_state.get("per_language_settings", {})
+            success = _save_user_settings(favorites_order, per_lang)
+            
+            if success:
+                # Trigger download
+                full_data = {
+                    "favorites_order": favorites_order,
+                    "per_language_settings": per_lang
+                }
+                st.download_button(
+                    label="📤 Download user_settings.json",
+                    data=json.dumps(full_data, indent=2, ensure_ascii=False),
+                    file_name="user_settings.json",
+                    mime="application/json",
+                    key="unified_export"
+                )
+                st.success("✅ All settings saved and ready to download!")
+
+    with col_import:
+        uploaded = st.file_uploader("📥 Import All Settings", type=["json"], key="full_import")
+        if uploaded:
+            try:
+                imported = json.load(uploaded)
+                st.session_state.favorites_order = imported.get("favorites_order", [])
+                st.session_state.per_language_settings = imported.get("per_language_settings", {})
+                _save_user_settings(st.session_state.favorites_order, st.session_state.per_language_settings)
+                st.success("✅ All settings imported successfully!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Import failed: {e}")
+    # === end of unified save/export/import ===  
 
     # --- API Configuration Sections ---
     st.markdown("## 🔑 API Configuration")
@@ -302,7 +369,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
     # ==========================================================
     st.markdown("---")
     st.markdown("## 🌍 Per-Language Default Output Settings")
-    st.caption("Set once. Reuse forever. All languages share one global `language_defaults.json` file.")
+    st.caption("Set once. Reuse forever. All settings (including these) are saved in `user_settings.json`")
 
     # Safe initialization
     if "per_language_settings" not in st.session_state:
@@ -401,6 +468,11 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
                 "selected_voice_display": selected_voice_display,
                 "audio_speed": audio_speed
             }
+            # Also update unified user_settings.json
+            _save_user_settings(
+                st.session_state.get("favorites_order", []),
+                st.session_state.per_language_settings
+            )
             st.success(f"✅ Defaults saved for **{config_lang}**")
             st.rerun()
 
@@ -416,96 +488,70 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
             st.success("✅ Recommended defaults applied")
             st.rerun()
 
-    # === GLOBAL BACKUP / RESTORE (kept exactly as you had it) ===
-    st.markdown("---")
-    st.subheader("💾 Global Backup & Restore (All Languages)")
-    st.caption("One file contains defaults for every language.")
-
-    col_dl, col_ul, col_reset = st.columns([1, 1, 1])
-
-    with col_dl:
-        if st.button("⬇️ Download Global Defaults JSON"):
-            data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
-            st.download_button(
-                label="Click to download language_defaults.json",
-                data=data,
-                file_name="language_defaults.json",
-                mime="application/json",
-                key="download_global_json"
-            )
-
-    with col_ul:
-        uploaded_file = st.file_uploader("📥 Upload & Restore Global JSON", type=["json"], key="upload_global_json")
-        if uploaded_file is not None:
-            try:
-                imported = json.load(uploaded_file)
-                st.session_state.per_language_settings.update(imported)
-                st.success("✅ All language defaults restored from JSON!")
-                
-            except Exception as e:
-                st.error(f"Failed to load JSON: {e}")
-
-    with col_reset:
-        if st.button("🗑️ Reset All Defaults", type="secondary"):
-            if st.checkbox("I am sure I want to delete ALL custom defaults", key="confirm_reset"):
-                st.session_state.per_language_settings = {}
-                st.success("All defaults have been reset.")
-                st.rerun()
-
-    st.caption("Tip: After saving in Step 3, use the button at the top or here to download the updated global file.")
 
     st.markdown("---")
-    st.markdown("## ⭐ Favorite Languages (reorder for quick access in Step 1)")
+    st.markdown("## ⭐ Your Top Favorite Languages")
+    st.caption("These will appear at the top of the language selector in Step 1.")
 
-    # Load master settings or create default
-    master_path = Path(__file__).parent.parent / "master_settings.json"
-    if "favorites_order" not in st.session_state:
-        if master_path.exists():
-            with open(master_path, "r", encoding="utf-8") as f:
-                master = json.load(f)
-                st.session_state.favorites_order = master.get("favorites_order", [])
-        else:
-            # Default from learned_languages
-            st.session_state.favorites_order = [lang["name"] for lang in st.session_state.get("learned_languages", [])]
+    # Unified load of ALL user settings
+    if "favorites_order" not in st.session_state or "per_language_settings" not in st.session_state:
+        favorites_order, per_lang_settings = _load_user_settings()
+        st.session_state.favorites_order = favorites_order
+        st.session_state.per_language_settings = per_lang_settings
 
     favorites = st.session_state.favorites_order
+    all_languages = st.session_state.get("all_languages", [])
+    lang_names = [lang["name"] for lang in all_languages] if all_languages else ["English", "Spanish", "French", "German", "Italian", "Japanese", "Chinese (Simplified)"]
 
-    st.info("Use ↑ ↓ to reorder. These will appear at the top in Step 1.")
+    # Two-column Trello-like layout
+    col_available, col_favorites = st.columns([1, 1])
 
-    for i, lang_name in enumerate(favorites[:]):
-        cols = st.columns([5, 1, 1])
-        cols[0].write(f"**{lang_name}**")
-        if cols[1].button("↑", key=f"fav_up_{i}"):
-            if i > 0:
-                favorites[i], favorites[i-1] = favorites[i-1], favorites[i]
+    with col_available:
+        st.subheader("📋 Available Languages")
+        # Searchable add
+        add_lang = st.selectbox(
+            "Add to Favorites",
+            options=[l for l in lang_names if l not in favorites],
+            key="add_favorite_select"
+        )
+        if st.button("➕ Add to Top Favorites", type="primary", use_container_width=True):
+            if add_lang and add_lang not in favorites:
+                favorites.insert(0, add_lang)  # add at top
+                st.session_state.favorites_order = favorites
                 st.rerun()
-        if cols[2].button("↓", key=f"fav_down_{i}"):
-            if i < len(favorites) - 1:
-                favorites[i], favorites[i+1] = favorites[i+1], favorites[i]
-                st.rerun()
 
-    col_save_fav, col_export = st.columns([1, 1])
-    with col_save_fav:
-        if st.button("💾 Save Favorites Order", type="primary", key="save_favorites_order"):
-            st.session_state.favorites_order = favorites
-            st.success("✅ Favorites order saved!")
+    with col_favorites:
+        st.subheader("⭐ Your Top Favorites")
+        if not favorites:
+            st.info("No favorites yet — add some from the left panel!")
+        else:
+            # Editable reorder list
+            for i, lang_name in enumerate(favorites[:]):
+                subcol = st.columns([4, 1, 1, 1])
+                subcol[0].write(f"**{lang_name}**")
+                if subcol[1].button("↑", key=f"fav_up_{i}"):
+                    if i > 0:
+                        favorites[i], favorites[i-1] = favorites[i-1], favorites[i]
+                        st.session_state.favorites_order = favorites
+                        st.rerun()
+                if subcol[2].button("↓", key=f"fav_down_{i}"):
+                    if i < len(favorites) - 1:
+                        favorites[i], favorites[i+1] = favorites[i+1], favorites[i]
+                        st.session_state.favorites_order = favorites
+                        st.rerun()
+                if subcol[3].button("🗑️", key=f"fav_remove_{i}"):
+                    favorites.pop(i)
+                    st.session_state.favorites_order = favorites
+                    st.rerun()
+
+    if st.button("💾 Save Favorites Order", type="primary", use_container_width=True):
+        success = _save_user_settings(
+            st.session_state.get("favorites_order", []),
+            st.session_state.get("per_language_settings", {})
+        )
+        if success:
+            st.success("✅ Favorites saved to user_settings.json!")
             st.rerun()
-
-    # Master JSON export/import (already in Step 3, but duplicated here for convenience)
-    with col_export:
-        if st.button("📤 Export Full Master Settings JSON"):
-            if master_path.exists():
-                with open(master_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                st.download_button(
-                    label="⬇️ Download master_settings.json",
-                    data=json.dumps(data, indent=2, ensure_ascii=False),
-                    file_name="master_settings.json",
-                    mime="application/json",
-                    key="master_export_btn"
-                )
-            else:
-                st.warning("No master_settings.json yet — generate a deck first.")
 
     # --- Cache Management Section ---
     st.markdown("## 💾 API Response Cache")
