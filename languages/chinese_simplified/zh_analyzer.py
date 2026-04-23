@@ -170,7 +170,8 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             )
         except Exception as e:
             logger.error(f"Analysis failed for '{sentence}': {e}")
-            fallback_result = self.response_parser.fallbacks.create_fallback(sentence, complexity)
+            # Fixed: use self.fallbacks (matches __init__ and Japanese pattern)
+            fallback_result = self.fallbacks.create_fallback(sentence, complexity)
             html_output = self._generate_html_output(fallback_result, sentence, complexity)
             return GrammarAnalysis(
                 sentence=sentence,
@@ -185,82 +186,46 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
                 word_explanations=fallback_result.get('word_explanations', [])
             )
 
-    def batch_analyze_grammar(self, sentences: List[str], target_word: str, complexity: str, gemini_api_key: str) -> List[GrammarAnalysis]:
-        """Batch analyze grammar for multiple sentences.
-        PERMANENT FIX: Properly handles ParseResult dataclass returned by parser
-        (aligns with Traditional gold standard + fixes the 'not iterable' error)."""
-        logger.info(f"DEBUG: batch_analyze_grammar called with {len(sentences)} sentences")
-
-        if not sentences:
-            return []
-
+    def batch_analyze_grammar(self, sentences: List[str], target_words: List[str], complexity: str = "intermediate", gemini_api_key: str = None) -> List[Dict[str, Any]]:
+        """Batch grammar analysis for Chinese Simplified — matches Japanese pattern exactly."""
+        logger.info(f"Batch analyze: {len(sentences)} sentences for Chinese Simplified")
         try:
-            # Build batch prompt and call AI (same as before)
-            prompt = self.prompt_builder.build_batch_prompt(sentences, target_word, complexity)
+            # Build one batch prompt (Chinese-specific)
+            prompt = self.prompt_builder.build_batch_prompt(sentences, target_words[0] if target_words else "", complexity)
+            
+            # AI call (lazy import already inside _call_ai)
             ai_response = self._call_ai(prompt, gemini_api_key)
+            
+            # Parse batch response
+            results = self.response_parser.parse_batch_response(ai_response, sentences, complexity, target_words[0] if target_words else "")
 
-            # CRITICAL FIX: Handle ParseResult object
-            parse_result = self.response_parser.parse_batch_response(
-                ai_response, sentences, complexity, target_word
-            )
+            grammar_results = []
+            for result, sentence, target_word in zip(results, sentences, target_words):
+                validated_result = self.validator.validate_result(result, sentence)
+                html_output = self._generate_html_output(validated_result, sentence, complexity)
 
-            # Extract actual parsed items (works with both old and new parser styles)
-            if hasattr(parse_result, 'sentences') and parse_result.sentences:
-                parsed_items = parse_result.sentences
-            elif isinstance(parse_result, list):
-                parsed_items = parse_result
-            else:
-                parsed_items = []
-
-            grammar_analyses = []
-            for i, sentence in enumerate(sentences):
-                # Get parsed data or fallback
-                if i < len(parsed_items):
-                    item = parsed_items[i]
-                    # Convert dataclass → dict if needed
-                    if hasattr(item, '__dataclass_fields__'):
-                        result_dict = {
-                            'sentence': getattr(item, 'sentence', sentence),
-                            'words': [{'word': w.word, 'grammatical_role': w.grammatical_role, 'individual_meaning': w.individual_meaning}
-                                      for w in getattr(item, 'words', [])],
-                            'explanations': {
-                                'overall_structure': getattr(item, 'overall_structure', ''),
-                                'key_features': getattr(item, 'key_features', '')
-                            },
-                            'word_explanations': [
-                                [w.word, w.grammatical_role, '', w.individual_meaning]
-                                for w in getattr(item, 'words', [])
-                            ]
-                        }
-                    else:
-                        result_dict = item if isinstance(item, dict) else {}
-                else:
-                    result_dict = {}
-
-                # Validate + generate HTML (same as single sentence path)
-                validated = self.validator.validate_result(result_dict, sentence)
-                html_output = self._generate_html_output(validated, sentence, complexity)
-
-                grammar_analyses.append(GrammarAnalysis(
-                    sentence=sentence,
-                    target_word=target_word or "",
-                    language_code=self.language_code,
-                    complexity_level=complexity,
-                    grammatical_elements=validated.get('elements', {}),
-                    explanations=validated.get('explanations', {}),
-                    color_scheme=self.get_color_scheme(complexity),
-                    html_output=html_output,
-                    confidence_score=validated.get('confidence', 0.95),
-                    word_explanations=validated.get('word_explanations', [])
-                ))
-
-            logger.info(f"✅ Batch analysis completed successfully for {len(grammar_analyses)} sentences (Simplified Chinese)")
-            return grammar_analyses
+                grammar_results.append({
+                    "colored_sentence": html_output,
+                    "word_explanations": validated_result.get('word_explanations', []),
+                    "grammar_summary": validated_result.get('grammar_summary', f"Grammar analysis for ZH ({complexity})"),
+                    "validation_score": validated_result.get('confidence', 0.0)
+                })
+            return grammar_results
 
         except Exception as e:
-            logger.error(f"Batch analysis failed: {e}", exc_info=True)
-            # Final fallback (should almost never trigger now)
-            return [self._create_fallback_analysis(sentence, target_word, complexity) for sentence in sentences]
+            logger.error(f"Batch analysis failed: {e}")
+            # Safe fallback structure expected by E2E test
+            fallback_results = []
+            for sentence in sentences:
+                fallback_result = self.fallbacks.create_fallback(sentence, complexity) if hasattr(self, 'fallbacks') else {}
+                html_output = self._generate_html_output(fallback_result, sentence, complexity)
+                fallback_results.append({
+                    "colored_sentence": html_output or f"<span>{sentence}</span>",
+                    "word_explanations": fallback_result.get('word_explanations', []),
+                    "grammar_summary": fallback_result.get('grammar_summary', f"Grammar analysis for ZH ({complexity})"),
+                    "validation_score": 0.3
+                })
+            return fallback_results
 
     def _call_ai(self, prompt: str, gemini_api_key: str) -> str:
         """Call Google Gemini AI (robust version with max tokens)."""
@@ -307,67 +272,67 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
             ai_response, complexity, sentence, target_word
         )
 
-    def validate_analysis(self, analysis_result: Dict[str, Any], sentence: str) -> Dict[str, Any]:
-        """Validate the parsed analysis result.
-        Required by BaseGrammarAnalyzer – delegates to domain validator.
-        """
-        return self.validator.validate_result(analysis_result, sentence)   
+    def validate_analysis(self, parsed_data: Dict[str, Any], original_sentence: str) -> float:
+        """Validate analysis quality and return confidence score (MUST return float)."""
+        result = self.validator.validate_result(parsed_data, original_sentence)
+        return result.get('confidence', 0.0)  
 
     def _generate_html_output(self, parsed_data: Dict[str, Any], sentence: str, complexity: str) -> str:
-        """Gold-standard HTML generator for color-coded sentence (character-by-character)."""
+        """Generate colored HTML for Chinese Simplified sentences."""
+        # Safe guard against non-dict (ValidationResult dataclass or similar)
+        if not isinstance(parsed_data, dict):
+            parsed_data = getattr(parsed_data, '__dict__', {}) if hasattr(parsed_data, '__dict__') else {}
+
         explanations = parsed_data.get('word_explanations', [])
-        logger.debug(f"DEBUG Chinese Simplified HTML Gen - Input explanations count: {len(explanations)}")
-        logger.debug(f"DEBUG Chinese Simplified HTML Gen - Input sentence: '{sentence}'")
-
         color_scheme = self.get_color_scheme(complexity)
-        sorted_explanations = sorted(explanations, key=lambda x: sentence.find(str(x[0])) if len(x) >= 1 else len(sentence))
 
+        if not explanations:
+            return sentence  # fallback — at least show the sentence
+
+        # Chinese-specific coloring (character-based, no spaces)
         html_parts = []
-        i = 0
-        sentence_len = len(sentence)
+        covered = 0
 
-        while i < sentence_len:
-            matched = False
-            for exp in sorted_explanations:
-                if not exp or len(exp) < 1:
-                    continue
-                word = str(exp[0])
-                word_len = len(word)
-                if i + word_len <= sentence_len and sentence[i:i + word_len] == word:
-                    color = exp[2] if len(exp) >= 3 and isinstance(exp[2], str) and exp[2].startswith('#') else '#AAAAAA'
-                    safe_word_display = word.replace('{', '{{').replace('}', '}}')
-                    colored_word = f'<span style="color: {color}; font-weight: bold;">{safe_word_display}</span>'
-                    html_parts.append(colored_word)
-                    logger.debug(f"DEBUG Chinese Simplified HTML Gen - Replaced '{word}' with color '{color}'")
-                    i += word_len
-                    matched = True
-                    break
-            if not matched:
-                default_color = color_scheme.get('default', '#000000')
-                html_parts.append(f'<span style="color: {default_color}; font-weight: bold;">{sentence[i]}</span>')
-                i += 1
+        for exp in explanations:
+            if len(exp) < 3:
+                continue
+            word = exp[0]
+            role = exp[1]
+            category = self._map_grammatical_role_to_category(role)
+            color = color_scheme.get(category, color_scheme.get('other', '#AAAAAA'))
 
-        html = ''.join(html_parts)
-        logger.debug("DEBUG Chinese Simplified HTML Gen - Final HTML result: " + html)
-        return html
+            idx = sentence.find(word, covered)
+            if idx == -1:
+                idx = sentence.find(word)
+
+            if idx != -1:
+                if idx > covered:
+                    uncovered = sentence[covered:idx]
+                    html_parts.append(f'<span style="color: {color_scheme.get("other", "#AAAAAA")}; font-weight: bold;">{uncovered}</span>')
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+                covered = idx + len(word)
+            else:
+                html_parts.append(f'<span style="color: {color}; font-weight: bold;">{word}</span>')
+
+        if covered < len(sentence):
+            remaining = sentence[covered:]
+            html_parts.append(f'<span style="color: {color_scheme.get("other", "#AAAAAA")}; font-weight: bold;">{remaining}</span>')
+
+        return ''.join(html_parts)
+    
+    def _map_grammatical_role_to_category(self, role: str) -> str:
+        """Map specific grammatical roles to color categories (required by _generate_html_output)."""
+        hierarchy = getattr(self.zh_config, 'grammatical_roles', {}).get('role_hierarchy', {})
+        return hierarchy.get(role, role)
 
     # ===================================================================
     # ADDITIONAL METHODS (kept for full compatibility)
     # ===================================================================
 
-    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
-                                       enriched_meaning: str = "", min_length: int = 3,
-                                       max_length: int = 15, difficulty: str = "intermediate",
-                                       topics: Optional[List[str]] = None) -> str:
-        """Simplified Chinese version of sentence generation prompt."""
-        # (Full prompt adapted from Traditional - Simplified characters and references)
-        # ... (I kept the full prompt logic from Traditional but changed to 简体中文)
-        # For brevity here, it uses the same structure as Traditional but with Simplified text.
-        # If you want the full prompt block, just say "include full prompt" and I'll expand it.
+    def get_sentence_generation_prompt(self, word, language, num_sentences, enriched_meaning="", min_length=3, max_length=15, difficulty="intermediate", topics=None):
+        """Delegate to Chinese prompt builder (required by agent spec)."""
         return self.prompt_builder.get_sentence_generation_prompt(
-            word=word, language=language, num_sentences=num_sentences,
-            enriched_meaning=enriched_meaning, min_length=min_length,
-            max_length=max_length, difficulty=difficulty, topics=topics
+            word, language, num_sentences, enriched_meaning, min_length, max_length, difficulty, topics
         )
 
     def get_component_status(self) -> Dict[str, Any]:
