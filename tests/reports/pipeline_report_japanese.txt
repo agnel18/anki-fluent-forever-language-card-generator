@@ -5,8 +5,8 @@
   Language       : Japanese
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-04-22 15:36:21
-  Elapsed        : 0.10s
+  Generated at   : 2026-04-23 18:01:07
+  Elapsed        : 0.12s
 ================================================================================
 
 STAGE RESULTS
@@ -47,14 +47,14 @@ CONTENT GENERATION OUTPUT
   Colored HTML : <span style="color: #FF4444; font-weight: bold;">私</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #44FFFF; font-weight: bold;">毎朝</span><span style="color: #FFAA00;…
   Grammar Summ : SOV sentence: Subject は Time Object を Verb (polite). Uses topic particle は, object particle を, listing particle と, polite -ます form.
   Word Explanations (8 words):
-    私             pronoun         #FF4444   I (first person pronoun) [読み: わたし]
-    は             particle        #4444FF   topic marker particle
-    毎朝            adverb          #44FFFF   every morning [読み: まいあさ]
-    パン            noun            #FFAA00   bread
-    と             particle        #4444FF   and (listing particle)
-    たまご           noun            #FFAA00   egg
-    を             particle        #4444FF   object marker particle
-    食べます          verb            #44FF44   eat (polite present) [読み: たべます]
+    私             pronoun         #FF4444   私 (pronoun): I (first person pronoun)
+    は             particle        #4444FF   は (particle): topic marker particle
+    毎朝            adverb          #44FFFF   毎朝 (adverb): every morning
+    パン            noun            #FFAA00   パン (noun): bread
+    と             particle        #4444FF   と (particle): and (listing particle)
+    たまご           noun            #FFAA00   たまご (noun): egg
+    を             particle        #4444FF   を (particle): object marker particle
+    食べます          verb            #44FF44   食べます (verb): eat (polite present)
 
   --- Sentence 2 ---
   Original   : 子供たちは学校で昼ごはんを食べます。
@@ -65,13 +65,13 @@ CONTENT GENERATION OUTPUT
   Colored HTML : <span style="color: #FFAA00; font-weight: bold;">子供たち</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FFAA00; font-weight: bold;">学校</span><span style="color: #4444…
   Grammar Summ : SOV sentence: Subject は Location で Object を Verb. Uses location particle で to mark where action takes place, topic particle は, object particle を.
   Word Explanations (7 words):
-    子供たち          noun            #FFAA00   children (plural) [読み: こどもたち]
-    は             particle        #4444FF   topic marker particle
-    学校            noun            #FFAA00   school [読み: がっこう]
-    で             particle        #4444FF   location of action particle
-    昼ごはん          noun            #FFAA00   lunch [読み: ひるごはん]
-    を             particle        #4444FF   object marker particle
-    食べます          verb            #44FF44   eat (polite present) [読み: たべます]
+    子供たち          noun            #FFAA00   子供たち (noun): children (plural)
+    は             particle        #4444FF   は (particle): topic marker particle
+    学校            noun            #FFAA00   学校 (noun): school
+    で             particle        #4444FF   で (particle): location of action particle
+    昼ごはん          noun            #FFAA00   昼ごはん (noun): lunch
+    を             particle        #4444FF   を (particle): object marker particle
+    食べます          verb            #44FF44   食べます (verb): eat (polite present)
 
   --- Sentence 3 ---
   Original   : あなたは何を食べたいですか。
@@ -82,13 +82,13 @@ CONTENT GENERATION OUTPUT
   Colored HTML : <span style="color: #FF4444; font-weight: bold;">あなた</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FF4444; font-weight: bold;">何</span><span style="color: #4444FF…
   Grammar Summ : Interrogative SOV: Subject は WH-word を Verb-たい です か? Uses -たい desire form, question particle か, polite copula です.
   Word Explanations (7 words):
-    あなた           pronoun         #FF4444   you (second person pronoun)
-    は             particle        #4444FF   topic marker particle
-    何             pronoun         #FF4444   what (interrogative) [読み: なに]
-    を             particle        #4444FF   object marker particle
-    食べたい          verb            #44FF44   want to eat (desire form) [読み: たべたい]
-    です            copula          #AA44FF   is/am/are (polite copula)
-    か             particle        #4444FF   question marker particle
+    あなた           pronoun         #FF4444   あなた (pronoun): you (second person pronoun)
+    は             particle        #4444FF   は (particle): topic marker particle
+    何             pronoun         #FF4444   何 (pronoun): what (interrogative)
+    を             particle        #4444FF   を (particle): object marker particle
+    食べたい          verb            #44FF44   食べたい (verb): want to eat (desire form)
+    です            copula          #AA44FF   です (copula): is/am/are (polite copula)
+    か             particle        #4444FF   か (particle): question marker particle
 
   --- Sentence 4 ---
   Original   : 母は台所でりんごを食べています。
@@ -99,13 +99,13 @@ CONTENT GENERATION OUTPUT
   Colored HTML : <span style="color: #FFAA00; font-weight: bold;">母</span><span style="color: #4444FF; font-weight: bold;">は</span><span style="color: #FFAA00; font-weight: bold;">台所</span><span style="color: #4444FF;…
   Grammar Summ : SOV progressive: Subject は Location で Object を Verb-ている. Uses て-いる progressive form for ongoing action, location particle で.
   Word Explanations (7 words):
-    母             noun            #FFAA00   mother (humble form) [読み: はは]
-    は             particle        #4444FF   topic marker particle
-    台所            noun            #FFAA00   kitchen [読み: だいどころ]
-    で             particle        #4444FF   location of action particle
-    りんご           noun            #FFAA00   apple
-    を             particle        #4444FF   object marker particle
-    食べています        verb            #44FF44   is eating (progressive, polite) [読み: たべています]
+    母             noun            #FFAA00   母 (noun): mother (humble form)
+    は             particle        #4444FF   は (particle): topic marker particle
+    台所            noun            #FFAA00   台所 (noun): kitchen
+    で             particle        #4444FF   で (particle): location of action particle
+    りんご           noun            #FFAA00   りんご (noun): apple
+    を             particle        #4444FF   を (particle): object marker particle
+    食べています        verb            #44FF44   is eating (progressive, polite)
 
 AUDIO FILES
 --------------------------------------------------------------------------------

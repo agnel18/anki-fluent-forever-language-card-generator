@@ -9,7 +9,7 @@ Handles Japanese-specific transformations.
 import json
 import logging
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .ja_config import JaConfig
 from .ja_fallbacks import JaFallbacks
 
@@ -36,18 +36,20 @@ class JaResponseParser:
             logger.warning(f"Parsing failed for sentence '{sentence}': {e}")
             return self.fallbacks.create_fallback(sentence, complexity)
 
-    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: str = None) -> List[Dict[str, Any]]:
-        """Parse batch response with per-result fallbacks."""
+    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Parse batch response and return list of dicts (exactly what zh_analyzer expects)."""
+        logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
         try:
             json_data = self._extract_json(ai_response)
 
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
 
+            # Handle both list and {'batch_results': [...]} formats
             if isinstance(json_data, list):
                 batch_results = json_data
             else:
-                batch_results = json_data.get('batch_results', [])
+                batch_results = json_data.get('batch_results', json_data.get('results', []))
 
             if not batch_results:
                 raise ValueError("No valid batch results in AI response")
@@ -62,10 +64,12 @@ class JaResponseParser:
                         logger.warning(f"Batch item {i} failed: {e}")
                         results.append(self.fallbacks.create_fallback(sentences[i], complexity))
 
+            # Pad if needed
             while len(results) < len(sentences):
                 results.append(self.fallbacks.create_fallback(sentences[len(results)], complexity))
 
             return results
+
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
             return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
@@ -121,35 +125,50 @@ class JaResponseParser:
         response = re.sub(r'(?<!")(\w+)(?!")\s*:', r'"\1":', response)
         return response
 
-    def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: str = None) -> Dict[str, Any]:
-        """Transform parsed data to standard format with Japanese-specific processing."""
+    def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: Optional[str] = None) -> Dict[str, Any]:
+        """Transform parsed AI data into the exact format expected by zh_analyzer (rich explanations)."""
         words = data.get('words', [])
-        elements = {}
         word_explanations = []
-        colors = self._get_color_scheme(complexity)
+        colors = self.config.get_color_scheme(complexity)
 
         for word_data in words:
-            word = word_data.get('word', '')
-            role = word_data.get('grammatical_role', 'other')
+            word = word_data.get('word', '').strip()
+            if not word:
+                continue
 
+            raw_role = (word_data.get('grammatical_role') or 
+                       word_data.get('role') or 
+                       word_data.get('type') or 'other')
+
+            # Target word special handling
             if target_word and word == target_word:
-                role = 'target_word'
+                standard_role = 'target_word'
+            else:
+                # Use config role hierarchy if available
+                role_map = self.config.grammatical_roles.get('role_hierarchy', {})
+                standard_role = role_map.get(raw_role, raw_role.lower().replace(" ", "_"))
 
-            standard_role = self._map_role_with_hierarchy(role)
-            color = colors.get(standard_role, '#AAAAAA')
-            explanation = self._build_japanese_explanation(word_data, standard_role)
+            # === RICH EXPLANATION (this was missing) ===
+            explanation = word_data.get('individual_meaning') or \
+                         word_data.get('explanation') or \
+                         word_data.get('meaning') or \
+                         f"{word} is used in this sentence as a {standard_role.replace('_', ' ')}"
 
+            # If explanation is still too generic, enrich it
+            if len(explanation) < 30 and "word that describes" not in explanation.lower():
+                explanation = f"{word} ({standard_role}): {explanation}"
+
+            color = colors.get(standard_role, colors.get('other', '#AAAAAA'))
+
+            # Format exactly as analyzer expects: [word, role, color, detailed_explanation]
             word_explanations.append([word, standard_role, color, explanation])
-
-            if standard_role not in elements:
-                elements[standard_role] = []
-            elements[standard_role].append(word_data)
 
         return {
             'sentence': data.get('sentence', ''),
-            'elements': elements,
+            'elements': {},  # not used by Chinese
             'explanations': data.get('explanations', {}),
-            'word_explanations': word_explanations
+            'word_explanations': word_explanations,
+            'grammar_summary': data.get('overall_structure') or data.get('summary', f"Grammar analysis for ZH ({complexity})")
         }
 
     def _map_role_with_hierarchy(self, role: str) -> str:

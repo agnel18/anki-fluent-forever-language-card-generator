@@ -24,11 +24,34 @@ class ZhPromptBuilder:
         self.config: ZhConfig = config
         self.jinja_env = Environment(loader=BaseLoader())
 
+
     def build_single_prompt(self, sentence: str, target_word: Optional[str], complexity: str) -> str:
+        """Strong Chinese-specific prompt that forces rich, context-specific explanations and forbids generic labels."""
         template_str = self.config.prompt_templates.get("single", "")
         if not template_str:
-            logger.error("Single analysis template not found in config")
-            return f"Analyze the following sentence: {sentence} (target word: {target_word}, complexity: {complexity})"
+            # RICH FALLBACK PROMPT — explicitly forbids generic explanations
+            return f"""You are a native-level Chinese linguistics expert teaching Simplified Chinese.
+
+Analyze this sentence: "{sentence}"
+Focus especially on the word "{target_word}".
+
+For EVERY word/particle/character in the sentence, provide:
+- Exact grammatical role (e.g. pronoun, verb, modal particle, structural particle, aspect marker, classifier, etc.)
+- DETAILED, CONTEXT-SPECIFIC explanation of what the word does in THIS sentence (do NOT use generic definitions)
+- Why it is used here and how it affects meaning/grammar
+
+IMPORTANT: If you cannot provide a detailed, context-specific explanation for a word, write "[WARNING: Explanation missing for this word]" and explain why. NEVER use generic labels like "a word that describes a noun" or "a thing, person, or concept". If you do, the answer will be rejected.
+
+Output format EXACTLY like this:
+
+Grammar Explanations:
+我 (pronoun): A first-person singular pronoun meaning 'I'. It functions as the subject of the sentence.
+吧 (modal_particle): A sentence-final modal particle indicating suggestion, confirmation, or assumption. It softens the sentence into a suggestion here.
+
+Complexity level: {complexity}
+Language: Chinese Simplified (Simplified characters only)"""
+
+        # If a proper template exists in config, use it but still enrich
         template = self.jinja_env.from_string(template_str)
         context = {
             "sentence": sentence,
@@ -36,23 +59,50 @@ class ZhPromptBuilder:
             "complexity": complexity,
             "language": "Chinese Simplified",
             "grammatical_roles": self.config.grammatical_roles,
-            "aspect_markers": self.config.aspect_markers,
-            "modal_particles": self.config.modal_particles,
-            "structural_particles": self.config.structural_particles
         }
         try:
             prompt = template.render(**context)
-            logger.debug(f"Generated single analysis prompt for sentence: {sentence[:50]}...")
             return prompt
-        except Exception as e:
-            logger.error(f"Failed to render single analysis template: {e}")
+        except Exception:
             return f"Analyze the following sentence: {sentence} (target word: {target_word}, complexity: {complexity})"
 
+
     def build_batch_prompt(self, sentences: List[str], target_word: Optional[str], complexity: str) -> str:
+        """Build a strong batch prompt for Chinese Simplified that forces rich, context-specific grammar explanations and forbids generic labels."""
         template_str = self.config.prompt_templates.get("batch", self.config.prompt_templates.get("single", ""))
+        
         if not template_str:
-            logger.error("Batch analysis template not found in config")
-            return f"Analyze the following sentences: {'; '.join(sentences)} (target word: {target_word}, complexity: {complexity})"
+            # RICH BATCH PROMPT — explicitly forbids generic explanations
+            sentences_text = "\n".join(f"{i+1}. {sent}" for i, sent in enumerate(sentences))
+            
+            return f"""You are a native-level expert Chinese linguistics teacher specializing in Simplified Chinese.
+
+Analyze the following {len(sentences)} sentences in Simplified Chinese. Focus especially on the word "{target_word}" in each sentence.
+
+Sentences to analyze:
+{sentences_text}
+
+For EVERY word, particle, or character in each sentence, provide:
+- Exact grammatical role (pronoun, verb, modal particle, structural particle, aspect marker, classifier, etc.)
+- DETAILED, CONTEXT-SPECIFIC explanation of what the word does **in this particular sentence** (do NOT use generic definitions)
+- Why it is used here and how it affects the meaning or grammar
+
+IMPORTANT: If you cannot provide a detailed, context-specific explanation for a word, write "[WARNING: Explanation missing for this word]" and explain why. NEVER use generic labels like "a word that describes a noun" or "a thing, person, or concept". If you do, the answer will be rejected.
+
+Output format MUST be exactly like this for each sentence:
+
+Grammar Explanations:
+我 (pronoun): A first-person singular pronoun meaning 'I'. It functions as the subject of the sentence.
+吧 (modal_particle): A sentence-final modal particle indicating suggestion, confirmation, or assumption. It softens the sentence into a polite suggestion here.
+
+Do this for ALL words in ALL sentences. Be detailed and educational — never give generic labels like "a word that describes a noun".
+
+Complexity level: {complexity}
+Language: Chinese Simplified (use only Simplified characters)
+
+Return ONLY the structured explanations, no extra text."""
+
+        # If a custom template exists in config, use it
         template = self.jinja_env.from_string(template_str)
         sentences_text = "\n".join(f"{i+1}. {sent}" for i, sent in enumerate(sentences))
         context = {
@@ -62,9 +112,9 @@ class ZhPromptBuilder:
             "language": "Chinese Simplified",
             "sentence_count": len(sentences),
             "grammatical_roles": self.config.grammatical_roles,
-            "aspect_markers": self.config.aspect_markers,
-            "modal_particles": self.config.modal_particles,
-            "structural_particles": self.config.structural_particles
+            "aspect_markers": getattr(self.config, "aspect_markers", {}),
+            "modal_particles": getattr(self.config, "modal_particles", {}),
+            "structural_particles": getattr(self.config, "structural_particles", {})
         }
         try:
             prompt = template.render(**context)
@@ -72,7 +122,13 @@ class ZhPromptBuilder:
             return prompt
         except Exception as e:
             logger.error(f"Failed to render batch analysis template: {e}")
-            return f"Analyze the following sentences: {'; '.join(sentences)} (target word: {target_word}, complexity: {complexity})"
+            # Fallback to rich prompt above
+            return f"""You are a native-level expert Chinese linguistics teacher.
+
+Analyze these sentences:
+{sentences_text}
+
+Provide detailed, context-specific grammar explanations for every word, especially "{target_word}"."""
 
     def get_sentence_generation_prompt(
         self,

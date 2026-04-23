@@ -107,7 +107,35 @@ class ZhResponseParser:
             raise
 
     def _transform_to_standard_format(self, data: Dict[str, Any], complexity: str, target_word: Optional[str] = None) -> ParseResult:
-        # Validate schema strictly
+        # Try to extract detailed explanations from a block ("Grammar Explanations:")
+        explanations_block = None
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if isinstance(v, str) and v.strip().startswith("Grammar Explanations:"):
+                    explanations_block = v.strip()
+                    break
+        if explanations_block is None and isinstance(data, str) and data.strip().startswith("Grammar Explanations:"):
+            explanations_block = data.strip()
+
+        explanations_map = {}
+        if explanations_block:
+            # Parse lines like: 你 (pronoun): A second-person singular pronoun, meaning 'you'. ...
+            for line in explanations_block.splitlines():
+                line = line.strip()
+                if not line or ":" not in line or "(" not in line or ")" not in line:
+                    continue
+                try:
+                    word_part, rest = line.split("(", 1)
+                    word = word_part.strip()
+                    pos_and_expl = rest.split("):", 1)
+                    if len(pos_and_expl) != 2:
+                        continue
+                    pos = pos_and_expl[0].strip()
+                    explanation = pos_and_expl[1].strip()
+                    explanations_map[word] = (pos, explanation)
+                except Exception:
+                    continue
+
         words = data.get('words', [])
         parsed_words = []
         colors = self._get_color_scheme(complexity)
@@ -135,18 +163,23 @@ class ZhResponseParser:
                 }
                 normalized = role_map.get(raw_role.strip(), raw_role.lower().replace(" ", "_").replace("-", "_"))
                 standard_role = self.config.grammatical_roles.get(normalized, normalized)
-            # Always define explanation
-            explanation = word_data.get('individual_meaning')
-            if not explanation or str(explanation).strip() in ("", standard_role):
-                explanations_dict = data.get('explanations', {})
-                explanation = (
-                    explanations_dict.get(word) or
-                    explanations_dict.get('explanation') or
-                    explanations_dict.get('overall_structure') or
-                    standard_role
-                )
+            # Prefer detailed explanation from explanations_map if available
+            explanation = None
+            if word in explanations_map:
+                pos, detailed_expl = explanations_map[word]
+                explanation = detailed_expl
             else:
-                explanation = str(explanation).strip()
+                explanation = word_data.get('individual_meaning')
+                if not explanation or str(explanation).strip() in ("", standard_role):
+                    explanations_dict = data.get('explanations', {})
+                    explanation = (
+                        explanations_dict.get(word) or
+                        explanations_dict.get('explanation') or
+                        explanations_dict.get('overall_structure') or
+                        standard_role
+                    )
+                else:
+                    explanation = str(explanation).strip()
             parsed_words.append(ParsedWord(word=word, grammatical_role=standard_role, individual_meaning=explanation))
         parsed_sentence = ParsedSentence(
             sentence=data.get('sentence', ''),
