@@ -29,7 +29,7 @@ def load_per_language_settings(selected_lang):
 
 
 def render_language_select_page():
-    """Render the language selection page."""
+    """Render the language selection page — Step 1 with Favorites section."""
     with st.container():
         st.markdown("# 🌍 Step 1: Select Your Language")
         st.markdown("Choose your target language for learning. Your favorite languages appear first.")
@@ -45,94 +45,82 @@ def render_language_select_page():
     # Get languages configuration from session state
     all_languages = st.session_state.get("all_languages", [])
 
-    # --- Preferred order: learned_languages at top, divider, then all others ---
+    # === NEW: Load favorites from unified user_settings.json ===
     user_settings_path = Path(__file__).parent.parent / "user_settings.json"
+    favorites_order = []
     if user_settings_path.exists():
-        with open(user_settings_path, "r", encoding="utf-8") as f:
-            per_lang_settings = json.load(f)
-        default_lang = per_lang_settings.get("default_language", None)
-    else:
-        per_lang_settings = {}
-        default_lang = None
+        try:
+            with open(user_settings_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                favorites_order = data.get("favorites_order", [])
+        except Exception:
+            favorites_order = []
 
-    # Get user's learned languages (in preferred order)
+    # Get user's learned languages (kept as fallback)
     learned_langs = [l["name"] for l in st.session_state.get("learned_languages", [])]
+
     # All language names
     all_lang_names = [lang["name"] for lang in all_languages]
-    # Languages not in learned list
-    other_langs = [l for l in all_lang_names if l not in learned_langs]
 
-    # Build options: learned (pinned) + divider + others
+    # Prioritize: Favorites first → learned languages → others
+    favorite_langs = [f for f in favorites_order if f in all_lang_names]
+    other_langs = [l for l in all_lang_names if l not in favorite_langs]
+
+    # Build options: Favorites + divider + others
     options = []
-    for l in learned_langs:
-        options.append({"name": l, "section": "pinned"})
-    if learned_langs and other_langs:
+    if favorite_langs:
+        options.append({"name": "⭐ FAVORITES", "section": "header"})
+        for lang in favorite_langs:
+            options.append({"name": lang, "section": "favorite"})
+    
+    if favorite_langs and other_langs:
         options.append({"name": "──────────────", "section": "divider"})
-    for l in other_langs:
-        options.append({"name": l, "section": "other"})
+    
+    for lang in other_langs:
+        options.append({"name": lang, "section": "other"})
 
-    # Find default selection
-    if default_lang and any(opt["name"] == default_lang for opt in options if opt["section"] != "divider"):
-        default_idx = [i for i, opt in enumerate(options) if opt["name"] == default_lang][0]
-    elif learned_langs:
-        default_idx = 0
-    else:
+    # Default selection (first favorite if available)
+    default_idx = 0
+    if favorite_langs:
+        default_idx = 1  # skip header
+    elif options:
         default_idx = next((i for i, opt in enumerate(options) if opt["section"] != "divider"), 0)
 
     def format_func(opt):
-        if opt["section"] == "divider":
+        if opt["section"] == "header":
             return opt["name"]
-        elif opt["section"] == "pinned":
-            # Show rank (1-based) for pinned
-            rank = learned_langs.index(opt["name"]) + 1 if opt["name"] in learned_langs else ""
-            return f"{rank}. {opt['name']} ★"
+        elif opt["section"] == "favorite":
+            return f"⭐ {opt['name']}"
+        elif opt["section"] == "divider":
+            return opt["name"]
         else:
             return opt["name"]
 
-    # Enhanced language selection - more prominent
+    # Enhanced language selection
     with st.container():
         st.markdown("### 🎯 **Which language do you want to learn?**")
         st.markdown("*Choose your target language from the dropdown below*")
 
-        # Make the selectbox more prominent with larger styling
-        st.markdown("""
-        <style>
-        .language-select-container {
-            background: var(--gradient-primary);
-            padding: 25px;
-            border-radius: 20px;
-            margin: 25px 0;
-            box-shadow: var(--box-shadow);
-        }
-        .language-select-label {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        # Prominent selectbox
+        selected_opt = st.selectbox(
+            "Language Selection",
+            options,
+            index=default_idx,
+            format_func=format_func,
+            key="main_language_select",
+            help="Your favorite languages appear first with a star ⭐",
+            label_visibility="hidden"
+        )
 
-        with st.container():
-            # Prominent header above dropdown
-            st.markdown("### 🌍 Select Your Language")
-            # Large, prominent selectbox (label removed)
-            selected_opt = st.selectbox(
-                "Language Selection",
-                options,
-                index=default_idx,
-                format_func=format_func,
-                key="main_language_select",
-                help="Choose the language you want to create Anki decks for",
-                label_visibility="hidden"
-            )
+        # Visual feedback
+        if selected_opt["section"] != "divider":
+            if selected_opt["section"] == "favorite":
+                st.success(f"⭐ **{selected_opt['name']}** selected — one of your favorites!")
+            else:
+                st.info(f"🎉 **{selected_opt['name']}** selected!")
 
-            # Add visual feedback for selection
-            if selected_opt["section"] != "divider":
-                st.success(f"🎉 **{selected_opt['name']}** selected! Ready to continue.")
     # If divider is selected, auto-select first real language
     if selected_opt["section"] == "divider":
-        # Pick first after divider, or first pinned
         next_idx = options.index(selected_opt) + 1
         if next_idx < len(options):
             selected_opt = options[next_idx]
@@ -141,7 +129,7 @@ def render_language_select_page():
 
     selected_lang = selected_opt["name"]
     
-    # Load per-language settings for the selected language
+    # Load per-language settings for the selected language (unchanged)
     settings_loaded = load_per_language_settings(selected_lang)
     if settings_loaded:
         st.info(f"✅ Loaded custom settings for {selected_lang}")
@@ -149,18 +137,18 @@ def render_language_select_page():
     available_lists = get_available_frequency_lists()
     max_words = available_lists.get(selected_lang, 5000)
 
-    # Show language stats in a nice metric layout
+    # Show language stats in a nice metric layout (unchanged)
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Available Words", f"{max_words:,}")
     with col2:
-        st.metric("Your Favorites", len(learned_langs))
+        st.metric("Your Favorites", len(favorite_langs))
     with col3:
         st.metric("Total Languages", len(all_languages))
 
     st.markdown("---")
 
-    # Navigation buttons and progress in single row
+    # Navigation buttons and progress (unchanged)
     with st.container():
         col_back, col_progress, col_next = st.columns([1, 2, 1])
         with col_back:
@@ -171,13 +159,12 @@ def render_language_select_page():
             st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)
         with col_next:
             if st.button("Next: Select Words →", use_container_width=True, type="primary"):
-                # Load per-language settings before proceeding
                 load_per_language_settings(selected_lang)
                 st.session_state.selected_language = selected_lang
                 st.session_state.page = "word_select"
                 st.rerun()
 
-    # Scroll to top after all content is rendered
+    # Scroll to top after all content is rendered (unchanged)
     st.markdown("""
     <script>
         setTimeout(function() {
