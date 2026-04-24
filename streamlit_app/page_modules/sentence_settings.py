@@ -992,7 +992,7 @@ def render_sentence_settings_page():
             st.session_state.page = "word_select"
             st.rerun()
     with col_next:
-        if st.button("Next: Generate Deck ➡️", key="next_from_sentence_settings", use_container_width=True, type="primary"):
+        if st.button("Next: Review & Enhance ➡️", key="next_from_sentence_settings", use_container_width=True, type="primary"):
             st.session_state.page = "generate"
             st.rerun()
 

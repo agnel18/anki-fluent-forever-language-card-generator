@@ -186,12 +186,15 @@ class ZhAnalyzer(BaseGrammarAnalyzer):
                 word_explanations=fallback_result.get('word_explanations', [])
             )
 
-    def batch_analyze_grammar(self, sentences: List[str], target_words: List[str], complexity: str = "intermediate", gemini_api_key: str = None) -> List[Dict[str, Any]]:
+    def batch_analyze_grammar(self, sentences: List[str], target_words: List[str] = None, complexity: str = "intermediate", gemini_api_key: str = None, target_word: str = "") -> List[Dict[str, Any]]:
         """Batch grammar analysis for Chinese Simplified — matches Japanese pattern exactly."""
+        # Normalize: accept both target_words list and legacy target_word kwarg
+        if target_words is None:
+            target_words = [target_word] * len(sentences) if target_word else [""] * len(sentences)
         logger.info(f"Batch analyze: {len(sentences)} sentences for Chinese Simplified")
         try:
             # Build one batch prompt (Chinese-specific)
-            prompt = self.prompt_builder.build_batch_prompt(sentences, target_words[0] if target_words else "", complexity)
+            prompt = self.prompt_builder.build_batch_analysis_prompt(sentences, target_words[0] if target_words else "", complexity)
             
             # AI call (lazy import already inside _call_ai)
             ai_response = self._call_ai(prompt, gemini_api_key)

@@ -64,31 +64,64 @@ class ZhResponseParser:
             fallback = self.fallbacks.create_fallback(sentence, complexity)
             return ParseResult(sentences=[], success=False, error_message=str(e), fallback_used=True)
 
-    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: Optional[str] = None) -> ParseResult:
+    def parse_batch_response(self, ai_response: str, sentences: List[str], complexity: str, target_word: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Returns a plain LIST of dicts (one per sentence) so zh_analyzer can
+        iterate directly with zip(results, sentences, target_words).
+        Each dict has keys: sentence, elements, explanations, word_explanations, confidence.
+        """
         logger.info(f"DEBUG: Raw AI batch response: {ai_response[:1000]}")
         try:
             json_data = self._extract_json(ai_response)
             if isinstance(json_data, dict) and json_data.get('sentence') == 'error':
                 raise ValueError("AI returned error response")
-            if isinstance(json_data, list):
-                batch_results = json_data
-            else:
-                batch_results = json_data.get('batch_results', [])
-            if not batch_results:
+            batch_items = json_data if isinstance(json_data, list) else json_data.get('batch_results', [])
+            if not batch_items:
                 raise ValueError("No valid batch results in AI response")
-            parsed_sentences = []
-            for i, item in enumerate(batch_results):
-                if i < len(sentences):
-                    try:
-                        parsed = self._transform_to_standard_format(item, complexity, target_word)
-                        if parsed.sentences:
-                            parsed_sentences.extend(parsed.sentences)
-                    except Exception as e:
-                        logger.warning(f"Batch item {i} failed: {e}")
-            return ParseResult(sentences=parsed_sentences, success=True)
+
+            results = []
+            for i, item in enumerate(batch_items):
+                sentence = sentences[i] if i < len(sentences) else item.get('sentence', '')
+                # Ensure sentence field is populated for _transform
+                if not item.get('sentence'):
+                    item = dict(item, sentence=sentence)
+                try:
+                    parse_result = self._transform_to_standard_format(item, complexity, target_word)
+                    if parse_result.sentences:
+                        ps = parse_result.sentences[0]
+                        color_scheme = self._get_color_scheme(complexity)
+                        word_explanations = [
+                            [pw.word, pw.grammatical_role,
+                             color_scheme.get(pw.grammatical_role, color_scheme.get('other', '#AAAAAA')),
+                             pw.individual_meaning]
+                            for pw in ps.words
+                        ]
+                        results.append({
+                            'sentence': ps.sentence or sentence,
+                            'elements': {},
+                            'explanations': {
+                                'overall_structure': ps.overall_structure,
+                                'key_features': ps.key_features,
+                            },
+                            'word_explanations': word_explanations,
+                            'confidence': ps.confidence,
+                            'is_fallback': False,
+                        })
+                    else:
+                        raise ValueError("Empty ParseResult for item")
+                except Exception as e:
+                    logger.warning(f"Batch item {i} transform failed: {e}")
+                    results.append(self.fallbacks.create_fallback(sentence, complexity))
+
+            # Pad if AI returned fewer items than sentences
+            while len(results) < len(sentences):
+                results.append(self.fallbacks.create_fallback(sentences[len(results)], complexity))
+
+            return results
+
         except Exception as e:
             logger.error(f"Batch parsing failed: {e}")
-            return ParseResult(sentences=[], success=False, error_message=str(e), fallback_used=True)
+            return [self.fallbacks.create_fallback(s, complexity) for s in sentences]
 
     def _extract_json(self, response: str) -> Dict[str, Any]:
         logger.info(f"DEBUG: Extracting JSON from response: {response[:1000]}...")
@@ -139,6 +172,25 @@ class ZhResponseParser:
         words = data.get('words', [])
         parsed_words = []
         colors = self._get_color_scheme(complexity)
+
+        # The AI sometimes omits the 'word' key and only returns grammatical_role +
+        # individual_meaning. In that case reconstruct words by splitting the sentence
+        # into individual characters/tokens and zip them with the word list.
+        sentence_str = data.get('sentence', '')
+        if words and not words[0].get('word'):
+            # Build a character-level token list from the sentence (strip punctuation tokens)
+            import re
+            tokens = re.findall(r'[一-鿿㐀-䶿豈-﫿]+|[a-zA-Z]+|\d+', sentence_str)
+            # If token count matches word list length, assign; otherwise fall back to chars
+            if len(tokens) == len(words):
+                char_list = tokens
+            else:
+                char_list = list(sentence_str)
+            for i, wd in enumerate(words):
+                if not wd.get('word') and i < len(char_list):
+                    wd = dict(wd, word=char_list[i])
+                    words[i] = wd
+
         for word_data in words:
             word = word_data.get('word', '')
             raw_role = (word_data.get('grammatical_role') or word_data.get('role') or 'other')
