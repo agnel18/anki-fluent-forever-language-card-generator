@@ -6,7 +6,6 @@ Handles ALL prompt generation:
 - Sentence generation (moved from zh_analyzer.py)
 """
 
-
 import logging
 from typing import List, Optional
 from jinja2 import Template, Environment, BaseLoader
@@ -24,8 +23,7 @@ class ZhPromptBuilder:
         self.config: ZhConfig = config
         self.jinja_env = Environment(loader=BaseLoader())
 
-
-    def build_single_prompt(self, sentence: str, target_word: Optional[str], complexity: str) -> str:
+    def build_single_analysis_prompt(self, sentence: str, target_word: Optional[str], complexity: str) -> str:
         """Strong Chinese-specific prompt that forces rich, context-specific explanations and forbids generic labels."""
         template_str = self.config.prompt_templates.get("single", "")
         if not template_str:
@@ -66,8 +64,7 @@ Language: Chinese Simplified (Simplified characters only)"""
         except Exception:
             return f"Analyze the following sentence: {sentence} (target word: {target_word}, complexity: {complexity})"
 
-
-    def build_batch_prompt(self, sentences: List[str], target_word: Optional[str], complexity: str) -> str:
+    def build_batch_analysis_prompt(self, sentences: List[str], target_word: Optional[str], complexity: str) -> str:
         """Build a strong batch prompt for Chinese Simplified that forces rich, context-specific grammar explanations and forbids generic labels."""
         template_str = self.config.prompt_templates.get("batch", self.config.prompt_templates.get("single", ""))
         
