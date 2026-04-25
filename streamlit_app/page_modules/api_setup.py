@@ -1,7 +1,7 @@
 # pages/api_setup.py - API setup page for the language learning app
 
 import streamlit as st
-from constants import PAGE_LANGUAGE_SELECT
+from constants import PAGE_LANGUAGE_SELECT, PAGE_SETTINGS
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
@@ -24,8 +24,22 @@ def _render_api_status(google_key: str, tts_key: str, pixabay_key: str) -> None:
         st.error("❌ **Pixabay Images** — Required")
 
 
+def _render_smart_back_button() -> None:
+    """If the user navigated here from Settings, give them a one-click way back.
+
+    Consumes the `return_to` flag so a refresh won't keep showing the button.
+    """
+    if st.session_state.get("return_to") == "settings":
+        if st.button("← Back to Settings", key="back_to_settings_from_api"):
+            st.session_state.pop("return_to", None)
+            st.session_state.page = PAGE_SETTINGS
+            st.rerun()
+
+
 def render_api_setup_page():
     """Render the API keys setup page."""
+
+    _render_smart_back_button()
 
     # Check if we have real API keys (not fallback keys)
     google_key = st.session_state.get("google_api_key", "")
@@ -46,24 +60,54 @@ def render_api_setup_page():
         st.divider()
 
         st.markdown("### 🔄 Re-test API Connections")
-        col_test, col_proceed = st.columns([1, 2])
-        with col_test:
-            if st.button("🧪 Re-test Gemini Connection", help="Re-test your Gemini API key"):
-                with st.spinner("Testing Gemini API connection..."):
-                    try:
-                        import warnings
-                        warnings.filterwarnings("ignore", category=FutureWarning)
-                        api = get_gemini_api()
-                        api.configure(api_key=google_key)
-                        api.generate_content(model=get_gemini_model(), contents="Hello")
-                        st.success("✅ Gemini API connection successful!")
-                    except Exception as e:
-                        st.error(f"❌ Gemini API test failed: {str(e)}")
 
-        with col_proceed:
-            if st.button("🚀 Proceed to Language Selection", use_container_width=True):
-                st.session_state.page = PAGE_LANGUAGE_SELECT
-                st.rerun()
+        if st.button("🧪 Re-test Gemini Connection", use_container_width=True, key="retest_gemini"):
+            with st.spinner("Testing Gemini API connection..."):
+                try:
+                    import warnings
+                    warnings.filterwarnings("ignore", category=FutureWarning)
+                    api = get_gemini_api()
+                    api.configure(api_key=google_key)
+                    api.generate_content(model=get_gemini_model(), contents="Hello")
+                    st.success("✅ Gemini API connection successful!")
+                except Exception as e:
+                    st.error(f"❌ Gemini API test failed: {str(e)}")
+
+        if st.button("🧪 Re-test TTS Connection", use_container_width=True, key="retest_tts"):
+            with st.spinner("Testing TTS API connection..."):
+                try:
+                    import requests
+                    resp = requests.get(
+                        f"https://texttospeech.googleapis.com/v1/voices?key={tts_key}",
+                        timeout=10,
+                    )
+                    if resp.status_code == 200:
+                        st.success("✅ TTS API connection successful!")
+                    else:
+                        st.error(f"❌ TTS test failed: HTTP {resp.status_code}")
+                except Exception as e:
+                    st.error(f"❌ TTS test failed: {str(e)}")
+
+        if st.button("🧪 Re-test Pixabay Connection", use_container_width=True, key="retest_pixabay"):
+            with st.spinner("Testing Pixabay API connection..."):
+                try:
+                    import requests
+                    resp = requests.get(
+                        "https://pixabay.com/api/",
+                        params={"key": pixabay_key, "q": "test", "image_type": "photo", "per_page": 3},
+                        timeout=10,
+                    )
+                    if resp.status_code == 200 and "hits" in resp.json():
+                        st.success("✅ Pixabay API connection successful!")
+                    else:
+                        st.error(f"❌ Pixabay test failed: HTTP {resp.status_code}")
+                except Exception as e:
+                    st.error(f"❌ Pixabay test failed: {str(e)}")
+
+        st.markdown("")
+        if st.button("🚀 Proceed to Language Selection", type="primary", use_container_width=True, key="proceed_to_lang"):
+            st.session_state.page = PAGE_LANGUAGE_SELECT
+            st.rerun()
 
         st.divider()
         render_api_key_backup_section("configured")

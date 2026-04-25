@@ -9,6 +9,7 @@
 
 import json
 import streamlit as st
+from streamlit_sortables import sort_items
 
 from constants import PAGE_API_SETUP
 from streamlit_app.user_settings_io import (
@@ -49,17 +50,31 @@ def _render_unified_save_restore() -> None:
                 st.success("✅ All settings saved and ready to download!")
 
     with col_import:
-        uploaded = st.file_uploader("📥 Import All Settings", type=["json"], key="full_import")
-        if uploaded:
-            try:
-                imported = json.load(uploaded)
-                st.session_state.favorites_order = imported.get("favorites_order", [])
-                st.session_state.per_language_settings = imported.get("per_language_settings", {})
-                _save_user_settings(st.session_state.favorites_order, st.session_state.per_language_settings)
-                st.success("✅ All settings imported successfully!")
+        if not st.session_state.get("show_settings_import"):
+            if st.button("📥 Import All Settings", use_container_width=True, key="open_settings_import"):
+                st.session_state.show_settings_import = True
                 st.rerun()
-            except Exception as e:
-                st.error(f"Import failed: {e}")
+        else:
+            uploaded = st.file_uploader(
+                "Choose user_settings.json",
+                type=["json"],
+                key="full_import",
+                label_visibility="collapsed",
+            )
+            if uploaded:
+                try:
+                    imported = json.load(uploaded)
+                    st.session_state.favorites_order = imported.get("favorites_order", [])
+                    st.session_state.per_language_settings = imported.get("per_language_settings", {})
+                    _save_user_settings(st.session_state.favorites_order, st.session_state.per_language_settings)
+                    st.session_state.show_settings_import = False
+                    st.success("✅ All settings imported successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Import failed: {e}")
+            if st.button("Cancel", key="cancel_settings_import"):
+                st.session_state.show_settings_import = False
+                st.rerun()
 
 
 def _render_preferences_tab() -> None:
@@ -68,6 +83,7 @@ def _render_preferences_tab() -> None:
     st.markdown("### 🔑 API Keys")
     st.caption("API key configuration lives in Step 0. Use the button below to edit, or back up your existing keys to a file.")
     if st.button("🔑 Edit API Keys in Step 0", use_container_width=True):
+        st.session_state.return_to = "settings"
         st.session_state.page = PAGE_API_SETUP
         st.rerun()
 
@@ -146,6 +162,8 @@ def _render_language_defaults_tab() -> None:
             st.caption("Configured: " + " • ".join(configured_langs[:8]) + (" …" if len(configured_langs) > 8 else ""))
 
     st.markdown("---")
+
+    st.markdown("## 🌐 Select Language to Configure:")
 
     # Language picker
     all_languages = st.session_state.get("all_languages", [])
@@ -260,22 +278,22 @@ def _render_favorites_tab() -> None:
         if not favorites:
             st.info("No favorites yet — add some from the left panel.")
         else:
-            for i, lang_name in enumerate(favorites[:]):
-                subcol = st.columns([4, 1, 1, 1])
-                subcol[0].write(f"**{lang_name}**")
-                if subcol[1].button("↑", key=f"fav_up_{i}"):
-                    if i > 0:
-                        favorites[i], favorites[i-1] = favorites[i-1], favorites[i]
-                        st.session_state.favorites_order = favorites
-                        st.rerun()
-                if subcol[2].button("↓", key=f"fav_down_{i}"):
-                    if i < len(favorites) - 1:
-                        favorites[i], favorites[i+1] = favorites[i+1], favorites[i]
-                        st.session_state.favorites_order = favorites
-                        st.rerun()
-                if subcol[3].button("🗑️", key=f"fav_remove_{i}"):
-                    favorites.pop(i)
-                    st.session_state.favorites_order = favorites
+            st.caption("🖱️ Drag to reorder")
+            new_order = sort_items(favorites, direction="vertical", key="favorites_sort")
+            if new_order != favorites:
+                st.session_state.favorites_order = new_order
+                st.rerun()
+
+            # Removal: separate row of small ✖ buttons (one per item) — keeps deletion explicit
+            st.markdown("")
+            for name in list(new_order):
+                cols = st.columns([5, 1])
+                cols[0].caption(f"⭐ {name}")
+                if cols[1].button("✖", key=f"fav_remove_{name}", help=f"Remove {name}"):
+                    favs = st.session_state.favorites_order
+                    if name in favs:
+                        favs.remove(name)
+                    st.session_state.favorites_order = favs
                     st.rerun()
 
     st.caption("💡 Use **Save & Export All Settings** at the top of this page to persist your favorites.")

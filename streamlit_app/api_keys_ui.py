@@ -34,20 +34,34 @@ def render_api_key_backup_section(key_suffix: str) -> None:
         )
 
     with col_import:
-        uploaded = st.file_uploader(
-            "📥 Import api_keys.json",
-            type=["json"],
-            key=f"import_api_keys_{key_suffix}",
-            label_visibility="collapsed",
-        )
-        if uploaded is not None:
-            try:
-                keys = parse_imported_file(uploaded)
-                count = apply_imported_keys(st.session_state, keys)
-                st.success(f"✅ Imported {count} API key(s)")
+        show_flag = f"show_api_keys_import_{key_suffix}"
+        if not st.session_state.get(show_flag):
+            if st.button(
+                "📥 Import api_keys.json",
+                use_container_width=True,
+                key=f"open_import_api_keys_{key_suffix}",
+            ):
+                st.session_state[show_flag] = True
                 st.rerun()
-            except ValueError as e:
-                st.error(f"Import failed: {e}")
+        else:
+            uploaded = st.file_uploader(
+                "Choose api_keys.json",
+                type=["json"],
+                key=f"import_api_keys_{key_suffix}",
+                label_visibility="collapsed",
+            )
+            if uploaded is not None:
+                try:
+                    keys = parse_imported_file(uploaded)
+                    count = apply_imported_keys(st.session_state, keys)
+                    st.session_state[show_flag] = False
+                    st.success(f"✅ Imported {count} API key(s)")
+                    st.rerun()
+                except ValueError as e:
+                    st.error(f"Import failed: {e}")
+            if st.button("Cancel", key=f"cancel_api_keys_import_{key_suffix}"):
+                st.session_state[show_flag] = False
+                st.rerun()
 
     st.warning(
         "⚠️ This file contains your secret API keys. Don't share it or commit it to git.",
