@@ -83,7 +83,13 @@ cache/
 # IDE and editor files
 .vscode/
 .idea/
-.claude/
+# Local Claude Code state — but keep project-shipped skills/agents tracked.
+# (Re-including a path under an excluded directory doesn't work, so we exclude
+# specific local files instead of the whole .claude/ folder.)
+.claude/settings.local.json
+.claude/cache/
+.claude/projects/
+.claude/transcripts/
 *.swp
 *.swo
 *~
