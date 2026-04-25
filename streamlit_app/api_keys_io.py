@@ -44,10 +44,22 @@ def export_api_keys_json(session_state) -> str:
     return json.dumps(build_export_payload(session_state), indent=2, ensure_ascii=False)
 
 
+# Characters that would corrupt the .env line we're about to write.
+# Newlines/CR break .env line-by-line parsing; '=' would split a value
+# into a second variable. Reject these in imported keys.
+_FORBIDDEN_KEY_CHARS = ("\n", "\r", "=", '"', "'", "\x00")
+
+
+def _is_safe_key_value(value: str) -> bool:
+    """Return True if value can be safely written as one .env line."""
+    return not any(ch in value for ch in _FORBIDDEN_KEY_CHARS)
+
+
 def parse_imported_file(file_obj: IO) -> Dict[str, str]:
     """Parse an uploaded api_keys.json. Returns {session_key: value} for non-empty keys.
 
-    Raises ValueError on bad JSON or missing recognized keys.
+    Raises ValueError on bad JSON, wrong shape, or values containing characters
+    that would corrupt the .env file (newline injection / quote escape).
     """
     try:
         data = json.load(file_obj)
@@ -60,8 +72,16 @@ def parse_imported_file(file_obj: IO) -> Dict[str, str]:
     out: Dict[str, str] = {}
     for session_key in SESSION_TO_ENV:
         value = data.get(session_key, "")
-        if isinstance(value, str) and value.strip():
-            out[session_key] = value.strip()
+        if not isinstance(value, str):
+            continue
+        stripped = value.strip()
+        if not stripped:
+            continue
+        if not _is_safe_key_value(stripped):
+            raise ValueError(
+                f"{session_key} contains forbidden characters (newline, =, or quote). Refusing to import."
+            )
+        out[session_key] = stripped
 
     if not out:
         raise ValueError("No recognized API keys found in file")

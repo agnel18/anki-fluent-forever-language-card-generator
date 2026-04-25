@@ -2,7 +2,6 @@
 
 import streamlit as st
 import re
-import time
 from frequency_utils import get_words_with_ranks, parse_uploaded_word_file, validate_word_list
 
 
@@ -280,12 +279,10 @@ def render_word_select_page():
                             # Detailed confirmation
                             if new_words:
                                 st.success(f"✅ Successfully added {len(new_words)} new word(s): {', '.join(new_words)}")
-                                time.sleep(2)  # Keep the success message visible for 2 seconds
                                 # Clear the text area using flag instead of direct session state modification
                                 st.session_state.clear_typed_words_input = True
                             else:
                                 st.info("All words were already in your selection or limit reached.")
-                                time.sleep(2)  # Keep the info message visible for 2 seconds
                                 # Clear the text area using flag instead of direct session state modification
                                 st.session_state.clear_typed_words_input = True
                 

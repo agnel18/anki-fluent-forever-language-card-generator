@@ -93,20 +93,27 @@ def render_language_select_page():
             label_visibility="hidden"
         )
 
-        # Visual feedback
-        if selected_opt["section"] != "divider":
+        # Visual feedback (skip non-selectable section labels)
+        if selected_opt["section"] not in ("divider", "header"):
             if selected_opt["section"] == "favorite":
                 st.success(f"⭐ **{selected_opt['name']}** selected — one of your favorites!")
             else:
                 st.info(f"🎉 **{selected_opt['name']}** selected!")
 
-    # If divider is selected, auto-select first real language
-    if selected_opt["section"] == "divider":
+    # If a non-selectable label (header or divider) is picked, jump to the next real language
+    if selected_opt["section"] in ("divider", "header"):
         next_idx = options.index(selected_opt) + 1
+        # Skip past any consecutive non-selectable labels
+        while next_idx < len(options) and options[next_idx]["section"] in ("divider", "header"):
+            next_idx += 1
         if next_idx < len(options):
             selected_opt = options[next_idx]
         else:
-            selected_opt = options[0]
+            # Fall back to the first real language
+            selected_opt = next(
+                (o for o in options if o["section"] not in ("divider", "header")),
+                options[0],
+            )
 
     selected_lang = selected_opt["name"]
     
@@ -140,6 +147,10 @@ def render_language_select_page():
             st.markdown("<div style='text-align: center;'><small>Step 1 of 5: Language Selection</small></div>", unsafe_allow_html=True)
         with col_next:
             if st.button("Next: Select Words →", use_container_width=True, type="primary"):
+                # Clear words from a prior language so they don't leak into the new flow
+                if st.session_state.get("selected_language") != selected_lang:
+                    st.session_state.selected_words = []
+                    st.session_state.pop("selected_word", None)
                 load_per_language_settings(selected_lang)
                 st.session_state.selected_language = selected_lang
                 st.session_state.page = "word_select"

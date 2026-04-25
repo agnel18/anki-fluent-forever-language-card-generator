@@ -4,7 +4,7 @@ import streamlit as st
 import logging
 import pandas as pd
 from constants import CURATED_TOPICS
-from streamlit_app.user_settings_io import save_user_settings
+from streamlit_app.user_settings_io import save_user_settings, settings_payload_json
 
 logger = logging.getLogger(__name__)
 
@@ -948,29 +948,50 @@ def render_sentence_settings_page():
 
     current_lang = st.session_state.get("selected_language", "this language")
 
-    if st.button(
-        f"💾 Save as defaults for **{current_lang}**",
-        type="secondary",
-        use_container_width=True,
-        key="save_as_defaults_btn"
-    ):
+    def _commit_step3_defaults() -> bool:
+        """Persist current Step 3 form values into user_settings.json. Returns True on success."""
         st.session_state.per_language_settings[current_lang] = {
             "sentence_length_range": st.session_state.sentence_length_range,
             "sentences_per_word": st.session_state.sentences_per_word,
             "difficulty": st.session_state.difficulty,
             "selected_voice": st.session_state.get("selected_voice", ""),
             "selected_voice_display": st.session_state.get("selected_voice_display", ""),
-            "audio_speed": st.session_state.audio_speed
+            "audio_speed": st.session_state.audio_speed,
         }
-        ok = save_user_settings(
+        return save_user_settings(
             st.session_state.get("favorites_order", []),
             st.session_state.per_language_settings,
         )
-        if ok:
-            st.success(f"✅ Saved as defaults for **{current_lang}**")
-        else:
-            st.error("Failed to save user_settings.json")
-        st.rerun()
+
+    col_save, col_export = st.columns([1, 1])
+
+    with col_save:
+        if st.button(
+            f"💾 Save as Defaults for **{current_lang}**",
+            type="secondary",
+            use_container_width=True,
+            key="save_as_defaults_btn",
+        ):
+            if _commit_step3_defaults():
+                st.success(f"✅ Saved as defaults for **{current_lang}**")
+            else:
+                st.error("Failed to save user_settings.json")
+            st.rerun()
+
+    with col_export:
+        # Auto-save first so the downloaded file reflects the current form state
+        if _commit_step3_defaults():
+            st.download_button(
+                label="📤 Export user_settings.json",
+                data=settings_payload_json(
+                    st.session_state.get("favorites_order", []),
+                    st.session_state.get("per_language_settings", {}),
+                ),
+                file_name="user_settings.json",
+                mime="application/json",
+                key="step3_export_user_settings",
+                use_container_width=True,
+            )
 
     st.caption("💡 Full backup, restore, and per-language summary live in **Settings**.")
 

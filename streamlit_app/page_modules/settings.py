@@ -64,14 +64,25 @@ def _render_unified_save_restore() -> None:
             if uploaded:
                 try:
                     imported = json.load(uploaded)
-                    st.session_state.favorites_order = imported.get("favorites_order", [])
-                    st.session_state.per_language_settings = imported.get("per_language_settings", {})
-                    _save_user_settings(st.session_state.favorites_order, st.session_state.per_language_settings)
-                    st.session_state.show_settings_import = False
-                    st.success("✅ All settings imported successfully!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Import failed: {e}")
+                except json.JSONDecodeError:
+                    st.error("Import failed: file is not valid JSON.")
+                else:
+                    if not isinstance(imported, dict):
+                        st.error("Import failed: invalid file format.")
+                    else:
+                        favs = imported.get("favorites_order", [])
+                        per_lang = imported.get("per_language_settings", {})
+                        if not isinstance(favs, list) or not all(isinstance(f, str) for f in favs):
+                            st.error("Import failed: 'favorites_order' must be a list of strings.")
+                        elif not isinstance(per_lang, dict):
+                            st.error("Import failed: 'per_language_settings' must be an object.")
+                        else:
+                            st.session_state.favorites_order = favs
+                            st.session_state.per_language_settings = per_lang
+                            _save_user_settings(favs, per_lang)
+                            st.session_state.show_settings_import = False
+                            st.success("✅ All settings imported successfully!")
+                            st.rerun()
             if st.button("Cancel", key="cancel_settings_import"):
                 st.session_state.show_settings_import = False
                 st.rerun()
@@ -130,15 +141,29 @@ def _render_preferences_tab() -> None:
                     hit_rate = (hits / max(total, 1)) * 100
                     st.metric("Hit Rate", f"{hit_rate:.1f}%")
 
-            if st.button("🔄 Clear All Cache", key="clear_all_cache"):
-                if hasattr(cache_mgr, 'clear') and cache_mgr.clear():
-                    st.success("Cache cleared!")
-                elif hasattr(cache_mgr, 'clear_all'):
-                    cache_mgr.clear_all()
-                    st.success("Cache cleared!")
-                else:
-                    st.warning("Cache clear not available.")
-                st.rerun()
+            # Two-step confirmation so a stray click doesn't wipe the cache.
+            if not st.session_state.get("confirming_cache_clear"):
+                if st.button("🔄 Clear All Cache", key="clear_all_cache"):
+                    st.session_state.confirming_cache_clear = True
+                    st.rerun()
+            else:
+                st.warning("⚠️ Are you sure? Cached API responses will be deleted.")
+                col_confirm, col_cancel = st.columns([1, 1])
+                with col_confirm:
+                    if st.button("✅ Yes, clear cache", type="primary", key="confirm_clear_cache"):
+                        if hasattr(cache_mgr, 'clear') and cache_mgr.clear():
+                            st.success("Cache cleared!")
+                        elif hasattr(cache_mgr, 'clear_all'):
+                            cache_mgr.clear_all()
+                            st.success("Cache cleared!")
+                        else:
+                            st.warning("Cache clear not available.")
+                        st.session_state.confirming_cache_clear = False
+                        st.rerun()
+                with col_cancel:
+                    if st.button("Cancel", key="cancel_clear_cache"):
+                        st.session_state.confirming_cache_clear = False
+                        st.rerun()
         except Exception:
             st.info("Cache management unavailable. Cache will work automatically during generation.")
 
@@ -172,14 +197,30 @@ def _render_language_defaults_tab() -> None:
 
     defaults = st.session_state.per_language_settings.get(config_lang, {})
 
+    def _clamp(value, lo, hi, fallback):
+        """Coerce + clamp a saved value into the slider's allowed range."""
+        try:
+            v = int(value)
+        except (TypeError, ValueError):
+            return fallback
+        return max(lo, min(hi, v))
+
+    saved_range = defaults.get("sentence_length_range", (4, 20))
+    if not isinstance(saved_range, (list, tuple)) or len(saved_range) < 2:
+        saved_range = (4, 20)
+
     # Sentence settings
     st.markdown("#### ✍️ Sentence Settings")
     col1, col2 = st.columns(2)
     with col1:
-        sentence_min = st.slider("Min words", 3, 20, value=int(defaults.get("sentence_length_range", (4, 20))[0]), key=f"def_min_{config_lang}")
+        sentence_min = st.slider("Min words", 3, 20, value=_clamp(saved_range[0], 3, 20, 4), key=f"def_min_{config_lang}")
     with col2:
-        sentence_max = st.slider("Max words", 8, 30, value=int(defaults.get("sentence_length_range", (4, 20))[1]), key=f"def_max_{config_lang}")
-    sentences_per_word = st.slider("Sentences per word", 3, 15, value=defaults.get("sentences_per_word", 5), key=f"def_spw_{config_lang}")
+        sentence_max = st.slider("Max words", 8, 30, value=_clamp(saved_range[1], 8, 30, 20), key=f"def_max_{config_lang}")
+    sentences_per_word = st.slider(
+        "Sentences per word", 3, 15,
+        value=_clamp(defaults.get("sentences_per_word", 5), 3, 15, 5),
+        key=f"def_spw_{config_lang}",
+    )
 
     # Difficulty
     st.markdown("#### 🎯 Difficulty Level")
@@ -210,7 +251,12 @@ def _render_language_defaults_tab() -> None:
         selected_voice_display = st.text_input("Voice (Google TTS)", value=defaults.get("selected_voice_display", ""), key=f"def_voice_display_{config_lang}")
         selected_voice = st.text_input("Voice Code", value=defaults.get("selected_voice", ""), key=f"def_voice_{config_lang}")
 
-    audio_speed = st.slider("Audio Speed", 0.5, 1.5, value=defaults.get("audio_speed", 1.0), step=0.05, key=f"def_speed_{config_lang}")
+    try:
+        saved_speed = float(defaults.get("audio_speed", 1.0))
+    except (TypeError, ValueError):
+        saved_speed = 1.0
+    saved_speed = max(0.5, min(1.5, saved_speed))
+    audio_speed = st.slider("Audio Speed", 0.5, 1.5, value=saved_speed, step=0.05, key=f"def_speed_{config_lang}")
 
     # Save / recommended
     col_save, col_recommend = st.columns([2, 1])
@@ -244,8 +290,8 @@ def _render_language_defaults_tab() -> None:
 
 
 def _render_favorites_tab() -> None:
-    """Tab 3 — favorites kanban reorder."""
-    st.caption("Pin languages to the top of the Step 1 selector. Add, reorder, or remove below.")
+    """Tab 3 — favorites: add picker on top, full-width drag-to-reorder list, removal row."""
+    st.caption("Pin languages to the top of the Step 1 selector. Drag to reorder, ✖ to remove.")
 
     if "favorites_order" not in st.session_state or "per_language_settings" not in st.session_state:
         favorites_order, per_lang_settings = load_user_settings()
@@ -258,43 +304,47 @@ def _render_favorites_tab() -> None:
         "English", "Spanish", "French", "German", "Italian", "Japanese", "Chinese (Simplified)"
     ]
 
-    col_available, col_favorites = st.columns([1, 1])
-
-    with col_available:
-        st.subheader("📋 Available")
+    # --- Add picker (full-width row) ---
+    st.subheader("➕ Add to Favorites")
+    col_picker, col_add = st.columns([3, 1])
+    with col_picker:
         add_lang = st.selectbox(
-            "Add to Favorites",
+            "Pick a language",
             options=[l for l in lang_names if l not in favorites],
-            key="add_favorite_select"
+            key="add_favorite_select",
+            label_visibility="collapsed",
         )
-        if st.button("➕ Add to Top Favorites", type="primary", use_container_width=True):
+    with col_add:
+        if st.button("➕ Add", type="primary", use_container_width=True):
             if add_lang and add_lang not in favorites:
                 favorites.insert(0, add_lang)
                 st.session_state.favorites_order = favorites
                 st.rerun()
 
-    with col_favorites:
-        st.subheader("⭐ Your Favorites")
-        if not favorites:
-            st.info("No favorites yet — add some from the left panel.")
-        else:
-            st.caption("🖱️ Drag to reorder")
-            new_order = sort_items(favorites, direction="vertical", key="favorites_sort")
-            if new_order != favorites:
-                st.session_state.favorites_order = new_order
-                st.rerun()
+    st.markdown("---")
 
-            # Removal: separate row of small ✖ buttons (one per item) — keeps deletion explicit
-            st.markdown("")
-            for name in list(new_order):
-                cols = st.columns([5, 1])
-                cols[0].caption(f"⭐ {name}")
-                if cols[1].button("✖", key=f"fav_remove_{name}", help=f"Remove {name}"):
-                    favs = st.session_state.favorites_order
-                    if name in favs:
-                        favs.remove(name)
-                    st.session_state.favorites_order = favs
-                    st.rerun()
+    # --- Sortable list (full width — sidesteps column-iframe issues) ---
+    st.subheader("⭐ Your Favorites")
+    if not favorites:
+        st.info("No favorites yet — add some above.")
+    else:
+        st.caption("🖱️ Drag to reorder")
+        new_order = sort_items(favorites, direction="vertical", key="favorites_sort")
+        if new_order != favorites:
+            st.session_state.favorites_order = new_order
+            st.rerun()
+
+        # Removal row — explicit, full-width, mobile-friendly
+        st.markdown("")
+        for name in list(new_order):
+            cols = st.columns([5, 1])
+            cols[0].caption(f"⭐ {name}")
+            if cols[1].button("✖", key=f"fav_remove_{name}", help=f"Remove {name}"):
+                favs = st.session_state.favorites_order
+                if name in favs:
+                    favs.remove(name)
+                st.session_state.favorites_order = favs
+                st.rerun()
 
     st.caption("💡 Use **Save & Export All Settings** at the top of this page to persist your favorites.")
 
