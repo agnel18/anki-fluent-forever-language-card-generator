@@ -2,36 +2,8 @@
 """
 Chinese Simplified Configuration - Domain Component
 
-CHINESE CONFIGURATION PATTERN:
-This file demonstrates how to structure Chinese-specific configuration.
-It serves as the single source of truth for all Chinese-specific settings.
-
-RESPONSIBILITIES:
-1. Load external configuration files (YAML/JSON)
-2. Define grammatical roles and mappings for Chinese
-3. Provide color schemes for different complexity levels
-4. Store Chinese-specific patterns and rules
-5. Handle configuration loading errors gracefully
-
-CONFIGURATION FILES LOADED:
-- zh_grammatical_roles.yaml: Role definitions and mappings
-- zh_common_classifiers.yaml: Classifier lists
-- zh_aspect_markers.yaml: Aspect particle patterns
-- zh_structural_particles.yaml: Particle system rules
-- zh_word_meanings.json: Pre-defined word meanings
-- zh_patterns.yaml: Regex patterns and validation rules
-
-USAGE FOR CHINESE:
-1. Create Chinese-specific YAML/JSON config files
-2. Copy this structure, changing only file names and content
-3. Implement Chinese-appropriate grammatical roles
-4. Define complexity-appropriate color schemes
-5. Add Chinese-specific patterns and markers
-
-INTEGRATION:
-- Used by all domain components (prompt_builder, validator, fallbacks)
-- Provides consistent configuration across the analyzer
-- Supports multiple complexity levels with appropriate distinctions
+Single source of truth for all Chinese-specific settings.
+Loads YAML/JSON data files from infrastructure/data/.
 """
 
 
@@ -46,11 +18,121 @@ from .zh_types import AnalysisRequest, AnalysisResult, BatchAnalysisResult, Pars
 
 logger = logging.getLogger(__name__)
 
+
+# ----------------------------------------------------------------------
+# Prompt templates (kept as module constants — Jinja-renderable)
+# ----------------------------------------------------------------------
+
+_SINGLE_PROMPT = """\
+You are an expert linguist teaching Simplified Chinese to learners.
+
+Analyze this Chinese sentence and provide a detailed grammatical breakdown.
+
+Sentence: {{sentence}}
+Target word: {{target_word}}
+Complexity level: {{complexity}}
+
+**TOKENIZATION RULES (CRITICAL):**
+- Split into NATURAL WORD UNITS, not raw characters.
+- Compounds and disyllabic/multi-syllabic words MUST stay together.
+  Examples: 电话, 苹果, 朋友, 学校, 喜欢, 但是, 因为, 已经, 一起, 好吃, 漂亮, 知道.
+- Single-character function words / pronouns / common verbs stay alone:
+  我, 你, 他, 是, 的, 了, 很, 在, 给, 打, 到, 有.
+- Punctuation is its own token.
+- Examples of correct segmentation:
+  "这个苹果很好吃。" -> ["这个", "苹果", "很", "好吃", "。"]
+  "我打电话给你。"   -> ["我", "打", "电话", "给", "你", "。"]
+  "我一到家就给你打电话。" -> ["我", "一", "到", "家", "就", "给", "你", "打", "电话", "。"]
+
+**STRICT OUTPUT RULES:**
+- For EVERY word you MUST return BOTH:
+  - "grammatical_role": exactly one of these lowercase values:
+    noun, verb, adjective, adverb, pronoun, particle, classifier, numeral,
+    aspect_marker, structural_particle, modal_particle, preposition,
+    conjunction, interjection, determiner, other
+  - "individual_meaning": rich, CONTEXT-SPECIFIC 1-2 sentence learner explanation
+    of what the word does in THIS sentence. NOT a generic dictionary definition.
+    Bad: "a word that describes a noun"
+    Good: "Used here as a degree adverb modifying 好吃, intensifying it to 'very tasty'."
+- The target word gets the richest, most teaching-oriented explanation.
+- Do NOT capitalize roles. No "Structural particle", "Personal pronoun", etc.
+- "explanations.overall_structure": describe the sentence pattern in plain English
+  (e.g. "Topic-comment structure with adjectival predicate", "一...就... immediate-succession structure").
+- "explanations.key_features": call out notable Chinese grammar features used.
+
+Return ONLY valid JSON in this EXACT shape (no prose, no markdown fences):
+{
+  "sentence": "{{sentence}}",
+  "words": [
+    {
+      "word": "natural word unit",
+      "grammatical_role": "<one of the lowercase roles above>",
+      "individual_meaning": "<rich context-specific explanation>"
+    }
+  ],
+  "explanations": {
+    "overall_structure": "Detailed explanation of sentence pattern.",
+    "key_features": "Notable Chinese grammatical features in this sentence."
+  }
+}
+"""
+
+_BATCH_PROMPT = """\
+You are an expert linguist teaching Simplified Chinese to learners.
+
+Analyze the following Chinese sentences. Apply the SAME rules to every sentence.
+
+Sentences (numbered):
+{{sentences}}
+
+Target word: {{target_word}}
+Complexity level: {{complexity}}
+
+**TOKENIZATION RULES (CRITICAL):**
+- Split into NATURAL WORD UNITS, not raw characters.
+- Compounds MUST stay together: 电话, 苹果, 朋友, 学校, 喜欢, 但是, 因为, 已经, 好吃.
+- Single-character function words / pronouns stay alone: 我, 你, 他, 是, 的, 了, 很.
+- Punctuation is its own token.
+
+**STRICT OUTPUT RULES:**
+- For EVERY word in EVERY sentence return BOTH:
+  - "grammatical_role" (lowercase, one of):
+    noun, verb, adjective, adverb, pronoun, particle, classifier, numeral,
+    aspect_marker, structural_particle, modal_particle, preposition,
+    conjunction, interjection, determiner, other
+  - "individual_meaning": rich, CONTEXT-SPECIFIC 1-2 sentence learner explanation
+    of the word's role in THAT sentence. Never a generic dictionary entry.
+- Target word "{{target_word}}" gets the richest explanation in each sentence.
+- "overall_structure" / "key_features" must describe the sentence's specific pattern.
+
+Return ONLY valid JSON (no prose, no markdown fences):
+{
+  "batch_results": [
+    {
+      "sentence": "<sentence 1 verbatim>",
+      "words": [
+        {
+          "word": "<natural word unit>",
+          "grammatical_role": "<lowercase role>",
+          "individual_meaning": "<rich context-specific explanation>"
+        }
+      ],
+      "explanations": {
+        "overall_structure": "Detailed explanation of THIS sentence's pattern.",
+        "key_features": "Notable Chinese grammatical features in THIS sentence."
+      }
+    }
+  ]
+}
+
+CRITICAL: Return one batch_results entry per input sentence, in the same order.
+"""
+
+
 @dataclass
 class ZhConfig:
     """
-    Configuration for Chinese Simplified analyzer, loaded from external files.
-    Uses dataclasses for type safety and maintainability.
+    Configuration for Chinese Simplified analyzer.
     """
     grammatical_roles: Dict[str, str] = field(default_factory=dict)
     common_classifiers: List[str] = field(default_factory=list)
@@ -71,61 +153,8 @@ class ZhConfig:
         self.modal_particles = self._load_yaml(config_dir / "zh_modal_particles.yaml")
         self.word_meanings = self._load_json(config_dir / "zh_word_meanings.json")
         self.prompt_templates = {
-            "single": """
-Analyze this Chinese sentence and provide a detailed grammatical breakdown.
-
-Sentence: {{sentence}}
-Target word: {{target_word}}
-Complexity level: {{complexity}}
-
-**STRICT OUTPUT RULES (must follow exactly):**
-- For EVERY word/character you MUST return BOTH:
-  - "grammatical_role": exactly one of these lowercase values: noun, verb, adjective, adverb, pronoun, particle, classifier, numeral, aspect_marker, structural_particle, modal_particle, preposition, conjunction, interjection, determiner, other
-  - "individual_meaning": rich 1-2 sentence learner-friendly explanation of its function in THIS sentence
-- Do NOT capitalize roles. Do NOT use phrases like "Structural particle" or "Personal pronoun".
-- Target word gets the richest explanation, but ALL words must have meaningful explanations.
-
-Return valid JSON with this EXACT structure:
-{
-  "sentence": "{{sentence}}",
-  "words": [
-    {
-      "word": "character/word",
-      "grammatical_role": "noun|verb|adjective|adverb|pronoun|particle|classifier|numeral|aspect_marker|structural_particle|modal_particle|...",
-      "individual_meaning": "Rich, educational explanation of this word's function in the sentence"
-    }
-  ],
-  "explanations": {
-    "overall_structure": "Detailed explanation of sentence structure",
-    "key_features": "Notable Chinese grammatical features"
-  }
-}
-
-CRITICAL: Every word object MUST contain grammatical_role (lowercase) and individual_meaning.
-""",
-            "batch": """
-Analyze these Chinese sentences and provide detailed grammatical breakdowns for each.
-
-Sentences: {{sentences}}
-Target word: {{target_word}}
-Complexity level: {{complexity}}
-
-**STRICT OUTPUT RULES (must follow exactly):**
-Same rules as single prompt above. Every word in every sentence must have lowercase "grammatical_role" + rich "individual_meaning".
-
-Return valid JSON with this EXACT structure:
-{
-  "batch_results": [
-    {
-      "sentence": "first sentence",
-      "words": [ ... ],
-      "explanations": { ... }
-    }
-  ]
-}
-
-CRITICAL: Every word object MUST contain grammatical_role (lowercase) and individual_meaning.
-"""
+            "single": _SINGLE_PROMPT,
+            "batch": _BATCH_PROMPT,
         }
         self.patterns = self._load_yaml(config_dir / "zh_patterns.yaml")
         self.classifiers = self.common_classifiers  # Alias for compatibility
@@ -147,56 +176,37 @@ CRITICAL: Every word object MUST contain grammatical_role (lowercase) and indivi
             return {}
 
     def get_color_scheme(self, complexity: str) -> Dict[str, str]:
-        """
-        Return color scheme for Chinese Simplified grammatical elements based on complexity.
-
-        CHINESE COLOR CODING:
-        - Progressive disclosure: More roles at higher complexity levels
-        - Consistency: Same colors for same roles across levels
-        - Accessibility: High contrast, colorblind-friendly colors
-        - Language-appropriate: Colors that reflect Chinese grammatical concepts
-
-        COMPLEXITY PROGRESSION:
-        - BEGINNER: Core roles only (noun, verb, adjective, particles)
-        - INTERMEDIATE: More distinctions (classifiers, aspect markers, pronouns)
-        - ADVANCED: Full granularity (all particle types, structural elements)
-
-        COLOR PHILOSOPHY:
-        - Warm colors for content words (nouns, verbs)
-        - Cool colors for function words (particles, classifiers)
-        - Distinct colors for aspect markers and modal particles
-        - Consistent target word highlighting
-        """
+        """Return color scheme for Chinese Simplified grammatical elements based on complexity."""
         schemes = {
             "beginner": {
-                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
-                "noun": "#FFAA00",          # Orange - content words
-                "adjective": "#FF44FF",     # Magenta - modifiers
-                "verb": "#44FF44",          # Green - actions
-                "adverb": "#44FFFF",        # Cyan - manner
-                "pronoun": "#FF4444",       # Red - replacements
-                "particle": "#AA44FF",      # Purple - grammatical particles
-                "aspect_marker": "#8A2BE2", # Purple - aspect particles (äº†, ç€, è¿‡)
-                "numeral": "#FFD700",       # Gold - numbers
-                "classifier": "#FF8C00",    # Dark orange - measure words
-                "preposition": "#4444FF",   # Blue - relationships
-                "conjunction": "#888888",   # Gray - connectors
-                "interjection": "#FFD700",  # Gold - exclamations
-                "other": "#AAAAAA"          # Light gray - miscellaneous
-            },
-            "intermediate": {
-                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
+                "target_word": "#E63939",
                 "noun": "#FFAA00",
                 "adjective": "#FF44FF",
-                "verb": "#44FF44",          # Bright green - main verbs
+                "verb": "#44FF44",
                 "adverb": "#44FFFF",
-                "pronoun": "#FF4444",       # Bright red - general pronouns
+                "pronoun": "#FF4444",
+                "particle": "#AA44FF",
+                "aspect_marker": "#8A2BE2",
+                "numeral": "#FFD700",
+                "classifier": "#FF8C00",
+                "preposition": "#4444FF",
+                "conjunction": "#888888",
+                "interjection": "#FFD700",
+                "other": "#AAAAAA"
+            },
+            "intermediate": {
+                "target_word": "#E63939",
+                "noun": "#FFAA00",
+                "adjective": "#FF44FF",
+                "verb": "#44FF44",
+                "adverb": "#44FFFF",
+                "pronoun": "#FF4444",
                 "personal_pronoun": "#FF4444",
                 "demonstrative_pronoun": "#FF4444",
                 "particle": "#AA44FF",
-                "aspect_marker": "#8A2BE2", # Purple - aspect particles
-                "modal_particle": "#DA70D6", # Plum - modal particles
-                "structural_particle": "#9013FE", # Violet - structural particles
+                "aspect_marker": "#8A2BE2",
+                "modal_particle": "#DA70D6",
+                "structural_particle": "#9013FE",
                 "numeral": "#FFD700",
                 "classifier": "#FF8C00",
                 "preposition": "#4444FF",
@@ -204,19 +214,19 @@ CRITICAL: Every word object MUST contain grammatical_role (lowercase) and indivi
                 "other": "#AAAAAA"
             },
             "advanced": {
-                "target_word": "#E63939",   # bright red (or any high-contrast color you like)
+                "target_word": "#E63939",
                 "noun": "#FFAA00",
                 "adjective": "#FF44FF",
                 "verb": "#44FF44",
                 "adverb": "#44FFFF",
-                "pronoun": "#FF4444",       # Bright red - general pronouns
+                "pronoun": "#FF4444",
                 "personal_pronoun": "#FF4444",
                 "demonstrative_pronoun": "#FF4444",
                 "interrogative_pronoun": "#FF4444",
                 "particle": "#AA44FF",
-                "aspect_marker": "#8A2BE2", # Purple - äº†, ç€, è¿‡
-                "modal_particle": "#DA70D6", # Plum - å—, å‘¢, å§, å•Š
-                "structural_particle": "#9013FE", # Violet - çš„, åœ°, å¾—
+                "aspect_marker": "#8A2BE2",
+                "modal_particle": "#DA70D6",
+                "structural_particle": "#9013FE",
                 "numeral": "#FFD700",
                 "classifier": "#FF8C00",
                 "preposition": "#4444FF",
@@ -226,12 +236,9 @@ CRITICAL: Every word object MUST contain grammatical_role (lowercase) and indivi
             }
         }
         return schemes.get(complexity, schemes["intermediate"])
-    
+
     def _get_grammatical_roles_list(self, complexity: str) -> str:
-        """
-        Gold-standard: Return formatted bullet list of allowed roles (soft guidance).
-        Beginner = simple list, Advanced = full Chinese-specific roles.
-        """
+        """Return formatted bullet list of allowed roles."""
         if complexity == "beginner":
             role_list = [
                 "noun", "verb", "adjective", "adverb", "pronoun",
@@ -251,6 +258,4 @@ CRITICAL: Every word object MUST contain grammatical_role (lowercase) and indivi
                 "preposition", "conjunction", "interjection"
             ]
 
-        formatted_list = '\n'.join([f'- {role}' for role in role_list])
-        return formatted_list    
-
+        return '\n'.join([f'- {role}' for role in role_list])

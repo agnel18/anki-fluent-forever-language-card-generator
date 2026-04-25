@@ -4,6 +4,7 @@ import streamlit as st
 import logging
 import pandas as pd
 from constants import CURATED_TOPICS
+from streamlit_app.user_settings_io import save_user_settings, settings_payload_json
 
 logger = logging.getLogger(__name__)
 
@@ -968,17 +969,25 @@ def render_sentence_settings_page():
                 "selected_voice_display": st.session_state.get("selected_voice_display", ""),
                 "audio_speed": st.session_state.audio_speed
             }
-            st.success(f"✅ Saved for **{current_lang}** and updated the global defaults file")
+            ok = save_user_settings(
+                st.session_state.get("favorites_order", []),
+                st.session_state.per_language_settings,
+            )
+            if ok:
+                st.success(f"✅ Saved for **{current_lang}** to user_settings.json")
+            else:
+                st.error("Failed to save user_settings.json")
             st.rerun()
 
     with col_download:
-        if st.button("📤 Download Global Defaults JSON", use_container_width=True):
-            import json
-            data = json.dumps(st.session_state.per_language_settings, indent=2, ensure_ascii=False)
+        if st.button("📤 Download All Settings JSON", use_container_width=True):
             st.download_button(
-                label="⬇️ Download language_defaults.json",
-                data=data,
-                file_name="language_defaults.json",
+                label="⬇️ Download user_settings.json",
+                data=settings_payload_json(
+                    st.session_state.get("favorites_order", []),
+                    st.session_state.get("per_language_settings", {}),
+                ),
+                file_name="user_settings.json",
                 mime="application/json",
                 key="global_download_from_step3"
             )

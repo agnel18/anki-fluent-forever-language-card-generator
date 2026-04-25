@@ -5,6 +5,7 @@ from constants import PAGE_LANGUAGE_SELECT
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
+from streamlit_app.api_keys_ui import render_api_key_backup_section
 
 
 def render_api_setup_page():
@@ -49,6 +50,7 @@ def render_api_setup_page():
                 st.rerun()
 
         st.divider()
+        render_api_key_backup_section("configured")
         return
 
     # ==========================================
@@ -56,6 +58,7 @@ def render_api_setup_page():
     # ==========================================
     st.markdown("# Step 0: API Keys")
     st.divider()
+    render_api_key_backup_section("setup")
 
     # --- Status Overview (vertical — mobile friendly) ---
     google_key = st.session_state.get("google_api_key", "")

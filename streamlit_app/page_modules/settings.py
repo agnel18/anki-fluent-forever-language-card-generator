@@ -4,37 +4,25 @@ import streamlit as st
 import time
 import os
 import json
-from pathlib import Path
 
 
 # Import centralized configuration
 from streamlit_app.shared_utils import get_gemini_model
+from streamlit_app.user_settings_io import (
+    load_user_settings,
+    save_user_settings,
+    settings_payload_json,
+)
+from streamlit_app.api_keys_io import SESSION_TO_ENV, save_keys_to_env
+from streamlit_app.api_keys_ui import render_api_key_backup_section
 
-def _load_user_settings():
-    """Load unified user settings from JSON."""
-    path = Path(__file__).parent.parent / "user_settings.json"
-    if path.exists():
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return data.get("favorites_order", []), data.get("per_language_settings", {})
-        except Exception:
-            return [], {}
-    return [], {}
 
 def _save_user_settings(favorites_order: list, per_language_settings: dict):
-    """Save unified user settings to single JSON file."""
-    path = Path(__file__).parent.parent / "user_settings.json"
-    data = {
-        "favorites_order": favorites_order,
-        "per_language_settings": per_language_settings
-    }
-    try:
-        path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-        return True
-    except Exception as e:
-        st.error(f"Failed to save user_settings.json: {e}")
-        return False
+    """Wrapper around the shared saver that surfaces an error toast on failure."""
+    ok = save_user_settings(favorites_order, per_language_settings)
+    if not ok:
+        st.error("Failed to save user_settings.json")
+    return ok
 
 def render_settings_page():
     """Render the settings page with API keys, theme, and cache management."""
@@ -61,14 +49,9 @@ def render_settings_page():
             success = _save_user_settings(favorites_order, per_lang)
             
             if success:
-                # Trigger download
-                full_data = {
-                    "favorites_order": favorites_order,
-                    "per_language_settings": per_lang
-                }
                 st.download_button(
                     label="📤 Download user_settings.json",
-                    data=json.dumps(full_data, indent=2, ensure_ascii=False),
+                    data=settings_payload_json(favorites_order, per_lang),
                     file_name="user_settings.json",
                     mime="application/json",
                     key="unified_export"
@@ -113,28 +96,23 @@ def render_settings_page():
 
     st.markdown("---")
 
-    # Helper to save a key to .env file
+    render_api_key_backup_section("settings")
+
+    # Reverse map so the per-service Save buttons (which pass an env-var name)
+    # can route through the shared save_keys_to_env helper.
+    _ENV_TO_SESSION = {env: session for session, env in SESSION_TO_ENV.items()}
+
     def _save_key_to_env(env_key_name, key_value):
-        env_path = Path(__file__).parent.parent / ".env"
-        try:
-            env_content = ""
-            if env_path.exists():
-                env_content = env_path.read_text()
-            lines = env_content.split('\n')
-            key_found = False
-            for i, line in enumerate(lines):
-                if line.startswith(f'{env_key_name}='):
-                    lines[i] = f'{env_key_name}={key_value}'
-                    key_found = True
-                    break
-            if not key_found:
-                lines.append(f'{env_key_name}={key_value}')
-            env_path.write_text('\n'.join(lines))
-            return True
-        except Exception as e:
-            st.error(f"❌ Failed to save to .env file: {e}")
+        session_key = _ENV_TO_SESSION.get(env_key_name)
+        if not session_key:
+            st.error(f"Unknown env var: {env_key_name}")
+            return False
+        wrote = save_keys_to_env({session_key: key_value})
+        if wrote == 0:
+            st.error("❌ Failed to save to .env file")
             st.info("💡 The key is set for this session only.")
             return False
+        return True
 
     # ==========================================================
     # SECTION 1: Gemini AI — FREE (no billing needed)
@@ -495,7 +473,7 @@ This caps your daily usage. Even without a limit, the first 1M characters/month 
 
     # Unified load of ALL user settings
     if "favorites_order" not in st.session_state or "per_language_settings" not in st.session_state:
-        favorites_order, per_lang_settings = _load_user_settings()
+        favorites_order, per_lang_settings = load_user_settings()
         st.session_state.favorites_order = favorites_order
         st.session_state.per_language_settings = per_lang_settings
 

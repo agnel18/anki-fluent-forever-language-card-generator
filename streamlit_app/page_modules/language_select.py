@@ -1,9 +1,8 @@
 # pages/language_select.py - Language selection page for the language learning app
 
 import streamlit as st
-import json
-from pathlib import Path
 from frequency_utils import get_available_frequency_lists
+from streamlit_app.user_settings_io import load_user_settings
 
 
 def load_per_language_settings(selected_lang):
@@ -45,16 +44,8 @@ def render_language_select_page():
     # Get languages configuration from session state
     all_languages = st.session_state.get("all_languages", [])
 
-    # === NEW: Load favorites from unified user_settings.json ===
-    user_settings_path = Path(__file__).parent.parent / "user_settings.json"
-    favorites_order = []
-    if user_settings_path.exists():
-        try:
-            with open(user_settings_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                favorites_order = data.get("favorites_order", [])
-        except Exception:
-            favorites_order = []
+    # === Load favorites from unified user_settings.json (via shared helper) ===
+    favorites_order, _ = load_user_settings()
 
     # Get user's learned languages (kept as fallback)
     learned_langs = [l["name"] for l in st.session_state.get("learned_languages", [])]
