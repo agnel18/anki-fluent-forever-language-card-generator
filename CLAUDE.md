@@ -429,6 +429,72 @@ This is a checklist item for E2E pipeline tests and a requirement for new analyz
 
 ---
 
+## Structural map — high-traffic page modules
+
+These three files are repeatedly edited and re-read. Use this map to jump directly with `Read offset/limit` instead of scanning the whole file. Line ranges drift by ±5 between commits — grep the symbol if exactness matters.
+
+### `streamlit_app/page_modules/settings.py` (~370 lines)
+
+```
+L1-21    imports (json, streamlit, streamlit_sortables, user_settings_io, api_keys_ui, constants)
+L23-29   _save_user_settings  → wrapper that surfaces an error toast on failure
+L31-77   _render_unified_save_restore  → top-of-page Save & Export + Import (toggle uploader)
+L91-155  _render_preferences_tab (Tab 1)
+         L93-99   "Edit API Keys in Step 0" navigation button (sets return_to)
+         L100     render_api_key_backup_section("settings")
+         L102-118 Theme selectbox + change handler
+         L122-155 Cache Management expander (two-step confirm pattern)
+L171-289 _render_language_defaults_tab (Tab 2)
+         L184-198 _clamp helper + saved_range coercion
+         L200-211 Min/Max words sliders (clamped)
+         L213-224 Difficulty selectbox
+         L226-249 Voice + Audio Speed (try import audio_generator; clamp speed)
+         L252-289 Save defaults / Use Recommended buttons
+L292-349 _render_favorites_tab (Tab 3)  → full-width sortable + ✖ remove rows
+L352-373 render_settings_page  → entry point + tabs
+```
+
+### `streamlit_app/page_modules/sentence_settings.py` (~1015 lines, biggest page)
+
+```
+L1-9     imports (incl. settings_payload_json for Step 3 export)
+L11-105  _get_bcp47_code  → 100-line language-name → BCP-47 code map (mostly data)
+L114-224 initialize_sentence_settings_state  → session_state defaults (sliders, voice, topics)
+L226+    render_sentence_settings_page entry point
+L239-297 ✍️ Sentence Settings (length sliders, sentences-per-word, difficulty)
+L299-444 🎨 Topic Settings (collapsed expander) — toggle, curated topics, custom topics, summary
+L446-941 🎵 Audio Settings — voice loading w/ fallbacks (~500 lines, dense)
+                            voice cost comparison table
+L945-995 Save as Defaults / Export user_settings.json row (calls _commit_step3_defaults)
+L997+    Navigation buttons (Back / Next)
+```
+
+> ⚠️ The voice-config block (L446-841) duplicates ~300 lines of fallback logic also present in `settings.py:226-249`. Extracting `get_voice_options(language)` into a shared helper is on the deferred backlog.
+
+### `streamlit_app/page_modules/api_setup.py` (~360 lines)
+
+```
+L1-9     imports (constants for PAGE_LANGUAGE_SELECT, PAGE_SETTINGS, api_keys_ui)
+L11-25   _render_api_status  → 3-badge status helper (used in both branches)
+L27-36   _render_smart_back_button  → "← Back to Settings" if return_to == "settings"
+L39+     render_api_setup_page entry point
+L43-115  CONFIGURED branch (all 3 keys present):
+         re-test buttons (Gemini/TTS/Pixabay vertical stack), Proceed-to-Step-1, key backup section
+L121-128 status badges + key backup section (setup branch)
+L128-180 SECTION 1: Gemini key entry + save + test
+L181-264 SECTION 2: TTS key entry + save + test (incl. nested expanders for "why separate project")
+L266-322 SECTION 3: Pixabay key entry + save + test
+L325+    Final "Proceed" button when all 3 set
+```
+
+### Navigation tips
+
+- **Want to find a button**: grep its label — `Grep "Save as Defaults"` is faster than reading whole files.
+- **Want to find a section divider in sentence_settings.py**: grep `# --- ` or `# ===`.
+- **After the user manually edits one of these files**: re-read only the changed range, not the whole file (Streamlit reload is cheap; your context window isn't).
+
+---
+
 ## Coding Conventions
 
 - **Routing:** Session-state based (`st.session_state.page`), not Streamlit multi-page app
