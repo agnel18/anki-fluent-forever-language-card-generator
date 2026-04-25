@@ -27,7 +27,8 @@ def render_complete_page():
     st.success("🎊 **Deck generation completed successfully!**")
     st.markdown("---")
 
-    total_cards = len(st.session_state.selected_words) * 3  # 3 cards per word
+    sentences_per_word = st.session_state.get("sentences_per_word", 3)
+    total_cards = len(st.session_state.selected_words) * sentences_per_word
 
     # Generation Summary
     st.markdown("## 📋 Generation Summary")

@@ -325,6 +325,40 @@ APIError (base)
 
 ---
 
+## Token Discipline
+
+These rules apply to all AI assistance in this repo. RTK (Rust Token Killer) is installed at `C:\Users\priya\.local\bin\rtk.exe` and registered as a Claude Code Bash hook in `~/.claude/settings.json`. The hook auto-rewrites Bash tool calls (e.g. `git status` → `rtk git status`) once Claude Code is restarted after install.
+
+### 1. Prefer shell + RTK over Read/Grep/Glob for known-shape lookups
+
+The RTK hook only intercepts the **Bash** tool. The Read/Grep/Glob tools are NOT routed through RTK, so their savings depend on tool choice.
+
+- For multi-file content searches that may hit many files: `rtk grep "pattern"` via Bash. Reserves the Grep tool for one-off small queries.
+- For a single known file: prefer the Read tool — its display is better and reads aren't usually the hot path.
+- For "find files matching pattern" with many results: `rtk find` via Bash. Glob is fine for small result sets.
+
+### 2. Never dump verbose terminal output unwrapped
+
+Once RTK's hook is active, these are auto-rewritten — but the rule still applies (don't bypass with Bash flags that produce mountains of text):
+
+- `pytest`, `cargo test`, `go test`, `jest`, `vitest`, `playwright` — let RTK handle.
+- `git status`, `git diff`, `git log` — let RTK handle.
+- For `streamlit run` and other long-running processes, redirect to a log file and grep that file. Never tail an unbounded log into context.
+
+### 3. Multi-file searches go through Explore agent, not parallel Read calls
+
+If a question requires looking at >3 unknown files, dispatch one Explore agent with a tight scope. The agent reads, summarizes, returns ~500 words. Saves vs. me reading 5+ files into the main conversation context.
+
+### Verifying savings
+
+Run `rtk gain` periodically to see cumulative savings. `rtk gain --history` shows per-command breakdowns. `rtk discover` analyzes past Claude Code transcripts and flags missed opportunities.
+
+### Windows-specific note
+
+RTK auto-rewrite works on Windows via Claude Code's `settings.json` PreToolUse hook (NOT the Bash shell hook the README describes — that needs WSL). The hook only activates after Claude Code is restarted post-install. If the hook silently fails, run `rtk init --show` to verify configuration.
+
+---
+
 ## Open Tasks
 
 1. **Grammar analyzers for 65 remaining languages** — Use the 7-phase process in `language_grammar_generator/`. Run `validate_implementation.py`, `run_all_tests.py`, and `compare_with_gold_standard.py` to verify. French v2.0 and Chinese Simplified are gold standard references.

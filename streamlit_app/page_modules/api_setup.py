@@ -8,6 +8,22 @@ from streamlit_app.shared_utils import get_gemini_model, get_gemini_api
 from streamlit_app.api_keys_ui import render_api_key_backup_section
 
 
+def _render_api_status(google_key: str, tts_key: str, pixabay_key: str) -> None:
+    """Single source of truth for the per-service status badges."""
+    if google_key:
+        st.success("✅ **Gemini AI** — Set")
+    else:
+        st.error("❌ **Gemini AI** — Required")
+    if tts_key:
+        st.success("✅ **Text-to-Speech** — Set")
+    else:
+        st.error("❌ **Text-to-Speech** — Required")
+    if pixabay_key:
+        st.success("✅ **Pixabay Images** — Set")
+    else:
+        st.error("❌ **Pixabay Images** — Required")
+
+
 def render_api_setup_page():
     """Render the API keys setup page."""
 
@@ -61,22 +77,7 @@ def render_api_setup_page():
     render_api_key_backup_section("setup")
 
     # --- Status Overview (vertical — mobile friendly) ---
-    google_key = st.session_state.get("google_api_key", "")
-    tts_key = st.session_state.get("google_tts_api_key", "")
-    pixabay_key = st.session_state.get("pixabay_api_key", "")
-
-    if google_key:
-        st.success("✅ **Gemini AI** — Set")
-    else:
-        st.error("❌ **Gemini AI** — Required")
-    if tts_key:
-        st.success("✅ **Text-to-Speech** — Set")
-    else:
-        st.error("❌ **Text-to-Speech** — Required")
-    if pixabay_key:
-        st.success("✅ **Pixabay Images** — Set")
-    else:
-        st.error("❌ **Pixabay Images** — Required")
+    _render_api_status(google_key, tts_key, pixabay_key)
 
     st.markdown("---")
 

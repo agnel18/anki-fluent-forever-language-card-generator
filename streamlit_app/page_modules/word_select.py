@@ -166,7 +166,7 @@ def render_word_select_page():
                                 button_type = "secondary"
                                 disabled = False
                             elif can_add_more:
-                                button_text = f"➕ {row['Word']}"
+                                button_text = f"➕ {word}"
                                 button_type = "primary"
                                 disabled = False
                             else:

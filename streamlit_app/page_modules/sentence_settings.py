@@ -4,7 +4,7 @@ import streamlit as st
 import logging
 import pandas as pd
 from constants import CURATED_TOPICS
-from streamlit_app.user_settings_io import save_user_settings, settings_payload_json
+from streamlit_app.user_settings_io import save_user_settings
 
 logger = logging.getLogger(__name__)
 
@@ -296,10 +296,10 @@ def render_sentence_settings_page():
 
     st.markdown("---")
 
-    # --- Topic Settings ---
-    with st.container():
-        st.markdown("## 🎯 Topic Settings")
-        
+    # --- Topic Settings (Advanced — collapsed by default) ---
+    with st.expander("🎨 Topic Settings (Optional)", expanded=False):
+        st.caption("Theme generated sentences around specific topics. Skip this if you want general vocabulary.")
+
         # Enable/disable toggle
         enable_topics = st.toggle(
             "Enable Topic-Based Sentence Generation",
@@ -942,57 +942,37 @@ def render_sentence_settings_page():
 
     st.markdown("---")
 
-    # === GLOBAL DEFAULTS MANAGEMENT (single shared JSON file) ===
-    # Safe initialization to prevent the previous error
+    # === Save current settings as defaults for this language ===
     if "per_language_settings" not in st.session_state:
         st.session_state.per_language_settings = {}
 
     current_lang = st.session_state.get("selected_language", "this language")
 
-    st.markdown("### 💾 Persist These Settings for Future Sessions")
-    st.caption("All languages share one global JSON file. Changes here update the master file.")
+    if st.button(
+        f"💾 Save as defaults for **{current_lang}**",
+        type="secondary",
+        use_container_width=True,
+        key="save_as_defaults_btn"
+    ):
+        st.session_state.per_language_settings[current_lang] = {
+            "sentence_length_range": st.session_state.sentence_length_range,
+            "sentences_per_word": st.session_state.sentences_per_word,
+            "difficulty": st.session_state.difficulty,
+            "selected_voice": st.session_state.get("selected_voice", ""),
+            "selected_voice_display": st.session_state.get("selected_voice_display", ""),
+            "audio_speed": st.session_state.audio_speed
+        }
+        ok = save_user_settings(
+            st.session_state.get("favorites_order", []),
+            st.session_state.per_language_settings,
+        )
+        if ok:
+            st.success(f"✅ Saved as defaults for **{current_lang}**")
+        else:
+            st.error("Failed to save user_settings.json")
+        st.rerun()
 
-    col_save, col_download = st.columns([1.6, 1])
-
-    with col_save:
-        if st.button(
-            f"💾 Save These Settings as Defaults for **{current_lang}**",
-            type="secondary",
-            use_container_width=True,
-            key="save_as_defaults_btn"
-        ):
-            st.session_state.per_language_settings[current_lang] = {
-                "sentence_length_range": st.session_state.sentence_length_range,
-                "sentences_per_word": st.session_state.sentences_per_word,
-                "difficulty": st.session_state.difficulty,
-                "selected_voice": st.session_state.get("selected_voice", ""),
-                "selected_voice_display": st.session_state.get("selected_voice_display", ""),
-                "audio_speed": st.session_state.audio_speed
-            }
-            ok = save_user_settings(
-                st.session_state.get("favorites_order", []),
-                st.session_state.per_language_settings,
-            )
-            if ok:
-                st.success(f"✅ Saved for **{current_lang}** to user_settings.json")
-            else:
-                st.error("Failed to save user_settings.json")
-            st.rerun()
-
-    with col_download:
-        if st.button("📤 Download All Settings JSON", use_container_width=True):
-            st.download_button(
-                label="⬇️ Download user_settings.json",
-                data=settings_payload_json(
-                    st.session_state.get("favorites_order", []),
-                    st.session_state.get("per_language_settings", {}),
-                ),
-                file_name="user_settings.json",
-                mime="application/json",
-                key="global_download_from_step3"
-            )
-
-    st.caption("💡 Full backup / restore + summary of all languages is in **Settings → Per-Language Default Output Settings**")
+    st.caption("💡 Full backup, restore, and per-language summary live in **Settings**.")
 
     # Navigation buttons at bottom
     col_back, col_next = st.columns([1, 1])

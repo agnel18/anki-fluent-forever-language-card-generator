@@ -29,17 +29,10 @@ def load_per_language_settings(selected_lang):
 
 def render_language_select_page():
     """Render the language selection page — Step 1 with Favorites section."""
-    with st.container():
-        st.markdown("# 🌍 Step 1: Select Your Language")
-        st.markdown("Choose your target language for learning. Your favorite languages appear first.")
-        
-        # Progress indicator
-        st.markdown("**Progress:** Step 1 of 5")
-        st.progress(0.2)
-
-        st.markdown("---")
-
-        st.info("💡 **Tip:** Your favorite languages are pinned to the top for quick access. You can change their order in Settings → Favorite Languages.")
+    st.markdown("# 🌍 Step 1: Select Your Language")
+    st.caption("Choose your target language. Your favorites are pinned to the top — change their order in Settings.")
+    st.progress(0.2)
+    st.markdown("---")
 
     # Get languages configuration from session state
     all_languages = st.session_state.get("all_languages", [])
@@ -87,11 +80,8 @@ def render_language_select_page():
         else:
             return opt["name"]
 
-    # Enhanced language selection
+    # Language selection
     with st.container():
-        st.markdown("### 🎯 **Which language do you want to learn?**")
-        st.markdown("*Choose your target language from the dropdown below*")
-
         # Prominent selectbox
         selected_opt = st.selectbox(
             "Language Selection",
