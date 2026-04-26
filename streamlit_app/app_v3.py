@@ -136,23 +136,45 @@ def main():
         # Import option_menu for the hamburger menu
         from streamlit_option_menu import option_menu
 
-        # === Sidebar auto-collapse JS (one-shot, fires after a sidebar nav click) ===
+        # === Sidebar auto-collapse JS (fires after a sidebar nav click) ===
         # The sidebar.py button handlers set st.session_state.collapse_sidebar_now = True
-        # before rerunning. On the next render we emit a tiny script that clicks
-        # Streamlit's sidebar collapse button.
-        # data-testid="stSidebarCollapseButton" is Streamlit's stable test ID;
-        # button[kind="header"] is a fallback for older versions. If both stop
-        # working after a Streamlit upgrade, update the selectors below.
+        # before rerunning. On the next render we emit a script that retries
+        # clicking Streamlit's sidebar collapse button until it succeeds or
+        # times out — necessary because slower pages (Main) haven't finished
+        # rendering the sidebar at 50ms, while fast pages (Settings) have.
+        #
+        # Selectors: data-testid="stSidebarCollapseButton" is Streamlit's
+        # stable test ID; button[kind="header"] is a fallback for older
+        # versions. If both stop working after a Streamlit upgrade, update
+        # the querySelector calls below.
+        #
+        # The nonce ensures Streamlit re-renders the script on every nav click
+        # (st.markdown dedupes identical content across reruns by default).
         if st.session_state.pop("collapse_sidebar_now", False):
+            import time as _time
+            _nonce = int(_time.time() * 1000)
             st.markdown(
-                """
+                f"""
                 <script>
-                setTimeout(() => {
-                    const btn = window.parent.document.querySelector(
-                        '[data-testid="stSidebarCollapseButton"]'
-                    ) || window.parent.document.querySelector('button[kind="header"]');
-                    if (btn) btn.click();
-                }, 50);
+                (function() {{
+                    // nonce={_nonce}
+                    let attempts = 0;
+                    const maxAttempts = 20;  // 20 * 100ms = 2s total
+                    const tryCollapse = () => {{
+                        const doc = (window.parent && window.parent.document) || window.document;
+                        const btn = doc.querySelector('[data-testid="stSidebarCollapseButton"]')
+                                 || doc.querySelector('button[kind="header"]');
+                        if (btn) {{
+                            btn.click();
+                            return;
+                        }}
+                        attempts++;
+                        if (attempts < maxAttempts) {{
+                            setTimeout(tryCollapse, 100);
+                        }}
+                    }};
+                    setTimeout(tryCollapse, 50);
+                }})();
                 </script>
                 """,
                 unsafe_allow_html=True,

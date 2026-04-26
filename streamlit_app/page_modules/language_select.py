@@ -46,59 +46,34 @@ def render_language_select_page():
     # All language names
     all_lang_names = [lang["name"] for lang in all_languages]
 
-    # Prioritize: Favorites first → learned languages → others
+    # Favorites get a ⭐ prefix and appear at the top; other languages get 🌍.
+    # The prefix-as-section approach gives visual grouping in one dropdown, with
+    # no risk of "picked from one dropdown, picked from another" confusion.
     favorite_langs = [f for f in favorites_order if f in all_lang_names]
+    other_langs = [l for l in all_lang_names if l not in favorite_langs]
 
-    # === Two stacked dropdowns: Favorites (if any) + All Languages ===
-    # Last-changed wins via on_change callbacks tracking which dropdown was touched.
-    PLACEHOLDER_FAV = "— pick a favorite —"
-    PLACEHOLDER_ALL = "— pick a language —"
+    # Map display label -> real language name. Favorites first.
+    display_to_lang: dict[str, str] = {}
+    for lang in favorite_langs:
+        display_to_lang[f"⭐  {lang}"] = lang
+    for lang in other_langs:
+        display_to_lang[f"🌍  {lang}"] = lang
 
-    def _set_source_favorites():
-        st.session_state.lang_source = "favorites"
-
-    def _set_source_all():
-        st.session_state.lang_source = "all"
-
-    favorite_pick = None
-    if favorite_langs:
-        favorite_pick = st.selectbox(
-            "⭐ Favorites",
-            options=[PLACEHOLDER_FAV] + favorite_langs,
-            key="lang_favorites_select",
-            on_change=_set_source_favorites,
-        )
-
-    other_pick = st.selectbox(
-        "🌍 All Languages",
-        options=[PLACEHOLDER_ALL] + all_lang_names,
-        key="lang_all_select",
-        on_change=_set_source_all,
-    )
-
-    # Resolve which dropdown's selection is authoritative
-    fav_picked = favorite_pick and favorite_pick != PLACEHOLDER_FAV
-    all_picked = other_pick and other_pick != PLACEHOLDER_ALL
-    source = st.session_state.get("lang_source")
-
-    if source == "favorites" and fav_picked:
-        selected_lang = favorite_pick
-    elif source == "all" and all_picked:
-        selected_lang = other_pick
-    elif fav_picked:
-        selected_lang = favorite_pick
-    elif all_picked:
-        selected_lang = other_pick
-    else:
-        # Nothing picked yet — default to first favorite, else first language, else nothing
-        selected_lang = (
-            favorite_langs[0] if favorite_langs
-            else (all_lang_names[0] if all_lang_names else None)
-        )
-
-    if not selected_lang:
+    if not display_to_lang:
         st.warning("No languages available. Check your language configuration.")
         return
+
+    if favorite_langs:
+        st.caption("⭐ Your favorites appear at the top, then 🌍 all other languages")
+
+    selected_display = st.selectbox(
+        "Select your target language",
+        options=list(display_to_lang.keys()),
+        key="main_language_select",
+        label_visibility="collapsed",
+    )
+
+    selected_lang = display_to_lang[selected_display]
 
     if selected_lang in favorite_langs:
         st.success(f"⭐ **{selected_lang}** selected — one of your favorites!")
