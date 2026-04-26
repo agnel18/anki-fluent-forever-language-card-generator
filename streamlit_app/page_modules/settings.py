@@ -29,25 +29,25 @@ def _save_user_settings(favorites_order: list, per_language_settings: dict) -> b
 
 
 def _render_unified_save_restore() -> None:
-    """The single canonical save/export/import bar that lives above the tabs."""
-    st.markdown("### 💾 Save & Restore All Your Settings")
-    st.caption("Favorites + per-language defaults are saved together in one file (user_settings.json)")
+    """Export/import bar above the tabs. Saving is now automatic per-mutation;
+    this section is for downloading or restoring a backup."""
+    st.markdown("### 📤 Export / 📥 Import All Your Settings")
+    st.caption("Changes auto-save to user_settings.json. Use Export to back up, Import to restore.")
 
     col_save_export, col_import = st.columns([2, 1])
 
     with col_save_export:
-        if st.button("💾 Save & Export All Settings", type="primary", use_container_width=True):
-            favorites_order = st.session_state.get("favorites_order", [])
-            per_lang = st.session_state.get("per_language_settings", {})
-            if _save_user_settings(favorites_order, per_lang):
-                st.download_button(
-                    label="📤 Download user_settings.json",
-                    data=settings_payload_json(favorites_order, per_lang),
-                    file_name="user_settings.json",
-                    mime="application/json",
-                    key="unified_export"
-                )
-                st.success("✅ All settings saved and ready to download!")
+        favorites_order = st.session_state.get("favorites_order", [])
+        per_lang = st.session_state.get("per_language_settings", {})
+        st.download_button(
+            label="📤 Export user_settings.json",
+            data=settings_payload_json(favorites_order, per_lang),
+            file_name="user_settings.json",
+            mime="application/json",
+            key="unified_export",
+            type="primary",
+            use_container_width=True,
+        )
 
     with col_import:
         if not st.session_state.get("show_settings_import"):
@@ -258,35 +258,44 @@ def _render_language_defaults_tab() -> None:
     saved_speed = max(0.5, min(1.5, saved_speed))
     audio_speed = st.slider("Audio Speed", 0.5, 1.5, value=saved_speed, step=0.05, key=f"def_speed_{config_lang}")
 
-    # Save / recommended
-    col_save, col_recommend = st.columns([2, 1])
-    with col_save:
-        if st.button(f"💾 Save as Defaults for **{config_lang}**", type="primary", use_container_width=True, key=f"save_def_{config_lang}"):
-            st.session_state.per_language_settings[config_lang] = {
-                "sentence_length_range": (sentence_min, sentence_max),
-                "sentences_per_word": sentences_per_word,
-                "difficulty": difficulty,
-                "selected_voice": selected_voice,
-                "selected_voice_display": selected_voice_display,
-                "audio_speed": audio_speed,
-            }
-            _save_user_settings(
-                st.session_state.get("favorites_order", []),
-                st.session_state.per_language_settings,
-            )
-            st.success(f"✅ Defaults saved for **{config_lang}**")
-            st.rerun()
+    # === Auto-save: write only when current widget values diverge from saved state ===
+    new_settings = {
+        "sentence_length_range": (sentence_min, sentence_max),
+        "sentences_per_word": sentences_per_word,
+        "difficulty": difficulty,
+        "selected_voice": selected_voice,
+        "selected_voice_display": selected_voice_display,
+        "audio_speed": audio_speed,
+    }
+    # Compare against saved (normalize tuple/list mismatch on sentence_length_range)
+    saved_for_compare = dict(defaults)
+    if isinstance(saved_for_compare.get("sentence_length_range"), list):
+        saved_for_compare["sentence_length_range"] = tuple(saved_for_compare["sentence_length_range"])
+    if saved_for_compare != new_settings:
+        st.session_state.per_language_settings[config_lang] = new_settings
+        _save_user_settings(
+            st.session_state.get("favorites_order", []),
+            st.session_state.per_language_settings,
+        )
 
-    with col_recommend:
-        if st.button("🔄 Use Recommended Defaults", use_container_width=True):
-            st.session_state.per_language_settings[config_lang] = {
-                "sentence_length_range": (6, 14),
-                "sentences_per_word": 5,
-                "difficulty": "beginner",
-                "audio_speed": 0.85,
-            }
-            st.success("✅ Recommended defaults applied")
-            st.rerun()
+    st.caption("✓ Auto-saved")
+
+    # "Use Recommended Defaults" remains as a one-click reset
+    if st.button("🔄 Use Recommended Defaults", use_container_width=True):
+        st.session_state.per_language_settings[config_lang] = {
+            "sentence_length_range": (6, 14),
+            "sentences_per_word": 5,
+            "difficulty": "beginner",
+            "selected_voice": "",
+            "selected_voice_display": "",
+            "audio_speed": 0.85,
+        }
+        _save_user_settings(
+            st.session_state.get("favorites_order", []),
+            st.session_state.per_language_settings,
+        )
+        st.success("✅ Recommended defaults applied")
+        st.rerun()
 
 
 def _render_favorites_tab() -> None:
@@ -319,6 +328,7 @@ def _render_favorites_tab() -> None:
             if add_lang and add_lang not in favorites:
                 favorites.insert(0, add_lang)
                 st.session_state.favorites_order = favorites
+                save_user_settings(favorites, st.session_state.per_language_settings)
                 st.rerun()
 
     st.markdown("---")
@@ -326,12 +336,31 @@ def _render_favorites_tab() -> None:
     # --- Sortable list (full width — sidesteps column-iframe issues) ---
     st.subheader("⭐ Your Favorites")
     if not favorites:
-        st.info("No favorites yet — add some above.")
+        # Dashed placeholder so layout doesn't visually collapse on empty state
+        st.markdown(
+            """
+            <div style="border: 2px dashed var(--card-border, #888); border-radius: 8px;
+                        padding: 32px; text-align: center; color: var(--text-secondary, #888);
+                        min-height: 120px; display: flex; align-items: center; justify-content: center;">
+              📭 No favorites yet — add a language above and it'll appear here.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     else:
-        st.caption("🖱️ Drag to reorder")
-        new_order = sort_items(favorites, direction="vertical", key="favorites_sort")
+        st.caption("🖱️ Drag to reorder · ✓ Auto-saved")
+        # Cache-bust: streamlit-sortables caches by `key`. Including the item set in the
+        # key forces a fresh component when the set changes (add/remove) but preserves
+        # drag tracking when only the order changes.
+        items_signature = ",".join(sorted(favorites))
+        new_order = sort_items(
+            favorites,
+            direction="vertical",
+            key=f"favorites_sort_{items_signature}",
+        )
         if new_order != favorites:
             st.session_state.favorites_order = new_order
+            save_user_settings(new_order, st.session_state.per_language_settings)
             st.rerun()
 
         # Removal row — explicit, full-width, mobile-friendly
@@ -344,9 +373,8 @@ def _render_favorites_tab() -> None:
                 if name in favs:
                     favs.remove(name)
                 st.session_state.favorites_order = favs
+                save_user_settings(favs, st.session_state.per_language_settings)
                 st.rerun()
-
-    st.caption("💡 Use **Save & Export All Settings** at the top of this page to persist your favorites.")
 
 
 def render_settings_page():

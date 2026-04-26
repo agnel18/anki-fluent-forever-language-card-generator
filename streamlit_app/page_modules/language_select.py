@@ -48,74 +48,62 @@ def render_language_select_page():
 
     # Prioritize: Favorites first → learned languages → others
     favorite_langs = [f for f in favorites_order if f in all_lang_names]
-    other_langs = [l for l in all_lang_names if l not in favorite_langs]
 
-    # Build options: Favorites + divider + others
-    options = []
+    # === Two stacked dropdowns: Favorites (if any) + All Languages ===
+    # Last-changed wins via on_change callbacks tracking which dropdown was touched.
+    PLACEHOLDER_FAV = "— pick a favorite —"
+    PLACEHOLDER_ALL = "— pick a language —"
+
+    def _set_source_favorites():
+        st.session_state.lang_source = "favorites"
+
+    def _set_source_all():
+        st.session_state.lang_source = "all"
+
+    favorite_pick = None
     if favorite_langs:
-        options.append({"name": "⭐ FAVORITES", "section": "header"})
-        for lang in favorite_langs:
-            options.append({"name": lang, "section": "favorite"})
-    
-    if favorite_langs and other_langs:
-        options.append({"name": "──────────────", "section": "divider"})
-    
-    for lang in other_langs:
-        options.append({"name": lang, "section": "other"})
-
-    # Default selection (first favorite if available)
-    default_idx = 0
-    if favorite_langs:
-        default_idx = 1  # skip header
-    elif options:
-        default_idx = next((i for i, opt in enumerate(options) if opt["section"] != "divider"), 0)
-
-    def format_func(opt):
-        if opt["section"] == "header":
-            return opt["name"]
-        elif opt["section"] == "favorite":
-            return f"⭐ {opt['name']}"
-        elif opt["section"] == "divider":
-            return opt["name"]
-        else:
-            return opt["name"]
-
-    # Language selection
-    with st.container():
-        # Prominent selectbox
-        selected_opt = st.selectbox(
-            "Language Selection",
-            options,
-            index=default_idx,
-            format_func=format_func,
-            key="main_language_select",
-            help="Your favorite languages appear first with a star ⭐",
-            label_visibility="hidden"
+        favorite_pick = st.selectbox(
+            "⭐ Favorites",
+            options=[PLACEHOLDER_FAV] + favorite_langs,
+            key="lang_favorites_select",
+            on_change=_set_source_favorites,
         )
 
-        # Visual feedback (skip non-selectable section labels)
-        if selected_opt["section"] not in ("divider", "header"):
-            if selected_opt["section"] == "favorite":
-                st.success(f"⭐ **{selected_opt['name']}** selected — one of your favorites!")
-            else:
-                st.info(f"🎉 **{selected_opt['name']}** selected!")
+    other_pick = st.selectbox(
+        "🌍 All Languages",
+        options=[PLACEHOLDER_ALL] + all_lang_names,
+        key="lang_all_select",
+        on_change=_set_source_all,
+    )
 
-    # If a non-selectable label (header or divider) is picked, jump to the next real language
-    if selected_opt["section"] in ("divider", "header"):
-        next_idx = options.index(selected_opt) + 1
-        # Skip past any consecutive non-selectable labels
-        while next_idx < len(options) and options[next_idx]["section"] in ("divider", "header"):
-            next_idx += 1
-        if next_idx < len(options):
-            selected_opt = options[next_idx]
-        else:
-            # Fall back to the first real language
-            selected_opt = next(
-                (o for o in options if o["section"] not in ("divider", "header")),
-                options[0],
-            )
+    # Resolve which dropdown's selection is authoritative
+    fav_picked = favorite_pick and favorite_pick != PLACEHOLDER_FAV
+    all_picked = other_pick and other_pick != PLACEHOLDER_ALL
+    source = st.session_state.get("lang_source")
 
-    selected_lang = selected_opt["name"]
+    if source == "favorites" and fav_picked:
+        selected_lang = favorite_pick
+    elif source == "all" and all_picked:
+        selected_lang = other_pick
+    elif fav_picked:
+        selected_lang = favorite_pick
+    elif all_picked:
+        selected_lang = other_pick
+    else:
+        # Nothing picked yet — default to first favorite, else first language, else nothing
+        selected_lang = (
+            favorite_langs[0] if favorite_langs
+            else (all_lang_names[0] if all_lang_names else None)
+        )
+
+    if not selected_lang:
+        st.warning("No languages available. Check your language configuration.")
+        return
+
+    if selected_lang in favorite_langs:
+        st.success(f"⭐ **{selected_lang}** selected — one of your favorites!")
+    else:
+        st.info(f"🎉 **{selected_lang}** selected!")
     
     # Load per-language settings for the selected language (unchanged)
     settings_loaded = load_per_language_settings(selected_lang)

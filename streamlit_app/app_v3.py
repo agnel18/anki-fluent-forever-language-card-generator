@@ -124,9 +124,40 @@ def format_number_compact(num):
 def main():
     """Main application function with comprehensive error boundaries."""
     try:
+        # MUST be the first Streamlit command in the script.
+        # initial_sidebar_state="auto" -> Streamlit decides per viewport
+        # (mobile starts collapsed, desktop opens by default).
+        st.set_page_config(
+            page_title="Language Card Generator",
+            page_icon="🌍",
+            initial_sidebar_state="auto",
+        )
+
         # Import option_menu for the hamburger menu
         from streamlit_option_menu import option_menu
-        
+
+        # === Sidebar auto-collapse JS (one-shot, fires after a sidebar nav click) ===
+        # The sidebar.py button handlers set st.session_state.collapse_sidebar_now = True
+        # before rerunning. On the next render we emit a tiny script that clicks
+        # Streamlit's sidebar collapse button.
+        # data-testid="stSidebarCollapseButton" is Streamlit's stable test ID;
+        # button[kind="header"] is a fallback for older versions. If both stop
+        # working after a Streamlit upgrade, update the selectors below.
+        if st.session_state.pop("collapse_sidebar_now", False):
+            st.markdown(
+                """
+                <script>
+                setTimeout(() => {
+                    const btn = window.parent.document.querySelector(
+                        '[data-testid="stSidebarCollapseButton"]'
+                    ) || window.parent.document.querySelector('button[kind="header"]');
+                    if (btn) btn.click();
+                }, 50);
+                </script>
+                """,
+                unsafe_allow_html=True,
+            )
+
         # Google Site Verification Meta Tag
         st.markdown('<meta name="google-site-verification" content="YUTo7TlPD5g4Yz_i6pCEEnIMTKlwplPMIukMKhOyfnw" />', unsafe_allow_html=True)
 

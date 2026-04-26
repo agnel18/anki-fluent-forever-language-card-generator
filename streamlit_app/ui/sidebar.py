@@ -17,12 +17,22 @@ def render_sidebar():
     # Create sidebar content with better mobile alignment
     st.sidebar.markdown("## ⚙️ Quick Access")
 
+    def _request_sidebar_collapse():
+        """Set a one-shot flag; app_v3.py main() will emit JS on the next rerun."""
+        st.session_state.collapse_sidebar_now = True
+
     # Quick access buttons stacked vertically
-    if st.sidebar.button("🏠 Main", key="sidebar_main", use_container_width=True):
+    if st.sidebar.button(
+        "🏠 Main", key="sidebar_main", use_container_width=True,
+        on_click=_request_sidebar_collapse,
+    ):
         st.session_state.page = "main"
         st.rerun()
 
-    if st.sidebar.button("⚙️ Settings", key="sidebar_settings", use_container_width=True):
+    if st.sidebar.button(
+        "⚙️ Settings", key="sidebar_settings", use_container_width=True,
+        on_click=_request_sidebar_collapse,
+    ):
         st.session_state.page = "settings"
         st.rerun()
 
