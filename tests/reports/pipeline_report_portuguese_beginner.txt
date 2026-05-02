@@ -1,0 +1,114 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — PORTUGUESE
+================================================================================
+  Word          : falar
+  Language       : Portuguese
+  Difficulty     : beginner
+  Topic          : Food & Cooking
+  Generated at   : 2026-05-02 17:46:46
+  Elapsed        : 0.05s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'pt': PtAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to speak (to talk, to say words)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=3, summary=YES
+         Sentence 2: colored=YES, explanations=4, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=5, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to speak (to talk, to say words)
+
+  --- Sentence 1 ---
+  Original   : Eu falo português.
+  Translation: I speak Portuguese.
+  IPA/Reading: ew ˈfalu poɾtuˈɡes
+  Keywords   : falar, example, usage
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Eu</span> <span style="color: #44FF44; font-weight: bold;">falo</span> <span style="color: #FFAA00; font-weight: bold;">português</span>
+  Grammar Summ : Subject-Verb-Object Simple SVO sentence. Pro-drop means 'Eu' is optional but included here for clarity.
+  Word Explanations (3 words):
+    Eu            pronoun         #FF4444   I (1st person singular subject pronoun)
+    falo          verb            #44FF44   speak (1st person singular present indicative)
+    português     noun            #FFAA00   Portuguese (the language)
+
+  --- Sentence 2 ---
+  Original   : Nós falamos na escola.
+  Translation: We speak at school.
+  IPA/Reading: ˈnɔs faˈlɐ̃muʃ na eʃˈkɔlɐ
+  Keywords   : students talking, school setting
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Nós</span> <span style="color: #44FF44; font-weight: bold;">falamos</span> <span style="color: #4444FF; font-weight: bold;">na</span> <span style="colo…
+  Grammar Summ : Subject-Verb-Preposition-Noun Locative phrase 'na escola' uses the obligatory contraction na (em + a).
+  Word Explanations (4 words):
+    Nós           pronoun         #FF4444   we (1st person plural subject pronoun)
+    falamos       verb            #44FF44   speak / we speak (1st person plural present indicative)
+    na            preposition     #4444FF   at/in the — contraction of em + a (feminine)
+    escola        noun            #FFAA00   school (feminine singular)
+
+  --- Sentence 3 ---
+  Original   : Por que você fala tão rápido?
+  Translation: Why do you speak so fast?
+  IPA/Reading: poɾ ke voˈse ˈfalɐ tɐ̃w ˈʁapidu
+  Keywords   : speed, question
+
+  Colored HTML : <span style="color: #888888; font-weight: bold;">Por que</span> <span style="color: #FF4444; font-weight: bold;">você</span> <span style="color: #44FF44; font-weight: bold;">fala</span> <span style="c…
+  Grammar Summ : Question-Subject-Verb-Adverb-Adverb Você requires 3rd-person conjugation. Tão + adjective/adverb = intensifier.
+  Word Explanations (5 words):
+    Por que       conjunction     #888888   why (question word)
+    você          pronoun         #FF4444   you (2nd person singular, BR register)
+    fala          verb            #44FF44   speak (3rd person singular present indicative)
+    tão           adverb          #44FFFF   so / as (degree adverb before adjective/adverb)
+    rápido        adverb          #44FFFF   fast / quickly (manner adverb)
+
+  --- Sentence 4 ---
+  Original   : Eles falaram sobre comida ontem.
+  Translation: They spoke about food yesterday.
+  IPA/Reading: ˈelɨʃ faˈlaɾɐ̃w ˈsobɾɨ koˈmidɐ ˈõtẽj
+  Keywords   : group conversation, food topic
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Eles</span> <span style="color: #44FF44; font-weight: bold;">falaram</span> <span style="color: #4444FF; font-weight: bold;">sobre</span> <span style="…
+  Grammar Summ : Subject-Verb-Preposition-Object-Adverb Preterite (pretérito perfeito) used for completed past action.
+  Word Explanations (5 words):
+    Eles          pronoun         #FF4444   they (3rd person plural masculine)
+    falaram       verb            #44FF44   spoke (3rd person plural preterite)
+    sobre         preposition     #4444FF   about / on (preposition)
+    comida        noun            #FFAA00   food (feminine singular)
+    ontem         adverb          #44FFFF   yesterday (time adverb)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

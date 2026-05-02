@@ -1547,6 +1547,340 @@ LATVIAN_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# PORTUGUESE
+# ---------------------------------------------------------------------------
+PORTUGUESE_MOCK_DATA: Dict[str, Any] = {
+    "word": "falar",
+    "language_name": "Portuguese",
+    "language_code": "pt",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 3,
+    "max_length": 15,
+    "difficulty": "beginner",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to say words)
+
+        RESTRICTIONS: Regular -ar verb. Keep sentences simple and beginner-friendly.
+
+        SENTENCES:
+        1. Eu falo português.
+        2. Nós falamos na escola.
+        3. Por que você fala tão rápido?
+        4. Eles falaram sobre comida ontem.
+
+        TRANSLATIONS:
+        1. I speak Portuguese.
+        2. We speak at school.
+        3. Why do you speak so fast?
+        4. They spoke about food yesterday.
+
+        IPA:
+        1. ew ˈfalu poɾtuˈɡes
+        2. ˈnɔs faˈlɐ̃muʃ na eʃˈkɔlɐ
+        3. poɾ ke voˈse ˈfalɐ tɐ̃w ˈʁapidu
+        4. ˈelɨʃ faˈlaɾɐ̃w ˈsobɾɨ koˈmidɐ ˈõtẽj
+
+        KEYWORDS:
+        1. person speaking, Portuguese language
+        2. students talking, school setting
+        3. speed, question
+        4. group conversation, food topic"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Eu falo português.",
+            "overall_structure": "Subject-Verb-Object",
+            "sentence_structure": "Subject-Verb-Object",
+            "word_explanations": [
+                {"word": "Eu", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "I (1st person singular subject pronoun)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "falo", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak (1st person singular present indicative)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "português", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "Portuguese (the language)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Simple SVO sentence. Pro-drop means 'Eu' is optional but included here for clarity.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Nós falamos na escola.",
+            "overall_structure": "Subject-Verb-Preposition-Noun",
+            "sentence_structure": "Subject-Verb-Locative",
+            "word_explanations": [
+                {"word": "Nós", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "we (1st person plural subject pronoun)", "case": "", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "falamos", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak / we speak (1st person plural present indicative)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
+                {"word": "na", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "at/in the — contraction of em + a (feminine)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "escola", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "school (feminine singular)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Locative phrase 'na escola' uses the obligatory contraction na (em + a).",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Por que você fala tão rápido?",
+            "overall_structure": "Question-Subject-Verb-Adverb-Adverb",
+            "sentence_structure": "Interrogative clause with adverbial intensifier",
+            "word_explanations": [
+                {"word": "Por que", "grammatical_role": "conjunction", "color": "#888888", "meaning": "why (question word)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "você", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "you (2nd person singular, BR register)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "fala", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak (3rd person singular present indicative)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "tão", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "so / as (degree adverb before adjective/adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "rápido", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "fast / quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Você requires 3rd-person conjugation. Tão + adjective/adverb = intensifier.",
+            "confidence": 0.90
+        },
+        {
+            "sentence": "Eles falaram sobre comida ontem.",
+            "overall_structure": "Subject-Verb-Preposition-Object-Adverb",
+            "sentence_structure": "Past tense clause with prepositional object",
+            "word_explanations": [
+                {"word": "Eles", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "they (3rd person plural masculine)", "case": "", "gender": "masculine", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "falaram", "grammatical_role": "verb", "color": "#44FF44", "meaning": "spoke (3rd person plural preterite)", "case": "", "gender": "", "number": "plural", "tense": "past", "definite_form": ""},
+                {"word": "sobre", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "about / on (preposition)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "comida", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "food (feminine singular)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "ontem", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Preterite (pretérito perfeito) used for completed past action.",
+            "confidence": 0.92
+        }
+    ], ensure_ascii=False),
+}
+
+
+# ---------------------------------------------------------------------------
+# PORTUGUESE — per-difficulty mock data
+# ---------------------------------------------------------------------------
+# Portuguese exposes distinct grammatical-role vocabularies per complexity
+# level (pt_config._get_default_roles). To validate analyzer + grammar
+# processor coherence at every level, we run the full pipeline three times —
+# once each for beginner, intermediate, and advanced — feeding level-
+# appropriate role tags through the mock grammar response.
+#
+# beginner mock = PORTUGUESE_MOCK_DATA (defined above) — kept as the default
+#                 entry in LANGUAGE_MOCK_DATA so the original parametrized
+#                 test still runs.
+# ---------------------------------------------------------------------------
+
+_PORTUGUESE_INTERMEDIATE_MOCK: Dict[str, Any] = {
+    "word": "falar",
+    "language_name": "Portuguese",
+    "language_code": "pt",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 4,
+    "max_length": 18,
+    "difficulty": "intermediate",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to use language)
+
+        RESTRICTIONS: Use intermediate structures: personal pronouns, copulas ser/estar, contractions, auxiliary verbs.
+
+        SENTENCES:
+        1. Ela está falando ao telefone agora.
+        2. Eu sou brasileiro e falo três línguas.
+        3. Nós vamos falar com o professor amanhã.
+        4. Você não se lembra de mim?
+
+        TRANSLATIONS:
+        1. She is speaking on the phone right now.
+        2. I am Brazilian and I speak three languages.
+        3. We are going to speak with the teacher tomorrow.
+        4. Don't you remember me?
+
+        IPA:
+        1. ˈɛlɐ ˈɛʃtɐ faˈlɐ̃du aw teleˈfɔnɨ ɐˈgoɾɐ
+        2. ew ˈsow bɾaziˈlejɾu i ˈfalu ˈtɾeʃ ˈlĩŋɡwɐʃ
+        3. ˈnɔs ˈvɐ̃muʃ faˈlaɾ kõ u pɾoˈfɛsoɾ ɐˈmɐ̃ɲɐ
+        4. voˈse nɐ̃w sɨ ˈlẽbɾɐ dɨ ˈmĩ
+
+        KEYWORDS:
+        1. phone call, present progressive
+        2. nationality, multilingual
+        3. near future, teacher
+        4. memory, reflexive verb"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Ela está falando ao telefone agora.",
+            "overall_structure": "Subject-Copula-Gerund-Contraction-Object-Adverb",
+            "sentence_structure": "Present progressive with locative prepositional phrase",
+            "word_explanations": [
+                {"word": "Ela", "grammatical_role": "personal_pronoun", "color": "#FF4444", "meaning": "she (3rd person singular feminine)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "está", "grammatical_role": "copula", "color": "#00B894", "meaning": "is (estar, 3rd person singular present — temporary state/progressive)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": "", "copula_type": "estar"},
+                {"word": "falando", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speaking (present participle / gerund)", "case": "", "gender": "", "number": "", "tense": "present", "definite_form": ""},
+                {"word": "ao", "grammatical_role": "contraction", "color": "#FF7F50", "meaning": "at the / on the — contraction of a + o (masculine)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": "", "contraction_parts": ["a", "o"]},
+                {"word": "telefone", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "telephone (masculine singular)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "agora", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "now (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "BR progressive: estar + gerund (-ndo). 'Ao' is mandatory contraction of a+o; PT equivalent would be 'está a falar'.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Eu sou brasileiro e falo três línguas.",
+            "overall_structure": "Subject-Copula-Adjective-Conjunction-Verb-Numeral-Object",
+            "sentence_structure": "Coordinate clause with copula identity predicate",
+            "word_explanations": [
+                {"word": "Eu", "grammatical_role": "personal_pronoun", "color": "#FF4444", "meaning": "I (1st person singular)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "sou", "grammatical_role": "copula", "color": "#00B894", "meaning": "am (ser, 1st person singular present — permanent identity)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": "", "copula_type": "ser"},
+                {"word": "brasileiro", "grammatical_role": "adjective", "color": "#FF44FF", "meaning": "Brazilian (masculine singular predicate adjective)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "e", "grammatical_role": "conjunction", "color": "#888888", "meaning": "and (coordinating conjunction)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "falo", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak (1st person singular present, pro-dropped subject)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "três", "grammatical_role": "numeral", "color": "#3CB371", "meaning": "three (cardinal numeral)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "línguas", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "languages (feminine plural)", "case": "", "gender": "feminine", "number": "plural", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Ser (sou) encodes permanent identity; contrast with estar for temporary states.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Nós vamos falar com o professor amanhã.",
+            "overall_structure": "Subject-Auxiliary-Verb-Preposition-Article-Noun-Adverb",
+            "sentence_structure": "Near-future periphrasis with definite article",
+            "word_explanations": [
+                {"word": "Nós", "grammatical_role": "personal_pronoun", "color": "#FF4444", "meaning": "we (1st person plural)", "case": "", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "vamos", "grammatical_role": "auxiliary_verb", "color": "#228B22", "meaning": "are going to (ir, near future auxiliary)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
+                {"word": "falar", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak (infinitive)", "case": "", "gender": "", "number": "", "tense": "infinitive", "definite_form": ""},
+                {"word": "com", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "with (preposition)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "o", "grammatical_role": "definite_article", "color": "#AA44FF", "meaning": "the (masculine singular definite article)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "professor", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "teacher (masculine singular)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "amanhã", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "tomorrow (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "IR + infinitive expresses near future. Definite article 'o' precedes masculine noun.",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Você não se lembra de mim?",
+            "overall_structure": "Subject-Particle-Reflexive-Verb-Preposition-Pronoun",
+            "sentence_structure": "Reflexive / pronominal verb in interrogative",
+            "word_explanations": [
+                {"word": "Você", "grammatical_role": "personal_pronoun", "color": "#FF4444", "meaning": "you (2nd person singular, BR register, takes 3rd-person verb)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "não", "grammatical_role": "particle", "color": "#A1887F", "meaning": "not (negation particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "se", "grammatical_role": "reflexive_pronoun", "color": "#DC143C", "meaning": "oneself (reflexive clitic, 3rd person)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "lembra", "grammatical_role": "pronominal_verb", "color": "#20B2AA", "meaning": "remember (lembrar-se, pronominal verb, 3rd person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "de", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "of (preposition required by lembrar-se de)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "mim", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "me (1st person singular prepositional form)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Lembrar-se de is a pronominal verb; reflexive clitic 'se' occupies proclitic position after negation.",
+            "confidence": 0.90
+        }
+    ], ensure_ascii=False),
+}
+
+
+_PORTUGUESE_ADVANCED_MOCK: Dict[str, Any] = {
+    "word": "falar",
+    "language_name": "Portuguese",
+    "language_code": "pt",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 22,
+    "difficulty": "advanced",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to use language)
+
+        RESTRICTIONS: Use advanced structures: gerund, past participle, personal infinitive, clitic pronouns (enclitic/proclitic), relative pronoun, subordinating conjunction, subjunctive, mesoclitic.
+
+        SENTENCES:
+        1. Disse-me a verdade sem hesitar.
+        2. O livro foi escrito para sermos honestos connosco.
+        3. Falar-lhe-ei amanhã, embora ela raramente atenda.
+        4. O relatório que foi entregue ontem estava muito bem escrito.
+
+        TRANSLATIONS:
+        1. He/She told me the truth without hesitating.
+        2. The book was written so that we may be honest with ourselves.
+        3. I will speak to her tomorrow, although she rarely answers.
+        4. The report that was handed in yesterday was very well written.
+
+        IPA:
+        1. diˈsɛjmɨ a vɨɾˈdadɨ sẽj eziˈtaɾ
+        2. u ˈlivɾu foj iʃˈkɾitu ˈpaɾɐ ˈseɾmuʃ oˈnɛʃtuʃ koˈnosku
+        3. faˈlaɾljɐˈej ɐˈmɐ̃ɲɐ ˈẽboɾɐ ˈɛlɐ ʁaɾɐˈmẽtɨ ɐˈtẽdɐ
+        4. u ʁɨlaˈtoɾju kɨ foj ẽtɾɨˈɡɨ oˈntẽj ˈeʃtɐvɐ ˈmujtʊ bẽj iʃˈkɾitu
+
+        KEYWORDS:
+        1. truth, clitic pronoun, enclitic
+        2. passive, personal infinitive, reflexive
+        3. mesoclitic, concessive, future
+        4. relative clause, past participle, passive"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Disse-me a verdade sem hesitar.",
+            "overall_structure": "Verb-Clitic-Article-Object-Preposition-Infinitive",
+            "sentence_structure": "Main clause with enclitic pronoun + adverbial infinitive phrase",
+            "word_explanations": [
+                {"word": "Disse", "grammatical_role": "verb", "color": "#44FF44", "meaning": "said / told (3rd person singular preterite of dizer)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "me", "grammatical_role": "clitic_pronoun", "color": "#E91E63", "meaning": "me (1st person singular dative/accusative clitic)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": "", "clitic_position": "enclitic"},
+                {"word": "a", "grammatical_role": "definite_article", "color": "#AA44FF", "meaning": "the (feminine singular definite article)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "verdade", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "truth (feminine singular)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "sem", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "without (preposition introducing infinitive phrase)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "hesitar", "grammatical_role": "verb", "color": "#44FF44", "meaning": "hesitate (impersonal infinitive after sem)", "case": "", "gender": "", "number": "", "tense": "infinitive", "definite_form": ""}
+            ],
+            "grammar_notes": "Enclitic clitic: 'Disse-me' — the pronoun attaches to the right of the finite verb after sentence-initial V. 'Sem + infinitivo' expresses negative adverbial manner.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "O livro foi escrito para sermos honestos connosco.",
+            "overall_structure": "Article-Subject-Auxiliary-PastParticiple-Conjunction-PersonalInfinitive-Adjective-Contraction",
+            "sentence_structure": "Passive clause + purposive clause with personal infinitive",
+            "word_explanations": [
+                {"word": "O", "grammatical_role": "definite_article", "color": "#AA44FF", "meaning": "the (masculine singular definite article)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "livro", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "book (masculine singular)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "foi", "grammatical_role": "auxiliary_verb", "color": "#228B22", "meaning": "was (ser, 3rd person singular preterite — passive auxiliary)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "escrito", "grammatical_role": "past_participle", "color": "#FFA500", "meaning": "written (past participle of escrever, masculine singular)", "case": "", "gender": "masculine", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "para", "grammatical_role": "subordinating_conjunction", "color": "#777777", "meaning": "so that / in order to (purposive subordinator introducing personal infinitive)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "sermos", "grammatical_role": "personal_infinitive", "color": "#6C5CE7", "meaning": "to be (personal infinitive of ser, 1st person plural — inflected -mos)", "case": "", "gender": "", "number": "plural", "tense": "infinitive", "definite_form": ""},
+                {"word": "honestos", "grammatical_role": "adjective", "color": "#FF44FF", "meaning": "honest (masculine plural predicate adjective)", "case": "", "gender": "masculine", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "connosco", "grammatical_role": "pronoun", "color": "#FF4444", "meaning": "with ourselves (com + nós suppletive form)", "case": "", "gender": "", "number": "plural", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Ser + past participle = passive voice. Personal infinitive 'sermos' is inflected for 1pl — unique to Portuguese among Romance languages. Para introduces a purposive clause.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Falar-lhe-ei amanhã, embora ela raramente atenda.",
+            "overall_structure": "Verb-Mesoclitic-Adverb-SubjConj-Subject-Adverb-Verb",
+            "sentence_structure": "Main clause with mesoclitic + concessive subjunctive subordinate clause",
+            "word_explanations": [
+                {"word": "Falar", "grammatical_role": "verb", "color": "#44FF44", "meaning": "speak (verbal stem — future tense with mesoclitic splits stem from ending)", "case": "", "gender": "", "number": "", "tense": "future", "definite_form": ""},
+                {"word": "lhe", "grammatical_role": "mesoclitic", "color": "#FF1493", "meaning": "to her (dative clitic inserted between verb stem and future ending — mesoclisis)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": "", "clitic_position": "mesoclitic"},
+                {"word": "ei", "grammatical_role": "verb", "color": "#44FF44", "meaning": "-ei (1st person singular future ending of falar)", "case": "", "gender": "", "number": "singular", "tense": "future", "definite_form": ""},
+                {"word": "amanhã", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "tomorrow (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "embora", "grammatical_role": "subordinating_conjunction", "color": "#777777", "meaning": "although / even though (concessive subordinating conjunction — triggers subjunctive)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ela", "grammatical_role": "personal_pronoun", "color": "#FF4444", "meaning": "she (3rd person singular feminine subject pronoun)", "case": "", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "raramente", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "rarely (frequency adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "atenda", "grammatical_role": "subjunctive_marker", "color": "#9C27B0", "meaning": "answer / pick up (present subjunctive of atender, 3rd person singular — triggered by embora)", "case": "", "gender": "", "number": "singular", "tense": "present_subjunctive", "definite_form": ""}
+            ],
+            "grammar_notes": "Mesoclisis: clitic 'lhe' is inserted between the verbal stem 'Falar-' and the future suffix '-ei' — a formal/literary Portuguese-only pattern. 'Embora' obligatorily triggers present subjunctive.",
+            "confidence": 0.94
+        },
+        {
+            "sentence": "O relatório que foi entregue ontem estava muito bem escrito.",
+            "overall_structure": "Article-Subject-[RelPron-Auxiliary-PastParticiple-Adverb]-Copula-Adverb-Adverb-PastParticiple",
+            "sentence_structure": "Noun phrase with restrictive relative clause + copular predicate",
+            "word_explanations": [
+                {"word": "O", "grammatical_role": "definite_article", "color": "#AA44FF", "meaning": "the (masculine singular definite article)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "relatório", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "report (masculine singular)", "case": "", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "que", "grammatical_role": "relative_pronoun", "color": "#FF4500", "meaning": "that / which (relative pronoun introducing restrictive clause)", "case": "", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "foi", "grammatical_role": "auxiliary_verb", "color": "#228B22", "meaning": "was (ser, 3rd person singular preterite — passive auxiliary)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "entregue", "grammatical_role": "past_participle", "color": "#FFA500", "meaning": "handed in / submitted (past participle of entregar, irregular form)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "ontem", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "estava", "grammatical_role": "copula", "color": "#00B894", "meaning": "was (estar, 3rd person singular imperfect — temporary/resultant state)", "case": "", "gender": "", "number": "singular", "tense": "imperfect", "definite_form": "", "copula_type": "estar"},
+                {"word": "muito", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "very (degree adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "bem", "grammatical_role": "adverb", "color": "#44FFFF", "meaning": "well (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "escrito", "grammatical_role": "past_participle", "color": "#FFA500", "meaning": "written (past participle of escrever, predicate participle in copular construction)", "case": "", "gender": "masculine", "number": "singular", "tense": "past", "definite_form": ""}
+            ],
+            "grammar_notes": "Restrictive relative clause with 'que'. Double past-participle: 'foi entregue' (passive preterite) inside the relative, and 'escrito' as predicate in the main copular clause with estar.",
+            "confidence": 0.91
+        }
+    ], ensure_ascii=False),
+}
+
+
+# beginner reuses PORTUGUESE_MOCK_DATA so reports / role coverage stay in sync.
+PORTUGUESE_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
+    "beginner": PORTUGUESE_MOCK_DATA,
+    "intermediate": _PORTUGUESE_INTERMEDIATE_MOCK,
+    "advanced": _PORTUGUESE_ADVANCED_MOCK,
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
@@ -1564,6 +1898,7 @@ LANGUAGE_MOCK_DATA = {
     "hungarian": HUNGARIAN_MOCK_DATA,
     "malayalam": MALAYALAM_MOCK_DATA,
     "latvian": LATVIAN_MOCK_DATA,
+    "portuguese": PORTUGUESE_MOCK_DATA,
 }
 
 
@@ -1998,6 +2333,20 @@ def test_latvian_all_difficulty_levels(difficulty: str, tmp_path: Path):
     """Run the full pipeline for Latvian at beginner, intermediate, and advanced."""
     data = LATVIAN_LEVEL_MOCK_DATA[difficulty]
     _run_full_pipeline(data, f"latvian_{difficulty}", tmp_path)
+
+
+# ============================================================================
+# PORTUGUESE — full pipeline must pass at all 3 difficulty levels.
+# Tracks the project-wide requirement that every analyzer is validated for
+# beginner, intermediate, and advanced complexity (see CLAUDE.md "E2E Test
+# Sentence Difficulty Coverage").
+# ============================================================================
+
+@pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+def test_portuguese_all_difficulty_levels(difficulty: str, tmp_path: Path):
+    """Run the full pipeline for Portuguese at beginner, intermediate, and advanced."""
+    data = PORTUGUESE_LEVEL_MOCK_DATA[difficulty]
+    _run_full_pipeline(data, f"portuguese_{difficulty}", tmp_path)
 
 
 # ============================================================================

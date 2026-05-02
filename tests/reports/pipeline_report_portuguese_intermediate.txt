@@ -1,0 +1,123 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — PORTUGUESE
+================================================================================
+  Word          : falar
+  Language       : Portuguese
+  Difficulty     : intermediate
+  Topic          : Food & Cooking
+  Generated at   : 2026-05-02 17:46:46
+  Elapsed        : 0.05s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'pt': PtAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to speak (to talk, to use language)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=7, summary=YES
+         Sentence 4: colored=YES, explanations=6, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: intermediate, expected: intermediate
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to speak (to talk, to use language)
+
+  --- Sentence 1 ---
+  Original   : Ela está falando ao telefone agora.
+  Translation: She is speaking on the phone right now.
+  IPA/Reading: ˈɛlɐ ˈɛʃtɐ faˈlɐ̃du aw teleˈfɔnɨ ɐˈgoɾɐ
+  Keywords   : phone call, present progressive
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Ela</span> <span style="color: #00B894; font-weight: bold;">está</span> <span style="color: #44FF44; font-weight: bold;">falando</span> <span style="co…
+  Grammar Summ : Subject-Copula-Gerund-Contraction-Object-Adverb BR progressive: estar + gerund (-ndo). 'Ao' is mandatory contraction of a+o; PT equivalent would be 'está a falar'.
+  Word Explanations (6 words):
+    Ela           personal_pronoun  #FF4444   she (3rd person singular feminine)
+    está          copula          #00B894   is (estar, 3rd person singular present — temporary state/progressive)
+    falando       verb            #44FF44   speaking (present participle / gerund)
+    ao            contraction     #FF7F50   at the / on the — contraction of a + o (masculine)
+    telefone      noun            #FFAA00   telephone (masculine singular)
+    agora         adverb          #44FFFF   now (time adverb)
+
+  --- Sentence 2 ---
+  Original   : Eu sou brasileiro e falo três línguas.
+  Translation: I am Brazilian and I speak three languages.
+  IPA/Reading: ew ˈsow bɾaziˈlejɾu i ˈfalu ˈtɾeʃ ˈlĩŋɡwɐʃ
+  Keywords   : nationality, multilingual
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Eu</span> <span style="color: #00B894; font-weight: bold;">sou</span> <span style="color: #FF44FF; font-weight: bold;">brasileiro</span> <span style="c…
+  Grammar Summ : Subject-Copula-Adjective-Conjunction-Verb-Numeral-Object Ser (sou) encodes permanent identity; contrast with estar for temporary states.
+  Word Explanations (7 words):
+    Eu            personal_pronoun  #FF4444   I (1st person singular)
+    sou           copula          #00B894   am (ser, 1st person singular present — permanent identity)
+    brasileiro    adjective       #FF44FF   Brazilian (masculine singular predicate adjective)
+    e             conjunction     #888888   and (coordinating conjunction)
+    falo          verb            #44FF44   speak (1st person singular present, pro-dropped subject)
+    três          numeral         #3CB371   three (cardinal numeral)
+    línguas       noun            #FFAA00   languages (feminine plural)
+
+  --- Sentence 3 ---
+  Original   : Nós vamos falar com o professor amanhã.
+  Translation: We are going to speak with the teacher tomorrow.
+  IPA/Reading: ˈnɔs ˈvɐ̃muʃ faˈlaɾ kõ u pɾoˈfɛsoɾ ɐˈmɐ̃ɲɐ
+  Keywords   : near future, teacher
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Nós</span> <span style="color: #228B22; font-weight: bold;">vamos</span> <span style="color: #44FF44; font-weight: bold;">falar</span> <span style="col…
+  Grammar Summ : Subject-Auxiliary-Verb-Preposition-Article-Noun-Adverb IR + infinitive expresses near future. Definite article 'o' precedes masculine noun.
+  Word Explanations (7 words):
+    Nós           personal_pronoun  #FF4444   we (1st person plural)
+    vamos         auxiliary_verb  #228B22   are going to (ir, near future auxiliary)
+    falar         verb            #44FF44   speak (infinitive)
+    com           preposition     #4444FF   with (preposition)
+    o             definite_article  #AA44FF   the (masculine singular definite article)
+    professor     noun            #FFAA00   teacher (masculine singular)
+    amanhã        adverb          #44FFFF   tomorrow (time adverb)
+
+  --- Sentence 4 ---
+  Original   : Você não se lembra de mim?
+  Translation: Don't you remember me?
+  IPA/Reading: voˈse nɐ̃w sɨ ˈlẽbɾɐ dɨ ˈmĩ
+  Keywords   : memory, reflexive verb
+
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">Você</span> <span style="color: #A1887F; font-weight: bold;">não</span> <span style="color: #DC143C; font-weight: bold;">se</span> <span style="color: …
+  Grammar Summ : Subject-Particle-Reflexive-Verb-Preposition-Pronoun Lembrar-se de is a pronominal verb; reflexive clitic 'se' occupies proclitic position after negation.
+  Word Explanations (6 words):
+    Você          personal_pronoun  #FF4444   you (2nd person singular, BR register, takes 3rd-person verb)
+    não           particle        #A1887F   not (negation particle)
+    se            reflexive_pronoun  #DC143C   oneself (reflexive clitic, 3rd person)
+    lembra        pronominal_verb  #20B2AA   remember (lembrar-se, pronominal verb, 3rd person singular present)
+    de            preposition     #4444FF   of (preposition required by lembrar-se de)
+    mim           pronoun         #FF4444   me (1st person singular prepositional form)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

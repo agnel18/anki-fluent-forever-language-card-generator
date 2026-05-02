@@ -1,0 +1,129 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — PORTUGUESE
+================================================================================
+  Word          : falar
+  Language       : Portuguese
+  Difficulty     : advanced
+  Topic          : Food & Cooking
+  Generated at   : 2026-05-02 17:46:46
+  Elapsed        : 0.05s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'pt': PtAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to speak (to talk, to use language)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=8, summary=YES
+         Sentence 3: colored=YES, explanations=8, summary=YES
+         Sentence 4: colored=YES, explanations=10, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: advanced, expected: advanced
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to speak (to talk, to use language)
+
+  --- Sentence 1 ---
+  Original   : Disse-me a verdade sem hesitar.
+  Translation: He/She told me the truth without hesitating.
+  IPA/Reading: diˈsɛjmɨ a vɨɾˈdadɨ sẽj eziˈtaɾ
+  Keywords   : truth, clitic pronoun, enclitic
+
+  Colored HTML : <span style="color: #44FF44; font-weight: bold;">Disse</span> <span style="color: #E91E63; font-weight: bold;">me</span> <span style="color: #AA44FF; font-weight: bold;">a</span> <span style="color: #…
+  Grammar Summ : Verb-Clitic-Article-Object-Preposition-Infinitive Enclitic clitic: 'Disse-me' — the pronoun attaches to the right of the finite verb after sentence-initial V. 'Sem + infinitivo' expresses negative adverbial manner.
+  Word Explanations (6 words):
+    Disse         verb            #44FF44   said / told (3rd person singular preterite of dizer)
+    me            clitic_pronoun  #E91E63   me (1st person singular dative/accusative clitic)
+    a             definite_article  #AA44FF   the (feminine singular definite article)
+    verdade       noun            #FFAA00   truth (feminine singular)
+    sem           preposition     #4444FF   without (preposition introducing infinitive phrase)
+    hesitar       verb            #44FF44   hesitate (impersonal infinitive after sem)
+
+  --- Sentence 2 ---
+  Original   : O livro foi escrito para sermos honestos connosco.
+  Translation: The book was written so that we may be honest with ourselves.
+  IPA/Reading: u ˈlivɾu foj iʃˈkɾitu ˈpaɾɐ ˈseɾmuʃ oˈnɛʃtuʃ koˈnosku
+  Keywords   : passive, personal infinitive, reflexive
+
+  Colored HTML : <span style="color: #AA44FF; font-weight: bold;">O</span> <span style="color: #FFAA00; font-weight: bold;">livro</span> <span style="color: #228B22; font-weight: bold;">foi</span> <span style="color: …
+  Grammar Summ : Article-Subject-Auxiliary-PastParticiple-Conjunction-PersonalInfinitive-Adjective-Contraction Ser + past participle = passive voice. Personal infinitive 'sermos' is inflected for 1pl — unique to Portuguese among Romance languages. Para introduces a purposive clause.
+  Word Explanations (8 words):
+    O             definite_article  #AA44FF   the (masculine singular definite article)
+    livro         noun            #FFAA00   book (masculine singular)
+    foi           auxiliary_verb  #228B22   was (ser, 3rd person singular preterite — passive auxiliary)
+    escrito       past_participle  #FFA500   written (past participle of escrever, masculine singular)
+    para          subordinating_conjunction  #777777   so that / in order to (purposive subordinator introducing personal infinitive)
+    sermos        personal_infinitive  #6C5CE7   to be (personal infinitive of ser, 1st person plural — inflected -mos)
+    honestos      adjective       #FF44FF   honest (masculine plural predicate adjective)
+    connosco      pronoun         #FF4444   with ourselves (com + nós suppletive form)
+
+  --- Sentence 3 ---
+  Original   : Falar-lhe-ei amanhã, embora ela raramente atenda.
+  Translation: I will speak to her tomorrow, although she rarely answers.
+  IPA/Reading: faˈlaɾljɐˈej ɐˈmɐ̃ɲɐ ˈẽboɾɐ ˈɛlɐ ʁaɾɐˈmẽtɨ ɐˈtẽdɐ
+  Keywords   : mesoclitic, concessive, future
+
+  Colored HTML : <span style="color: #44FF44; font-weight: bold;">Falar</span> <span style="color: #FF1493; font-weight: bold;">lhe</span> <span style="color: #44FF44; font-weight: bold;">ei</span> <span style="color:…
+  Grammar Summ : Verb-Mesoclitic-Adverb-SubjConj-Subject-Adverb-Verb Mesoclisis: clitic 'lhe' is inserted between the verbal stem 'Falar-' and the future suffix '-ei' — a formal/literary Portuguese-only pattern. 'Embora' obligatorily triggers present subjunctive.
+  Word Explanations (8 words):
+    Falar         verb            #44FF44   speak (verbal stem — future tense with mesoclitic splits stem from ending)
+    lhe           mesoclitic      #FF1493   to her (dative clitic inserted between verb stem and future ending — mesoclisis)
+    ei            verb            #44FF44   -ei (1st person singular future ending of falar)
+    amanhã        adverb          #44FFFF   tomorrow (time adverb)
+    embora        subordinating_conjunction  #777777   although / even though (concessive subordinating conjunction — triggers subjunctive)
+    ela           personal_pronoun  #FF4444   she (3rd person singular feminine subject pronoun)
+    raramente     adverb          #44FFFF   rarely (frequency adverb)
+    atenda        subjunctive_marker  #9C27B0   answer / pick up (present subjunctive of atender, 3rd person singular — triggered by embora)
+
+  --- Sentence 4 ---
+  Original   : O relatório que foi entregue ontem estava muito bem escrito.
+  Translation: The report that was handed in yesterday was very well written.
+  IPA/Reading: u ʁɨlaˈtoɾju kɨ foj ẽtɾɨˈɡɨ oˈntẽj ˈeʃtɐvɐ ˈmujtʊ bẽj iʃˈkɾitu
+  Keywords   : relative clause, past participle, passive
+
+  Colored HTML : <span style="color: #AA44FF; font-weight: bold;">O</span> <span style="color: #FFAA00; font-weight: bold;">relatório</span> <span style="color: #FF4500; font-weight: bold;">que</span> <span style="col…
+  Grammar Summ : Article-Subject-[RelPron-Auxiliary-PastParticiple-Adverb]-Copula-Adverb-Adverb-PastParticiple Restrictive relative clause with 'que'. Double past-participle: 'foi entregue' (passive preterite) inside the relative, and 'escrito' as predicate in the main copular clause with estar.
+  Word Explanations (10 words):
+    O             definite_article  #AA44FF   the (masculine singular definite article)
+    relatório     noun            #FFAA00   report (masculine singular)
+    que           relative_pronoun  #FF4500   that / which (relative pronoun introducing restrictive clause)
+    foi           auxiliary_verb  #228B22   was (ser, 3rd person singular preterite — passive auxiliary)
+    entregue      past_participle  #FFA500   handed in / submitted (past participle of entregar, irregular form)
+    ontem         adverb          #44FFFF   yesterday (time adverb)
+    estava        copula          #00B894   was (estar, 3rd person singular imperfect — temporary/resultant state)
+    muito         adverb          #44FFFF   very (degree adverb)
+    bem           adverb          #44FFFF   well (manner adverb)
+    escrito       past_participle  #FFA500   written (past participle of escrever, predicate participle in copular construction)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================
