@@ -1,2 +1,5 @@
-"""Portuguese rule-based fallback analyzer."""
-# Phase 4 will implement PtFallbacks here
+"""Compatibility shim for Portuguese fallbacks."""
+
+from ..domain.pt_fallbacks import PtFallbacks
+
+__all__ = ["PtFallbacks"]
