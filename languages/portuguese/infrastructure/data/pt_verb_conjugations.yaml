@@ -1,0 +1,293 @@
+# pt_verb_conjugations.yaml
+# Portuguese Verb Conjugation Patterns Configuration
+# Defines conjugation groups and patterns for Portuguese verbs
+
+# Main Conjugation Groups
+conjugation_groups:
+  first_group:  # -ar verbs (regular)
+    infinitive_ending: "ar"
+    stem_changes: []
+    examples:
+      - falar
+      - trabalhar
+      - estudar
+      - andar
+      - esperar
+
+  second_group:  # -er verbs (regular)
+    infinitive_ending: "er"
+    stem_changes: []
+    examples:
+      - comer
+      - entender
+      - vender
+      - perder
+      - aprender
+
+  third_group:  # -ir verbs (regular)
+    infinitive_ending: "ir"
+    stem_changes: []
+    examples:
+      - partir
+      - abrir
+      - sentir
+      - servir
+      - dormir
+
+# Irregular Verbs (most common)
+irregular_verbs:
+  ser:
+    group: "irregular"
+    copula: true
+    present:
+      eu: "sou"
+      tu: "és"
+      você: "é"
+      ele: "é"
+      ela: "é"
+      nós: "somos"
+      vós: "sois"
+      eles: "são"
+      elas: "são"
+
+  estar:
+    group: "irregular"
+    copula: true
+    present:
+      eu: "estou"
+      tu: "estás"
+      você: "está"
+      ele: "está"
+      ela: "está"
+      nós: "estamos"
+      vós: "estais"
+      eles: "estão"
+      elas: "estão"
+
+  ter:
+    group: "irregular"
+    auxiliary: true
+    present:
+      eu: "tenho"
+      tu: "tens"
+      você: "tem"
+      ele: "tem"
+      ela: "tem"
+      nós: "temos"
+      vós: "tendes"
+      eles: "têm"
+      elas: "têm"
+
+  ir:
+    group: "irregular"
+    present:
+      eu: "vou"
+      tu: "vais"
+      você: "vai"
+      ele: "vai"
+      ela: "vai"
+      nós: "vamos"
+      vós: "ides"
+      eles: "vão"
+      elas: "vão"
+
+  fazer:
+    group: "irregular"
+    present:
+      eu: "faço"
+      tu: "fazes"
+      você: "faz"
+      ele: "faz"
+      ela: "faz"
+      nós: "fazemos"
+      vós: "fazeis"
+      eles: "fazem"
+      elas: "fazem"
+
+  dar:
+    group: "irregular"
+    present:
+      eu: "dou"
+      tu: "dás"
+      você: "dá"
+      ele: "dá"
+      ela: "dá"
+      nós: "damos"
+      vós: "dais"
+      eles: "dão"
+      elas: "dão"
+
+  dizer:
+    group: "irregular"
+    present:
+      eu: "digo"
+      tu: "dizes"
+      você: "diz"
+      ele: "diz"
+      ela: "diz"
+      nós: "dizemos"
+      vós: "dizeis"
+      eles: "dizem"
+      elas: "dizem"
+
+  vir:
+    group: "irregular"
+    present:
+      eu: "venho"
+      tu: "vens"
+      você: "vem"
+      ele: "vem"
+      ela: "vem"
+      nós: "vimos"
+      vós: "vindes"
+      eles: "vêm"
+      elas: "vêm"
+
+  poder:
+    group: "irregular"
+    modal: true
+    present:
+      eu: "posso"
+      tu: "podes"
+      você: "pode"
+      ele: "pode"
+      ela: "pode"
+      nós: "podemos"
+      vós: "podeis"
+      eles: "podem"
+      elas: "podem"
+
+  dever:
+    group: "irregular"
+    modal: true
+    present:
+      eu: "devo"
+      tu: "deves"
+      você: "deve"
+      ele: "deve"
+      ela: "deve"
+      nós: "devemos"
+      vós: "deveis"
+      eles: "devem"
+      elas: "devem"
+
+  querer:
+    group: "irregular"
+    modal: true
+    present:
+      eu: "quero"
+      tu: "queres"
+      você: "quer"
+      ele: "quer"
+      ela: "quer"
+      nós: "queremos"
+      vós: "quereis"
+      eles: "querem"
+      elas: "querem"
+
+# Tense Formation Patterns
+tense_patterns:
+  present_indicative:
+    first_group:  [o, as, a, amos, ais, am]
+    second_group: [o, es, e, emos, eis, em]
+    third_group:  [o, es, e, imos, is, em]
+
+  preterite_simple:
+    first_group:  [ei, aste, ou, amos, astes, aram]
+    second_group: [i, este, eu, emos, estes, eram]
+    third_group:  [i, iste, iu, imos, istes, iram]
+
+  imperfect_indicative:
+    first_group:  [ava, avas, ava, ávamos, áveis, avam]
+    second_group: [ia, ias, ia, íamos, íeis, iam]
+    third_group:  [ia, ias, ia, íamos, íeis, iam]
+
+  future_simple:
+    formation: "infinitive + personal ending"
+    endings: [ei, ás, á, emos, eis, ão]
+
+  conditional:
+    formation: "infinitive + imperfect-like ending"
+    endings: [ia, ias, ia, íamos, íeis, iam]
+
+  present_subjunctive:
+    first_group:  [e, es, e, emos, eis, em]
+    second_group: [a, as, a, amos, ais, am]
+    third_group:  [a, as, a, amos, ais, am]
+
+  imperfect_subjunctive:
+    formation: "preterite 3p plural stem + subjunctive endings"
+    endings: [asse, asses, asse, ássemos, ásseis, assem]
+
+  future_subjunctive:
+    formation: "infinitive without final r + personal ending"
+    endings: [ar, ares, ar, armos, ardes, arem]
+
+  personal_infinitive:
+    formation: "infinitive with person/number endings"
+    endings: [ar, ares, ar, armos, ardes, arem]
+
+# Auxiliary Verb Selection Rules
+auxiliary_selection:
+  # Verbs that conjugate with ter (most verbs)
+  ter_verbs: "default"
+
+  # Verbs that conjugate with ser (perfective aspect)
+  ser_verbs:
+    - chegar
+    - sair
+    - entrar
+    - partir
+    - vir
+    - descer
+    - subir
+    - nascer
+
+# Past Participle Forms
+past_participles:
+  regular_ar: "ado"
+  regular_er: "ido"
+  regular_ir: "ido"
+
+  irregular:
+    abrir: "aberto"
+    cobrir: "coberto"
+    dizer: "dito"
+    escrever: "escrito"
+    fazer: "feito"
+    pôr: "posto"
+    ver: "visto"
+    vir: "vindo"
+
+# Gerund Formation
+gerund_formation:
+  first_group: "ando"
+  second_group: "endo"
+  third_group: "indo"
+
+# Modal Verbs
+modal_verbs:
+  - poder
+  - dever
+  - querer
+  - saber
+  - conseguir
+
+# Reflexive Verb Patterns
+reflexive_patterns:
+  pronouns:
+    eu: "me"
+    tu: "te"
+    ele_ela_você: "se"
+    nós: "nos"
+    vós: "vos"
+    eles_elas: "se"
+
+  common_reflexives:
+    - chamar-se
+    - lembrar-se
+    - queixar-se
+    - interessar-se
+    - preocupar-se
+    - sentar-se
+    - vestir-se

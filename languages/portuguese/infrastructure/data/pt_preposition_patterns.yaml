@@ -1,0 +1,215 @@
+# pt_preposition_patterns.yaml
+# Portuguese Preposition Patterns Configuration
+# Defines preposition usage patterns and common translations
+
+# Basic Prepositions
+basic_prepositions:
+  - a
+  - de
+  - em
+  - para
+  - por
+  - com
+  - sem
+  - sobre
+  - entre
+  - durante
+  - ante
+  - após
+  - até
+  - contra
+  - desde
+  - sob
+  - segundo
+  - conforme
+  - mediante
+
+# Complex Prepositions (multi-word)
+complex_prepositions:
+  - a respeito de
+  - a favor de
+  - por causa de
+  - por falta de
+  - apesar de
+  - além de
+  - perto de
+  - longe de
+  - junto a
+  - devido a
+  - em frente a
+  - ao lado de
+  - acima de
+  - abaixo de
+  - atrás de
+  - dentro de
+  - fora de
+  - em cima de
+  - em baixo de
+  - antes de
+  - depois de
+  - à volta de
+
+# Preposition Usage Patterns
+usage_patterns:
+  # Location/Position
+  a:
+    location: "at, to (destination, cities, feminine countries)"
+    examples: ["a Paris", "a Itália", "a casa"]
+
+  de:
+    location: "of, from (origin)"
+    examples: ["de Lisboa", "de casa", "do Brasil"]
+
+  em:
+    location: "in, at, inside"
+    examples: ["em Portugal", "em casa", "no Brasil"]
+
+  para:
+    direction: "to, towards (destination with purpose)"
+    examples: ["para casa", "para o trabalho", "para Lisboa"]
+
+  por:
+    means: "by, through, for (agent, means, reason)"
+    examples: ["por favor", "por carro", "por medo"]
+
+  com:
+    accompaniment: "with (accompaniment, instrument)"
+    examples: ["com meu amigo", "com cuidado", "com uma caneta"]
+
+  sem:
+    negation: "without"
+    examples: ["sem você", "sem dinheiro", "sem problema"]
+
+  sobre:
+    topic: "on, about, over"
+    examples: ["sobre política", "sobre a mesa", "sobre isso"]
+
+  entre:
+    location: "between, among"
+    examples: ["entre nós", "entre os amigos"]
+
+  durante:
+    temporal: "during"
+    examples: ["durante o dia", "durante a semana"]
+
+# Temporal Prepositions
+temporal_prepositions:
+  a: ["at (time)", "à noite", "às três"]
+  em: ["in (month/year/season)", "em janeiro", "em 2024"]
+  durante: ["during", "durante a noite"]
+  desde: ["since, from", "desde segunda"]
+  até: ["until", "até amanhã"]
+  antes_de: ["before", "antes de amanhecer"]
+  depois_de: ["after", "depois de jantar"]
+  para: ["for (duration)", "para próxima semana"]
+
+# Spatial Prepositions
+spatial_prepositions:
+  a: ["at, to", "ir a Lisboa"]
+  de: ["from", "sair de casa"]
+  em: ["in, at, inside", "em Portugal", "na sala"]
+  para: ["to, towards", "andar para o norte"]
+  por: ["through, along", "passear por rua"]
+  sobre: ["on, over", "sobre a mesa"]
+  sob: ["under", "sob proteção"]
+  entre: ["between, among", "entre as casas"]
+  perto_de: ["near", "perto da escola"]
+  longe_de: ["far from", "longe da cidade"]
+  atrás_de: ["behind", "atrás da porta"]
+  dentro_de: ["inside", "dentro da casa"]
+  fora_de: ["outside", "fora do país"]
+  acima_de: ["above", "acima da cabeça"]
+  abaixo_de: ["below", "abaixo do rio"]
+
+# Preposition + Article Contractions
+contractions:
+  a_o: "ao"
+  a_os: "aos"
+  a_a: "à"
+  a_as: "às"
+  de_o: "do"
+  de_os: "dos"
+  de_a: "da"
+  de_as: "das"
+  em_o: "no"
+  em_os: "nos"
+  em_a: "na"
+  em_as: "nas"
+  por_o: "pelo"
+  por_os: "pelos"
+  por_a: "pela"
+  por_as: "pelas"
+
+# Preposition Collocations (common combinations)
+collocations:
+  pensar_em: "to think about"
+  falar_de: "to talk about"
+  sonhar_com: "to dream of"
+  depender_de: "to depend on"
+  interessar-se_por: "to be interested in"
+  ter_medo_de: "to be afraid of"
+  estar_com: "to have/be with (emotions, conditions)"
+  estar_em: "to be at, to be in"
+  ir_para: "to go to (destination)"
+  ir_a: "to go to (shorter distance, events)"
+  vir_de: "to come from"
+  sair_de: "to leave from"
+  entrar_em: "to enter into"
+
+# Causative/Benefactive Prepositions
+causative_prepositions:
+  de: "expressing source/cause: morrer de medo (to die of fear)"
+  por: "expressing motivation: fazer por amor (to do for love)"
+  para: "expressing beneficiary: fazer para alguém (to do for someone)"
+
+# Common Prepositional Phrases
+common_phrases:
+  a_favor_de: "in favor of, for"
+  a_respeito_de: "about, regarding"
+  ao_lado_de: "beside, next to"
+  apesar_de: "despite, in spite of"
+  além_de: "beyond, besides"
+  por_causa_de: "because of"
+  por_falta_de: "for lack of"
+  em_frente_de: "in front of"
+  em_frente_a: "facing, before"
+  atrás_de: "behind"
+  acima_de: "above"
+  abaixo_de: "below"
+  dentro_de: "inside of"
+  fora_de: "outside of"
+  perto_de: "near, close to"
+  longe_de: "far from"
+  junto_a: "together with, close to"
+  junto_de: "beside"
+  à_volta_de: "around"
+  antes_de: "before"
+  depois_de: "after"
+
+# Preposition Recognition Patterns (for AI analysis)
+recognition_patterns:
+  # Words that commonly follow prepositions
+  preposition_followers:
+    - nouns
+    - pronouns
+    - infinitives
+    - gerunds
+
+  # Prepositions that commonly appear before infinitives
+  infinitive_prepositions:
+    - para
+    - de
+    - por
+    - ante
+    - até
+    - com
+    - sem
+    - em
+
+  # Prepositions in fixed expressions
+  fixed_expression_prepositions:
+    - a_causa_de
+    - a_respeito_de
+    - ao_lado_de
+    - apesar_de
+    - além_de

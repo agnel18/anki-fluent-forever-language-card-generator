@@ -1,1 +1,106 @@
-# Phase 5 will populate this file.
+# pt_patterns.yaml
+# Portuguese Patterns Configuration
+# Regex patterns and validation rules for Portuguese text processing
+
+# Contraction Surface Patterns
+contraction_patterns:
+  # Preposition + article contractions
+  preposition_article:
+    - "\\b(do|da|dos|das|no|na|nos|nas|ao|aos|à|às|pelo|pela|pelos|pelas)\\b"
+
+  # Preposition + demonstrative contractions
+  preposition_demonstrative:
+    - "\\b(deste|desta|desses|dessas|neste|nesta|nesses|nessas|daquele|daquela|daqueles|daquelas|naquele|naquela|naqueles|naquelas|àquele|àquela|àqueles|àquelas)\\b"
+
+  # Preposition + personal pronoun contractions (suppletive com)
+  preposition_pronoun:
+    - "\\b(comigo|contigo|consigo|conosco|connosco|convosco|dele|dela|deles|delas|nele|nela|neles|nelas|disto|disso|daquilo|nisto|nisso|naquilo|àquilo)\\b"
+
+# Verb-Clitic Patterns
+verb_clitic_patterns:
+  # Enclitic clitic attachment (hyphen)
+  enclitic:
+    - "\\b(\\w+)-(me|te|se|lhe|lhes|nos|vos|o|a|os|as|lo|la|los|las|no|na|nos|nas)\\b"
+
+  # Mesoclitic insertion (future/conditional + infinitive)
+  mesoclitic:
+    - "\\b(\\w+r)-(me|te|se|lhe|lhes|nos|vos|o|a|os|as)-(ei|ás|á|emos|eis|ão|ia|ias|íamos|íeis|iam)\\b"
+
+# Verbal Form Patterns
+verb_form_patterns:
+  # Gerund (present participle): -ando/-endo/-indo
+  gerund: "\\w+(ando|endo|indo)\\b"
+
+  # Past participle: -ado/-ido/-ido (irregular: feito, dito, visto)
+  past_participle: "\\w+(ado|ido)\\b|\\b(feito|dito|visto|coito|morto|composto)\\b"
+
+  # Personal infinitive: inflected -armos/-ermos/-irmos/-arem/-erem/-irem
+  personal_infinitive: "\\w+(armos|ermos|irmos|arem|erem|irem)\\b"
+
+# Gender Agreement Patterns
+gender_patterns:
+  masculine_endings:
+    - "o$"
+    - "ão$"
+    - "al$"
+    - "el$"
+    - "il$"
+    - "ol$"
+    - "ul$"
+
+  feminine_endings:
+    - "a$"
+    - "ã$"
+    - "ada$"
+    - "idade$"
+
+# Sentence Boundary Patterns
+sentence_patterns:
+  # Question patterns
+  question_patterns:
+    - "\\?$"
+    - "^(Que|Qual|Quem|Onde|Quando|Como|Por que|Quanto)"
+
+  # Negation patterns
+  negation_patterns:
+    - "\\bnão\\b"
+    - "\\bnunca\\b"
+    - "\\bnem\\s*um"
+    - "\\bnada\\b"
+    - "\\bninguém\\b"
+
+# Validation Rules
+validation_rules:
+  gender_agreement:
+    enabled: true
+    check_adjectives: true
+    check_articles: true
+    check_pronouns: true
+
+  verb_conjugation:
+    enabled: true
+    check_person: true
+    check_number: true
+    check_tense: true
+
+  contraction_validation:
+    enabled: true
+    obligatory: true
+
+  clitic_placement:
+    enabled: true
+    check_proclisis: true
+    check_enclisis: true
+    check_mesoclisis: true
+
+# Processing Rules
+processing_rules:
+  tokenization:
+    split_on_hyphens: true
+    preserve_contractions: true
+    handle_clitics: true
+
+  normalization:
+    lowercase_diacritics: false
+    standardize_quotes: true
+    remove_extra_spaces: true

@@ -1,0 +1,113 @@
+# pt_contractions.yaml
+# Portuguese Contractions Configuration
+# Maps contracted surface forms to their component parts
+
+contractions:
+  # de + definite articles (o, a, os, as)
+  do: [de, o]
+  da: [de, a]
+  dos: [de, os]
+  das: [de, as]
+
+  # em + definite articles
+  no: [em, o]
+  na: [em, a]
+  nos: [em, os]
+  nas: [em, as]
+
+  # a + definite articles
+  ao: [a, o]
+  aos: [a, os]
+  à: [a, a]
+  às: [a, as]
+
+  # por + definite articles
+  pelo: [por, o]
+  pela: [por, a]
+  pelos: [por, os]
+  pelas: [por, as]
+
+  # de + personal pronouns (ele, ela, eles, elas)
+  dele: [de, ele]
+  dela: [de, ela]
+  deles: [de, eles]
+  delas: [de, elas]
+
+  # em + personal pronouns
+  nele: [em, ele]
+  nela: [em, ela]
+  neles: [em, eles]
+  nelas: [em, elas]
+
+  # de + proximal demonstratives (este, esta, estes, estas)
+  deste: [de, este]
+  desta: [de, esta]
+  destes: [de, estes]
+  destas: [de, estas]
+
+  # em + proximal demonstratives
+  neste: [em, este]
+  nesta: [em, esta]
+  nestes: [em, estes]
+  nestas: [em, estas]
+
+  # de + medial demonstratives (esse, essa, esses, essas)
+  desse: [de, esse]
+  dessa: [de, essa]
+  desses: [de, esses]
+  dessas: [de, essas]
+
+  # em + medial demonstratives
+  nesse: [em, esse]
+  nessa: [em, essa]
+  nesses: [em, esses]
+  nessas: [em, essas]
+
+  # de + distal demonstratives (aquele, aquela, aqueles, aquelas)
+  daquele: [de, aquele]
+  daquela: [de, aquela]
+  daqueles: [de, aqueles]
+  daquelas: [de, aquelas]
+
+  # em + distal demonstratives
+  naquele: [em, aquele]
+  naquela: [em, aquela]
+  naqueles: [em, aqueles]
+  naquelas: [em, aquelas]
+
+  # a + distal demonstratives (àquele constructions)
+  àquele: [a, aquele]
+  àquela: [a, aquela]
+  àqueles: [a, aqueles]
+  àquelas: [a, aquelas]
+  àquilo: [a, aquilo]
+
+  # de + neuter demonstratives (isto, isso, aquilo)
+  disto: [de, isto]
+  disso: [de, isso]
+  daquilo: [de, aquilo]
+
+  # em + neuter demonstratives
+  nisto: [em, isto]
+  nisso: [em, isso]
+  naquilo: [em, aquilo]
+
+  # de + indefinite articles (um, uma, uns, umas) - European Portuguese
+  dum: [de, um]
+  duma: [de, uma]
+  duns: [de, uns]
+  dumas: [de, umas]
+
+  # em + indefinite articles
+  num: [em, um]
+  numa: [em, uma]
+  nuns: [em, uns]
+  numas: [em, umas]
+
+  # com + pronouns (suppletive forms)
+  comigo: [com, mim]
+  contigo: [com, ti]
+  consigo: [com, si]
+  conosco: [com, nós]
+  connosco: [com, nós]
+  convosco: [com, vós]

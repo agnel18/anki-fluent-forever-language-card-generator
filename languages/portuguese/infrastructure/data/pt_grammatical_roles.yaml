@@ -1,1 +1,120 @@
-# Phase 5 will populate this file.
+# pt_grammatical_roles.yaml
+# Portuguese Grammatical Roles Configuration
+# Defines role hierarchy and complexity-based filtering
+
+# Role Hierarchy Mapping (specific roles inherit from general ones)
+role_hierarchy:
+  # Noun hierarchy
+  proper_noun: "noun"
+  common_noun: "noun"
+
+  # Verb hierarchy
+  auxiliary_verb: "verb"
+  modal_verb: "verb"
+  pronominal_verb: "verb"
+  copula: "verb"
+
+  # Pronoun hierarchy
+  personal_pronoun: "pronoun"
+  reflexive_pronoun: "pronoun"
+  possessive_pronoun: "pronoun"
+  demonstrative_pronoun: "pronoun"
+  relative_pronoun: "pronoun"
+  indefinite_pronoun: "pronoun"
+  interrogative_pronoun: "pronoun"
+  clitic_pronoun: "pronoun"
+
+  # Article hierarchy
+  definite_article: "article"
+  indefinite_article: "article"
+
+  # Verb forms
+  gerund: "verb"
+  past_participle: "verb"
+  personal_infinitive: "verb"
+
+  # Clitic-related
+  mesoclitic: "clitic_pronoun"
+
+  # Conjunction hierarchy
+  subordinating_conjunction: "conjunction"
+
+# Complexity-Based Role Filtering
+# Defines which roles are shown at each complexity level
+complexity_levels:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - pronoun
+    - preposition
+    - conjunction
+    - adverb
+    - article
+    - numeral
+
+  intermediate:
+    - noun
+    - verb
+    - adjective
+    - pronoun
+    - preposition
+    - conjunction
+    - adverb
+    - article
+    - numeral
+    - personal_pronoun
+    - possessive_pronoun
+    - demonstrative_pronoun
+    - reflexive_pronoun
+    - definite_article
+    - indefinite_article
+    - contraction
+    - auxiliary_verb
+    - copula
+    - modal_verb
+    - particle
+    - pronominal_verb
+
+  advanced:
+    - noun
+    - verb
+    - adjective
+    - pronoun
+    - preposition
+    - conjunction
+    - adverb
+    - article
+    - numeral
+    - personal_pronoun
+    - possessive_pronoun
+    - demonstrative_pronoun
+    - reflexive_pronoun
+    - definite_article
+    - indefinite_article
+    - contraction
+    - auxiliary_verb
+    - copula
+    - modal_verb
+    - particle
+    - pronominal_verb
+    - relative_pronoun
+    - indefinite_pronoun
+    - interrogative_pronoun
+    - subordinating_conjunction
+    - gerund
+    - past_participle
+    - personal_infinitive
+    - clitic_pronoun
+    - mesoclitic
+    - subjunctive_marker
+    - conditional
+    - interjection
+    - debitive
+
+# Validation Rules
+validation_rules:
+  verb_must_have_tense: true
+  pronoun_agreement_required: true
+  contraction_obligatory: true
+  clitic_placement_required: true
