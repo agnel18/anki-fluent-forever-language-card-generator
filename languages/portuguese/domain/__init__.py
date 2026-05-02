@@ -1,0 +1,1 @@
+"""Portuguese domain components."""
