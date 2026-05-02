@@ -156,7 +156,13 @@ class GoldStandardComparator:
             "ar": "arabic",
             "de": "german",
             "tr": "turkish",
-            "lv": "latvian"
+            "fr": "french",
+            "hu": "hungarian",
+            "ja": "japanese",
+            "ko": "korean",
+            "ml": "malayalam",
+            "lv": "latvian",
+            "pt": "portuguese"
         }
         return mapping.get(language_code, language_code)
 

@@ -484,7 +484,8 @@ class ImplementationValidator:
             "ja": "japanese",
             "ko": "korean",
             "ml": "malayalam",
-            "lv": "latvian"
+            "lv": "latvian",
+            "pt": "portuguese"
         }
         return mapping.get(normalized_code, normalized_code)
 

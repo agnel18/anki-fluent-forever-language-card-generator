@@ -54,7 +54,12 @@ class TestRunner:
             "ar": "arabic",
             "de": "german",
             "tr": "turkish",
-            "lv": "latvian"
+            "lv": "latvian",
+            "pt": "portuguese",
+            "hu": "hungarian",
+            "ja": "japanese",
+            "ko": "korean",
+            "ml": "malayalam"
         }
         return mapping.get(language_code, language_code)
 
@@ -70,7 +75,12 @@ class TestRunner:
             "arabic": "ArAnalyzer",  # Special case for when user passes "arabic"
             "de": "DeAnalyzer",
             "tr": "TrAnalyzer",
-            "lv": "LvAnalyzer"
+            "lv": "LvAnalyzer",
+            "pt": "PtAnalyzer",
+            "hu": "HuAnalyzer",
+            "ja": "JaAnalyzer",
+            "ko": "KoAnalyzer",
+            "ml": "MlAnalyzer"
         }
         return mapping.get(language_code, f"{language_code.title()}Analyzer")
 
@@ -190,8 +200,10 @@ class TestRunner:
     def run_performance_tests(self) -> bool:
         """Run performance and load tests."""
         perf_test_file = self.base_path / "tests" / "test_performance.py"
-        # Always recreate to ensure latest template
-        self._create_performance_test_file()
+        # Don't overwrite hand-written tests — auto-template is a 1-line dummy
+        # (assert analyzer is not None) which adds no real coverage.
+        if not perf_test_file.exists():
+            self._create_performance_test_file()
 
         return self._run_pytest_files(["tests/test_performance.py"], "Performance Tests")
 
@@ -206,8 +218,9 @@ class TestRunner:
     def run_regression_tests(self) -> bool:
         """Run regression tests to prevent bug reintroduction."""
         regression_file = self.base_path / "tests" / "test_regression.py"
-        # Always recreate to ensure latest template
-        self._create_regression_test_file()
+        # Don't overwrite hand-written tests — auto-template is a 1-line dummy.
+        if not regression_file.exists():
+            self._create_regression_test_file()
 
         return self._run_pytest_files(["tests/test_regression.py"], "Regression Tests")
 
@@ -900,8 +913,14 @@ class Test{class_name}BatchProcessing:
         directory_name = self._get_directory_name(self.language_code)
         class_name = self._get_class_name(self.language_code)
         file_name = self._get_file_name(self.language_code)
-        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file = self.base_path / f"test_{self.language_code}_batch.py"
+        # Don't overwrite a hand-written batch test. Auto-generated template
+        # uses module-level get_gemini_api patch which is incompatible with
+        # the lazy-import pattern; analyzers should ship a custom version
+        # matching languages/latvian/test_lv_batch.py.
+        if test_file.exists():
+            return
+        content = content.format(language_code=self.language_code, directory_name=directory_name, class_name=class_name, file_name=file_name)
         test_file.parent.mkdir(exist_ok=True)
         test_file.write_text(content)
 
