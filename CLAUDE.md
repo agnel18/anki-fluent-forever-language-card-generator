@@ -211,6 +211,16 @@ All tooling lives in `language_grammar_generator/`. Each phase script exports a 
 
 When implementing the main facade (`{code}_analyzer.py`), follow the **Japanese** `ja_analyzer.py` pattern exactly for `batch_analyze_grammar`, `_call_ai` lazy imports, `_generate_html_output` + `_map_grammatical_role_to_category`, and fallback handling.
 
+#### Per-phase Claude model tier (cost routing)
+
+The `/new-analyzer` skill and the `language-analyzer` agent dispatch each phase to a subagent at a per-phase Claude tier. Tiers are defined in **`language_grammar_generator/phase_model_tiers.yaml`** (the single source of truth — edit there to retune):
+
+- **opus** — P1 (research), P3 (domain components). Peak reasoning + critical-path.
+- **sonnet** — P4 (infrastructure), P6 (testing), P8 (E2E mocks). Correctness-sensitive.
+- **haiku** — P2 (scaffold), P5 (data files), P7 (deployment docs). Mechanical/templated.
+
+Roughly ~70% per-analyzer cost reduction vs all-Opus. Decision: **Claude-only for code** — no Gemini-API backend wiring for any phase, even bulk-data P5.
+
 ### Key Requirements for New Analyzers
 
 | Requirement | Details |
@@ -366,14 +376,25 @@ RTK auto-rewrite works on Windows via Claude Code's `settings.json` PreToolUse h
 | `languages/malayalam/` | Malayalam analyzer (v1.0, Dravidian family, E2E verified) |
 > **Stateless Architecture Decision (April 2026):** Firebase Auth, Firestore, statistics, achievements removed — planned for future subscription companion app with proper security.
 ## E2E Test Sentence Difficulty Coverage
-All documentation and E2E pipeline tests must ensure that for each analyzer, **all three difficulty levels are covered and validated**:
-- 1 beginner sentence
-- 1 intermediate sentence
-- 2 advanced sentences
-**The E2E pipeline test must assert that grammar coloring, explanations, and validation logic are exercised for all supported complexity levels in every analyzer.**
-This is a checklist item for E2E pipeline tests and a requirement for new analyzers in the analyzer creation guide.
+For each analyzer, **all three difficulty levels must be covered and validated** end-to-end:
+- 1 full pipeline run at `difficulty="beginner"`
+- 1 full pipeline run at `difficulty="intermediate"`
+- 1 full pipeline run at `difficulty="advanced"`
 
-> **Known Gap (April 2026):** The current E2E test implementation only checks the beginner level for some analyzers. The test suite must be updated to assert and validate all three levels (beginner, intermediate, advanced) for every analyzer.
+**The E2E pipeline test must assert that grammar coloring, explanations, and validation logic are exercised at all three complexity levels for every analyzer.** Each per-level run uses level-appropriate mock content + a `mock_grammar_batch_response` whose `grammatical_role` tags come from the role vocabulary the analyzer's `domain/{lang}_config.py` declares for that level (e.g. Latvian advanced exercises `participle`, `debitive`, `relative_pronoun`, `subordinating_conjunction`).
+
+### Reference pattern: Latvian (`tests/test_end_to_end_pipeline.py`)
+
+The pipeline body lives in the helper `_run_full_pipeline(data, report_key, tmp_path)`. To validate all three levels for a language:
+
+1. Define per-level mock dicts for **intermediate** and **advanced** alongside the existing `{LANG}_MOCK_DATA` (which serves as beginner). Each must include `mock_content_response` and `mock_grammar_batch_response` whose role tags exercise that level's vocabulary.
+2. Group them in `{LANG}_LEVEL_MOCK_DATA = {"beginner": ..., "intermediate": ..., "advanced": ...}`.
+3. Add a parametrized test that calls `_run_full_pipeline(data, f"{lang}_{difficulty}", tmp_path)` for each level. See `test_latvian_all_difficulty_levels` for the canonical implementation.
+4. Reports for each level are written to `tests/reports/pipeline_report_{lang}_{difficulty}.txt`.
+
+**Status (May 2026):**
+- ✅ Latvian — beginner / intermediate / advanced all validated end-to-end.
+- ⚠️ Other 11 analyzers — still single-level (beginner only). Replicate the Latvian pattern when bringing them up to spec.
 2. **Missing language family guides** — `afro_asiatic.md` (Arabic, Hebrew) and `agglutinative.md` (Turkish, Japanese, Korean) referenced in `language_grammar_generator/README.md` but not created.
 3. **AI repair pipeline verification** — `_repair_with_ai()` implemented in content_generator.py. Needs systematic verification across all 11 language outputs to confirm repair quality.
 4. ~~**TTS silent failure**~~ — **RESOLVED.** `audio_generator.py` now shows `st.warning()` for missing API key, timeout, quota exhaustion, auth failure. Uses `tts_warning_shown` session flag to avoid spam.

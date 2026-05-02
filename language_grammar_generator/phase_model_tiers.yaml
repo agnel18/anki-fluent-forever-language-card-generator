@@ -1,0 +1,96 @@
+# Per-phase Claude model tier assignments for the analyzer-creation pipeline.
+#
+# Read by:
+#   - .claude/skills/new-analyzer.md   (skill orchestrator)
+#   - .github/agents/language-analyzer.agent.md   (agent definition)
+#
+# When a phase dispatches via the Agent tool, the `model:` parameter must come
+# from this file — do NOT hardcode the tier in the skill or agent text.
+#
+# Tier values: opus | sonnet | haiku. The Agent tool accepts these directly.
+#
+# Decisions locked in (May 2026):
+#   - P4 = sonnet (not haiku). Circuit-breaker + retry-math correctness isn't
+#     worth saving ~10% of per-analyzer tokens.
+#   - Claude-only across the board. No Gemini-API backend for any phase, even
+#     for bulk-data P5. The aistudio.google.com note in the skill is informational.
+#
+# To retune: edit the `tier` field below. The skill/agent text doesn't need
+# editing — they read tier values from this file at runtime.
+
+phases:
+  - phase: 1
+    name: research
+    tier: opus
+    artifact: "languages/{folder}/{code}_grammar_concepts.md"
+    rationale: >
+      Linguistic depth + downstream blast radius. POS inventory, morphology,
+      agreement rules, and the confidence-scoring rubric all feed every later
+      phase. A wrong grammatical hierarchy here cascades through P3-P6.
+
+  - phase: 2
+    name: directory_structure
+    tier: haiku
+    artifact: "17-file scaffold under languages/{folder}/"
+    rationale: >
+      Pure boilerplate generation. Empty/skeleton files, facade stub, error-handler
+      placeholders. Mechanical — no reasoning required.
+
+  - phase: 3
+    name: domain_components
+    tier: opus
+    artifact: "domain/{code}_config.py, _prompt_builder.py, _response_parser.py, _validator.py, _fallbacks.py"
+    rationale: >
+      Peak reasoning. Designs the 5-level fallback parser, language-specific
+      AI prompts, the 0.0-1.0 confidence-scoring algorithm, and JSON-repair
+      logic. Drives ~95% of analyzer accuracy. Critical-path. Never downgrade.
+
+  - phase: 4
+    name: infrastructure
+    tier: sonnet
+    artifact: "infrastructure/{code}_fallbacks.py + AI service plumbing + circuit breaker"
+    rationale: >
+      Borderline. Mostly mechanical iteration over role definitions, but the
+      circuit-breaker thresholds and retry-with-backoff math have subtle
+      correctness implications. Sonnet is the safe call.
+
+  - phase: 5
+    name: configuration
+    tier: haiku
+    artifact: "infrastructure/data/grammatical_roles.yaml, patterns.yaml, word_meanings.json (200+ entries), language_config.yaml"
+    rationale: >
+      Bulk data entry. Templates get filled with linguistic data. Missing
+      entries fall back gracefully at runtime, so cost dominates over correctness.
+
+  - phase: 6
+    name: testing_integration
+    tier: sonnet
+    artifact: "languages/{folder}/tests/test_*.py + analyzer_registry.py update"
+    rationale: >
+      Test design must mirror P3 contracts exactly — wrong test fixtures don't
+      fail the pipeline but they do fail the validation gate. Sonnet handles
+      this well; Opus is overkill.
+
+  - phase: 7
+    name: documentation_deployment
+    tier: haiku
+    artifact: "docs, deployment checklist, runbooks"
+    rationale: >
+      Templated content. Summarizes earlier phase outputs. No reasoning,
+      cosmetic risk only.
+
+  - phase: 8
+    name: e2e_mock_data
+    tier: sonnet
+    artifact: "tests/test_end_to_end_pipeline.py — 3 per-level mock dicts + parametrized test"
+    rationale: >
+      Linguistic accuracy at advanced complexity (participles, debitive,
+      relative pronouns, etc.) but pattern-matched against the Latvian
+      reference. Sonnet handles the pattern-match; Haiku risks missing
+      role-vocabulary coverage.
+
+# Estimated output-token mix at this configuration:
+#   ~55% Haiku  (P2, P5, P7)
+#   ~25% Sonnet (P4, P6, P8)
+#   ~20% Opus   (P1, P3)
+# vs all-Opus baseline: ~70% per-analyzer cost reduction.

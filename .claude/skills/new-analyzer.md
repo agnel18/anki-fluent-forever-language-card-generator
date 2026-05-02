@@ -33,50 +33,61 @@ Auto-commit after every phase. Block at the validation gate. Match the gold stan
    - **RTL** (Arabic, Hebrew, Persian, Urdu, Pashto): use `languages/arabic/` as the structural reference.
    - **Everything else**: use `languages/french/` (CLAUDE.md calls it "enterprise gold standard, v2.0, most complete").
    - Quote 2-3 of the reference's `_analyzer.py` methods into your context before generating Phase 3 — you need to copy the patterns, not invent new ones.
+7. **Read the phase-tier table** at `language_grammar_generator/phase_model_tiers.yaml`. Build an in-memory map `{phase_number: tier}` from the `phases:` list. Every phase below dispatches to a subagent at its assigned tier — **never** hardcode the tier in this skill text and **never** override the YAML without the user's explicit instruction. If the YAML is missing or malformed, abort with a clear message.
 
-## Step 1 — Phase loop
+## Step 1 — Phase loop (per-phase Agent dispatch)
 
-For each phase 1 through 7:
+For each phase 1 through 7, do **not** fulfill the prompt inline. Dispatch to an `Agent` subagent at the tier assigned in `phase_model_tiers.yaml` (loaded in Step 0). The main session orchestrates: it builds the phase prompt, launches the agent, validates outputs, commits, then advances.
 
 ### A. Load the prompt template
 
 Each phase script in `language_grammar_generator/phase{N}_*_prompt.py` exports a constant
-named `PHASE{N}_*_PROMPT`. Read the file, extract the constant text. Phase 3 is the most
-critical (per CLAUDE.md) — produces all 4 domain components + fallbacks.
+named `PHASE{N}_*_PROMPT`. Read the file with the Read tool, extract the constant text. Phase 3
+is the most critical (per CLAUDE.md) — produces all 4 domain components + fallbacks.
 
-### B. Fill placeholders
+### B. Fill placeholders + thread forward inputs
 
 The templates use `{LANGUAGE_NAME}`, `{LANGUAGE_CODE}`, `{LANGUAGE_FAMILY}`, `{SCRIPT_TYPE}`, `{WORD_ORDER}`. Substitute the values from Step 0.
 
-### C. Generate the artifact
+**Subagents do not see prior session context.** For phases that depend on earlier phases' outputs (e.g. P3 needs P1's research doc, P6 needs P3's component file paths, P8 needs P3's config role vocabulary), the main session must Read the prior artifacts from disk and inline them into the next phase's prompt. Standard chains:
 
-YOU are the AI fulfilling the prompt — produce the artifact directly. Don't shell out to
-the project's Gemini API for this; the existing 12 analyzers were built this way.
-
-**Cost note for the user:** generating one full analyzer through Claude costs more than
-batching it through Gemini 2.5-flash. If they're budget-constrained and want to do many
-languages, suggest they run the prompts manually through aistudio.google.com instead. But
-for one-at-a-time interactive generation, doing it here is fine.
-
-For each phase, the expected outputs (per CLAUDE.md):
-
-| Phase | Output |
+| Dispatching | Inline into the agent's prompt |
 |---|---|
-| 1 | `languages/{folder_name}/{lang_code}_grammar_concepts.md` (research doc) |
-| 2 | Complete file tree (17+ files) — empty/skeleton OK at this phase |
-| 3 | `domain/{lang_code}_config.py`, `_prompt_builder.py`, `_response_parser.py`, `_validator.py`, `_fallbacks.py` |
-| 4 | `infrastructure/{lang_code}_fallbacks.py` + AI service plumbing |
-| 5 | `infrastructure/data/grammatical_roles.yaml`, `language_config.yaml`, `patterns.yaml`, `word_meanings.json` |
-| 6 | `tests/test_*.py` (full suite) + registry update in `streamlit_app/language_analyzers/analyzer_registry.py` |
-| 7 | Documentation + deployment checklist |
+| P3 | full text of `languages/{folder}/{code}_grammar_concepts.md` (P1 output) |
+| P5 | role list from `domain/{code}_config.py` (P3 output) |
+| P6 | the 5 P3 component files' public method signatures + `languages/japanese/ja_analyzer.py` for the batch pattern |
+| P8 | `domain/{code}_config.py` advanced-tier role vocabulary + `tests/test_end_to_end_pipeline.py` Latvian reference dict |
 
-### D. Write the files
+### C. Dispatch the agent
 
-Use the `Write` tool. For Python files, after writing, run a syntax check:
 ```
-python -c "import ast; ast.parse(open('<path>', encoding='utf-8').read())"
+Agent({
+  description: "Phase {N}: {phase_name}",
+  subagent_type: "general-purpose",
+  model: "<tier from phase_model_tiers.yaml — opus | sonnet | haiku>",
+  prompt: <filled phase prompt
+           + the threaded-forward inputs from step B
+           + explicit instruction: "Write artifacts to these absolute paths: <list>.
+              Run python -c 'import ast; ast.parse(open(P, encoding=\"utf-8\").read())'
+              on each .py file you write before returning. Report back with: files
+              written, any syntax failures, and a 1-line summary of design choices.">
+})
 ```
-If syntax fails, fix it before committing.
+
+**Tier rules (from the YAML — do not override without user instruction):**
+- **opus** — P1, P3 (peak reasoning + critical-path)
+- **sonnet** — P4, P6, P8 (correctness-sensitive but not novel)
+- **haiku** — P2, P5, P7 (mechanical scaffolding, data entry, templated docs)
+
+**Print before each dispatch:** `Phase {N} ({phase_name}) → {tier} agent dispatched`. This makes the tier choice visible to the user during the run.
+
+### D. Validate the agent's output (main session)
+
+After the agent returns:
+1. Confirm every file the agent claims to have written actually exists on disk.
+2. Re-run the AST syntax check on each .py file the agent wrote (don't trust the agent's self-report alone).
+3. For phases with critical-path risk (P1, P3, P6): spot-read the most important file (e.g. P3 `_response_parser.py`'s `parse_grammar_response` method) and verify the structure matches the gold-standard pattern.
+4. If any check fails, do **not** commit. Re-dispatch the same phase with a corrective prompt that names the specific defect. Up to 2 retries; on third failure, halt and surface to the user.
 
 ### E. Auto-commit
 
@@ -84,14 +95,20 @@ If syntax fails, fix it before committing.
 git add languages/{folder_name}/
 # Phase 6 also touches the registry — add that too:
 git add streamlit_app/language_analyzers/analyzer_registry.py
-git commit -m "Add {language_name} analyzer — Phase {N}: {phase_name}"
+# Phase 8 touches the E2E test:
+git add tests/test_end_to_end_pipeline.py
+git commit -m "Add {language_name} analyzer — Phase {N}: {phase_name} ({tier})"
 ```
 
-Use a HEREDOC for the commit body if you want to add detail. Standard `Co-Authored-By` line per repo convention.
+Including the tier in the commit message lets the user audit the per-phase routing later. Standard `Co-Authored-By` line per repo convention.
 
 ### F. Report and proceed
 
-Print: `Phase {N} ({phase_name}) — committed as {short_sha}, {n} files written`. Move to next phase.
+Print: `Phase {N} ({phase_name}, {tier}) — committed as {short_sha}, {n} files written`. Move to next phase.
+
+### G. Phase 8 — E2E mock data (post-Latvian requirement)
+
+After Phase 7 ships, run a Phase 8 dispatch (sonnet tier per the YAML) to add level-appropriate mocks to `tests/test_end_to_end_pipeline.py`. The agent must produce three dicts (`{LANGUAGE}_MOCK_DATA` for beginner, `_{LANGUAGE}_INTERMEDIATE_MOCK`, `_{LANGUAGE}_ADVANCED_MOCK`), group them in `{LANGUAGE}_LEVEL_MOCK_DATA`, and add a parametrized `test_{lang}_all_difficulty_levels` test that calls the existing `_run_full_pipeline(...)` helper. See the canonical Latvian implementation. The advanced mock's `grammatical_role` tags must come from the analyzer's own advanced-tier vocabulary (e.g. `participle`, `debitive`, `relative_pronoun`) — never just renamed beginner roles. The agent's prompt must inline the advanced role list from `domain/{code}_config.py`.
 
 ## Step 2 — Critical invariants (apply throughout)
 
@@ -126,17 +143,40 @@ python language_grammar_generator/compare_with_gold_standard.py --language {code
 
 ## Step 4 — E2E pipeline test (per CLAUDE.md)
 
-CLAUDE.md states: "for each analyzer, all three difficulty levels are covered and validated:
-1 beginner sentence, 1 intermediate sentence, 2 advanced sentences."
+CLAUDE.md requires: **the full pipeline must run successfully at all three difficulty levels** — beginner, intermediate, and advanced — for every analyzer. One full run per level.
 
-Run:
+### 4a. Add a single-level mock (default = beginner)
+
+Append `{LANGUAGE}_MOCK_DATA` to `tests/test_end_to_end_pipeline.py` with `difficulty="beginner"`, then add it to the `LANGUAGE_MOCK_DATA` registry. This satisfies the existing parametrized `test_end_to_end_pipeline[{lang}]` test.
+
+### 4b. Add intermediate + advanced mocks and a per-level test
+
+Follow the **Latvian reference pattern** in the same file:
+
+1. Define `_{LANGUAGE}_INTERMEDIATE_MOCK` and `_{LANGUAGE}_ADVANCED_MOCK` dicts. Each `mock_grammar_batch_response` must use grammatical-role tags drawn from the analyzer's own `domain/{code}_config.py` for that level — e.g. advanced should exercise roles that only exist in the advanced vocabulary, not just renamed beginner roles.
+2. Group them in `{LANGUAGE}_LEVEL_MOCK_DATA = {"beginner": {LANGUAGE}_MOCK_DATA, "intermediate": ..., "advanced": ...}`.
+3. Add a parametrized test that calls the existing `_run_full_pipeline(data, f"{lang}_{difficulty}", tmp_path)` helper:
+   ```python
+   @pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+   def test_{lang}_all_difficulty_levels(difficulty, tmp_path):
+       _run_full_pipeline({LANGUAGE}_LEVEL_MOCK_DATA[difficulty], f"{lang}_{difficulty}", tmp_path)
+   ```
+
+See `test_latvian_all_difficulty_levels` and `LATVIAN_LEVEL_MOCK_DATA` in `tests/test_end_to_end_pipeline.py` for the canonical implementation.
+
+### 4c. Run
+
 ```bash
 pytest tests/test_end_to_end_pipeline.py -v -s -k {code}
 ```
 
-Must produce a report at `tests/reports/pipeline_report_{language}.txt` showing all 3 difficulty levels exercised.
+Must produce four reports under `tests/reports/`:
+- `pipeline_report_{lang}.txt` — original parametrized run (beginner)
+- `pipeline_report_{lang}_beginner.txt`
+- `pipeline_report_{lang}_intermediate.txt`
+- `pipeline_report_{lang}_advanced.txt`
 
-If any level is missing or the analyzer falls back to generic AI for any of them, fail the gate.
+Each report must show all 7 stages PASS. If any level falls back to generic AI (analyzer roles collapsed to gray `other`) or any role tag is missing from the analyzer's color scheme, fail the gate.
 
 ## Step 5 — Final commit + push
 

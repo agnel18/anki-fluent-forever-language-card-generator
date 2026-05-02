@@ -13,6 +13,23 @@ You are a **Language Grammar Analyzer Builder** — a specialist that creates co
 - **Gold standards:** French v2.0 (LTR languages), Arabic (RTL languages)
 - **Entry point:** `CLAUDE.md` at project root has full project context — read it first if you need architecture details
 
+## Model-tier dispatch (read this once at the start of every run)
+
+This agent dispatches the heavy phases to **subagents at per-phase model tiers** rather than running everything inline at one model. Tiers are defined in `language_grammar_generator/phase_model_tiers.yaml` — read it at the start of every run and use those values. **Do not hardcode tiers in this file.**
+
+Quick reference (subject to YAML; YAML wins on conflict):
+
+| Workflow step | Phase | Tier |
+|---|---|---|
+| Step 2 (Grammar Concepts doc) | P1 | **opus** |
+| Step 3 (Directory scaffold) | P2 | **haiku** |
+| Step 4 + Step 5 (Domain + Main analyzer) | P3 | **opus** |
+| Step 6 (Data files) | P5 | **haiku** |
+| Step 7 (Tests) | P6 | **sonnet** |
+| Step 8d (E2E pipeline mocks) | P8 | **sonnet** |
+
+When a workflow step is tier-eligible, dispatch an `Agent` with `model: <tier>` and have it write the artifacts. Subagents don't see this conversation — inline the prerequisite inputs (e.g. P1's research doc into P3's prompt, P3's role vocabulary into P5/P8 prompts). Print `Step {N} → {tier} agent dispatched` before each call so the routing is visible. Validate the agent's output (file existence, AST parse for .py) in this main session before committing.
+
 ## ⛔ Critical Rules — NEVER Violate
 
 1. **LAZY IMPORTS ONLY.** Analyzer modules must NEVER import `streamlit_app.shared_utils` at module level. The analyzer registry uses `importlib.import_module()` at app startup — module-level imports fail because Streamlit isn't initialized yet. Always import inside methods:
@@ -80,18 +97,18 @@ Verify the language exists in `streamlit_app/languages.yaml` and note its TTS vo
 - **Also register in LanguageRegistry:** The language must be added to `_load_language_configs()` in `streamlit_app/language_registry.py` (using the exact same style as the other 14 entries).
 - **Custom prompt requirement:** Confirm that `{code}_prompt_builder.py` will contain language-specific sentence generation templates (required to avoid generic prompt fallback in content generation).
 
-### Step 2: Create Grammar Concepts Document
+### Step 2: Create Grammar Concepts Document  *(P1 — opus tier per YAML)*
 
-Create `languages/{lang}/{code}_grammar_concepts.md` with:
+Dispatch an opus-tier `Agent` with the filled `PHASE1_RESEARCH_PROMPT`. The agent writes `languages/{lang}/{code}_grammar_concepts.md` with:
 - Basic word order and sentence structure
 - Grammatical categories (nouns, verbs, adjectives, particles, etc.)
 - Key features unique to this language
 - 3-5 example sentences with grammatical breakdowns
 - Complexity levels: what beginner/intermediate/advanced analysis looks like
 
-### Step 3: Scaffold Directory Structure
+### Step 3: Scaffold Directory Structure  *(P2 — haiku tier per YAML)*
 
-Create ALL files and directories:
+Dispatch a haiku-tier `Agent` with the filled `PHASE2_DIRECTORY_PROMPT`. The agent creates ALL files and directories:
 ```
 languages/{lang}/
 ├── __init__.py
@@ -122,9 +139,9 @@ languages/{lang}/
     └── test_integration.py
 ```
 
-### Step 4: Implement Domain Components
+### Step 4: Implement Domain Components  *(P3 — opus tier per YAML, peak reasoning)*
 
-Generate all 5 domain files by adapting the gold standard. Read the corresponding French/Arabic file first, then adapt:
+Dispatch an opus-tier `Agent` with the filled `PHASE3_DOMAIN_COMPONENTS_PROMPT`. **Inline the realized P1 grammar-concepts content into the agent's prompt** so it has the role vocabulary it needs. Generate all 5 domain files by adapting the gold standard. Read the corresponding French/Arabic file first, then adapt:
 
 - **`{code}_config.py`** — Language config, grammatical roles, color schemes, complexity filters. Load from external YAML/JSON in `infrastructure/data/`.
 - **`{code}_prompt_builder.py`** — **MUST** contain rich language-specific templates for BOTH grammar analysis AND sentence generation (meaning, sentences, keywords, IPA). Copy the pattern from `hi_prompt_builder.py` or `fr_prompt_builder.py` and adapt for this language’s grammar and vocabulary style.
@@ -135,9 +152,9 @@ Generate all 5 domain files by adapting the gold standard. Read the correspondin
 **CRITICAL:** Every new analyzer **must** have a custom `prompt_builder.py` with sentence-generation templates so that “No custom prompt available” never appears.
 
 
-### Step 5: Implement Main Analyzer
+### Step 5: Implement Main Analyzer  *(continuation of P3 — same opus agent or a follow-up opus dispatch)*
 
-Create `{code}_analyzer.py`:
+Have the same opus-tier agent (or a fresh one with the P3 components inlined) create `{code}_analyzer.py`:
 - Inherit from `BaseGrammarAnalyzer`
 - Initialize all domain components in `__init__()`
 - Implement the 4 abstract methods by delegating to domain components
@@ -148,17 +165,17 @@ Create `{code}_analyzer.py`:
 - Add `_generate_html_output()` for color-coded sentence display
 - **Critical batch & fallback pattern:** `batch_analyze_grammar` must accept `target_words: List[str]` and return `List[Dict[str, Any]]` with keys `"colored_sentence"`, `"word_explanations"`, `"grammar_summary"`. In `analyze_grammar` except block, always use `self.fallbacks.create_fallback(...)` (never `self.response_parser.fallbacks` or `self.zh_fallbacks`). `validate_analysis` **must** return `float`.
 
-### Step 6: Create Data Files
+### Step 6: Create Data Files  *(P5 — haiku tier per YAML)*
 
-Generate `infrastructure/data/` YAML/JSON configs with linguistically accurate content:
+Dispatch a haiku-tier `Agent` with the filled `PHASE5_CONFIGURATION_PROMPT`. **Inline the role vocabulary from `domain/{code}_config.py`** so the data files match what the analyzer expects. The agent generates `infrastructure/data/` YAML/JSON configs with linguistically accurate content:
 - **`{code}_grammatical_roles.yaml`** — All grammatical roles with display names, colors, descriptions
 - **`{code}_patterns.yaml`** — Common sentence patterns for the language
 - **`{code}_word_meanings.json`** — 200+ common words with meanings for fallback analysis
 - **Language-specific files** as needed (verb conjugations, particle patterns, case markers, etc.)
 
-### Step 7: Create Tests
+### Step 7: Create Tests  *(P6 — sonnet tier per YAML)*
 
-Create 7 test files + conftest following the Japanese pattern:
+Dispatch a sonnet-tier `Agent` with the filled `PHASE6_TESTING_INTEGRATION_PROMPT`. **Inline the public method signatures from the P3 domain components** so the tests target the correct interfaces. The agent creates 7 test files + conftest following the Japanese pattern:
 - **`conftest.py`** — Fixtures for config, analyzer, sample sentences, mock responses
 - **`test_{code}_analyzer.py`** — Facade tests: initialization, abstract methods, HTML output
 - **`test_{code}_config.py`** — Config loading, color schemes, role definitions, complexity filters
@@ -187,21 +204,38 @@ python language_grammar_generator/validate_implementation.py --language {code} -
 ```
 All 11 checks must pass.
 
-**8d. Add E2E pipeline test mock data:**
-Add a `{LANGUAGE}_MOCK_DATA` dict to `tests/test_end_to_end_pipeline.py` with:
-- Realistic word from the language's frequency list (top 100)
-- 4 mock sentences with translations
-- Mock Gemini response in `MEANING:/RESTRICTIONS:/SENTENCES:/TRANSLATIONS:/IPA:/KEYWORDS:` format
-- Mock grammar batch response as JSON array
-- **Ensure at least 1 beginner, 1 intermediate, and 2 advanced sentences are included and clearly labeled.**
-Add `@pytest.mark.parametrize` entry for the new language.
+**8d. Add E2E pipeline test mock data — three levels, not one:**  *(P8 — sonnet tier per YAML)*
+
+Dispatch a sonnet-tier `Agent`. **Inline the analyzer's advanced-tier role vocabulary from `domain/{code}_config.py`** plus the existing Latvian reference (`LATVIAN_LEVEL_MOCK_DATA` and `test_latvian_all_difficulty_levels` in `tests/test_end_to_end_pipeline.py`) so the agent has both the source-of-truth role list and the canonical structural template.
+
+Per CLAUDE.md ("E2E Test Sentence Difficulty Coverage"), every analyzer must be validated by **three separate full pipeline runs** — one each at `difficulty="beginner"`, `"intermediate"`, `"advanced"`. Follow the **Latvian reference pattern** in `tests/test_end_to_end_pipeline.py`:
+
+1. Add `{LANGUAGE}_MOCK_DATA` (beginner) with:
+   - Realistic word from the language's frequency list (top 100)
+   - 4 mock sentences with translations
+   - Mock Gemini response in `MEANING:/RESTRICTIONS:/SENTENCES:/TRANSLATIONS:/IPA:/KEYWORDS:` format
+   - Mock grammar batch response as JSON array
+   - `difficulty: "beginner"`
+   - Add it to the `LANGUAGE_MOCK_DATA` registry — this powers the existing parametrized `test_end_to_end_pipeline[{lang}]` test.
+
+2. Add `_{LANGUAGE}_INTERMEDIATE_MOCK` and `_{LANGUAGE}_ADVANCED_MOCK` dicts with the same structure but level-appropriate sentences AND level-appropriate grammatical-role tags. The advanced mock's `grammatical_role` values must include roles that only exist in your config's advanced vocabulary (e.g. for Latvian: `participle`, `debitive`, `relative_pronoun`, `subordinating_conjunction`). Otherwise the level isn't actually being exercised.
+
+3. Group them: `{LANGUAGE}_LEVEL_MOCK_DATA = {"beginner": {LANGUAGE}_MOCK_DATA, "intermediate": ..., "advanced": ...}`.
+
+4. Add a parametrized test that calls the existing helper `_run_full_pipeline(...)`:
+   ```python
+   @pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+   def test_{lang}_all_difficulty_levels(difficulty, tmp_path):
+       _run_full_pipeline({LANGUAGE}_LEVEL_MOCK_DATA[difficulty], f"{lang}_{difficulty}", tmp_path)
+   ```
+
+See `test_latvian_all_difficulty_levels` + `LATVIAN_LEVEL_MOCK_DATA` for the canonical implementation.
 
 **8e. Run E2E test:**
 ```bash
-pytest tests/test_end_to_end_pipeline.py -v -s
+pytest tests/test_end_to_end_pipeline.py -v -s -k {lang}
 ```
-- **The E2E test must assert and validate results for all three difficulty levels (beginner, intermediate, advanced) for every analyzer.**
-All 7 stages must pass.
+All 7 stages must pass at every level. Reports written to `tests/reports/pipeline_report_{lang}.txt` (legacy beginner) plus `pipeline_report_{lang}_{beginner|intermediate|advanced}.txt`. If any level collapses analyzer roles to gray `other` or skips role coverage, the gate fails — fix the analyzer's color scheme or the mock's role tags before proceeding.
 
 **8f. Commit:**
 ```bash
