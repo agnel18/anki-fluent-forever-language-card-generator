@@ -1226,6 +1226,103 @@ MALAYALAM_MOCK_DATA: Dict[str, Any] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# LATVIAN
+# ---------------------------------------------------------------------------
+LATVIAN_MOCK_DATA: Dict[str, Any] = {
+    "word": "runāt",
+    "language_name": "Latvian",
+    "language_code": "lv",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 3,
+    "max_length": 15,
+    "difficulty": "beginner",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to use language)
+
+        RESTRICTIONS: Regular verb. Keep sentences natural and beginner-friendly.
+
+        SENTENCES:
+        1. Es runāju latviski.
+        2. Mēs runājam skolā.
+        3. Kāpēc tu runā tik ātri?
+        4. Viņi vakar runāja par ēdienu.
+
+        TRANSLATIONS:
+        1. I speak Latvian.
+        2. We speak at school.
+        3. Why do you speak so quickly?
+        4. They spoke about food yesterday.
+
+        IPA:
+        1. ɛs runaːju latviski
+        2. meːs runaːjam skolaː
+        3. kaːpɛts tu runaː tik aːtri
+        4. vinji vakar runaːja par eːdienu
+
+        KEYWORDS:
+        1. person speaking, Latvian language
+        2. students talking at school
+        3. fast speech, question
+        4. group discussion, food topic"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Es runāju latviski.",
+            "overall_structure": "Subject-Verb-Adverb",
+            "sentence_structure": "Subject-Verb-Adverb",
+            "word_explanations": [
+                {"word": "Es", "role": "personal_pronoun", "color": "#9370DB", "meaning": "I (1st person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runāju", "role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "latviski", "role": "adverb", "color": "#FF6347", "meaning": "in Latvian (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Basic SVO sentence in present tense.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Mēs runājam skolā.",
+            "overall_structure": "Subject-Verb-Locative",
+            "sentence_structure": "Subject-Verb-Locative",
+            "word_explanations": [
+                {"word": "Mēs", "role": "personal_pronoun", "color": "#9370DB", "meaning": "we (1st person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "runājam", "role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person plural present)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
+                {"word": "skolā", "role": "noun", "color": "#FFAA00", "meaning": "at school (locative singular)", "case": "locative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Locative case -ā marks place.",
+            "confidence": 0.90
+        },
+        {
+            "sentence": "Kāpēc tu runā tik ātri?",
+            "overall_structure": "Question-Adverb-Subject-Verb-Adverb-Adverb",
+            "sentence_structure": "Question with adverbial intensifier",
+            "word_explanations": [
+                {"word": "Kāpēc", "role": "adverb", "color": "#FF6347", "meaning": "why (question adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "tu", "role": "personal_pronoun", "color": "#9370DB", "meaning": "you (2nd person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runā", "role": "verb", "color": "#4ECDC4", "meaning": "speak (2nd/3rd person present context-dependent)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "tik", "role": "particle", "color": "#DC143C", "meaning": "so (degree particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ātri", "role": "adverb", "color": "#FF6347", "meaning": "quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Question word kāpēc introduces a direct question.",
+            "confidence": 0.89
+        },
+        {
+            "sentence": "Viņi vakar runāja par ēdienu.",
+            "overall_structure": "Subject-Time-Verb-Preposition-Object",
+            "sentence_structure": "Past tense clause with prepositional object",
+            "word_explanations": [
+                {"word": "Viņi", "role": "personal_pronoun", "color": "#9370DB", "meaning": "they (3rd person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "vakar", "role": "adverb", "color": "#FF6347", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "runāja", "role": "verb", "color": "#4ECDC4", "meaning": "spoke (past tense)", "case": "", "gender": "", "number": "plural", "tense": "past", "definite_form": ""},
+                {"word": "par", "role": "preposition", "color": "#32CD32", "meaning": "about (preposition requiring accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ēdienu", "role": "noun", "color": "#FFAA00", "meaning": "food (accusative singular)", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Past tense verb with preposition par + accusative object.",
+            "confidence": 0.90
+        }
+    ], ensure_ascii=False),
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
@@ -1242,6 +1339,7 @@ LANGUAGE_MOCK_DATA = {
     "korean": KOREAN_MOCK_DATA,
     "hungarian": HUNGARIAN_MOCK_DATA,
     "malayalam": MALAYALAM_MOCK_DATA,
+    "latvian": LATVIAN_MOCK_DATA,
 }
 
 

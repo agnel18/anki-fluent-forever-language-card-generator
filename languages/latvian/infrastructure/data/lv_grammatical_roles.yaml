@@ -1,0 +1,86 @@
+# lv_grammatical_roles.yaml
+# Latvian Grammatical Roles Configuration
+
+role_hierarchy:
+  # Noun subtypes → noun
+  proper_noun: "noun"
+  common_noun: "noun"
+  verbal_noun: "noun"
+
+  # Verb subtypes → verb
+  auxiliary: "verb"
+  reflexive_verb: "verb"
+  debitive: "verb"
+  participle: "verb"
+
+  # Adjective subtypes → adjective
+  adjective_definite: "adjective"
+  adjective_indefinite: "adjective"
+
+  # Pronoun subtypes → pronoun
+  personal_pronoun: "pronoun"
+  reflexive_pronoun: "pronoun"
+  demonstrative: "pronoun"
+  relative_pronoun: "pronoun"
+  indefinite_pronoun: "pronoun"
+
+  # Conjunction subtypes → conjunction
+  subordinating_conjunction: "conjunction"
+
+complexity_filters:
+  beginner:
+    - noun
+    - verb
+    - adjective
+    - adverb
+    - pronoun
+    - preposition
+    - conjunction
+    - numeral
+
+  intermediate:
+    - noun
+    - verb
+    - auxiliary
+    - adjective
+    - adjective_definite
+    - adjective_indefinite
+    - adverb
+    - pronoun
+    - personal_pronoun
+    - reflexive_pronoun
+    - demonstrative
+    - preposition
+    - conjunction
+    - subordinating_conjunction
+    - reflexive_verb
+    - debitive
+    - numeral
+    - particle
+
+  advanced:
+    - noun
+    - proper_noun
+    - common_noun
+    - verbal_noun
+    - verb
+    - auxiliary
+    - reflexive_verb
+    - debitive
+    - participle
+    - adjective
+    - adjective_definite
+    - adjective_indefinite
+    - adverb
+    - pronoun
+    - personal_pronoun
+    - reflexive_pronoun
+    - demonstrative
+    - relative_pronoun
+    - indefinite_pronoun
+    - preposition
+    - conjunction
+    - subordinating_conjunction
+    - numeral
+    - particle
+    - interjection

@@ -1,0 +1,64 @@
+# lv_language_config.yaml
+# Latvian Language Configuration
+
+language:
+  code: "lv"
+  name: "Latvian"
+  native_name: "Latviešu"
+  family: "Indo-European"
+  branch: "Baltic"
+  script: "Latin"
+  script_type: "alphabetic"
+  direction: "ltr"
+  is_rtl: false
+
+grammar:
+  cases:
+    - nominative
+    - genitive
+    - dative
+    - accusative
+    - instrumental
+    - locative
+    - vocative
+  genders:
+    - masculine
+    - feminine
+  numbers:
+    - singular
+    - plural
+  tenses:
+    - present
+    - past
+    - future
+  moods:
+    - indicative
+    - conditional
+    - debitive
+    - imperative
+  voices:
+    - active
+    - passive
+    - reflexive
+  participle_types:
+    - present_active
+    - past_active
+    - present_passive
+    - past_passive
+
+analyzer:
+  confidence_threshold: 0.85
+  max_words_per_batch: 8
+  supported_complexity_levels:
+    - beginner
+    - intermediate
+    - advanced
+  key_features:
+    - case_system
+    - grammatical_gender
+    - definite_adjective
+    - debitive_mood
+    - reflexive_verbs
+    - participial_system
+    - free_word_order
+    - aspect_prefixes

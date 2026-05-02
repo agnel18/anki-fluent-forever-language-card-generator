@@ -53,7 +53,8 @@ class TestRunner:
             "es": "spanish",
             "ar": "arabic",
             "de": "german",
-            "tr": "turkish"
+            "tr": "turkish",
+            "lv": "latvian"
         }
         return mapping.get(language_code, language_code)
 
@@ -68,7 +69,8 @@ class TestRunner:
             "ar": "ArAnalyzer",
             "arabic": "ArAnalyzer",  # Special case for when user passes "arabic"
             "de": "DeAnalyzer",
-            "tr": "TrAnalyzer"
+            "tr": "TrAnalyzer",
+            "lv": "LvAnalyzer"
         }
         return mapping.get(language_code, f"{language_code.title()}Analyzer")
 
@@ -83,7 +85,8 @@ class TestRunner:
             "ar": "ar",
             "arabic": "ar",  # Special case for when user passes "arabic"
             "de": "de",
-            "tr": "tr"
+            "tr": "tr",
+            "lv": "lv"
         }
         return mapping.get(language_code, language_code)
 

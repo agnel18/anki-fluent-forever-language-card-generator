@@ -1,0 +1,138 @@
+# lv_patterns.yaml
+# Latvian Morphological Patterns
+
+# Verb endings by tense/person
+verb_endings:
+  present:
+    - āju    # 1sg Class 1
+    - ā      # 3sg/3pl Class 1
+    - ājam   # 1pl Class 1
+    - ājat   # 2pl Class 1
+    - u      # 1sg Class 2
+    - am     # 1pl Class 2
+  past:
+    - āju    # 1sg/3 Class 1 (same form, context distinguishes)
+    - āja    # 3 Class 1
+    - āju    # 1sg
+  future:
+    - āšu    # 1sg
+    - ās     # 3
+    - āsim   # 1pl
+
+# Debitive pattern
+debitive:
+  prefix: "jā"
+  description: "Obligation marker — jā- prefixed to verb stem"
+  example: "jāraksta (must write)"
+
+# Reflexive verb marker
+reflexive:
+  suffix_sg: "ties"
+  suffix_pl: "ās"
+  example: "mazgāties (to wash oneself)"
+
+# Noun endings (simplified)
+noun_endings:
+  masculine_sg:
+    nom: ["s", "is", "us"]
+    gen: ["a", "ņa"]
+    dat: ["am", "im", "um"]
+    acc: ["u"]
+    loc: ["ā", "ī"]
+  feminine_sg:
+    nom: ["a", "e", "s"]
+    gen: ["as", "es", "s"]
+    dat: ["ai", "ei"]
+    acc: ["u"]
+    loc: ["ā", "ē"]
+
+# Adjective definiteness patterns
+adjective:
+  definite_endings_m:
+    - ais   # nom sg
+    - ie    # nom pl
+    - ajam  # dat sg
+  indefinite_endings_m:
+    - s     # nom sg
+    - i     # nom pl
+  definite_endings_f:
+    - ā     # nom sg
+    - ās    # nom pl
+  indefinite_endings_f:
+    - a     # nom sg
+    - as    # nom pl
+
+# Participle endings
+participles:
+  present_active:
+    masc: ["ošs", "ošais"]
+    fem: ["oša", "ošā"]
+  past_active:
+    masc: ["is", "ušais"]
+    fem: ["usi", "usī"]
+  present_passive:
+    masc: ["ams", "amais"]
+    fem: ["ama", "amā"]
+  past_passive:
+    masc: ["ts", "tais"]
+    fem: ["ta", "tā"]
+
+# Common verbal prefixes
+verb_prefixes:
+  - aiz   # away, behind
+  - ap    # around
+  - at    # back, re-
+  - ie    # in, into
+  - iz    # out of
+  - no    # from, off
+  - pa    # along, a bit
+  - par   # over, about
+  - pār   # over, across
+  - pie   # to, near
+  - sa    # together
+  - uz    # on, up
+
+# Common conjunctions
+conjunctions:
+  coordinating:
+    - un    # and
+    - bet   # but
+    - vai   # or
+    - jo    # because
+    - tomēr # however
+    - taču  # however/yet
+  subordinating:
+    - ka    # that
+    - kad   # when
+    - ja    # if
+    - lai   # so that / in order to
+    - kaut  # although
+    - kamēr # while
+    - tā kā # since
+
+# Common prepositions with case government
+prepositions:
+  genitive:
+    - bez   # without
+    - līdz  # until/to
+    - no    # from
+    - pēc   # after/for
+    - pie   # at/near
+    - priekš # for
+    - starp # between
+  dative:
+    - pret  # against/toward
+    - pretī # opposite
+  accusative:
+    - ap    # around
+    - caur  # through
+    - gar   # past/along
+    - par   # about/for
+    - pār   # over/across
+    - uz    # to/onto
+  locative:
+    - aiz   # behind
+    - iekš  # inside
+    - pa    # along
+    - pie   # near (locative)
+    - uz    # on/at (locative)

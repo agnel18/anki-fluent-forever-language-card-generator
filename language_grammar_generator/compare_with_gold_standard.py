@@ -155,7 +155,8 @@ class GoldStandardComparator:
             "es": "spanish",
             "ar": "arabic",
             "de": "german",
-            "tr": "turkish"
+            "tr": "turkish",
+            "lv": "latvian"
         }
         return mapping.get(language_code, language_code)
 
@@ -168,7 +169,8 @@ class GoldStandardComparator:
             "es": "es",
             "ar": "ar",
             "de": "de",
-            "tr": "tr"
+            "tr": "tr",
+            "lv": "lv"
         }
         return mapping.get(language_code, language_code)
 
@@ -181,7 +183,8 @@ class GoldStandardComparator:
             "es": "Es",
             "ar": "Ar",
             "de": "De",
-            "tr": "Tr"
+            "tr": "Tr",
+            "lv": "Lv"
         }
         return mapping.get(language_code, language_code.title())
 
@@ -254,6 +257,10 @@ class GoldStandardComparator:
     def compare_performance(self) -> Tuple[bool, str]:
         """Compare performance benchmarks."""
         try:
+            api_key = self._get_api_key()
+            if not api_key:
+                return True, "Skipped performance comparison (no API key)"
+
             analyzer = self._load_analyzer(self.language_code)
             reference_analyzer = self._load_analyzer(self.reference_code)
 
@@ -262,12 +269,12 @@ class GoldStandardComparator:
 
             # Time the analyzer
             start_time = time.time()
-            result = analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
+            result = analyzer.analyze_grammar(test_sentence, target_word, "intermediate", api_key)
             duration = time.time() - start_time
 
             # Time gold standard
             start_time = time.time()
-            reference_result = reference_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", "test_key")
+            reference_result = reference_analyzer.analyze_grammar(test_sentence, target_word, "intermediate", api_key)
             ref_duration = time.time() - start_time
 
             # Performance should be within 2x of gold standard
