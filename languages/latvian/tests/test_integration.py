@@ -70,7 +70,7 @@ def test_analyze_grammar_all_levels(
     assert 0.0 < result.confidence_score <= 1.0
     assert len(result.word_explanations) > 0
 
-    actual_roles = {w["role"] for w in result.word_explanations}
+    actual_roles = {w[1] for w in result.word_explanations}
     for role in expected_roles:
         assert role in actual_roles, (
             f"Expected role '{role}' missing at {complexity}. Got: {actual_roles}"
@@ -174,7 +174,7 @@ def test_colors_not_overridden(analyzer):
             "Es runāju latviski.", "runāju", "beginner", FAKE_KEY
         )
 
-    colors = {w["word"]: w.get("color") for w in result.word_explanations}
+    colors = {w[0]: w[2] for w in result.word_explanations}
     assert colors.get("Es") == "#9370DB"   # personal_pronoun
     assert colors.get("runāju") == "#4ECDC4"  # verb
 
@@ -185,6 +185,6 @@ def test_lv_specific_debitive_color(analyzer):
             "Man jāmācās latviešu valoda.", "jāmācās", "intermediate", FAKE_KEY
         )
 
-    colors_by_role = {w["role"]: w.get("color") for w in result.word_explanations}
+    colors_by_role = {w[1]: w[2] for w in result.word_explanations}
     assert "debitive" in colors_by_role
     assert colors_by_role["debitive"] == "#FF1493"

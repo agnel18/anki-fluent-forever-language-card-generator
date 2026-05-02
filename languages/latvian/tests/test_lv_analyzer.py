@@ -66,7 +66,7 @@ class TestLvAnalyzerSingle:
                 "Man jāmācās latviešu valoda.", "jāmācās", "intermediate", FAKE_KEY
             )
         assert isinstance(result, GrammarAnalysis)
-        roles = [w["role"] for w in result.word_explanations]
+        roles = [w[1] for w in result.word_explanations]
         assert "debitive" in roles
 
     def test_analyze_grammar_advanced(self):
@@ -77,7 +77,7 @@ class TestLvAnalyzerSingle:
                 "vēstule", "advanced", FAKE_KEY
             )
         assert isinstance(result, GrammarAnalysis)
-        roles = [w["role"] for w in result.word_explanations]
+        roles = [w[1] for w in result.word_explanations]
         assert "participle" in roles
 
     def test_confidence_score_range(self):

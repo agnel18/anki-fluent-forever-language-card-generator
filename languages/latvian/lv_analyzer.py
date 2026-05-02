@@ -140,7 +140,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                 complexity_level=complexity,
                 grammatical_elements=validated.get("elements", {}),
                 explanations=validated.get("explanations", {}),
-                word_explanations=validated.get("word_explanations", []),
+                word_explanations=self._format_word_explanations(validated.get("word_explanations", [])),
                 color_scheme=self.get_color_scheme(complexity),
                 html_output=html_output,
                 confidence_score=confidence,
@@ -156,7 +156,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                 complexity_level=complexity,
                 grammatical_elements=fallback.get("elements", {}),
                 explanations=fallback.get("explanations", {}),
-                word_explanations=fallback.get("word_explanations", []),
+                word_explanations=self._format_word_explanations(fallback.get("word_explanations", [])),
                 color_scheme=self.get_color_scheme(complexity),
                 html_output=html_output,
                 confidence_score=fallback.get("confidence", 0.3),
@@ -199,7 +199,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                         color_scheme=self.get_color_scheme(complexity),
                         html_output=html_output,
                         confidence_score=validated.get("confidence", 0.0),
-                        word_explanations=validated.get("word_explanations", []),
+                        word_explanations=self._format_word_explanations(validated.get("word_explanations", [])),
                     )
                 )
             return grammar_analyses
@@ -221,7 +221,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                         color_scheme=self.get_color_scheme(complexity),
                         html_output=html_output,
                         confidence_score=fallback.get("confidence", 0.3),
-                        word_explanations=fallback.get("word_explanations", []),
+                        word_explanations=self._format_word_explanations(fallback.get("word_explanations", [])),
                     )
                 )
             return fallback_analyses
@@ -288,6 +288,21 @@ class LvAnalyzer(BaseGrammarAnalyzer):
     # ------------------------------------------------------------------
     # HTML output generation
     # ------------------------------------------------------------------
+
+    def _format_word_explanations(self, raw: list) -> list:
+        """Convert word_explanations to [word, role, color, meaning] list format."""
+        result = []
+        for item in raw:
+            if isinstance(item, dict):
+                result.append([
+                    item.get("word", ""),
+                    item.get("role", "other"),
+                    item.get("color", "#CCCCCC"),
+                    item.get("meaning", item.get("word", "")),
+                ])
+            elif isinstance(item, (list, tuple)) and len(item) >= 4:
+                result.append(list(item))
+        return result
 
     def _generate_html_output(
         self,
