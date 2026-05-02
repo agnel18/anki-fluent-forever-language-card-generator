@@ -211,7 +211,7 @@ class LvResponseParser:
             word = str(item.get("word", "")).strip()
             if not word:
                 continue
-            role = str(item.get("role", "other")).strip().lower()
+            role = str(item.get("grammatical_role", item.get("role", "other"))).strip().lower()
             color = item.get("color") or self.config.get_color_for_role(role, complexity)
             meaning = str(item.get("meaning", word)).strip()
             normalized_words.append({

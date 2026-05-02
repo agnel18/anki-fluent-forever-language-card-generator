@@ -5,7 +5,7 @@
   Language       : Chinese (Simplified)
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-04-24 11:21:01
+  Generated at   : 2026-05-02 15:10:24
   Elapsed        : 0.03s
 ================================================================================
 
@@ -17,10 +17,10 @@ STAGE RESULTS
          Meaning: to eat (to consume food)
          Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
   [PASS] 3. Grammar Analysis (Batch)
-         Sentence 1: colored=YES, explanations=9, summary=YES
-         Sentence 2: colored=YES, explanations=10, summary=YES
-         Sentence 3: colored=YES, explanations=6, summary=YES
-         Sentence 4: colored=YES, explanations=10, summary=YES
+         Sentence 1: colored=YES, explanations=5, summary=YES
+         Sentence 2: colored=YES, explanations=5, summary=YES
+         Sentence 3: colored=YES, explanations=4, summary=YES
+         Sentence 4: colored=YES, explanations=6, summary=YES
   [PASS] 4. Audio Generation (mocked)
          Generated 4 audio file paths
   [PASS] 5. Image Generation (mocked)
@@ -44,18 +44,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: wǒ měitiān zǎoshang chī miànbāo
   Keywords   : bread plate, morning breakfast
 
-  Colored HTML : <span style="color: #FF4444; font-weight: bold;">我</span><span style="color: #FF44FF; font-weight: bold;">每</span><span style="color: #FF44FF; font-weight: bold;">天</span><span style="color: #FF44FF; …
-  Grammar Summ : Sentence contains 1 pronoun, 7 adjectives, 1 noun
-  Word Explanations (9 words):
-    我             pronoun         #FF4444   I, me (first person singular pronoun)
-    每             adjective       #FF44FF   a word that describes a noun
-    天             adjective       #FF44FF   a word that describes a noun
-    早             adjective       #FF44FF   a word that describes a noun
-    上             adjective       #FF44FF   a word that describes a noun
-    吃             adjective       #FF44FF   to eat (verb)
-    面             adjective       #FF44FF   a word that describes a noun
-    包             adjective       #FF44FF   a word that describes a noun
-    。             noun            #FFAA00   a thing, person, or concept
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">我</span><span style="color: #44FFFF; font-weight: bold;">每天</span><span style="color: #FFAA00; font-weight: bold;">早上</span><span style="color: #E63939…
+  Grammar Summ : SVO: Subject + Time + Verb + Object. Chinese SVO word order; no verb conjugation; time before verb.
+  Word Explanations (5 words):
+    我             pronoun         #FF4444   I/me (first person pronoun)
+    每天            adverb          #44FFFF   every day (time adverb)
+    早上            noun            #FFAA00   morning (time noun)
+    吃             target_word     #E63939   eat (action verb, no conjugation)
+    面包            noun            #FFAA00   bread (compound noun)
 
   --- Sentence 2 ---
   Original   : 孩子们在学校吃午饭。
@@ -63,19 +59,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: háizimen zài xuéxiào chī wǔfàn
   Keywords   : children school, lunch tray
 
-  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">孩</span><span style="color: #FF44FF; font-weight: bold;">子</span><span style="color: #FF44FF; font-weight: bold;">们</span><span style="color: #4444FF; …
-  Grammar Summ : Sentence contains 8 adjectives, 1 preposition, 1 noun
-  Word Explanations (10 words):
-    孩             adjective       #FF44FF   a word that describes a noun
-    子             adjective       #FF44FF   a word that describes a noun
-    们             adjective       #FF44FF   a word that describes a noun
-    在             preposition     #4444FF   at, in, on (preposition)
-    学             adjective       #FF44FF   to study, learn (verb)
-    校             adjective       #FF44FF   a word that describes a noun
-    吃             adjective       #FF44FF   to eat (verb)
-    午             adjective       #FF44FF   a word that describes a noun
-    饭             adjective       #FF44FF   meal, rice (noun)
-    。             noun            #FFAA00   a thing, person, or concept
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">孩子们</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FFAA00; font-weight: bold;">学校</span><span style="color: #E6393…
+  Grammar Summ : S + Location + V + O: Subject + 在 + Place + Verb + Object. Location phrase 在学校 before verb; 们 plural marker.
+  Word Explanations (5 words):
+    孩子们           noun            #FFAA00   children (noun + plural suffix 们)
+    在             preposition     #4444FF   at/in (location preposition)
+    学校            noun            #FFAA00   school (compound noun)
+    吃             target_word     #E63939   eat (action verb)
+    午饭            noun            #FFAA00   lunch (compound noun: noon + meal)
 
   --- Sentence 3 ---
   Original   : 你想吃什么？
@@ -83,15 +74,13 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: nǐ xiǎng chī shénme
   Keywords   : food question, menu choices
 
-  Colored HTML : <span style="color: #FF4444; font-weight: bold;">你</span><span style="color: #FF44FF; font-weight: bold;">想</span><span style="color: #FF44FF; font-weight: bold;">吃</span><span style="color: #FF44FF; …
-  Grammar Summ : Sentence contains 1 pronoun, 4 adjectives, 1 noun
-  Word Explanations (6 words):
-    你             pronoun         #FF4444   you (second person singular pronoun)
-    想             adjective       #FF44FF   a word that describes a noun
-    吃             adjective       #FF44FF   to eat (verb)
-    什             adjective       #FF44FF   a word that describes a noun
-    么             adjective       #FF44FF   a word that describes a noun
-    ？             noun            #FFAA00   a thing, person, or concept
+  Colored HTML : <span style="color: #FF4444; font-weight: bold;">你</span><span style="color: #AAAAAA; font-weight: bold;">想</span><span style="color: #E63939; font-weight: bold;">吃</span><span style="color: #FF4444; …
+  Grammar Summ : S + Aux + V + WH: Subject + Modal + Verb + Question word. WH-word 什么 stays in-situ (not fronted); 想 + verb for desire.
+  Word Explanations (4 words):
+    你             pronoun         #FF4444   you (second person pronoun)
+    想             auxiliary_verb  #AAAAAA   want to (modal/auxiliary verb)
+    吃             target_word     #E63939   eat (action verb)
+    什么            pronoun         #FF4444   what (interrogative pronoun)
 
   --- Sentence 4 ---
   Original   : 妈妈在厨房里吃苹果。
@@ -99,19 +88,15 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: māma zài chúfáng lǐ chī píngguǒ
   Keywords   : mother kitchen, apple fruit
 
-  Colored HTML : <span style="color: #FF44FF; font-weight: bold;">妈</span><span style="color: #FF44FF; font-weight: bold;">妈</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FF44FF; …
-  Grammar Summ : Sentence contains 8 adjectives, 1 preposition, 1 noun
-  Word Explanations (10 words):
-    妈             adjective       #FF44FF   a word that describes a noun
-    妈             adjective       #FF44FF   a word that describes a noun
-    在             preposition     #4444FF   at, in, on (preposition)
-    厨             adjective       #FF44FF   a word that describes a noun
-    房             adjective       #FF44FF   a word that describes a noun
-    里             adjective       #FF44FF   a word that describes a noun
-    吃             adjective       #FF44FF   to eat (verb)
-    苹             adjective       #FF44FF   a word that describes a noun
-    果             adjective       #FF44FF   a word that describes a noun
-    。             noun            #FFAA00   a thing, person, or concept
+  Colored HTML : <span style="color: #FFAA00; font-weight: bold;">妈妈</span><span style="color: #4444FF; font-weight: bold;">在</span><span style="color: #FFAA00; font-weight: bold;">厨房</span><span style="color: #AA44FF…
+  Grammar Summ : S + Location + V + O: Subject + 在Place里 + Verb + Object. Location phrase 在...里 wraps noun; localizer 里 specifies 'inside'.
+  Word Explanations (6 words):
+    妈妈            noun            #FFAA00   mom/mother (reduplicated kinship term)
+    在             preposition     #4444FF   at/in (location preposition)
+    厨房            noun            #FFAA00   kitchen (compound noun)
+    里             particle        #AA44FF   inside (localizer/postposition)
+    吃             target_word     #E63939   eat (action verb)
+    苹果            noun            #FFAA00   apple (compound noun)
 
 AUDIO FILES
 --------------------------------------------------------------------------------

@@ -1272,9 +1272,9 @@ LATVIAN_MOCK_DATA: Dict[str, Any] = {
             "overall_structure": "Subject-Verb-Adverb",
             "sentence_structure": "Subject-Verb-Adverb",
             "word_explanations": [
-                {"word": "Es", "role": "personal_pronoun", "color": "#9370DB", "meaning": "I (1st person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
-                {"word": "runāju", "role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
-                {"word": "latviski", "role": "adverb", "color": "#FF6347", "meaning": "in Latvian (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+                {"word": "Es", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "I (1st person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runāju", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "latviski", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "in Latvian (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
             ],
             "grammar_notes": "Basic SVO sentence in present tense.",
             "confidence": 0.92
@@ -1284,9 +1284,9 @@ LATVIAN_MOCK_DATA: Dict[str, Any] = {
             "overall_structure": "Subject-Verb-Locative",
             "sentence_structure": "Subject-Verb-Locative",
             "word_explanations": [
-                {"word": "Mēs", "role": "personal_pronoun", "color": "#9370DB", "meaning": "we (1st person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
-                {"word": "runājam", "role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person plural present)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
-                {"word": "skolā", "role": "noun", "color": "#FFAA00", "meaning": "at school (locative singular)", "case": "locative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
+                {"word": "Mēs", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "we (1st person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "runājam", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speak (1st person plural present)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
+                {"word": "skolā", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "at school (locative singular)", "case": "locative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
             ],
             "grammar_notes": "Locative case -ā marks place.",
             "confidence": 0.90
@@ -1296,11 +1296,11 @@ LATVIAN_MOCK_DATA: Dict[str, Any] = {
             "overall_structure": "Question-Adverb-Subject-Verb-Adverb-Adverb",
             "sentence_structure": "Question with adverbial intensifier",
             "word_explanations": [
-                {"word": "Kāpēc", "role": "adverb", "color": "#FF6347", "meaning": "why (question adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
-                {"word": "tu", "role": "personal_pronoun", "color": "#9370DB", "meaning": "you (2nd person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
-                {"word": "runā", "role": "verb", "color": "#4ECDC4", "meaning": "speak (2nd/3rd person present context-dependent)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
-                {"word": "tik", "role": "particle", "color": "#DC143C", "meaning": "so (degree particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
-                {"word": "ātri", "role": "adverb", "color": "#FF6347", "meaning": "quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+                {"word": "Kāpēc", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "why (question adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "tu", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "you (2nd person singular)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runā", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speak (2nd/3rd person present context-dependent)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "tik", "grammatical_role": "particle", "color": "#DC143C", "meaning": "so (degree particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ātri", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
             ],
             "grammar_notes": "Question word kāpēc introduces a direct question.",
             "confidence": 0.89
@@ -1310,16 +1310,240 @@ LATVIAN_MOCK_DATA: Dict[str, Any] = {
             "overall_structure": "Subject-Time-Verb-Preposition-Object",
             "sentence_structure": "Past tense clause with prepositional object",
             "word_explanations": [
-                {"word": "Viņi", "role": "personal_pronoun", "color": "#9370DB", "meaning": "they (3rd person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
-                {"word": "vakar", "role": "adverb", "color": "#FF6347", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
-                {"word": "runāja", "role": "verb", "color": "#4ECDC4", "meaning": "spoke (past tense)", "case": "", "gender": "", "number": "plural", "tense": "past", "definite_form": ""},
-                {"word": "par", "role": "preposition", "color": "#32CD32", "meaning": "about (preposition requiring accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
-                {"word": "ēdienu", "role": "noun", "color": "#FFAA00", "meaning": "food (accusative singular)", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""}
+                {"word": "Viņi", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "they (3rd person plural)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "vakar", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "runāja", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "spoke (past tense)", "case": "", "gender": "", "number": "plural", "tense": "past", "definite_form": ""},
+                {"word": "par", "grammatical_role": "preposition", "color": "#32CD32", "meaning": "about (preposition requiring accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ēdienu", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "food (accusative singular)", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""}
             ],
             "grammar_notes": "Past tense verb with preposition par + accusative object.",
             "confidence": 0.90
         }
     ], ensure_ascii=False),
+}
+
+
+# ---------------------------------------------------------------------------
+# LATVIAN — per-difficulty mock data
+# ---------------------------------------------------------------------------
+# Latvian's analyzer config exposes distinct grammatical-role vocabularies for
+# each complexity level (lv_config._get_default_roles). To validate that the
+# analyzer + grammar processor stay coherent at every level, we run the full
+# pipeline three times — once each with beginner, intermediate, and advanced
+# session_state["difficulty"] — and feed level-appropriate role tags through
+# the mock grammar response.
+#
+# beginner mock = LATVIAN_MOCK_DATA (defined above) — kept as the default
+#                 entry in LANGUAGE_MOCK_DATA so the original parametrized
+#                 test still runs.
+# ---------------------------------------------------------------------------
+
+_LATVIAN_INTERMEDIATE_MOCK: Dict[str, Any] = {
+    "word": "runāt",
+    "language_name": "Latvian",
+    "language_code": "lv",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 4,
+    "max_length": 18,
+    "difficulty": "intermediate",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to use language)
+
+        RESTRICTIONS: Use intermediate-level structures: prepositions, demonstratives, particles.
+
+        SENTENCES:
+        1. Mēs vakar runājām ar draugiem.
+        2. Šī meitene runā ļoti skaisti.
+        3. Es runāšu ar tevi rīt.
+        4. Viņa runā tik ātri!
+
+        TRANSLATIONS:
+        1. We spoke with friends yesterday.
+        2. This girl speaks very beautifully.
+        3. I will speak with you tomorrow.
+        4. She speaks so fast!
+
+        IPA:
+        1. meːs vakar runaːjaːm ar draugiɛm
+        2. ʃiː mɛitɛnɛ runaː ļoti skaisti
+        3. ɛs runaːʃu ar tɛvi riːt
+        4. viɲa runaː tik aːtri
+
+        KEYWORDS:
+        1. friends conversation, yesterday
+        2. young girl speaking
+        3. future conversation, tomorrow
+        4. fast speech, surprise"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Mēs vakar runājām ar draugiem.",
+            "overall_structure": "Subject-Time-Verb-Preposition-Object",
+            "sentence_structure": "Past-tense clause with prepositional object",
+            "word_explanations": [
+                {"word": "Mēs", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "we (1st person plural nominative)", "case": "nominative", "gender": "", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "vakar", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "yesterday (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "runājām", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "spoke (1st person plural past)", "case": "", "gender": "", "number": "plural", "tense": "past", "definite_form": ""},
+                {"word": "ar", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "with (preposition + instrumental/dative plural)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "draugiem", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "friends (dative plural)", "case": "dative", "gender": "masculine", "number": "plural", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Past tense plural with prepositional dative object.",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Šī meitene runā ļoti skaisti.",
+            "overall_structure": "Demonstrative-Subject-Verb-Adverb-Adverb",
+            "sentence_structure": "Demonstrative noun phrase modified by intensifier and manner adverb",
+            "word_explanations": [
+                {"word": "Šī", "grammatical_role": "demonstrative", "color": "#B8860B", "meaning": "this (feminine singular nominative)", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "meitene", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "girl (nominative singular feminine)", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runā", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speaks (3rd person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "ļoti", "grammatical_role": "particle", "color": "#20B2AA", "meaning": "very (intensifier particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "skaisti", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "beautifully (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Demonstrative agrees with feminine singular subject; intensifier particle precedes manner adverb.",
+            "confidence": 0.90
+        },
+        {
+            "sentence": "Es runāšu ar tevi rīt.",
+            "overall_structure": "Subject-Verb-Preposition-Object-Time",
+            "sentence_structure": "Future-tense clause with prepositional object",
+            "word_explanations": [
+                {"word": "Es", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "I (1st person singular nominative)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runāšu", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "will speak (1st person singular future)", "case": "", "gender": "", "number": "singular", "tense": "future", "definite_form": ""},
+                {"word": "ar", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "with (preposition + accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "tevi", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "you (2nd person singular accusative)", "case": "accusative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "rīt", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "tomorrow (time adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Future tense -šu ending; preposition ar takes accusative for personal pronouns.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Viņa runā tik ātri!",
+            "overall_structure": "Subject-Verb-Particle-Adverb",
+            "sentence_structure": "Exclamative clause with degree particle",
+            "word_explanations": [
+                {"word": "Viņa", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "she (3rd person singular feminine nominative)", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runā", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speaks (3rd person singular present)", "case": "", "gender": "", "number": "singular", "tense": "present", "definite_form": ""},
+                {"word": "tik", "grammatical_role": "particle", "color": "#20B2AA", "meaning": "so (degree particle)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "ātri", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Exclamation with intensifying particle tik before manner adverb.",
+            "confidence": 0.90
+        }
+    ], ensure_ascii=False),
+}
+
+
+_LATVIAN_ADVANCED_MOCK: Dict[str, Any] = {
+    "word": "runāt",
+    "language_name": "Latvian",
+    "language_code": "lv",
+    "topic": "Food & Cooking",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 22,
+    "difficulty": "advanced",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to use language)
+
+        RESTRICTIONS: Use advanced structures: participles, debitive, subordinate clauses, relative pronouns.
+
+        SENTENCES:
+        1. Runājot ar viņu, es sapratu patiesību.
+        2. Man jārunā ar skolotāju, kurš mācīja matemātiku.
+        3. Lai gan viņš runāja klusi, neviens neklausījās.
+        4. Cilvēki, kuri runā ātri, dažreiz tiek pārprasti.
+
+        TRANSLATIONS:
+        1. While speaking with him, I understood the truth.
+        2. I must speak with the teacher who taught mathematics.
+        3. Although he spoke quietly, no one listened.
+        4. People who speak quickly are sometimes misunderstood.
+
+        IPA:
+        1. runaːjot ar viɲu ɛs sapratu patiesiːbu
+        2. man jaːrunaː ar skolotaːju kurʃ maːtsiːja matemaːtiku
+        3. lai gan viɲʃ runaːja klusi nɛviɛns nɛklausiːjaːs
+        4. tsilvɛːki kuri runaː aːtri daʒrɛiz tiɛk paːrprasti
+
+        KEYWORDS:
+        1. realization, conversation
+        2. obligation, teacher, classroom
+        3. quiet speech, ignored
+        4. misunderstanding, fast talkers"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Runājot ar viņu, es sapratu patiesību.",
+            "overall_structure": "Participle-Preposition-Object, Subject-Verb-Object",
+            "sentence_structure": "Adverbial participle clause + main clause",
+            "word_explanations": [
+                {"word": "Runājot", "grammatical_role": "participle", "color": "#FF8C00", "meaning": "while speaking (gerund / adverbial participle -ot)", "case": "", "gender": "", "number": "", "tense": "present", "definite_form": ""},
+                {"word": "ar", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "with (preposition + accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "viņu", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "him (3rd person singular accusative)", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "es", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "I (1st person singular nominative)", "case": "nominative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "sapratu", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "understood (1st person singular past)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "patiesību", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "truth (accusative singular feminine)", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Adverbial participle in -ot expresses concurrent action with the main past-tense clause.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Man jārunā ar skolotāju, kurš mācīja matemātiku.",
+            "overall_structure": "Dative-Debitive-Preposition-Object, Relative-Verb-Object",
+            "sentence_structure": "Debitive construction with relative subordinate clause",
+            "word_explanations": [
+                {"word": "Man", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "to me (1st person singular dative)", "case": "dative", "gender": "", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "jārunā", "grammatical_role": "debitive", "color": "#FF1493", "meaning": "must speak (debitive mood)", "case": "", "gender": "", "number": "", "tense": "present", "definite_form": ""},
+                {"word": "ar", "grammatical_role": "preposition", "color": "#4444FF", "meaning": "with (preposition + accusative)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "skolotāju", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "teacher (accusative singular masculine)", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "kurš", "grammatical_role": "relative_pronoun", "color": "#9370DB", "meaning": "who (relative pronoun, masculine singular nominative)", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "mācīja", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "taught (3rd person singular past)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "matemātiku", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "mathematics (accusative singular feminine)", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "definite_form": ""}
+            ],
+            "grammar_notes": "Debitive jā- + verb root expresses obligation; subject in dative. Relative clause introduced by kurš agrees with antecedent in gender/number.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Lai gan viņš runāja klusi, neviens neklausījās.",
+            "overall_structure": "Subordinator-Subject-Verb-Adverb, Indef-Verb",
+            "sentence_structure": "Concessive subordinate clause + main clause with reflexive verb",
+            "word_explanations": [
+                {"word": "Lai gan", "grammatical_role": "subordinating_conjunction", "color": "#888888", "meaning": "although (concessive subordinator)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "viņš", "grammatical_role": "personal_pronoun", "color": "#9370DB", "meaning": "he (3rd person singular masculine nominative)", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "runāja", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "spoke (3rd person singular past)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""},
+                {"word": "klusi", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "quietly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "neviens", "grammatical_role": "indefinite_pronoun", "color": "#8B7EC8", "meaning": "no one (negative indefinite pronoun, masculine singular nominative)", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "definite_form": ""},
+                {"word": "neklausījās", "grammatical_role": "reflexive_verb", "color": "#20B2AA", "meaning": "did not listen (reflexive verb, 3rd person past, negated)", "case": "", "gender": "", "number": "singular", "tense": "past", "definite_form": ""}
+            ],
+            "grammar_notes": "Concessive subordinator lai gan introduces a clause; main clause uses negated reflexive verb (-ās ending).",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Cilvēki, kuri runā ātri, dažreiz tiek pārprasti.",
+            "overall_structure": "Subject-[Relative-Verb-Adverb]-Adverb-Auxiliary-Participle",
+            "sentence_structure": "Subject with restrictive relative clause + passive periphrastic main verb",
+            "word_explanations": [
+                {"word": "Cilvēki", "grammatical_role": "noun", "color": "#FFAA00", "meaning": "people (nominative plural masculine)", "case": "nominative", "gender": "masculine", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "kuri", "grammatical_role": "relative_pronoun", "color": "#9370DB", "meaning": "who (relative pronoun, masculine plural nominative)", "case": "nominative", "gender": "masculine", "number": "plural", "tense": "", "definite_form": ""},
+                {"word": "runā", "grammatical_role": "verb", "color": "#4ECDC4", "meaning": "speak (3rd person plural present)", "case": "", "gender": "", "number": "plural", "tense": "present", "definite_form": ""},
+                {"word": "ātri", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "quickly (manner adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "dažreiz", "grammatical_role": "adverb", "color": "#FF6347", "meaning": "sometimes (frequency adverb)", "case": "", "gender": "", "number": "", "tense": "", "definite_form": ""},
+                {"word": "tiek", "grammatical_role": "auxiliary", "color": "#00CED1", "meaning": "is/are being (auxiliary, 3rd person present)", "case": "", "gender": "", "number": "", "tense": "present", "definite_form": ""},
+                {"word": "pārprasti", "grammatical_role": "participle", "color": "#FF8C00", "meaning": "misunderstood (past passive participle, masculine plural nominative)", "case": "nominative", "gender": "masculine", "number": "plural", "tense": "past", "definite_form": ""}
+            ],
+            "grammar_notes": "Periphrastic passive: tiek + past passive participle. Relative clause kuri runā ātri restricts the subject Cilvēki.",
+            "confidence": 0.92
+        }
+    ], ensure_ascii=False),
+}
+
+
+# beginner reuses LATVIAN_MOCK_DATA so reports / role coverage stay in sync.
+LATVIAN_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
+    "beginner": LATVIAN_MOCK_DATA,
+    "intermediate": _LATVIAN_INTERMEDIATE_MOCK,
+    "advanced": _LATVIAN_ADVANCED_MOCK,
 }
 
 
@@ -1469,16 +1693,13 @@ def _build_mock_session_state(difficulty: str = "beginner") -> dict:
 # MAIN TEST
 # ============================================================================
 
-@pytest.mark.parametrize("lang_key", list(LANGUAGE_MOCK_DATA.keys()))
-def test_end_to_end_pipeline(lang_key: str, tmp_path: Path):
+def _run_full_pipeline(data: Dict[str, Any], report_key: str, tmp_path: Path) -> None:
     """
-    Full end-to-end pipeline test for a language.
+    Run the full pipeline (Stages 1-7) for one mock-data dict and write a report.
 
-    Mocks Gemini API at the lowest level (genai.generate_content) so that the
-    full parsing → validation → grammar analysis → card assembly chain is exercised.
-    Audio and image generation are mocked to return fake file paths.
+    Used by both the multi-language parametrized test and the per-level Latvian
+    test. Asserts on stage outcomes; raises AssertionError on any failure.
     """
-    data = LANGUAGE_MOCK_DATA[lang_key]
     word = data["word"]
     language_name = data["language_name"]
     language_code = data["language_code"]
@@ -1743,7 +1964,7 @@ def test_end_to_end_pipeline(lang_key: str, tmp_path: Path):
         # Last resort: strip non-ASCII for truly broken terminals
         print("\n" + report_text.encode("ascii", errors="replace").decode("ascii"))
 
-    report_file = REPORT_DIR / f"pipeline_report_{lang_key}.txt"
+    report_file = REPORT_DIR / f"pipeline_report_{report_key}.txt"
     report_file.write_text(report_text, encoding="utf-8")
     logger.info(f"Report saved to {report_file}")
 
@@ -1753,6 +1974,30 @@ def test_end_to_end_pipeline(lang_key: str, tmp_path: Path):
     assert grammar_ok, "Grammar analysis missing colored_sentence, word_explanations, or grammar_summary"
     assert card_assembly_ok, f"Card assembly issues: {assembly_issues}"
     assert difficulty_ok, f"Difficulty was overridden: got {session_state.get('difficulty')}, expected {difficulty}"
+
+
+# ============================================================================
+# MAIN TEST — one run per language (default difficulty in mock data)
+# ============================================================================
+
+@pytest.mark.parametrize("lang_key", list(LANGUAGE_MOCK_DATA.keys()))
+def test_end_to_end_pipeline(lang_key: str, tmp_path: Path):
+    """Full end-to-end pipeline test for a language."""
+    _run_full_pipeline(LANGUAGE_MOCK_DATA[lang_key], lang_key, tmp_path)
+
+
+# ============================================================================
+# LATVIAN — full pipeline must pass at all 3 difficulty levels.
+# Tracks the project-wide requirement that every analyzer is validated for
+# beginner, intermediate, and advanced complexity (see CLAUDE.md "E2E Test
+# Sentence Difficulty Coverage").
+# ============================================================================
+
+@pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+def test_latvian_all_difficulty_levels(difficulty: str, tmp_path: Path):
+    """Run the full pipeline for Latvian at beginner, intermediate, and advanced."""
+    data = LATVIAN_LEVEL_MOCK_DATA[difficulty]
+    _run_full_pipeline(data, f"latvian_{difficulty}", tmp_path)
 
 
 # ============================================================================

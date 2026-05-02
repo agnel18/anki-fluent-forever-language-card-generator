@@ -1,0 +1,123 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — LATVIAN
+================================================================================
+  Word          : runāt
+  Language       : Latvian
+  Difficulty     : advanced
+  Topic          : Food & Cooking
+  Generated at   : 2026-05-02 15:10:25
+  Elapsed        : 0.02s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'lv': LvAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to speak (to talk, to use language)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=6, summary=YES
+         Sentence 4: colored=YES, explanations=7, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: advanced, expected: advanced
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to speak (to talk, to use language)
+
+  --- Sentence 1 ---
+  Original   : Runājot ar viņu, es sapratu patiesību.
+  Translation: While speaking with him, I understood the truth.
+  IPA/Reading: runaːjot ar viɲu ɛs sapratu patiesiːbu
+  Keywords   : realization, conversation
+
+  Colored HTML : <span style="color:#FF8C00" title="participle: while speaking (gerund / adverbial participle -ot)">Runājot</span> <span style="color:#4444FF" title="preposition: with (preposition + accusative)">ar</s…
+  Grammar Summ : Sentence contains 1 participle, 1 preposition, 2 personal pronouns, 1 verb, 1 noun
+  Word Explanations (6 words):
+    Runājot       participle      #FF8C00   while speaking (gerund / adverbial participle -ot)
+    ar            preposition     #4444FF   with (preposition + accusative)
+    viņu          personal_pronoun  #9370DB   him (3rd person singular accusative)
+    es            personal_pronoun  #9370DB   I (1st person singular nominative)
+    sapratu       verb            #4ECDC4   understood (1st person singular past)
+    patiesību     noun            #FFAA00   truth (accusative singular feminine)
+
+  --- Sentence 2 ---
+  Original   : Man jārunā ar skolotāju, kurš mācīja matemātiku.
+  Translation: I must speak with the teacher who taught mathematics.
+  IPA/Reading: man jaːrunaː ar skolotaːju kurʃ maːtsiːja matemaːtiku
+  Keywords   : obligation, teacher, classroom
+
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: to me (1st person singular dative)">Man</span> <span style="color:#FF1493" title="debitive: must speak (debitive mood)">jārunā</span> <span style="…
+  Grammar Summ : Sentence contains 1 personal pronoun, 1 debitive, 1 preposition, 2 nouns, 1 relative pronoun, 1 verb
+  Word Explanations (7 words):
+    Man           personal_pronoun  #9370DB   to me (1st person singular dative)
+    jārunā        debitive        #FF1493   must speak (debitive mood)
+    ar            preposition     #4444FF   with (preposition + accusative)
+    skolotāju     noun            #FFAA00   teacher (accusative singular masculine)
+    kurš          relative_pronoun  #9370DB   who (relative pronoun, masculine singular nominative)
+    mācīja        verb            #4ECDC4   taught (3rd person singular past)
+    matemātiku    noun            #FFAA00   mathematics (accusative singular feminine)
+
+  --- Sentence 3 ---
+  Original   : Lai gan viņš runāja klusi, neviens neklausījās.
+  Translation: Although he spoke quietly, no one listened.
+  IPA/Reading: lai gan viɲʃ runaːja klusi nɛviɛns nɛklausiːjaːs
+  Keywords   : quiet speech, ignored
+
+  Colored HTML : <span style="color:#888888" title="subordinating_conjunction: although (concessive subordinator)">Lai gan</span> <span style="color:#9370DB" title="personal_pronoun: he (3rd person singular masculine …
+  Grammar Summ : Sentence contains 1 subordinating conjunction, 1 personal pronoun, 1 verb, 1 adverb, 1 indefinite pronoun, 1 reflexive verb
+  Word Explanations (6 words):
+    Lai gan       subordinating_conjunction  #888888   although (concessive subordinator)
+    viņš          personal_pronoun  #9370DB   he (3rd person singular masculine nominative)
+    runāja        verb            #4ECDC4   spoke (3rd person singular past)
+    klusi         adverb          #FF6347   quietly (manner adverb)
+    neviens       indefinite_pronoun  #8B7EC8   no one (negative indefinite pronoun, masculine singular nominative)
+    neklausījās   reflexive_verb  #20B2AA   did not listen (reflexive verb, 3rd person past, negated)
+
+  --- Sentence 4 ---
+  Original   : Cilvēki, kuri runā ātri, dažreiz tiek pārprasti.
+  Translation: People who speak quickly are sometimes misunderstood.
+  IPA/Reading: tsilvɛːki kuri runaː aːtri daʒrɛiz tiɛk paːrprasti
+  Keywords   : misunderstanding, fast talkers
+
+  Colored HTML : <span style="color:#FFAA00" title="noun: people (nominative plural masculine)">Cilvēki</span> <span style="color:#9370DB" title="relative_pronoun: who (relative pronoun, masculine plural nominative)">…
+  Grammar Summ : Sentence contains 1 noun, 1 relative pronoun, 1 verb, 2 adverbs, 1 auxiliary, 1 participle
+  Word Explanations (7 words):
+    Cilvēki       noun            #FFAA00   people (nominative plural masculine)
+    kuri          relative_pronoun  #9370DB   who (relative pronoun, masculine plural nominative)
+    runā          verb            #4ECDC4   speak (3rd person plural present)
+    ātri          adverb          #FF6347   quickly (manner adverb)
+    dažreiz       adverb          #FF6347   sometimes (frequency adverb)
+    tiek          auxiliary       #00CED1   is/are being (auxiliary, 3rd person present)
+    pārprasti     participle      #FF8C00   misunderstood (past passive participle, masculine plural nominative)
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

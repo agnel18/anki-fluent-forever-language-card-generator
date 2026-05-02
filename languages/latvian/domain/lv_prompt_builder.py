@@ -148,7 +148,7 @@ JSON SCHEMA:
   "word_explanations": [
     {{
       "word": "<exact word from sentence>",
-      "role": "<grammatical role from the allowed roles list>",
+      "grammatical_role": "<grammatical role from the allowed roles list>",
       "color": "<hex color for this role>",
       "meaning": "<English meaning + grammatical info, e.g. 'māja (house) — nominative singular feminine'>",
       "case": "<case if applicable, e.g. nominative, genitive, dative, accusative, instrumental, locative, vocative>",
