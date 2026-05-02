@@ -136,7 +136,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 
 ### Status
 
-**13 implemented** out of 77 target languages:
+**14 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
@@ -149,12 +149,13 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | Hungarian | `hu` | `languages/hungarian/` | ✅ Implemented (v1.0) — agglutinative, 24 case markers, definite/indefinite conjugation, E2E verified |
 | Japanese | `ja` | `languages/japanese/` | ✅ Implemented (v1.0) — E2E verified |
 | Korean | `ko` | `languages/korean/` | ✅ Implemented (v1.0) — 28 grammatical roles, 3-level color scheme, E2E verified |
-| Latvian | `lv` | `languages/latvian/` | ✅ Implemented (v1.0) — E2E verified |
+| Latvian | `lv` | `languages/latvian/` | ✅ Implemented (v1.0) — E2E verified at all 3 difficulty levels |
 | Malayalam | `ml` | `languages/malayalam/` | ✅ Implemented (v1.0) — Dravidian family, E2E verified |
+| Portuguese | `pt` | `languages/portuguese/` | ✅ Implemented (v1.0) — Romance, BR/PT split, ser/estar copula, contraction splitting, three-state clitic placement, E2E verified at all 3 difficulty levels. **First analyzer built via the per-phase model-tier dispatch system.** |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented — E2E verified |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented — E2E verified |
 
-**64 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+**63 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
 
 ### E2E Pipeline Test Coverage
 All 12 analyzers have full end-to-end pipeline tests in `tests/test_end_to_end_pipeline.py`:
