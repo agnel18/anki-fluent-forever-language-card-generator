@@ -136,13 +136,14 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 
 ### Status
 
-**14 implemented** out of 77 target languages:
+**15 implemented** out of 77 target languages:
 
 | Language | Code | Folder | Status |
 |----------|------|--------|--------|
 | Arabic | `ar` | `languages/arabic/` | ✅ Implemented — E2E verified |
 | Chinese (Simplified) | `zh` | `languages/chinese_simplified/` | ✅ Implemented — E2E verified |
 | Chinese (Traditional) | `zh-tw` | `languages/chinese_traditional/` | ✅ Implemented — E2E verified |
+| English | `en` | `languages/english/` | ✅ Implemented (v1.0) — Germanic; analytic-leaning with auxiliary stack; full disambiguation for `to`/`-ing`/`-ed`/`that`/phrasal-verb particle; pronoun case preserved (I/me/my/mine); E2E verified at all 3 difficulty levels |
 | French | `fr` | `languages/french/` | ✅ Gold standard (v2.0) — E2E verified |
 | German | `de` | `languages/german/` | ✅ Implemented — E2E verified |
 | Hindi | `hi` | `languages/hindi/` | ✅ Implemented — E2E verified |
@@ -155,7 +156,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented — E2E verified |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented — E2E verified |
 
-**63 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
+**62 languages remaining** — basic deck generation (TTS, frequency lists, translations) works for all 77 without an analyzer. Analyzers add grammar-colored sentence overlays with word-by-word explanations.
 
 ### E2E Pipeline Test Coverage
 All 12 analyzers have full end-to-end pipeline tests in `tests/test_end_to_end_pipeline.py`:
