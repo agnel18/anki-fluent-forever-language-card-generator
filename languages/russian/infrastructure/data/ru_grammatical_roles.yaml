@@ -1,2 +1,322 @@
-# Russian grammatical roles — populated in Phase 5
-# Placeholder: detailed role definitions and color mappings added during Phase 5
+# ru_grammatical_roles.yaml
+# Russian Grammatical Roles Configuration
+# Organized by complexity level with role descriptions and colors
+# Russian-specific notes on case system (6 cases), aspect, gender, animacy
+
+beginner:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Russian noun (имя существительное). Inflects for case (nominative, genitive, dative, accusative, instrumental, prepositional), gender (masculine, feminine, neuter), and number (singular/plural). Masculine accusative shows animate/inanimate distinction."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Russian lexical verb (глагол). Conjugates for tense (present/past/future), person, number, and mood. Lexical aspect (imperfective/perfective) is encoded on the lemma and affects action semantics."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Russian adjective (имя прилагательное). Agrees with noun in case, gender, and number. Full-form adjectives modify nouns; short-form adjectives function as predicates."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Russian pronoun (местоимение). Substitutes for nouns; inflects for case, gender (in 3rd person singular), and number. Personal pronouns show subject/object case distinctions."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Russian preposition (предлог). Governs noun case (e.g., в + accusative for destination, в + prepositional for location). Always precedes the noun phrase."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Russian conjunction (союз). Connects words, phrases, or clauses. Includes coordinating (и, но, или) and subordinating (что, если, потому что) types."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Russian adverb (наречие). Invariant word modifying verbs, adjectives, or clauses. Derived from adjectives (-о, -е endings) or indeclinable forms."
+  particle:
+    display_name: "Particle"
+    color: "#20B2AA"
+    description: "Russian particle (частица). Invariant word affecting mood/aspect/emphasis (ли, же, вот, только). Often enclitic; modifies entire clause meaning."
+  numeral:
+    display_name: "Numeral"
+    color: "#3CB371"
+    description: "Russian numeral (имя числительное). Cardinal (один, два, пять) and ordinal (первый, второй). Governs nominative (один, два-четыре) or genitive (пять+) case on noun."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Russian interjection (междометие). Exclamatory word expressing emotion (ах, ох, стоп). Often stands alone, punctuated separately."
+  other:
+    display_name: "Other"
+    color: "#808080"
+    description: "Other grammatical category or unclassified element."
+
+intermediate:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Russian noun (имя существительное). Inflects for case (nominative, genitive, dative, accusative, instrumental, prepositional), gender (masculine, feminine, neuter), and number (singular/plural). Masculine accusative animate ↔ inanimate distinction."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Russian lexical verb (глагол). Conjugates for tense (present/past/future), person, number, and mood (indicative/conditional/imperative). Lexical aspect (imperfective/perfective) encoded on lemma."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Russian adjective (имя прилагательное). Full-form adjective agrees with noun in case, gender, number. Modifies nouns pre- or post-nominally."
+  short_adjective:
+    display_name: "Short-Form Adjective"
+    color: "#CC33CC"
+    description: "Russian short-form adjective (краткое прилагательное). Invariant for case; agrees with subject in gender/number. Functions as predicate. Example: красива, красиво, красивы."
+  comparative:
+    display_name: "Comparative"
+    color: "#FF44FF"
+    description: "Russian comparative form (сравнительная степень). Simple comparative (-ее, -ей suffixes): красивее. Compound: более красивый. Followed by 'чем' (than)."
+  superlative:
+    display_name: "Superlative"
+    color: "#FF44FF"
+    description: "Russian superlative (превосходная степень). Simple superlative (rare): красивейший. Compound: самый красивый, наиболее красивый. Often with definite article."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Russian pronoun (местоимение). Substitutes for nouns; inflects for case, gender (3rd person singular), number. Includes personal, possessive, demonstrative, relative, interrogative."
+  personal_pronoun:
+    display_name: "Personal Pronoun"
+    color: "#9370DB"
+    description: "Russian personal pronoun (личное местоимение). я, ты, он, она, оно, мы, вы, они. Inflects for case (nominative through prepositional); 3rd person has n-prefixed forms after preposition."
+  possessive_pronoun:
+    display_name: "Possessive Pronoun"
+    color: "#9370DB"
+    description: "Russian possessive pronoun (притяжательное местоимение). мой, твой, наш, ваш, свой (reflexive). Full declension for case, gender, number. Agrees with possessed noun."
+  possessive_determiner:
+    display_name: "Possessive Determiner"
+    color: "#9370DB"
+    description: "Russian possessive determiner (притяжательное определение). его, её, их (indeclinable). Shows possession; does not inflect."
+  demonstrative:
+    display_name: "Demonstrative"
+    color: "#B8860B"
+    description: "Russian demonstrative pronoun/determiner (указательное местоимение). этот/этот, то, такой. Agrees with noun in case, gender, number. Can be determiner or standalone."
+  reflexive_pronoun:
+    display_name: "Reflexive Pronoun"
+    color: "#DDA0DD"
+    description: "Russian reflexive pronoun (возвратное местоимение). себя (no nominative form). Inflects for case. Refers back to subject regardless of person/number."
+  reflexive_verb:
+    display_name: "Reflexive Verb"
+    color: "#20B2AA"
+    description: "Russian reflexive verb (возвратный глагол). Marked by -ся/-сь clitic (моет → моется). Can be passive, middle, or inherent reflexive. Conjugates like regular verbs."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Russian preposition (предлог). Governs specific case (в + acc/prep, из + gen, к + dat). Precedes noun phrase. Some prepositions take prefixes on 3rd person pronouns (в него → в нём)."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Russian conjunction (союз). Coordinating (и, но, или, ни...ни) or subordinating (что, если, когда, потому что). Connects clauses or phrases."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Russian adverb (наречие). Invariant modifier. Derived from adjectives (-о, -е), pronouns, or independent forms. Can modify verbs, adjectives, or entire clauses."
+  auxiliary:
+    display_name: "Auxiliary Verb"
+    color: "#00CED1"
+    description: "Russian auxiliary verb (вспомогательный глагол). быть in past/future. Marks aspect/tense in analytic forms (был, будет, являлся). Often omitted in present tense."
+  modal_verb:
+    display_name: "Modal Verb"
+    color: "#00CED1"
+    description: "Russian modal verb (модальный глагол). мочь (can), уметь (able), хотеть (want), должен (must), нужно (need). Governs infinitive; expresses possibility/obligation/desire."
+  infinitive:
+    display_name: "Infinitive"
+    color: "#4ECDC4"
+    description: "Russian infinitive (инфинитив). Verbal noun form ending -ть/-ти. Used as subject/object, after modals/need expressions. Aspect (perfective/imperfective) preserved."
+  imperative:
+    display_name: "Imperative"
+    color: "#4ECDC4"
+    description: "Russian imperative (повелительное наклонение). Verb form expressing commands/requests. 2nd person singular (ø/-и), plural/formal (-те). Aspect affects meaning."
+  particle:
+    display_name: "Particle"
+    color: "#20B2AA"
+    description: "Russian particle (частица). Invariant, enclitic word modifying clause meaning (ли, же, вот, только, ведь). Does not inflect; affects pragmatics/mood."
+  numeral:
+    display_name: "Numeral"
+    color: "#3CB371"
+    description: "Russian numeral (имя числительное). Cardinal (один-двадцать, тридцать, сорок, пятьдесят, сто, тысяча). Ordinal (первый, второй). Governs case on noun."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Russian interjection (междометие). Exclamatory word (ах, ох, стоп, господи). Often stands alone; separate punctuation."
+  other:
+    display_name: "Other"
+    color: "#808080"
+    description: "Other grammatical category or unclassified element."
+
+advanced:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Russian noun (имя существительное). Inflects for case (nominative/genitive/dative/accusative/instrumental/prepositional), gender (masculine/feminine/neuter), number (singular/plural). Masculine accusative distinguishes animate ↔ inanimate. Prepositional case requires preposition."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Russian lexical verb (глагол). Conjugates for tense (present/past/future), person, number, mood (indicative/conditional/imperative). Lexical aspect (imperfective/perfective) on lemma. Voice (active/passive via -ся)."
+  imperfective_verb:
+    display_name: "Imperfective Verb"
+    color: "#4ECDC4"
+    description: "Russian imperfective verb (несовершенный вид). Expresses ongoing, habitual, or repeated action. Lacks completion point. Forms progressive (present), iterative (past), or generic statements."
+  perfective_verb:
+    display_name: "Perfective Verb"
+    color: "#4ECDC4"
+    description: "Russian perfective verb (совершенный вид). Expresses completed action with result/endpoint. Cannot form present tense. Typically derived via prefix or suffix (написать, пойти, начать)."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Russian full-form adjective (полное прилагательное). Agrees with noun in case, gender, number. Pre- or post-nominal position. Three degrees: positive, comparative, superlative."
+  short_adjective:
+    display_name: "Short-Form Adjective"
+    color: "#CC33CC"
+    description: "Russian short-form adjective (краткое прилагательное). Predicate-only form. Invariant for case; agrees with subject in gender/number. Example: красив, красива, красиво, красивы."
+  comparative:
+    display_name: "Comparative"
+    color: "#FF44FF"
+    description: "Russian comparative adjective/adverb (сравнительная степень). Simple form (-ее, -ей, -ше): красивее, больше. Compound: более красивый. Paired with 'чем' (than)."
+  superlative:
+    display_name: "Superlative"
+    color: "#FF44FF"
+    description: "Russian superlative (превосходная степень). Simple rare form (-ейший): красивейший. Compound: самый красивый, наиболее красивый (most common). Often definite article present."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Russian pronoun (местоимение, broad category). Substitutes for nouns; includes personal, possessive, demonstrative, relative, interrogative, indefinite, negative subtypes."
+  personal_pronoun:
+    display_name: "Personal Pronoun"
+    color: "#9370DB"
+    description: "Russian personal pronoun (личное местоимение). я, ты, он, она, оно, мы, вы, они. Full case inflection (6 cases). 3rd person takes n-prefixed variants (него, ему, нём) after prepositions."
+  possessive_pronoun:
+    display_name: "Possessive Pronoun"
+    color: "#9370DB"
+    description: "Russian possessive pronoun (притяжательное местоимение). мой, твой, наш, ваш, свой (reflexive). Full declension for case, gender, number. Agrees with possessed noun."
+  possessive_determiner:
+    display_name: "Possessive Determiner"
+    color: "#9370DB"
+    description: "Russian possessive determiner (притяжательное определение). его, её, их (indeclinable). Invariant for all case/gender/number combinations."
+  demonstrative:
+    display_name: "Demonstrative"
+    color: "#B8860B"
+    description: "Russian demonstrative (указательное местоимение). этот, то, такой. Agrees in case, gender, number with modified noun. Determiner or standalone pronoun usage."
+  reflexive_pronoun:
+    display_name: "Reflexive Pronoun"
+    color: "#DDA0DD"
+    description: "Russian reflexive pronoun (возвратное местоимение). себя (genitive себя, dative себе, accusative себя, instrumental собой, prepositional себе). No nominative. Refers back to subject."
+  relative_pronoun:
+    display_name: "Relative Pronoun"
+    color: "#9370DB"
+    description: "Russian relative pronoun (относительное местоимение). который (inflects for all cases/genders/numbers), кто, что. Introduces relative clause. который agrees with antecedent noun."
+  interrogative_pronoun:
+    display_name: "Interrogative Pronoun"
+    color: "#9370DB"
+    description: "Russian interrogative pronoun (вопросительное местоимение). кто (who, person), что (what, thing). Both inflect for case. кто has gender/number shown in predicate agreement."
+  indefinite_pronoun:
+    display_name: "Indefinite Pronoun"
+    color: "#8B7EC8"
+    description: "Russian indefinite pronoun (неопределённое местоимение). кто-то, что-то, кто-нибудь, что-нибудь, некто, нечто (rare). Expresses unknown/nonspecific referent."
+  negative_pronoun:
+    display_name: "Negative Pronoun"
+    color: "#8B7EC8"
+    description: "Russian negative pronoun (отрицательное местоимение). никто (no person), ничто (no thing). Requires negative verb concord (не + V + никто/ничто). Inflects for case."
+  reflexive_verb:
+    display_name: "Reflexive Verb"
+    color: "#20B2AA"
+    description: "Russian reflexive verb (возвратный глагол). Marked by -ся/-сь clitic. Passive reflexive (моется 'is washed'), middle (просыпается 'wakes'), or inherent reflexive (смеется 'laughs')."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Russian preposition (предлог). Governs specific case (в/на + acc/prep, из + gen, к + dat, с + gen/instr, о + prep). 3rd person pronouns take n-prefix (в нём, у него). Some prepositions can be complex."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Russian conjunction (союз). Connects words, phrases, or clauses. Broad category including coordinating and subordinating subtypes."
+  coordinating_conjunction:
+    display_name: "Coordinating Conjunction"
+    color: "#AAAAAA"
+    description: "Russian coordinating conjunction (сочинительный союз). и (and), но (but), или (or), ни...ни (neither...nor), да (and), либо (or). Joins equal syntactic units; no word order change."
+  subordinating_conjunction:
+    display_name: "Subordinating Conjunction"
+    color: "#888888"
+    description: "Russian subordinating conjunction (подчинительный союз). что, если, когда, потому что, пока, хотя, как, чтобы. Introduces dependent clause; may affect word order or mood."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Russian adverb (наречие). Invariant word modifying verbs, adjectives, or clauses. Derived from adjectives (-о, -е), or independent forms. Includes manner, time, place, degree."
+  auxiliary:
+    display_name: "Auxiliary Verb"
+    color: "#00CED1"
+    description: "Russian auxiliary verb (вспомогательный глагол). быть (to be) in past/future. Marks tense/aspect in analytic forms (был, буду, будет). Omitted in present indicative."
+  modal_verb:
+    display_name: "Modal Verb"
+    color: "#00CED1"
+    description: "Russian modal verb (модальный глагол). мочь (can), уметь (able), хотеть (want), должен (obliged), нужно (needed). Governs infinitive. Expresses possibility, ability, obligation, desire, need."
+  infinitive:
+    display_name: "Infinitive"
+    color: "#4ECDC4"
+    description: "Russian infinitive (инфинитив). Verb form ending -ть/-ти. Used as subject, object, or after modals. Preserves aspectual distinction (читать vs. прочитать). Invariant for person/number/tense."
+  imperative:
+    display_name: "Imperative"
+    color: "#4ECDC4"
+    description: "Russian imperative (повелительное наклонение). Verb form for commands/requests. 2nd person singular (stem, often -ø or -и), plural/formal (-те). Aspect affects direction (perfective = one action, imperfective = repeated/habitual)."
+  copula:
+    display_name: "Copula"
+    color: "#00CED1"
+    description: "Russian copula (связка). быть (to be). Omitted in present indicative; present nominative predicate has zero copula (Он врач 'He [is] a doctor'). Expressed in past/future."
+  present_active_participle:
+    display_name: "Present Active Participle"
+    color: "#FF8C00"
+    description: "Russian present active participle (действительное причастие настоящего времени). Suffix -ущ-/-ющ- (masculine), -ущ-/-ющ- agreement. Expresses simultaneous ongoing action. Agrees with modified noun in case/gender/number."
+  past_active_participle:
+    display_name: "Past Active Participle"
+    color: "#FF8C00"
+    description: "Russian past active participle (действительное причастие прошедшего времени). Suffix -вш- (perfective/imperfective). Expresses completed action by agent. Agrees with modified noun in case/gender/number."
+  present_passive_participle:
+    display_name: "Present Passive Participle"
+    color: "#FF8C00"
+    description: "Russian present passive participle (страдательное причастие настоящего времени). Suffix -ем-/-им- (imperfective). Expresses action performed on patient. Agrees in case/gender/number. Rare in spoken Russian."
+  past_passive_participle:
+    display_name: "Past Passive Participle"
+    color: "#FF8C00"
+    description: "Russian past passive participle (страдательное причастие прошедшего времени). Suffix -нн-/-енн-/-т- (perfective/imperfective). Expresses completed action by agent on patient. Common in formal writing."
+  participle:
+    display_name: "Participle"
+    color: "#FF8C00"
+    description: "Russian participle (причастие, broad category). Verbal adjective form. Four types: present/past × active/passive. Modifies noun; agrees in case/gender/number. Predicative use possible."
+  gerund:
+    display_name: "Gerund / Verbal Adverb"
+    color: "#FFA500"
+    description: "Russian gerund/verbal adverb (деепричастие). Imperfective: suffix -я/-а. Perfective: suffix -в/-вши. Expresses secondary action simultaneous (-я) or prior (-в). Invariant for person/number/gender/tense. Can take object."
+  verbal_noun:
+    display_name: "Verbal Noun"
+    color: "#DAA520"
+    description: "Russian verbal noun (отглагольное существительное). Nominalized verb form (бегать → бегание, писать → написание). Inflects as noun; retains some verbal properties. Less common than infinitive."
+  particle:
+    display_name: "Particle"
+    color: "#20B2AA"
+    description: "Russian particle (частица). Invariant, enclitic/clitic word affecting clause pragmatics/mood. ли (question), же (emphasis), вот (deictic), только (only), ведь (surely). Does not inflect."
+  aspectual_particle:
+    display_name: "Aspectual / Conditional Particle"
+    color: "#FF1493"
+    description: "Russian aspectual particle (условная частица бы). бы (would, if, subjunctive marker). Enclitic; marks conditional or subjunctive mood. Requires special word order in some contexts."
+  conditional_particle:
+    display_name: "Conditional Particle"
+    color: "#FF1493"
+    description: "Russian conditional particle (условная частица). бы marks conditional/subjunctive mood (Если бы я знал... 'If I knew...'). Enclitic; invariant."
+  negation_particle:
+    display_name: "Negation Particle"
+    color: "#FF6347"
+    description: "Russian negation particle (отрицательная частица). не/ни. не negates single word; ни requires double negation (никто не 'no one'). Both invariant; не proclitic, ни various positions."
+  numeral:
+    display_name: "Numeral"
+    color: "#3CB371"
+    description: "Russian numeral (имя числительное). Cardinal (один-двадцать, тридцать, сорок, пятьдесят, сто, тысяча, миллион). Ordinal (первый, второй, третий). Governs noun case and number."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Russian interjection (междометие). Exclamatory word (ах, ох, стоп, господи, ой). Often stands alone; punctuated separately from main clause. Expresses emotion/surprise."
+  other:
+    display_name: "Other"
+    color: "#808080"
+    description: "Other grammatical category or unclassified element."

@@ -1,2 +1,108 @@
-# Russian patterns — populated in Phase 5
-# Placeholder: grammatical patterns and rules added during Phase 5
+# ru_patterns.yaml
+# Russian Sentence Patterns and Grammatical Structures
+# Canonical templates demonstrating key Russian morphosyntactic features
+
+simple_declarative_svo:
+  template: "S(nom) V O(acc)"
+  example: "Мальчик читает книгу."
+  notes: "Basic SVO declarative. Subject in nominative, direct object in accusative. Most common neutral word order."
+
+simple_declarative_topicalized_sov:
+  template: "O(acc) V S(nom)"
+  example: "Книгу читает мальчик."
+  notes: "Pragmatic VSO variant. Object fronted for focus/topic; subject follows verb. Information structure driven."
+
+predicate_nominal_zero_copula:
+  template: "S(nom) — N(nom)"
+  example: "Он врач."
+  notes: "Nominative predicate with zero copula in present tense. быть omitted; restored in past (был) and future (будет)."
+
+predicate_nominal_past_instrumental:
+  template: "S(nom) был N(instr)"
+  example: "Она была учительница."
+  notes: "Instrumental complement in past tense with explicit copula. Shows case alternation (present nom, past instr)."
+
+predicate_adjective_short_form:
+  template: "S(nom) Adj-short(gender,number)"
+  example: "Это очень красиво."
+  notes: "Short-form adjective as predicate. Invariant for case; agrees with subject in gender/number. Typical in formal predication."
+
+genitive_negation:
+  template: "S(nom) не V O(gen)"
+  example: "Я не вижу книги."
+  notes: "Negated transitive: direct object switches from accusative to genitive. Mark of definitional negation."
+
+dative_subject_impersonal:
+  template: "DAT V(3sg)"
+  example: "Мне холодно."
+  notes: "Dative logical subject with neuter predicate adjective short form. Literal: 'To me [is] cold'. Impersonal construction."
+
+existential_possession_affirmative:
+  template: "у GEN есть N(nom)"
+  example: "У меня есть дом."
+  notes: "Possessive: 'At me is a house' = I have a house. Inverted predication; subject remains nominative."
+
+existential_possession_negative:
+  template: "у GEN нет N(gen)"
+  example: "У него нет времени."
+  notes: "Negative possession requires genitive noun. Нет (not-exist) governs genitive. 'At him is-not time' = He doesn't have time."
+
+imperfective_progressive_present:
+  template: "S(nom) V(impf-present) ..."
+  example: "Я читаю книгу."
+  notes: "Imperfective present: ongoing, habitual, iterative. No completion implied. Telic or atelic based on context."
+
+perfective_completed_past:
+  template: "S(nom) V(pf-past) O(acc)"
+  example: "Я прочитал книгу."
+  notes: "Perfective past: completed action with result. Telic; implies endpoint/boundary. Not all verbs allow this aspect pairing."
+
+motion_determinate:
+  template: "S(nom) идти → к/в N(dat/acc)"
+  example: "Я иду в школу."
+  notes: "Determinate motion: directed, purposeful. Идти (go on foot, determinate). Destination in acc (в/на + accusative)."
+
+motion_indeterminate:
+  template: "S(nom) ходить ..."
+  example: "Я часто хожу в лес."
+  notes: "Indeterminate motion: habitual, undirected, round-trip implied. Ходить (go on foot, indeterminate). No specific destination."
+
+relative_clause_который:
+  template: "N [который(case-agreed) ...]"
+  example: "Книга, которую я прочитал, была интересной."
+  notes: "Relative clause with который. Agrees with antecedent in case/gender/number. Который in accusative when direct object (which-I-read)."
+
+subordinate_что_complement:
+  template: "V ... что S V ..."
+  example: "Я знаю, что это правда."
+  notes: "Complement clause introduced by что (that). Indicative mood typically; stress/emphasis governs word order after что."
+
+subordinate_если_conditional:
+  template: "если S V ..., то S V ..."
+  example: "Если ты придёшь, то мы поедем."
+  notes: "Conditional: real or counterfactual. Real: indicative (If you come, then we'll go). Counterfactual: subjunctive with бы."
+
+subordinate_чтобы_purpose:
+  template: "V ... чтобы S V(infinitive)"
+  example: "Я учусь, чтобы сдать экзамен."
+  notes: "Purpose clause with чтобы (in order to/so that). Always subjunctive (чтобы = чтоб + бы). Infinitive in embedded clause."
+
+imperative_command:
+  template: "V(imp) (O)"
+  example: "Читай книгу!"
+  notes: "Singular imperative (2sg): bare stem or -и ending. Perfective imperative = single action (Прочитай! Read that one book!); imperfective = repeated/habitual (Читай! Keep reading/Read often!)."
+
+imperative_plural_polite:
+  template: "V(imp)-те"
+  example: "Прочитайте, пожалуйста!"
+  notes: "Plural/formal imperative: stem + -те. Politeness via пожалуйста or tone. Aspect still affects meaning (perfective = single action, imperfective = repeated)."
+
+numeral_2_4_nominative_genitive_singular:
+  template: "Num(2-4) N(gen.sg)"
+  example: "две книги"
+  notes: "Numerals 2-4 govern genitive singular. один (m/f/n nominative), два/две (m/f distinction), три, четыре (gen.sg noun). Gender agreement only in один/две."
+
+numeral_5plus_genitive_plural:
+  template: "Num(5+) N(gen.pl)"
+  example: "пять книг"
+  notes: "Numerals 5+ govern genitive plural. Compound numerals (23, 45) agree with units digit: двадцать три (nominative) vs. двадцать пять (genitive plural)."
