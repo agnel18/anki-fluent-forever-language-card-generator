@@ -1,0 +1,121 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — ENGLISH
+================================================================================
+  Word          : learn
+  Language       : English
+  Difficulty     : intermediate
+  Topic          : Education
+  Generated at   : 2026-05-03 14:52:47
+  Elapsed        : 0.03s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'en': EnAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: learn (to gain knowledge or a skill through study or experience)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=6, summary=YES
+         Sentence 3: colored=YES, explanations=6, summary=YES
+         Sentence 4: colored=YES, explanations=6, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: intermediate, expected: intermediate
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: learn (to gain knowledge or a skill through study or experience)
+
+  --- Sentence 1 ---
+  Original   : I want to learn English quickly.
+  Translation: Quiero aprender inglés rápidamente.
+  IPA/Reading: aɪ wɒnt tə lɜːn ˈɪŋɡlɪʃ ˈkwɪkli
+  Keywords   : learn, example, usage
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: I (pronoun): 1st-person singular subject pronoun 'I' — always capitalised; nominative case, subject of finite verb 'want'.">I</span> <span style="color:#4EC…
+  Grammar Summ : Sentence contains 1 pronoun, 1 verb, 1 infinitive marker, 1 infinitive, 1 noun, 1 adverb
+  Word Explanations (6 words):
+    I             pronoun         #9370DB   I (pronoun): 1st-person singular subject pronoun 'I' — always capitalised; nominative case, subject of finite verb 'want'.
+    want          verb            #4ECDC4   want (verb): Stative verb 'want' in simple present, 1st-person singular — no -s suffix since subject is 1sg; heads a to-infinitive complement.
+    to            infinitive_marker  #FF8C00   to (infinitive_marker): Infinitive marker 'to' — introduces the base-form verb 'learn'; purely grammatical (not a preposition here); marks the complement as a to-infinitive clause.
+    learn         infinitive      #FFA500   learn (infinitive): Base-form verb 'learn' as to-infinitive — complement of 'want'; no inflection for person/number in the infinitive form.
+    English       noun            #FFAA00   English (noun): Proper noun 'English' used as a bare object — language names are capitalised in English; functions as direct object of 'learn'.
+    quickly       adverb          #FF6347   quickly (adverb): Manner adverb 'quickly' derived from adjective 'quick' + -ly suffix — modifies the infinitive 'learn'; adverbial adjunct indicating speed of learning.
+
+  --- Sentence 2 ---
+  Original   : She is reading an interesting book.
+  Translation: Ella está leyendo un libro interesante.
+  IPA/Reading: ʃiː ɪz ˈriːdɪŋ ən ɪnˈtɛrɪstɪŋ bʊk
+  Keywords   : woman reading, interesting book, library
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: She (pronoun): 3rd-person singular feminine subject pronoun 'she' — nominative case; triggers 3sg verb agreement on 'is'.">She</span> <span style="color:#00…
+  Grammar Summ : Sentence contains 1 pronoun, 1 auxiliary, 1 present participle, 1 article, 1 adjective, 1 noun
+  Word Explanations (6 words):
+    She           pronoun         #9370DB   She (pronoun): 3rd-person singular feminine subject pronoun 'she' — nominative case; triggers 3sg verb agreement on 'is'.
+    is            auxiliary       #00CED1   is (auxiliary): Auxiliary verb 'be', 3rd-person singular present 'is' — combines with the present participle 'reading' to form the progressive aspect; marks an ongoing action at the time of speaking.
+    reading       present_participle  #FF7F50   reading (present_participle): Present participle 'reading' formed by adding -ing to 'read' — together with auxiliary 'is' marks progressive aspect; the -ing form has no tense of its own.
+    an            article         #FFD700   an (article): Indefinite article 'an' (vowel onset variant of 'a') — used before 'interesting' which begins with a vowel sound /ɪ/; introduces a non-specific book.
+    interesting   adjective       #FF44FF   interesting (adjective): Attributive adjective 'interesting' — participial adjective derived from the verb 'interest'; precedes 'book' in the noun phrase; invariable in English.
+    book          noun            #FFAA00   book (noun): Common count noun 'book' — direct object of 'reading'; singular, no case marking needed in English object position.
+
+  --- Sentence 3 ---
+  Original   : We should turn off the lights.
+  Translation: Deberíamos apagar las luces.
+  IPA/Reading: wiː ʃʊd tɜːn ɒf ðə laɪts
+  Keywords   : light switch, turning off, energy saving
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: We (pronoun): 1st-person plural subject pronoun 'we' — nominative case; modal verbs take the base form regardless of subject person/number.">We</span> <span…
+  Grammar Summ : Sentence contains 1 pronoun, 1 modal verb, 1 verb, 1 phrasal verb particle, 1 article, 1 noun
+  Word Explanations (6 words):
+    We            pronoun         #9370DB   We (pronoun): 1st-person plural subject pronoun 'we' — nominative case; modal verbs take the base form regardless of subject person/number.
+    should        modal_verb      #9370DB   should (modal_verb): Modal verb 'should' — defective paradigm (no -s, no infinitive, no past form); expresses mild obligation or recommendation; followed by bare infinitive 'turn'.
+    turn          verb            #4ECDC4   turn (verb): Base-form verb 'turn' — bare infinitive after modal 'should'; part of the phrasal verb 'turn off' (non-compositional: meaning is 'extinguish', not merely 'rotate away').
+    off           phrasal_verb_particle  #20B2AA   off (phrasal_verb_particle): Phrasal-verb particle 'off' — combines with 'turn' to form the phrasal verb 'turn off' (stop electricity/light); separable: a pronoun object would move between verb and particle ('turn them off').
+    the           article         #FFD700   the (article): Definite article 'the' — marks 'lights' as specific lights already known in context.
+    lights        noun            #FFAA00   lights (noun): Common count noun 'lights' — direct object in plural form; English regular plural adds -s suffix; here the full NP ('the lights') follows the particle.
+
+  --- Sentence 4 ---
+  Original   : Running every morning helps me focus.
+  Translation: Correr cada mañana me ayuda a concentrarme.
+  IPA/Reading: ˈrʌnɪŋ ˈɛvri ˈmɔːnɪŋ hɛlps miː ˈfəʊkəs
+  Keywords   : morning run, jogging, focus concentration
+
+  Colored HTML : <span style="color:#FFA500" title="gerund: Running (gerund): Gerund 'running' — -ing form of 'run' used as the subject noun phrase of the sentence; a gerund is a verbal noun that preserves some verb p…
+  Grammar Summ : Sentence contains 1 gerund, 1 determiner, 1 noun, 1 verb, 1 pronoun, 1 infinitive
+  Word Explanations (6 words):
+    Running       gerund          #FFA500   Running (gerund): Gerund 'running' — -ing form of 'run' used as the subject noun phrase of the sentence; a gerund is a verbal noun that preserves some verb properties (can take adverbials) while functioning syntactically as a noun.
+    every         determiner      #B8860B   every (determiner): Universal determiner 'every' — distributes over singular countable nouns; heads the NP 'every morning' which is a temporal adverbial modifying 'running'.
+    morning       noun            #FFAA00   morning (noun): Common count noun 'morning' — object of the determiner 'every'; the NP 'every morning' is a temporal adjunct within the gerund phrase.
+    helps         verb            #4ECDC4   helps (verb): Present-tense verb 'help', 3rd-person singular — adds -s because the gerund subject 'Running every morning' is syntactically singular; takes a bare-infinitive object complement.
+    me            pronoun         #9370DB   me (pronoun): 1st-person singular object pronoun 'me' — accusative case; indirect object / beneficiary argument of 'helps'.
+    focus         infinitive      #FFA500   focus (infinitive): Bare infinitive 'focus' — base form without 'to'; appears as the second complement of 'help' in the 'help someone (to) do' construction; the 'to' is optionally dropped after 'help'.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

@@ -1,0 +1,143 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — ENGLISH
+================================================================================
+  Word          : read
+  Language       : English
+  Difficulty     : advanced
+  Topic          : Education
+  Generated at   : 2026-05-03 14:52:47
+  Elapsed        : 0.03s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'en': EnAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: read (to look at and comprehend written text)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=15, summary=YES
+         Sentence 2: colored=YES, explanations=11, summary=YES
+         Sentence 3: colored=YES, explanations=11, summary=YES
+         Sentence 4: colored=YES, explanations=9, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: advanced, expected: advanced
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: read (to look at and comprehend written text)
+
+  --- Sentence 1 ---
+  Original   : The book that she gave me was the most interesting one I had ever read.
+  Translation: El libro que ella me dio fue el más interesante que jamás había leído.
+  IPA/Reading: ðə bʊk ðæt ʃiː ɡeɪv miː wɒz ðə məʊst ˈɪntrɪstɪŋ wʌn aɪ həd ˈɛvər rɛd
+  Keywords   : book reading, interesting novel, past reading
+
+  Colored HTML : <span style="color:#FFD700" title="article: The (article): Definite article 'the' — marks 'book' as specific (the particular book already in discourse focus).">The</span> <span style="color:#FFAA00" t…
+  Grammar Summ : Sentence contains 2 articles, 1 noun, 1 relative pronoun, 4 pronouns, 2 verbs, 1 superlative, 1 adjective, 1 auxiliary, 1 adverb, 1 past participle
+  Word Explanations (15 words):
+    The           article         #FFD700   The (article): Definite article 'the' — marks 'book' as specific (the particular book already in discourse focus).
+    book          noun            #FFAA00   book (noun): Common count noun 'book' — head of the subject NP; modified by the restrictive relative clause 'that she gave me'.
+    that          relative_pronoun  #9370DB   that (relative_pronoun): Relative pronoun 'that' — introduces a restrictive relative clause; its antecedent is 'book' (the head noun); 'that' functions as the direct object of 'gave' within the clause.
+    she           pronoun         #9370DB   she (pronoun): 3rd-person singular feminine subject pronoun 'she' — subject of the relative clause verb 'gave'; nominative case.
+    gave          verb            #4ECDC4   gave (verb): Irregular past-tense form of 'give' (give → gave) — simple past; ditransitive verb taking two objects: indirect 'me' and direct (relativised) 'that/book'.
+    me            pronoun         #9370DB   me (pronoun): 1st-person singular object pronoun 'me' — accusative/dative; indirect object (recipient) of the ditransitive verb 'gave'.
+    was           verb            #4ECDC4   was (verb): Past-tense form of copula 'be' (3rd-person singular) — main verb of the matrix clause linking subject 'book' to predicate 'the most interesting one'.
+    the           article         #FFD700   the (article): Definite article 'the' — required before superlative adjectives; marks the highest degree in the comparison class.
+    most          superlative     #FF44FF   most (superlative): Superlative marker 'most' — periphrastic superlative used before multi-syllable adjectives; 'the most interesting' is the superlative of 'interesting'.
+    interesting   adjective       #FF44FF   interesting (adjective): Adjective 'interesting' — takes periphrastic superlative 'most' (not *interestingest); predicate adjective in the copular construction.
+    one           pronoun         #9370DB   one (pronoun): Pro-form 'one' — indefinite pronoun standing in for 'book'; avoids repetition; head of the NP 'one [that] I had ever read'.
+    I             pronoun         #9370DB   I (pronoun): 1st-person singular subject pronoun 'I' — subject of the reduced relative clause 'I had ever read'; nominative case.
+    had           auxiliary       #00CED1   had (auxiliary): Past perfect auxiliary 'had' — combines with past participle 'read' to form the past perfect aspect; signals that the reading preceded another past event (the giving).
+    ever          adverb          #FF6347   ever (adverb): Frequency adverb 'ever' — used in a superlative/comparative context to mean 'at any point in time'; reinforces the absolute superlative claim.
+    read          past_participle  #FF6347   read (past_participle): Irregular past participle 'read' (homographic with base/past; /rɛd/ not /riːd/) — used with auxiliary 'had' to form past perfect; the book is the understood object.
+
+  --- Sentence 2 ---
+  Original   : Although it was raining heavily, we went outside to play football.
+  Translation: Aunque llovía mucho, salimos a jugar al fútbol.
+  IPA/Reading: ɔːlˈðəʊ ɪt wɒz ˈreɪnɪŋ ˈhɛvɪli wiː wɛnt ˈaʊtsaɪd tə pleɪ ˈfʊtbɔːl
+  Keywords   : rainy day, outdoor football, despite rain
+
+  Colored HTML : <span style="color:#888888" title="subordinating_conjunction: Although (subordinating_conjunction): Subordinating conjunction 'although' — introduces a concessive adverbial clause expressing a contras…
+  Grammar Summ : Sentence contains 1 subordinating conjunction, 2 pronouns, 1 auxiliary, 1 present participle, 2 adverbs, 2 verbs, 1 infinitive marker, 1 noun
+  Word Explanations (11 words):
+    Although      subordinating_conjunction  #888888   Although (subordinating_conjunction): Subordinating conjunction 'although' — introduces a concessive adverbial clause expressing a contrast or unexpected result; equivalent to 'even though'; triggers a finite subordinate clause.
+    it            pronoun         #9370DB   it (pronoun): Expletive pronoun 'it' — dummy/placeholder subject with no referential content; required by English's strict subject-mandatory syntax (pro-drop is not permitted); used in weather and environmental constructions.
+    was           auxiliary       #00CED1   was (auxiliary): Past-tense auxiliary 'be' (3rd-person singular 'was') — combines with present participle 'raining' to form past progressive; sets temporal frame of the concessive clause.
+    raining       present_participle  #FF7F50   raining (present_participle): Present participle 'raining' — -ing form of weather verb 'rain'; with past auxiliary 'was' forms past progressive indicating ongoing rain at the reference time.
+    heavily       adverb          #FF6347   heavily (adverb): Manner adverb 'heavily' — derived from adjective 'heavy' + -ly; modifies 'raining'; indicates intensity of the rain.
+    we            pronoun         #9370DB   we (pronoun): 1st-person plural subject pronoun 'we' — nominative case; subject of the main clause.
+    went          verb            #4ECDC4   went (verb): Irregular past-tense of 'go' (go → went, suppletion) — simple past main verb; directional motion verb.
+    outside       adverb          #FF6347   outside (adverb): Directional adverb 'outside' — adverbial complement indicating destination of 'went'; can also function as a preposition (here adverb since no NP follows).
+    to            infinitive_marker  #FF8C00   to (infinitive_marker): Infinitive marker 'to' — introduces purpose infinitive clause 'to play football'; the infinitive here expresses the purpose/intention of going outside.
+    play          verb            #4ECDC4   play (verb): Base-form verb 'play' as to-infinitive — expresses the purpose of the motion; no inflection in infinitive form.
+    football      noun            #FFAA00   football (noun): Mass/activity noun 'football' — direct object of 'play'; used without an article in sporting activity constructions ('play football', not *'play the football').
+
+  --- Sentence 3 ---
+  Original   : She picked herself up and continued running, even though she was exhausted.
+  Translation: Se levantó y continuó corriendo, aunque estaba agotada.
+  IPA/Reading: ʃiː pɪkt hɜːˈsɛlf ʌp ənd kənˈtɪnjuːd ˈrʌnɪŋ iːvən ðəʊ ʃiː wɒz ɪɡˈzɔːstɪd
+  Keywords   : resilience, running after falling, tired athlete
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: She (pronoun): 3rd-person singular feminine subject pronoun 'she' — nominative case; co-referential with 'herself' in the same clause.">She</span> <span sty…
+  Grammar Summ : Sentence contains 2 pronouns, 2 phrasal verbs, 1 reflexive pronoun, 1 coordinating conjunction, 1 verb, 1 present participle, 1 subordinating conjunction, 1 auxiliary, 1 past participle
+  Word Explanations (11 words):
+    She           pronoun         #9370DB   She (pronoun): 3rd-person singular feminine subject pronoun 'she' — nominative case; co-referential with 'herself' in the same clause.
+    picked        phrasal_verb    #20B2AA   picked (phrasal_verb): Past-tense verb 'picked' — part of the phrasal verb 'pick up' (non-compositional meaning: recover/rise from a fall); the reflexive 'herself' is the separating object between verb and particle.
+    herself       reflexive_pronoun  #DDA0DD   herself (reflexive_pronoun): 3rd-person singular feminine reflexive pronoun 'herself' — refers back to the subject 'she'; required here because the phrasal verb 'pick up' is transitive and the agent and patient are co-referential.
+    up            phrasal_verb    #20B2AA   up (phrasal_verb): Phrasal-verb particle 'up' in 'pick up' — separated from 'picked' by the reflexive object 'herself' (separable phrasal verb); together with 'picked' expresses recovering from a fallen position.
+    and           coordinating_conjunction  #AAAAAA   and (coordinating_conjunction): Coordinating conjunction 'and' (FANBOYS) — joins the two main-clause predicates 'picked herself up' and 'continued running'; expresses sequential or simultaneous addition.
+    continued     verb            #4ECDC4   continued (verb): Past-tense verb 'continued' — aspectual continuative verb; takes a gerund complement ('running') rather than a to-infinitive.
+    running       present_participle  #FF7F50   running (present_participle): Gerund/present participle 'running' (-ing form of 'run') — here functions as the gerund complement of 'continued'; 'continue' preferentially takes -ing over to-infinitive with slight meaning difference.
+    even though   subordinating_conjunction  #888888   even though (subordinating_conjunction): Subordinating conjunction 'even though' — a reinforced concessive subordinator (stronger than 'although'); introduces a concessive clause expressing a surprising contrast.
+    she           pronoun         #9370DB   she (pronoun): 3rd-person singular feminine subject pronoun 'she' — subject of the concessive clause; co-referential with the main-clause subject.
+    was           auxiliary       #00CED1   was (auxiliary): Past-tense copula/auxiliary 'was' (3rd-person singular) — links subject 'she' to the predicate adjective 'exhausted'; here functions as copula in a stative past construction.
+    exhausted     past_participle  #FF6347   exhausted (past_participle): Past participle 'exhausted' — used as a predicate adjective after copula 'was'; derived from the verb 'exhaust'; describes a resultant state of being extremely tired.
+
+  --- Sentence 4 ---
+  Original   : Who wrote the better essay, you or your classmate?
+  Translation: ¿Quién escribió el mejor ensayo, tú o tu compañero?
+  IPA/Reading: huː rəʊt ðə ˈbɛtər ˈɛseɪ juː ɔː jɔː ˈklɑːsmeɪt
+  Keywords   : essay writing, comparison, classmates
+
+  Colored HTML : <span style="color:#9370DB" title="interrogative_pronoun: Who (interrogative_pronoun): Interrogative pronoun 'who' — asks about a person; subject of the question (subject-position wh-word does not tri…
+  Grammar Summ : Sentence contains 1 interrogative pronoun, 1 verb, 1 article, 1 comparative, 2 nouns, 2 pronouns, 1 coordinating conjunction
+  Word Explanations (9 words):
+    Who           interrogative_pronoun  #9370DB   Who (interrogative_pronoun): Interrogative pronoun 'who' — asks about a person; subject of the question (subject-position wh-word does not trigger subject-auxiliary inversion in standard English); nominative case.
+    wrote         verb            #4ECDC4   wrote (verb): Irregular past-tense form of 'write' (write → wrote, ablaut) — simple past; transitive verb; 'who' in subject position, 'the better essay' as direct object.
+    the           article         #FFD700   the (article): Definite article 'the' — required before comparative adjectives in a definite-context comparison ('the better essay' = the superior of the two); marks uniqueness within the comparison set.
+    better        comparative     #FF44FF   better (comparative): Comparative form of adjective 'good' (good → better, suppletive) — irregular comparative; 'the better essay' implies a comparison between exactly two essays; precedes the noun as attributive.
+    essay         noun            #FFAA00   essay (noun): Common count noun 'essay' — direct object of 'wrote'; modified by the comparative adjective 'better'; singular form.
+    you           pronoun         #9370DB   you (pronoun): 2nd-person pronoun 'you' — part of the appended alternative question fragment 'you or your classmate?'; English does not distinguish nominative/accusative for 'you'; identifies one of the two compared agents.
+    or            coordinating_conjunction  #AAAAAA   or (coordinating_conjunction): Coordinating conjunction 'or' (FANBOYS) — connects the two alternatives 'you' and 'your classmate' in an alternative question structure asking the listener to identify one.
+    your          pronoun         #9370DB   your (pronoun): 2nd-person possessive determiner 'your' — precedes 'classmate' as a genitive determiner; expresses possession/association; distinct from possessive pronoun 'yours' which stands alone.
+    classmate     noun            #FFAA00   classmate (noun): Compound noun 'classmate' — a fellow member of the same class; object of comparison in the alternative tag; the alternative to 'you' in the question.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

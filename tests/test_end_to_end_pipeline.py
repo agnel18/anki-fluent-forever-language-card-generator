@@ -1881,6 +1881,355 @@ PORTUGUESE_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# ENGLISH
+# ---------------------------------------------------------------------------
+ENGLISH_MOCK_DATA: Dict[str, Any] = {
+    "word": "cat",
+    "language_name": "English",
+    "language_code": "en",
+    "topic": "Animals & Nature",
+    "num_sentences": 4,
+    "min_length": 3,
+    "max_length": 12,
+    "difficulty": "beginner",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: cat (a small domesticated carnivorous mammal kept as a household pet)
+
+        RESTRICTIONS: Common count noun. Use simple SVO sentences with basic vocabulary.
+
+        SENTENCES:
+        1. The cat eats fish.
+        2. A small cat sleeps on the bed.
+        3. My cat likes warm milk.
+        4. The black cat ran away.
+
+        TRANSLATIONS:
+        1. El gato come pescado.
+        2. Un gato pequeño duerme en la cama.
+        3. A mi gato le gusta la leche tibia.
+        4. El gato negro huyó.
+
+        IPA:
+        1. ðə kæt iːts fɪʃ
+        2. ə smɔːl kæt sliːps ɒn ðə bɛd
+        3. maɪ kæt laɪks wɔːm mɪlk
+        4. ðə blæk kæt ræn əˈweɪ
+
+        KEYWORDS:
+        1. cat eating fish, bowl of fish, pet cat
+        2. small cat sleeping, bed, cozy pet
+        3. cat drinking milk, warm drink, happy pet
+        4. black cat running, outdoor cat, escape"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "The cat eats fish.",
+            "overall_structure": "Subject-Verb-Object",
+            "sentence_structure": "Simple SVO declarative sentence",
+            "word_explanations": [
+                {"word": "The", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — marks 'cat' as specific or already known to the speaker; a closed-class function word with no inflection in English."},
+                {"word": "cat", "grammatical_role": "noun", "individual_meaning": "Common count noun 'cat' — subject of the clause; singular nominative position (English nouns lack overt case marking)."},
+                {"word": "eats", "grammatical_role": "verb", "individual_meaning": "Present-tense verb 'eat', 3rd-person singular form — adds the obligatory -s suffix (minimal verb agreement unique to 3sg present in English)."},
+                {"word": "fish", "grammatical_role": "noun", "individual_meaning": "Common noun 'fish' — direct object; zero-inflected (fish is its own plural form). Functions as accusative without overt case marking."}
+            ],
+            "grammar_notes": "Basic SVO present-tense sentence. Definite article marks specific referent; 3sg -s is English's only productive verb-agreement suffix.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "A small cat sleeps on the bed.",
+            "overall_structure": "Article-Adjective-Subject-Verb-Preposition-Article-Object",
+            "sentence_structure": "SVO with attributive adjective and prepositional phrase",
+            "word_explanations": [
+                {"word": "A", "grammatical_role": "article", "individual_meaning": "Indefinite article 'a' — introduces 'cat' as non-specific or first-mentioned; used before consonant onset /sm/."},
+                {"word": "small", "grammatical_role": "adjective", "individual_meaning": "Attributive adjective 'small' — precedes and modifies 'cat'; English adjectives are invariable (no gender/number agreement)."},
+                {"word": "cat", "grammatical_role": "noun", "individual_meaning": "Common count noun 'cat' — subject of the clause in singular form."},
+                {"word": "sleeps", "grammatical_role": "verb", "individual_meaning": "Present-tense verb 'sleep', 3rd-person singular — obligatory -s agreement suffix marks the 3sg subject."},
+                {"word": "on", "grammatical_role": "preposition", "individual_meaning": "Preposition 'on' — expresses contact/surface location; heads the prepositional phrase 'on the bed'."},
+                {"word": "the", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — marks 'bed' as a specific known entity in context."},
+                {"word": "bed", "grammatical_role": "noun", "individual_meaning": "Common count noun 'bed' — object of the preposition 'on'; English nouns have no overt case marking after prepositions."}
+            ],
+            "grammar_notes": "Attributive adjective precedes the noun; prepositional phrase 'on the bed' is a locative adjunct. Indefinite article 'a' vs definite 'the' contrast shown within the same sentence.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "My cat likes warm milk.",
+            "overall_structure": "PossessiveDeterminer-Subject-Verb-Adjective-Object",
+            "sentence_structure": "SVO with possessive determiner and attributive adjective",
+            "word_explanations": [
+                {"word": "My", "grammatical_role": "pronoun", "individual_meaning": "Possessive determiner 'my' (1st-person singular) — precedes the noun 'cat' as a genitive determiner; distinct from the possessive pronoun 'mine' which stands alone."},
+                {"word": "cat", "grammatical_role": "noun", "individual_meaning": "Common count noun 'cat' — subject; possessed by the speaker via 'my'."},
+                {"word": "likes", "grammatical_role": "verb", "individual_meaning": "Present-tense verb 'like', 3rd-person singular — adds -s suffix for 3sg agreement; stative verb expressing preference."},
+                {"word": "warm", "grammatical_role": "adjective", "individual_meaning": "Attributive adjective 'warm' — modifies 'milk' by preceding it directly; no inflection for agreement in English."},
+                {"word": "milk", "grammatical_role": "noun", "individual_meaning": "Mass (uncountable) noun 'milk' — direct object; used without an article because it refers to milk in general (generic/bare mass noun reading)."}
+            ],
+            "grammar_notes": "Possessive determiner 'my' occupies the determiner slot before the noun. 'Milk' is a bare mass noun (generic reading, no article needed). Stative verb 'likes' in simple present.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "The black cat ran away.",
+            "overall_structure": "Article-Adjective-Subject-Verb-Adverb",
+            "sentence_structure": "SVO past-tense clause with directional adverb",
+            "word_explanations": [
+                {"word": "The", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — marks 'cat' as specific and identifiable; used here with an adjective-noun phrase."},
+                {"word": "black", "grammatical_role": "adjective", "individual_meaning": "Attributive adjective 'black' — describes colour of the cat; invariable in English (no case/gender/number inflection)."},
+                {"word": "cat", "grammatical_role": "noun", "individual_meaning": "Common count noun 'cat' — subject; the noun follows the article + adjective sequence in English NP structure."},
+                {"word": "ran", "grammatical_role": "verb", "individual_meaning": "Irregular past-tense form of 'run' (run → ran) — simple past marks completed action; English irregular verbs change their stem vowel (ablaut) rather than adding -ed."},
+                {"word": "away", "grammatical_role": "adverb", "individual_meaning": "Directional adverb 'away' — indicates movement in a departing direction; functions as an adverbial adjunct modifying 'ran'."}
+            ],
+            "grammar_notes": "Simple past tense with irregular ablaut form 'ran'. Directional adverb 'away' is an adjunct. Article + adjective + noun is the canonical English NP word order.",
+            "confidence": 0.93
+        }
+    ], ensure_ascii=False),
+}
+
+
+# ---------------------------------------------------------------------------
+# ENGLISH — per-difficulty mock data
+# ---------------------------------------------------------------------------
+# English exposes distinct grammatical-role vocabularies for each complexity
+# level (en_config._get_default_roles). To validate analyzer + grammar-processor
+# coherence at every level we run the full pipeline three times — once each for
+# beginner, intermediate, and advanced — feeding level-appropriate role tags.
+#
+# beginner mock = ENGLISH_MOCK_DATA (defined above) — kept as the default
+#                 entry in LANGUAGE_MOCK_DATA so the original parametrized
+#                 test still runs.
+# ---------------------------------------------------------------------------
+
+_ENGLISH_INTERMEDIATE_MOCK: Dict[str, Any] = {
+    "word": "learn",
+    "language_name": "English",
+    "language_code": "en",
+    "topic": "Education",
+    "num_sentences": 4,
+    "min_length": 4,
+    "max_length": 14,
+    "difficulty": "intermediate",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: learn (to gain knowledge or a skill through study or experience)
+
+        RESTRICTIONS: Use intermediate structures: infinitives, modal verbs, phrasal verbs, gerunds, participles, possessive determiners, demonstratives.
+
+        SENTENCES:
+        1. I want to learn English quickly.
+        2. She is reading an interesting book.
+        3. We should turn off the lights.
+        4. Running every morning helps me focus.
+
+        TRANSLATIONS:
+        1. Quiero aprender inglés rápidamente.
+        2. Ella está leyendo un libro interesante.
+        3. Deberíamos apagar las luces.
+        4. Correr cada mañana me ayuda a concentrarme.
+
+        IPA:
+        1. aɪ wɒnt tə lɜːn ˈɪŋɡlɪʃ ˈkwɪkli
+        2. ʃiː ɪz ˈriːdɪŋ ən ɪnˈtɛrɪstɪŋ bʊk
+        3. wiː ʃʊd tɜːn ɒf ðə laɪts
+        4. ˈrʌnɪŋ ˈɛvri ˈmɔːnɪŋ hɛlps miː ˈfəʊkəs
+
+        KEYWORDS:
+        1. language learning, study, English book
+        2. woman reading, interesting book, library
+        3. light switch, turning off, energy saving
+        4. morning run, jogging, focus concentration"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "I want to learn English quickly.",
+            "overall_structure": "Subject-Verb-InfinitiveMarker-Verb-Object-Adverb",
+            "sentence_structure": "SVO with infinitive complement",
+            "word_explanations": [
+                {"word": "I", "grammatical_role": "pronoun", "individual_meaning": "1st-person singular subject pronoun 'I' — always capitalised; nominative case, subject of finite verb 'want'."},
+                {"word": "want", "grammatical_role": "verb", "individual_meaning": "Stative verb 'want' in simple present, 1st-person singular — no -s suffix since subject is 1sg; heads a to-infinitive complement."},
+                {"word": "to", "grammatical_role": "infinitive_marker", "individual_meaning": "Infinitive marker 'to' — introduces the base-form verb 'learn'; purely grammatical (not a preposition here); marks the complement as a to-infinitive clause."},
+                {"word": "learn", "grammatical_role": "infinitive", "individual_meaning": "Base-form verb 'learn' as to-infinitive — complement of 'want'; no inflection for person/number in the infinitive form."},
+                {"word": "English", "grammatical_role": "noun", "individual_meaning": "Proper noun 'English' used as a bare object — language names are capitalised in English; functions as direct object of 'learn'."},
+                {"word": "quickly", "grammatical_role": "adverb", "individual_meaning": "Manner adverb 'quickly' derived from adjective 'quick' + -ly suffix — modifies the infinitive 'learn'; adverbial adjunct indicating speed of learning."}
+            ],
+            "grammar_notes": "To-infinitive complement after 'want'. Infinitive marker 'to' is distinct from the preposition 'to'. Adverb 'quickly' is an end-adjunct.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "She is reading an interesting book.",
+            "overall_structure": "Subject-Auxiliary-PresentParticiple-Article-Adjective-Object",
+            "sentence_structure": "Present progressive (be + -ing) with indefinite NP",
+            "word_explanations": [
+                {"word": "She", "grammatical_role": "pronoun", "individual_meaning": "3rd-person singular feminine subject pronoun 'she' — nominative case; triggers 3sg verb agreement on 'is'."},
+                {"word": "is", "grammatical_role": "auxiliary", "individual_meaning": "Auxiliary verb 'be', 3rd-person singular present 'is' — combines with the present participle 'reading' to form the progressive aspect; marks an ongoing action at the time of speaking."},
+                {"word": "reading", "grammatical_role": "present_participle", "individual_meaning": "Present participle 'reading' formed by adding -ing to 'read' — together with auxiliary 'is' marks progressive aspect; the -ing form has no tense of its own."},
+                {"word": "an", "grammatical_role": "article", "individual_meaning": "Indefinite article 'an' (vowel onset variant of 'a') — used before 'interesting' which begins with a vowel sound /ɪ/; introduces a non-specific book."},
+                {"word": "interesting", "grammatical_role": "adjective", "individual_meaning": "Attributive adjective 'interesting' — participial adjective derived from the verb 'interest'; precedes 'book' in the noun phrase; invariable in English."},
+                {"word": "book", "grammatical_role": "noun", "individual_meaning": "Common count noun 'book' — direct object of 'reading'; singular, no case marking needed in English object position."}
+            ],
+            "grammar_notes": "Present progressive = be (auxiliary) + present participle (-ing). 'An' before vowel onset. Participial adjective 'interesting' precedes the noun.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "We should turn off the lights.",
+            "overall_structure": "Subject-ModalVerb-Verb-PhrasalVerbParticle-Article-Object",
+            "sentence_structure": "Modal + base verb + separable phrasal verb",
+            "word_explanations": [
+                {"word": "We", "grammatical_role": "pronoun", "individual_meaning": "1st-person plural subject pronoun 'we' — nominative case; modal verbs take the base form regardless of subject person/number."},
+                {"word": "should", "grammatical_role": "modal_verb", "individual_meaning": "Modal verb 'should' — defective paradigm (no -s, no infinitive, no past form); expresses mild obligation or recommendation; followed by bare infinitive 'turn'."},
+                {"word": "turn", "grammatical_role": "verb", "individual_meaning": "Base-form verb 'turn' — bare infinitive after modal 'should'; part of the phrasal verb 'turn off' (non-compositional: meaning is 'extinguish', not merely 'rotate away')."},
+                {"word": "off", "grammatical_role": "phrasal_verb_particle", "individual_meaning": "Phrasal-verb particle 'off' — combines with 'turn' to form the phrasal verb 'turn off' (stop electricity/light); separable: a pronoun object would move between verb and particle ('turn them off')."},
+                {"word": "the", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — marks 'lights' as specific lights already known in context."},
+                {"word": "lights", "grammatical_role": "noun", "individual_meaning": "Common count noun 'lights' — direct object in plural form; English regular plural adds -s suffix; here the full NP ('the lights') follows the particle."}
+            ],
+            "grammar_notes": "Modal 'should' + bare infinitive. 'Turn off' is a separable phrasal verb: full NP object may follow the particle, but a pronoun must precede it ('turn them off').",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Running every morning helps me focus.",
+            "overall_structure": "Gerund-Determiner-Noun-Verb-Pronoun-BareInfinitive",
+            "sentence_structure": "Gerund subject + bare infinitive object complement",
+            "word_explanations": [
+                {"word": "Running", "grammatical_role": "gerund", "individual_meaning": "Gerund 'running' — -ing form of 'run' used as the subject noun phrase of the sentence; a gerund is a verbal noun that preserves some verb properties (can take adverbials) while functioning syntactically as a noun."},
+                {"word": "every", "grammatical_role": "determiner", "individual_meaning": "Universal determiner 'every' — distributes over singular countable nouns; heads the NP 'every morning' which is a temporal adverbial modifying 'running'."},
+                {"word": "morning", "grammatical_role": "noun", "individual_meaning": "Common count noun 'morning' — object of the determiner 'every'; the NP 'every morning' is a temporal adjunct within the gerund phrase."},
+                {"word": "helps", "grammatical_role": "verb", "individual_meaning": "Present-tense verb 'help', 3rd-person singular — adds -s because the gerund subject 'Running every morning' is syntactically singular; takes a bare-infinitive object complement."},
+                {"word": "me", "grammatical_role": "pronoun", "individual_meaning": "1st-person singular object pronoun 'me' — accusative case; indirect object / beneficiary argument of 'helps'."},
+                {"word": "focus", "grammatical_role": "infinitive", "individual_meaning": "Bare infinitive 'focus' — base form without 'to'; appears as the second complement of 'help' in the 'help someone (to) do' construction; the 'to' is optionally dropped after 'help'."}
+            ],
+            "grammar_notes": "Gerund as subject makes the clause nominally-headed. 'Every morning' is an adverbial adjunct within the gerund phrase. 'Helps me focus' uses the bare-infinitive complement pattern of 'help'.",
+            "confidence": 0.91
+        }
+    ], ensure_ascii=False),
+}
+
+
+_ENGLISH_ADVANCED_MOCK: Dict[str, Any] = {
+    "word": "read",
+    "language_name": "English",
+    "language_code": "en",
+    "topic": "Education",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 22,
+    "difficulty": "advanced",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: read (to look at and comprehend written text)
+
+        RESTRICTIONS: Use advanced structures: relative pronouns, subordinating conjunctions, comparative/superlative, reflexive pronouns, coordinating conjunctions, phrasal verbs.
+
+        SENTENCES:
+        1. The book that she gave me was the most interesting one I had ever read.
+        2. Although it was raining heavily, we went outside to play football.
+        3. She picked herself up and continued running, even though she was exhausted.
+        4. Who wrote the better essay, you or your classmate?
+
+        TRANSLATIONS:
+        1. El libro que ella me dio fue el más interesante que jamás había leído.
+        2. Aunque llovía mucho, salimos a jugar al fútbol.
+        3. Se levantó y continuó corriendo, aunque estaba agotada.
+        4. ¿Quién escribió el mejor ensayo, tú o tu compañero?
+
+        IPA:
+        1. ðə bʊk ðæt ʃiː ɡeɪv miː wɒz ðə məʊst ˈɪntrɪstɪŋ wʌn aɪ həd ˈɛvər rɛd
+        2. ɔːlˈðəʊ ɪt wɒz ˈreɪnɪŋ ˈhɛvɪli wiː wɛnt ˈaʊtsaɪd tə pleɪ ˈfʊtbɔːl
+        3. ʃiː pɪkt hɜːˈsɛlf ʌp ənd kənˈtɪnjuːd ˈrʌnɪŋ iːvən ðəʊ ʃiː wɒz ɪɡˈzɔːstɪd
+        4. huː rəʊt ðə ˈbɛtər ˈɛseɪ juː ɔː jɔː ˈklɑːsmeɪt
+
+        KEYWORDS:
+        1. book reading, interesting novel, past reading
+        2. rainy day, outdoor football, despite rain
+        3. resilience, running after falling, tired athlete
+        4. essay writing, comparison, classmates"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "The book that she gave me was the most interesting one I had ever read.",
+            "overall_structure": "Article-Subject-[RelPron-Subject-Verb-Object]-Verb-Article-Superlative-Adjective-Pronoun-[Subject-Auxiliary-Adverb-Verb]",
+            "sentence_structure": "Main clause with restrictive relative clause + predicate containing superlative + reduced relative",
+            "word_explanations": [
+                {"word": "The", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — marks 'book' as specific (the particular book already in discourse focus)."},
+                {"word": "book", "grammatical_role": "noun", "individual_meaning": "Common count noun 'book' — head of the subject NP; modified by the restrictive relative clause 'that she gave me'."},
+                {"word": "that", "grammatical_role": "relative_pronoun", "individual_meaning": "Relative pronoun 'that' — introduces a restrictive relative clause; its antecedent is 'book' (the head noun); 'that' functions as the direct object of 'gave' within the clause."},
+                {"word": "she", "grammatical_role": "pronoun", "individual_meaning": "3rd-person singular feminine subject pronoun 'she' — subject of the relative clause verb 'gave'; nominative case."},
+                {"word": "gave", "grammatical_role": "verb", "individual_meaning": "Irregular past-tense form of 'give' (give → gave) — simple past; ditransitive verb taking two objects: indirect 'me' and direct (relativised) 'that/book'."},
+                {"word": "me", "grammatical_role": "pronoun", "individual_meaning": "1st-person singular object pronoun 'me' — accusative/dative; indirect object (recipient) of the ditransitive verb 'gave'."},
+                {"word": "was", "grammatical_role": "verb", "individual_meaning": "Past-tense form of copula 'be' (3rd-person singular) — main verb of the matrix clause linking subject 'book' to predicate 'the most interesting one'."},
+                {"word": "the", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — required before superlative adjectives; marks the highest degree in the comparison class."},
+                {"word": "most", "grammatical_role": "superlative", "individual_meaning": "Superlative marker 'most' — periphrastic superlative used before multi-syllable adjectives; 'the most interesting' is the superlative of 'interesting'."},
+                {"word": "interesting", "grammatical_role": "adjective", "individual_meaning": "Adjective 'interesting' — takes periphrastic superlative 'most' (not *interestingest); predicate adjective in the copular construction."},
+                {"word": "one", "grammatical_role": "pronoun", "individual_meaning": "Pro-form 'one' — indefinite pronoun standing in for 'book'; avoids repetition; head of the NP 'one [that] I had ever read'."},
+                {"word": "I", "grammatical_role": "pronoun", "individual_meaning": "1st-person singular subject pronoun 'I' — subject of the reduced relative clause 'I had ever read'; nominative case."},
+                {"word": "had", "grammatical_role": "auxiliary", "individual_meaning": "Past perfect auxiliary 'had' — combines with past participle 'read' to form the past perfect aspect; signals that the reading preceded another past event (the giving)."},
+                {"word": "ever", "grammatical_role": "adverb", "individual_meaning": "Frequency adverb 'ever' — used in a superlative/comparative context to mean 'at any point in time'; reinforces the absolute superlative claim."},
+                {"word": "read", "grammatical_role": "past_participle", "individual_meaning": "Irregular past participle 'read' (homographic with base/past; /rɛd/ not /riːd/) — used with auxiliary 'had' to form past perfect; the book is the understood object."}
+            ],
+            "grammar_notes": "Restrictive relative clause with 'that' (object position — zero-relativiser also possible). Periphrastic superlative 'the most interesting'. Past perfect 'had ever read' signals anterior action. Pro-form 'one' avoids NP repetition.",
+            "confidence": 0.94
+        },
+        {
+            "sentence": "Although it was raining heavily, we went outside to play football.",
+            "overall_structure": "SubordConj-Subject-Auxiliary-PresentParticiple-Adverb-Subject-Verb-Adverb-InfMarker-Verb-Object",
+            "sentence_structure": "Concessive adverbial subordinate clause + main clause with purpose infinitive",
+            "word_explanations": [
+                {"word": "Although", "grammatical_role": "subordinating_conjunction", "individual_meaning": "Subordinating conjunction 'although' — introduces a concessive adverbial clause expressing a contrast or unexpected result; equivalent to 'even though'; triggers a finite subordinate clause."},
+                {"word": "it", "grammatical_role": "pronoun", "individual_meaning": "Expletive pronoun 'it' — dummy/placeholder subject with no referential content; required by English's strict subject-mandatory syntax (pro-drop is not permitted); used in weather and environmental constructions."},
+                {"word": "was", "grammatical_role": "auxiliary", "individual_meaning": "Past-tense auxiliary 'be' (3rd-person singular 'was') — combines with present participle 'raining' to form past progressive; sets temporal frame of the concessive clause."},
+                {"word": "raining", "grammatical_role": "present_participle", "individual_meaning": "Present participle 'raining' — -ing form of weather verb 'rain'; with past auxiliary 'was' forms past progressive indicating ongoing rain at the reference time."},
+                {"word": "heavily", "grammatical_role": "adverb", "individual_meaning": "Manner adverb 'heavily' — derived from adjective 'heavy' + -ly; modifies 'raining'; indicates intensity of the rain."},
+                {"word": "we", "grammatical_role": "pronoun", "individual_meaning": "1st-person plural subject pronoun 'we' — nominative case; subject of the main clause."},
+                {"word": "went", "grammatical_role": "verb", "individual_meaning": "Irregular past-tense of 'go' (go → went, suppletion) — simple past main verb; directional motion verb."},
+                {"word": "outside", "grammatical_role": "adverb", "individual_meaning": "Directional adverb 'outside' — adverbial complement indicating destination of 'went'; can also function as a preposition (here adverb since no NP follows)."},
+                {"word": "to", "grammatical_role": "infinitive_marker", "individual_meaning": "Infinitive marker 'to' — introduces purpose infinitive clause 'to play football'; the infinitive here expresses the purpose/intention of going outside."},
+                {"word": "play", "grammatical_role": "verb", "individual_meaning": "Base-form verb 'play' as to-infinitive — expresses the purpose of the motion; no inflection in infinitive form."},
+                {"word": "football", "grammatical_role": "noun", "individual_meaning": "Mass/activity noun 'football' — direct object of 'play'; used without an article in sporting activity constructions ('play football', not *'play the football')."}
+            ],
+            "grammar_notes": "Sentence-initial concessive 'although'-clause is fronted for contrast emphasis. Expletive 'it' subject in weather clause. Purpose infinitive 'to play' after motion verb 'went outside'. Past progressive in subordinate clause.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "She picked herself up and continued running, even though she was exhausted.",
+            "overall_structure": "Subject-PhrasalVerb-ReflexivePronoun-Particle-CoordConj-Verb-Gerund-SubordConj-Subject-Auxiliary-PastParticiple",
+            "sentence_structure": "Coordinated main clauses + concessive subordinate clause",
+            "word_explanations": [
+                {"word": "She", "grammatical_role": "pronoun", "individual_meaning": "3rd-person singular feminine subject pronoun 'she' — nominative case; co-referential with 'herself' in the same clause."},
+                {"word": "picked", "grammatical_role": "phrasal_verb", "individual_meaning": "Past-tense verb 'picked' — part of the phrasal verb 'pick up' (non-compositional meaning: recover/rise from a fall); the reflexive 'herself' is the separating object between verb and particle."},
+                {"word": "herself", "grammatical_role": "reflexive_pronoun", "individual_meaning": "3rd-person singular feminine reflexive pronoun 'herself' — refers back to the subject 'she'; required here because the phrasal verb 'pick up' is transitive and the agent and patient are co-referential."},
+                {"word": "up", "grammatical_role": "phrasal_verb", "individual_meaning": "Phrasal-verb particle 'up' in 'pick up' — separated from 'picked' by the reflexive object 'herself' (separable phrasal verb); together with 'picked' expresses recovering from a fallen position."},
+                {"word": "and", "grammatical_role": "coordinating_conjunction", "individual_meaning": "Coordinating conjunction 'and' (FANBOYS) — joins the two main-clause predicates 'picked herself up' and 'continued running'; expresses sequential or simultaneous addition."},
+                {"word": "continued", "grammatical_role": "verb", "individual_meaning": "Past-tense verb 'continued' — aspectual continuative verb; takes a gerund complement ('running') rather than a to-infinitive."},
+                {"word": "running", "grammatical_role": "present_participle", "individual_meaning": "Gerund/present participle 'running' (-ing form of 'run') — here functions as the gerund complement of 'continued'; 'continue' preferentially takes -ing over to-infinitive with slight meaning difference."},
+                {"word": "even though", "grammatical_role": "subordinating_conjunction", "individual_meaning": "Subordinating conjunction 'even though' — a reinforced concessive subordinator (stronger than 'although'); introduces a concessive clause expressing a surprising contrast."},
+                {"word": "she", "grammatical_role": "pronoun", "individual_meaning": "3rd-person singular feminine subject pronoun 'she' — subject of the concessive clause; co-referential with the main-clause subject."},
+                {"word": "was", "grammatical_role": "auxiliary", "individual_meaning": "Past-tense copula/auxiliary 'was' (3rd-person singular) — links subject 'she' to the predicate adjective 'exhausted'; here functions as copula in a stative past construction."},
+                {"word": "exhausted", "grammatical_role": "past_participle", "individual_meaning": "Past participle 'exhausted' — used as a predicate adjective after copula 'was'; derived from the verb 'exhaust'; describes a resultant state of being extremely tired."}
+            ],
+            "grammar_notes": "Separable phrasal verb 'pick up' split by reflexive object 'herself'. Coordinating conjunction 'and' links two VP predicates. 'Even though' is a stronger concessive than 'although'. 'Exhausted' is a participial adjective in copular predicate.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Who wrote the better essay, you or your classmate?",
+            "overall_structure": "IntPronoun-Verb-Article-Comparative-Noun-Pronoun-CoordConj-PossessiveDeterminer-Noun",
+            "sentence_structure": "Wh-interrogative with comparative adjective and alternative question tag",
+            "word_explanations": [
+                {"word": "Who", "grammatical_role": "interrogative_pronoun", "individual_meaning": "Interrogative pronoun 'who' — asks about a person; subject of the question (subject-position wh-word does not trigger subject-auxiliary inversion in standard English); nominative case."},
+                {"word": "wrote", "grammatical_role": "verb", "individual_meaning": "Irregular past-tense form of 'write' (write → wrote, ablaut) — simple past; transitive verb; 'who' in subject position, 'the better essay' as direct object."},
+                {"word": "the", "grammatical_role": "article", "individual_meaning": "Definite article 'the' — required before comparative adjectives in a definite-context comparison ('the better essay' = the superior of the two); marks uniqueness within the comparison set."},
+                {"word": "better", "grammatical_role": "comparative", "individual_meaning": "Comparative form of adjective 'good' (good → better, suppletive) — irregular comparative; 'the better essay' implies a comparison between exactly two essays; precedes the noun as attributive."},
+                {"word": "essay", "grammatical_role": "noun", "individual_meaning": "Common count noun 'essay' — direct object of 'wrote'; modified by the comparative adjective 'better'; singular form."},
+                {"word": "you", "grammatical_role": "pronoun", "individual_meaning": "2nd-person pronoun 'you' — part of the appended alternative question fragment 'you or your classmate?'; English does not distinguish nominative/accusative for 'you'; identifies one of the two compared agents."},
+                {"word": "or", "grammatical_role": "coordinating_conjunction", "individual_meaning": "Coordinating conjunction 'or' (FANBOYS) — connects the two alternatives 'you' and 'your classmate' in an alternative question structure asking the listener to identify one."},
+                {"word": "your", "grammatical_role": "pronoun", "individual_meaning": "2nd-person possessive determiner 'your' — precedes 'classmate' as a genitive determiner; expresses possession/association; distinct from possessive pronoun 'yours' which stands alone."},
+                {"word": "classmate", "grammatical_role": "noun", "individual_meaning": "Compound noun 'classmate' — a fellow member of the same class; object of comparison in the alternative tag; the alternative to 'you' in the question."}
+            ],
+            "grammar_notes": "Subject-position 'who' does not trigger do-support or inversion (contrast object-position 'Whom did she see?'). Suppletive comparative 'better' (not *'gooder'). Definite article 'the' before comparative in bounded comparison. Alternative question fragment 'you or your classmate?' appended after the main clause.",
+            "confidence": 0.92
+        }
+    ], ensure_ascii=False),
+}
+
+
+# beginner reuses ENGLISH_MOCK_DATA so reports / role coverage stay in sync.
+ENGLISH_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
+    "beginner": ENGLISH_MOCK_DATA,
+    "intermediate": _ENGLISH_INTERMEDIATE_MOCK,
+    "advanced": _ENGLISH_ADVANCED_MOCK,
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
@@ -1899,6 +2248,7 @@ LANGUAGE_MOCK_DATA = {
     "malayalam": MALAYALAM_MOCK_DATA,
     "latvian": LATVIAN_MOCK_DATA,
     "portuguese": PORTUGUESE_MOCK_DATA,
+    "english": ENGLISH_MOCK_DATA,
 }
 
 
@@ -2347,6 +2697,20 @@ def test_portuguese_all_difficulty_levels(difficulty: str, tmp_path: Path):
     """Run the full pipeline for Portuguese at beginner, intermediate, and advanced."""
     data = PORTUGUESE_LEVEL_MOCK_DATA[difficulty]
     _run_full_pipeline(data, f"portuguese_{difficulty}", tmp_path)
+
+
+# ============================================================================
+# ENGLISH — full pipeline must pass at all 3 difficulty levels.
+# Tracks the project-wide requirement that every analyzer is validated for
+# beginner, intermediate, and advanced complexity (see CLAUDE.md "E2E Test
+# Sentence Difficulty Coverage").
+# ============================================================================
+
+@pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+def test_english_all_difficulty_levels(difficulty: str, tmp_path: Path):
+    """Run the full pipeline for English at beginner, intermediate, and advanced."""
+    data = ENGLISH_LEVEL_MOCK_DATA[difficulty]
+    _run_full_pipeline(data, f"english_{difficulty}", tmp_path)
 
 
 # ============================================================================

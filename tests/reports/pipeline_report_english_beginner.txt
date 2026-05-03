@@ -1,0 +1,118 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — ENGLISH
+================================================================================
+  Word          : cat
+  Language       : English
+  Difficulty     : beginner
+  Topic          : Animals & Nature
+  Generated at   : 2026-05-03 14:52:47
+  Elapsed        : 0.03s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'en': EnAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: cat (a small domesticated carnivorous mammal kept as a household pet)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=4, summary=YES
+         Sentence 2: colored=YES, explanations=7, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=5, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: cat (a small domesticated carnivorous mammal kept as a household pet)
+
+  --- Sentence 1 ---
+  Original   : The cat eats fish.
+  Translation: El gato come pescado.
+  IPA/Reading: ðə kæt iːts fɪʃ
+  Keywords   : cat eating fish, bowl of fish, pet cat
+
+  Colored HTML : <span style="color:#FFD700" title="article: The (article): Definite article 'the' — marks 'cat' as specific or already known to the speaker; a closed-class function word with no inflection in English.…
+  Grammar Summ : Sentence contains 1 article, 2 nouns, 1 verb
+  Word Explanations (4 words):
+    The           article         #FFD700   The (article): Definite article 'the' — marks 'cat' as specific or already known to the speaker; a closed-class function word with no inflection in English.
+    cat           noun            #FFAA00   cat (noun): Common count noun 'cat' — subject of the clause; singular nominative position (English nouns lack overt case marking).
+    eats          verb            #4ECDC4   eats (verb): Present-tense verb 'eat', 3rd-person singular form — adds the obligatory -s suffix (minimal verb agreement unique to 3sg present in English).
+    fish          noun            #FFAA00   fish (noun): Common noun 'fish' — direct object; zero-inflected (fish is its own plural form). Functions as accusative without overt case marking.
+
+  --- Sentence 2 ---
+  Original   : A small cat sleeps on the bed.
+  Translation: Un gato pequeño duerme en la cama.
+  IPA/Reading: ə smɔːl kæt sliːps ɒn ðə bɛd
+  Keywords   : small cat sleeping, bed, cozy pet
+
+  Colored HTML : <span style="color:#FFD700" title="article: A (article): Indefinite article 'a' — introduces 'cat' as non-specific or first-mentioned; used before consonant onset /sm/.">A</span> <span style="color:#F…
+  Grammar Summ : Sentence contains 2 articles, 1 adjective, 2 nouns, 1 verb, 1 preposition
+  Word Explanations (7 words):
+    A             article         #FFD700   A (article): Indefinite article 'a' — introduces 'cat' as non-specific or first-mentioned; used before consonant onset /sm/.
+    small         adjective       #FF44FF   small (adjective): Attributive adjective 'small' — precedes and modifies 'cat'; English adjectives are invariable (no gender/number agreement).
+    cat           noun            #FFAA00   cat (noun): Common count noun 'cat' — subject of the clause in singular form.
+    sleeps        verb            #4ECDC4   sleeps (verb): Present-tense verb 'sleep', 3rd-person singular — obligatory -s agreement suffix marks the 3sg subject.
+    on            preposition     #4444FF   on (preposition): Preposition 'on' — expresses contact/surface location; heads the prepositional phrase 'on the bed'.
+    the           article         #FFD700   the (article): Definite article 'the' — marks 'bed' as a specific known entity in context.
+    bed           noun            #FFAA00   bed (noun): Common count noun 'bed' — object of the preposition 'on'; English nouns have no overt case marking after prepositions.
+
+  --- Sentence 3 ---
+  Original   : My cat likes warm milk.
+  Translation: A mi gato le gusta la leche tibia.
+  IPA/Reading: maɪ kæt laɪks wɔːm mɪlk
+  Keywords   : cat drinking milk, warm drink, happy pet
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: My (pronoun): Possessive determiner 'my' (1st-person singular) — precedes the noun 'cat' as a genitive determiner; distinct from the possessive pronoun 'min…
+  Grammar Summ : Sentence contains 1 pronoun, 2 nouns, 1 verb, 1 adjective
+  Word Explanations (5 words):
+    My            pronoun         #9370DB   My (pronoun): Possessive determiner 'my' (1st-person singular) — precedes the noun 'cat' as a genitive determiner; distinct from the possessive pronoun 'mine' which stands alone.
+    cat           noun            #FFAA00   cat (noun): Common count noun 'cat' — subject; possessed by the speaker via 'my'.
+    likes         verb            #4ECDC4   likes (verb): Present-tense verb 'like', 3rd-person singular — adds -s suffix for 3sg agreement; stative verb expressing preference.
+    warm          adjective       #FF44FF   warm (adjective): Attributive adjective 'warm' — modifies 'milk' by preceding it directly; no inflection for agreement in English.
+    milk          noun            #FFAA00   milk (noun): Mass (uncountable) noun 'milk' — direct object; used without an article because it refers to milk in general (generic/bare mass noun reading).
+
+  --- Sentence 4 ---
+  Original   : The black cat ran away.
+  Translation: El gato negro huyó.
+  IPA/Reading: ðə blæk kæt ræn əˈweɪ
+  Keywords   : black cat running, outdoor cat, escape
+
+  Colored HTML : <span style="color:#FFD700" title="article: The (article): Definite article 'the' — marks 'cat' as specific and identifiable; used here with an adjective-noun phrase.">The</span> <span style="color:#F…
+  Grammar Summ : Sentence contains 1 article, 1 adjective, 1 noun, 1 verb, 1 adverb
+  Word Explanations (5 words):
+    The           article         #FFD700   The (article): Definite article 'the' — marks 'cat' as specific and identifiable; used here with an adjective-noun phrase.
+    black         adjective       #FF44FF   black (adjective): Attributive adjective 'black' — describes colour of the cat; invariable in English (no case/gender/number inflection).
+    cat           noun            #FFAA00   cat (noun): Common count noun 'cat' — subject; the noun follows the article + adjective sequence in English NP structure.
+    ran           verb            #4ECDC4   ran (verb): Irregular past-tense form of 'run' (run → ran) — simple past marks completed action; English irregular verbs change their stem vowel (ablaut) rather than adding -ed.
+    away          adverb          #FF6347   away (adverb): Directional adverb 'away' — indicates movement in a departing direction; functions as an adverbial adjunct modifying 'ran'.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================
