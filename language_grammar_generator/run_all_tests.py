@@ -44,61 +44,33 @@ class TestRunner:
         self.base_path = self.project_root / "languages" / self._get_directory_name(language_code)
 
     def _get_directory_name(self, language_code: str) -> str:
-        """Map language code to directory name."""
-        mapping = {
-            "zh_tw": "chinese_traditional",
-            "zh": "chinese_simplified",  # Chinese Simplified
-            "hi": "hindi",
-            "fr": "french",
-            "es": "spanish",
-            "ar": "arabic",
-            "de": "german",
-            "tr": "turkish",
-            "lv": "latvian",
-            "pt": "portuguese",
-            "hu": "hungarian",
-            "ja": "japanese",
-            "ko": "korean",
-            "ml": "malayalam"
-        }
-        return mapping.get(language_code, language_code)
+        """Map language code to directory name (delegates to shared helper).
+
+        Also accepts a folder name directly (e.g. "arabic") — the shared helper
+        falls back to the input for unknown codes, so passing "arabic" already
+        round-trips correctly without a special case.
+        """
+        from language_grammar_generator._lang_helpers import get_directory_name, folder_to_code
+        # Folder name passed instead of code → just return it.
+        if language_code in folder_to_code():
+            return language_code
+        return get_directory_name(language_code)
 
     def _get_class_name(self, language_code: str) -> str:
-        """Map language code to analyzer class name."""
-        mapping = {
-            "zh_tw": "ZhTwAnalyzer",
-            "zh": "ZhAnalyzer",  # Chinese Simplified
-            "hi": "HiAnalyzer",
-            "fr": "FrAnalyzer",
-            "es": "EsAnalyzer",
-            "ar": "ArAnalyzer",
-            "arabic": "ArAnalyzer",  # Special case for when user passes "arabic"
-            "de": "DeAnalyzer",
-            "tr": "TrAnalyzer",
-            "lv": "LvAnalyzer",
-            "pt": "PtAnalyzer",
-            "hu": "HuAnalyzer",
-            "ja": "JaAnalyzer",
-            "ko": "KoAnalyzer",
-            "ml": "MlAnalyzer"
-        }
-        return mapping.get(language_code, f"{language_code.title()}Analyzer")
+        """Map language code to analyzer class name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_class_name, folder_to_code
+        # If a folder name was passed (legacy support for "arabic"), translate first.
+        if language_code in folder_to_code():
+            language_code = folder_to_code()[language_code]
+        return get_class_name(language_code)
 
     def _get_file_name(self, language_code: str) -> str:
-        """Map language code to analyzer file name."""
-        mapping = {
-            "zh_tw": "zh_tw",
-            "zh": "zh",  # Chinese Simplified
-            "hi": "hi",
-            "fr": "fr",
-            "es": "es",
-            "ar": "ar",
-            "arabic": "ar",  # Special case for when user passes "arabic"
-            "de": "de",
-            "tr": "tr",
-            "lv": "lv"
-        }
-        return mapping.get(language_code, language_code)
+        """Map language code to analyzer file name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_file_name, folder_to_code
+        # If a folder name was passed (legacy support for "arabic"), translate first.
+        if language_code in folder_to_code():
+            language_code = folder_to_code()[language_code]
+        return get_file_name(language_code)
 
     def run_all_tests(self) -> bool:
         """Run all test suites."""

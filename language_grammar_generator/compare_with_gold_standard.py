@@ -147,52 +147,19 @@ class GoldStandardComparator:
             raise Exception(f"Failed to load {lang_code} analyzer: {e}")
 
     def _get_directory_name(self, language_code: str) -> str:
-        """Map language code to directory name."""
-        mapping = {
-            "zh_tw": "chinese_traditional",
-            "zh": "chinese_simplified",
-            "hi": "hindi",
-            "es": "spanish",
-            "ar": "arabic",
-            "de": "german",
-            "tr": "turkish",
-            "fr": "french",
-            "hu": "hungarian",
-            "ja": "japanese",
-            "ko": "korean",
-            "ml": "malayalam",
-            "lv": "latvian",
-            "pt": "portuguese"
-        }
-        return mapping.get(language_code, language_code)
+        """Map language code to directory name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_directory_name
+        return get_directory_name(language_code)
 
     def _get_file_name(self, language_code: str) -> str:
-        """Map language code to analyzer file name."""
-        mapping = {
-            "zh_tw": "zh_tw",
-            "zh": "zh",
-            "hi": "hi",
-            "es": "es",
-            "ar": "ar",
-            "de": "de",
-            "tr": "tr",
-            "lv": "lv"
-        }
-        return mapping.get(language_code, language_code)
+        """Map language code to analyzer file name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_file_name
+        return get_file_name(language_code)
 
     def _get_class_prefix(self, language_code: str) -> str:
-        """Map language code to analyzer class prefix."""
-        mapping = {
-            "zh_tw": "ZhTw",
-            "zh": "Zh",
-            "hi": "Hi",
-            "es": "Es",
-            "ar": "Ar",
-            "de": "De",
-            "tr": "Tr",
-            "lv": "Lv"
-        }
-        return mapping.get(language_code, language_code.title())
+        """Map language code to analyzer class prefix (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_class_prefix
+        return get_class_prefix(language_code)
 
     def compare_result_structure(self) -> Tuple[bool, str]:
         """Compare result structure consistency."""

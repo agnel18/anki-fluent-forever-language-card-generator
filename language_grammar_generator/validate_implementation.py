@@ -468,66 +468,19 @@ class ImplementationValidator:
         return True
 
     def _get_directory_name(self, language_code: str) -> str:
-        """Map language code to directory name."""
-        # Normalize language code by replacing hyphens with underscores
-        normalized_code = language_code.replace('-', '_')
-        mapping = {
-            "zh_tw": "chinese_traditional",
-            "zh": "chinese_simplified",
-            "hi": "hindi",
-            "es": "spanish",
-            "ar": "arabic",
-            "de": "german",
-            "tr": "turkish",
-            "fr": "french",
-            "hu": "hungarian",
-            "ja": "japanese",
-            "ko": "korean",
-            "ml": "malayalam",
-            "lv": "latvian",
-            "pt": "portuguese"
-        }
-        return mapping.get(normalized_code, normalized_code)
+        """Map language code to directory name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_directory_name
+        return get_directory_name(language_code)
 
     def _get_file_name(self, language_code: str) -> str:
-        """Map language code to analyzer file name."""
-        # Normalize language code by replacing hyphens with underscores
-        normalized_code = language_code.replace('-', '_')
-        mapping = {
-            "zh_tw": "zh_tw",
-            "zh": "zh",
-            "hi": "hi",
-            "es": "es",
-            "ar": "ar",
-            "de": "de",
-            "tr": "tr",
-            "hu": "hu",
-            "ja": "ja",
-            "ko": "ko",
-            "ml": "ml",
-            "lv": "lv"
-        }
-        return mapping.get(normalized_code, normalized_code)
+        """Map language code to analyzer file name (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_file_name
+        return get_file_name(language_code)
 
     def _get_class_prefix(self, language_code: str) -> str:
-        """Map language code to class name prefix."""
-        # Normalize language code by replacing hyphens with underscores
-        normalized_code = language_code.replace('-', '_')
-        mapping = {
-            "zh_tw": "ZhTw",
-            "zh": "Zh",
-            "hi": "Hi",
-            "es": "Es",
-            "ar": "Ar",
-            "de": "De",
-            "tr": "Tr",
-            "hu": "Hu",
-            "ja": "Ja",
-            "ko": "Ko",
-            "ml": "Ml",
-            "lv": "Lv"
-        }
-        return mapping.get(normalized_code, normalized_code.title())
+        """Map language code to class name prefix (delegates to shared helper)."""
+        from language_grammar_generator._lang_helpers import get_class_prefix
+        return get_class_prefix(language_code)
 
     def _call_analyzer(self, analyzer, sentence: str, target_word: str, complexity: str, api_key: str):
         """Call analyzer.analyze_grammar with flexible signatures."""
