@@ -5,8 +5,8 @@
   Language       : Latvian
   Difficulty     : advanced
   Topic          : Food & Cooking
-  Generated at   : 2026-05-02 18:24:42
-  Elapsed        : 0.02s
+  Generated at   : 2026-05-03 07:14:20
+  Elapsed        : 0.01s
 ================================================================================
 
 STAGE RESULTS
@@ -44,15 +44,15 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: runaːjot ar viɲu ɛs sapratu patiesiːbu
   Keywords   : realization, conversation
 
-  Colored HTML : <span style="color:#FF8C00" title="participle: while speaking (gerund / adverbial participle -ot)">Runājot</span> <span style="color:#4444FF" title="preposition: with (preposition + accusative)">ar</s…
+  Colored HTML : <span style="color:#FF8C00" title="participle: Runājot (participle): while speaking (gerund / adverbial participle -ot)">Runājot</span> <span style="color:#4444FF" title="preposition: ar (preposition)…
   Grammar Summ : Sentence contains 1 participle, 1 preposition, 2 personal pronouns, 1 verb, 1 noun
   Word Explanations (6 words):
-    Runājot       participle      #FF8C00   while speaking (gerund / adverbial participle -ot)
-    ar            preposition     #4444FF   with (preposition + accusative)
-    viņu          personal_pronoun  #9370DB   him (3rd person singular accusative)
-    es            personal_pronoun  #9370DB   I (1st person singular nominative)
-    sapratu       verb            #4ECDC4   understood (1st person singular past)
-    patiesību     noun            #FFAA00   truth (accusative singular feminine)
+    Runājot       participle      #FF8C00   Runājot (participle): while speaking (gerund / adverbial participle -ot)
+    ar            preposition     #4444FF   ar (preposition): with (preposition + accusative)
+    viņu          personal_pronoun  #9370DB   viņu (personal_pronoun): him (3rd person singular accusative)
+    es            personal_pronoun  #9370DB   es (personal_pronoun): I (1st person singular nominative)
+    sapratu       verb            #4ECDC4   sapratu (verb): understood (1st person singular past)
+    patiesību     noun            #FFAA00   patiesību (noun): truth (accusative singular feminine)
 
   --- Sentence 2 ---
   Original   : Man jārunā ar skolotāju, kurš mācīja matemātiku.
@@ -60,16 +60,16 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: man jaːrunaː ar skolotaːju kurʃ maːtsiːja matemaːtiku
   Keywords   : obligation, teacher, classroom
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: to me (1st person singular dative)">Man</span> <span style="color:#FF1493" title="debitive: must speak (debitive mood)">jārunā</span> <span style="…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Man (personal_pronoun): to me (1st person singular dative)">Man</span> <span style="color:#FF1493" title="debitive: jārunā (debitive): must speak (…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 debitive, 1 preposition, 2 nouns, 1 relative pronoun, 1 verb
   Word Explanations (7 words):
-    Man           personal_pronoun  #9370DB   to me (1st person singular dative)
-    jārunā        debitive        #FF1493   must speak (debitive mood)
-    ar            preposition     #4444FF   with (preposition + accusative)
-    skolotāju     noun            #FFAA00   teacher (accusative singular masculine)
-    kurš          relative_pronoun  #9370DB   who (relative pronoun, masculine singular nominative)
-    mācīja        verb            #4ECDC4   taught (3rd person singular past)
-    matemātiku    noun            #FFAA00   mathematics (accusative singular feminine)
+    Man           personal_pronoun  #9370DB   Man (personal_pronoun): to me (1st person singular dative)
+    jārunā        debitive        #FF1493   jārunā (debitive): must speak (debitive mood)
+    ar            preposition     #4444FF   ar (preposition): with (preposition + accusative)
+    skolotāju     noun            #FFAA00   skolotāju (noun): teacher (accusative singular masculine)
+    kurš          relative_pronoun  #9370DB   kurš (relative_pronoun): who (relative pronoun, masculine singular nominative)
+    mācīja        verb            #4ECDC4   mācīja (verb): taught (3rd person singular past)
+    matemātiku    noun            #FFAA00   matemātiku (noun): mathematics (accusative singular feminine)
 
   --- Sentence 3 ---
   Original   : Lai gan viņš runāja klusi, neviens neklausījās.
@@ -77,15 +77,15 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: lai gan viɲʃ runaːja klusi nɛviɛns nɛklausiːjaːs
   Keywords   : quiet speech, ignored
 
-  Colored HTML : <span style="color:#888888" title="subordinating_conjunction: although (concessive subordinator)">Lai gan</span> <span style="color:#9370DB" title="personal_pronoun: he (3rd person singular masculine …
+  Colored HTML : <span style="color:#888888" title="subordinating_conjunction: Lai gan (subordinating_conjunction): although (concessive subordinator)">Lai gan</span> <span style="color:#9370DB" title="personal_pronou…
   Grammar Summ : Sentence contains 1 subordinating conjunction, 1 personal pronoun, 1 verb, 1 adverb, 1 indefinite pronoun, 1 reflexive verb
   Word Explanations (6 words):
-    Lai gan       subordinating_conjunction  #888888   although (concessive subordinator)
-    viņš          personal_pronoun  #9370DB   he (3rd person singular masculine nominative)
-    runāja        verb            #4ECDC4   spoke (3rd person singular past)
-    klusi         adverb          #FF6347   quietly (manner adverb)
-    neviens       indefinite_pronoun  #8B7EC8   no one (negative indefinite pronoun, masculine singular nominative)
-    neklausījās   reflexive_verb  #20B2AA   did not listen (reflexive verb, 3rd person past, negated)
+    Lai gan       subordinating_conjunction  #888888   Lai gan (subordinating_conjunction): although (concessive subordinator)
+    viņš          personal_pronoun  #9370DB   viņš (personal_pronoun): he (3rd person singular masculine nominative)
+    runāja        verb            #4ECDC4   runāja (verb): spoke (3rd person singular past)
+    klusi         adverb          #FF6347   klusi (adverb): quietly (manner adverb)
+    neviens       indefinite_pronoun  #8B7EC8   neviens (indefinite_pronoun): no one (negative indefinite pronoun, masculine singular nominative)
+    neklausījās   reflexive_verb  #20B2AA   neklausījās (reflexive_verb): did not listen (reflexive verb, 3rd person past, negated)
 
   --- Sentence 4 ---
   Original   : Cilvēki, kuri runā ātri, dažreiz tiek pārprasti.
@@ -93,16 +93,16 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: tsilvɛːki kuri runaː aːtri daʒrɛiz tiɛk paːrprasti
   Keywords   : misunderstanding, fast talkers
 
-  Colored HTML : <span style="color:#FFAA00" title="noun: people (nominative plural masculine)">Cilvēki</span> <span style="color:#9370DB" title="relative_pronoun: who (relative pronoun, masculine plural nominative)">…
+  Colored HTML : <span style="color:#FFAA00" title="noun: Cilvēki (noun): people (nominative plural masculine)">Cilvēki</span> <span style="color:#9370DB" title="relative_pronoun: kuri (relative_pronoun): who (relativ…
   Grammar Summ : Sentence contains 1 noun, 1 relative pronoun, 1 verb, 2 adverbs, 1 auxiliary, 1 participle
   Word Explanations (7 words):
-    Cilvēki       noun            #FFAA00   people (nominative plural masculine)
-    kuri          relative_pronoun  #9370DB   who (relative pronoun, masculine plural nominative)
-    runā          verb            #4ECDC4   speak (3rd person plural present)
-    ātri          adverb          #FF6347   quickly (manner adverb)
-    dažreiz       adverb          #FF6347   sometimes (frequency adverb)
-    tiek          auxiliary       #00CED1   is/are being (auxiliary, 3rd person present)
-    pārprasti     participle      #FF8C00   misunderstood (past passive participle, masculine plural nominative)
+    Cilvēki       noun            #FFAA00   Cilvēki (noun): people (nominative plural masculine)
+    kuri          relative_pronoun  #9370DB   kuri (relative_pronoun): who (relative pronoun, masculine plural nominative)
+    runā          verb            #4ECDC4   runā (verb): speak (3rd person plural present)
+    ātri          adverb          #FF6347   ātri (adverb): quickly (manner adverb)
+    dažreiz       adverb          #FF6347   dažreiz (adverb): sometimes (frequency adverb)
+    tiek          auxiliary       #00CED1   tiek (auxiliary): is/are being (auxiliary, 3rd person present)
+    pārprasti     participle      #FF8C00   pārprasti (participle): misunderstood (past passive participle, masculine plural nominative)
 
 AUDIO FILES
 --------------------------------------------------------------------------------

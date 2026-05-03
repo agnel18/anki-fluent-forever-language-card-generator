@@ -106,6 +106,17 @@ If an agent returns only a plan, re-dispatch with stronger imperative phrasing �
 
 7. **Fallback consistency:** Always store fallbacks as `self.fallbacks` in `__init__` and call `self.fallbacks.create_fallback` in error paths.
 
+8. **Rich-explanation contract (Latvian regression, May 2026).** The Latvian analyzer shipped with shallow `"Šis (pronoun): Šis (pronoun)"` stubs because its prompt asked for `meaning` (single word), its fallback emitted POS-only stubs, and a `.strip()`-on-None crash dropped it into that fallback. German is the reference for "rich". Every new analyzer must ship the full contract:
+
+   1. **Prompt requests `individual_meaning`** (multi-sentence per-word explanation), not `meaning`. Include 3-4 worked examples in the prompt body. Reference: `de_config.py:182-262`, `lv_prompt_builder.py`.
+   2. **Parser preserves `individual_meaning`** and formats display as `f"{word} ({role}): {individual_meaning}"`. Strip duplicate prefixes. Reference: `de_response_parser.py:278-286`.
+   3. **Fallback emits multi-clause explanations** ≥30 chars each, mentioning at least one morphological/syntactic feature. Reference: `de_fallbacks.py:213-258`, `lv_fallbacks.py`.
+   4. **`.text` null-guard in `_call_ai`.** Use a `_extract_response_text(response)` helper that raises `RuntimeError` on `None`/empty `.text` — Gemini returns 200 OK with `.text = None` on safety filter or max-tokens hit. Bare `response.text.strip()` will crash. Reference: `lv_analyzer.py:_extract_response_text`.
+   5. **Validator's `validate_explanation_quality` penalizes stubs** (<20 char body, body == word, missing case/gender/tense keywords on inflected words). Reference: `lv_validator.py`.
+   6. **`is_fallback: True` flag pattern.** Set the flag in fallback dict; have validator's `validate_result` cap confidence to 0.3 when the flag is present. Without this, rich fallback content inflates the validator score. Reference: `de_validator.py:24`, `es_validator.py`.
+   7. **Adjective heuristics not gated by complexity.** If you split adjective_definite/indefinite/noun by suffix, check at all complexity levels — gating it behind `complexity != "beginner"` (the Latvian bug) makes beginner cards mistag every adjective as a noun.
+   8. **Possessive determiners are not nouns.** Languages that decline possessives like adjectives (Latvian `mans/tava`, Russian `мой/твой`) need an explicit closed-class lookup — suffix heuristics will catch them as `-s` masculine nouns.
+
 ## Workflow — 8 Steps
 
 When the user asks you to build an analyzer for a language, follow these steps in order.

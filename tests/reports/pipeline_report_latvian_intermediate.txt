@@ -5,7 +5,7 @@
   Language       : Latvian
   Difficulty     : intermediate
   Topic          : Food & Cooking
-  Generated at   : 2026-05-02 18:24:42
+  Generated at   : 2026-05-03 07:14:20
   Elapsed        : 0.02s
 ================================================================================
 
@@ -44,14 +44,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: meːs vakar runaːjaːm ar draugiɛm
   Keywords   : friends conversation, yesterday
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: we (1st person plural nominative)">Mēs</span> <span style="color:#FF6347" title="adverb: yesterday (time adverb)">vakar</span> <span style="color:#…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Mēs (personal_pronoun): we (1st person plural nominative)">Mēs</span> <span style="color:#FF6347" title="adverb: vakar (adverb): yesterday (time ad…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 adverb, 1 verb, 1 preposition, 1 noun
   Word Explanations (5 words):
-    Mēs           personal_pronoun  #9370DB   we (1st person plural nominative)
-    vakar         adverb          #FF6347   yesterday (time adverb)
-    runājām       verb            #4ECDC4   spoke (1st person plural past)
-    ar            preposition     #4444FF   with (preposition + instrumental/dative plural)
-    draugiem      noun            #FFAA00   friends (dative plural)
+    Mēs           personal_pronoun  #9370DB   Mēs (personal_pronoun): we (1st person plural nominative)
+    vakar         adverb          #FF6347   vakar (adverb): yesterday (time adverb)
+    runājām       verb            #4ECDC4   runājām (verb): spoke (1st person plural past)
+    ar            preposition     #4444FF   ar (preposition): with (preposition + instrumental/dative plural)
+    draugiem      noun            #FFAA00   draugiem (noun): friends (dative plural)
 
   --- Sentence 2 ---
   Original   : Šī meitene runā ļoti skaisti.
@@ -59,14 +59,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: ʃiː mɛitɛnɛ runaː ļoti skaisti
   Keywords   : young girl speaking
 
-  Colored HTML : <span style="color:#B8860B" title="demonstrative: this (feminine singular nominative)">Šī</span> <span style="color:#FFAA00" title="noun: girl (nominative singular feminine)">meitene</span> <span styl…
+  Colored HTML : <span style="color:#B8860B" title="demonstrative: Šī (demonstrative): this (feminine singular nominative)">Šī</span> <span style="color:#FFAA00" title="noun: meitene (noun): girl (nominative singular …
   Grammar Summ : Sentence contains 1 demonstrative, 1 noun, 1 verb, 1 particle, 1 adverb
   Word Explanations (5 words):
-    Šī            demonstrative   #B8860B   this (feminine singular nominative)
-    meitene       noun            #FFAA00   girl (nominative singular feminine)
-    runā          verb            #4ECDC4   speaks (3rd person singular present)
-    ļoti          particle        #20B2AA   very (intensifier particle)
-    skaisti       adverb          #FF6347   beautifully (manner adverb)
+    Šī            demonstrative   #B8860B   Šī (demonstrative): this (feminine singular nominative)
+    meitene       noun            #FFAA00   meitene (noun): girl (nominative singular feminine)
+    runā          verb            #4ECDC4   runā (verb): speaks (3rd person singular present)
+    ļoti          particle        #20B2AA   ļoti (particle): very (intensifier particle)
+    skaisti       adverb          #FF6347   skaisti (adverb): beautifully (manner adverb)
 
   --- Sentence 3 ---
   Original   : Es runāšu ar tevi rīt.
@@ -74,14 +74,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: ɛs runaːʃu ar tɛvi riːt
   Keywords   : future conversation, tomorrow
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: I (1st person singular nominative)">Es</span> <span style="color:#4ECDC4" title="verb: will speak (1st person singular future)">runāšu</span> <span…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Es (personal_pronoun): I (1st person singular nominative)">Es</span> <span style="color:#4ECDC4" title="verb: runāšu (verb): will speak (1st person…
   Grammar Summ : Sentence contains 2 personal pronouns, 1 verb, 1 preposition, 1 adverb
   Word Explanations (5 words):
-    Es            personal_pronoun  #9370DB   I (1st person singular nominative)
-    runāšu        verb            #4ECDC4   will speak (1st person singular future)
-    ar            preposition     #4444FF   with (preposition + accusative)
-    tevi          personal_pronoun  #9370DB   you (2nd person singular accusative)
-    rīt           adverb          #FF6347   tomorrow (time adverb)
+    Es            personal_pronoun  #9370DB   Es (personal_pronoun): I (1st person singular nominative)
+    runāšu        verb            #4ECDC4   runāšu (verb): will speak (1st person singular future)
+    ar            preposition     #4444FF   ar (preposition): with (preposition + accusative)
+    tevi          personal_pronoun  #9370DB   tevi (personal_pronoun): you (2nd person singular accusative)
+    rīt           adverb          #FF6347   rīt (adverb): tomorrow (time adverb)
 
   --- Sentence 4 ---
   Original   : Viņa runā tik ātri!
@@ -89,13 +89,13 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: viɲa runaː tik aːtri
   Keywords   : fast speech, surprise
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: she (3rd person singular feminine nominative)">Viņa</span> <span style="color:#4ECDC4" title="verb: speaks (3rd person singular present)">runā</spa…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Viņa (personal_pronoun): she (3rd person singular feminine nominative)">Viņa</span> <span style="color:#4ECDC4" title="verb: runā (verb): speaks (3…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 verb, 1 particle, 1 adverb
   Word Explanations (4 words):
-    Viņa          personal_pronoun  #9370DB   she (3rd person singular feminine nominative)
-    runā          verb            #4ECDC4   speaks (3rd person singular present)
-    tik           particle        #20B2AA   so (degree particle)
-    ātri          adverb          #FF6347   quickly (manner adverb)
+    Viņa          personal_pronoun  #9370DB   Viņa (personal_pronoun): she (3rd person singular feminine nominative)
+    runā          verb            #4ECDC4   runā (verb): speaks (3rd person singular present)
+    tik           particle        #20B2AA   tik (particle): so (degree particle)
+    ātri          adverb          #FF6347   ātri (adverb): quickly (manner adverb)
 
 AUDIO FILES
 --------------------------------------------------------------------------------

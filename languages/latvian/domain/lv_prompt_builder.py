@@ -143,28 +143,56 @@ GRAMMATICAL ROLES to use at this level:
 JSON SCHEMA:
 {{
   "sentence": "<the original sentence>",
-  "overall_structure": "<brief description of sentence structure, e.g. 'Subject-Verb-Object with locative phrase'>",
+  "overall_structure": "<2-3 sentence description of sentence structure: subject, predicate, clauses, key constructions>",
   "sentence_structure": "<same as overall_structure — include both keys>",
   "word_explanations": [
     {{
       "word": "<exact word from sentence>",
       "grammatical_role": "<grammatical role from the allowed roles list>",
       "color": "<hex color for this role>",
-      "meaning": "<English meaning + grammatical info, e.g. 'māja (house) — nominative singular feminine'>",
+      "individual_meaning": "<COMPREHENSIVE multi-sentence explanation of this word's grammatical function, morphology, and contribution to the sentence — see CRITICAL section below>",
       "case": "<case if applicable, e.g. nominative, genitive, dative, accusative, instrumental, locative, vocative>",
       "gender": "<masculine or feminine, if applicable>",
       "number": "<singular or plural, if applicable>",
       "tense": "<present/past/future if verb>",
-      "definite_form": "<true/false if adjective — true=definite/long form, false=indefinite/short form>"
+      "person": "<1/2/3 if verb or personal pronoun>",
+      "definite_form": "<true/false if adjective — true=definite/long form, false=indefinite/short form>",
+      "lemma": "<dictionary form / lemma of the word>"
     }}
   ],
   "grammar_notes": "<key grammar points for learners at {complexity} level>",
   "confidence": <float 0.0 to 1.0>
 }}
 
+CRITICAL: Provide COMPREHENSIVE explanations for EVERY word in the `individual_meaning` field.
+Each `individual_meaning` MUST be 1-3 full sentences (typically 25-75 words) and MUST cover:
+  - The word's grammatical function in THIS sentence (subject, direct object, modifier of which noun, etc.)
+  - Its morphology — for nouns/adjectives/pronouns name the case + gender + number and what triggers that case;
+    for verbs name person + number + tense + mood (incl. debitive / conditional) and what the verb governs;
+    for adjectives state whether it is the definite (long) or indefinite (short) form and which noun it agrees with.
+  - Its lemma / dictionary form when the surface form is inflected (e.g. "draugs is the nom. sg. of `draugs`").
+  - Any Latvian-specific feature relevant to that word (debitive mood, reflexive -ies/-ās, prefixed verb aspect,
+    participle type, governing preposition + case, vocative address, etc.).
+
+EXAMPLE — for the sentence "Šis ir mans jaunais draugs Pēteris.":
+  "Šis" → "Demonstrative pronoun, nominative singular masculine. Functions as the subject of the copular clause and
+   refers forward to 'draugs Pēteris'. Latvian demonstratives agree with the noun they replace in case, gender, and number."
+  "mans" → "Possessive determiner ('my'), nominative singular masculine, agreeing with the head noun 'draugs'.
+   In Latvian, possessive determiners decline like adjectives and agree with the noun they modify in case, gender,
+   and number — here matching 'draugs' (nom. sg. masc.)."
+  "jaunais" → "Definite (long-form) adjective 'jauns/jaunais' (new), nominative singular masculine. The definite ending
+   -ais marks the noun as specific/known and agrees with 'draugs' in case, gender, and number. The corresponding
+   indefinite (short) form would be 'jauns'."
+  "labs" → "Indefinite (short-form) adjective (good), nominative singular masculine, predicative — describes the subject
+   'viņš' via the copula 'ir'. Predicative adjectives in Latvian use the indefinite form."
+
 IMPORTANT:
 - Every word in the sentence MUST appear in word_explanations (including punctuation if attached to a word).
-- For punctuation tokens use role "other" and color "#808080".
+- For punctuation tokens use role "other", color "#808080", and a brief individual_meaning like "Sentence-final period; ends the declarative clause."
+- DO NOT emit single-word stubs like "Šis (pronoun)" or "mans (noun)". The individual_meaning MUST be a full sentence.
+- DO NOT label adjectives, determiners, or pronouns as "noun". `mans/tava/savs` are possessive determiners (use role
+  `personal_pronoun` if your role list lacks `possessive_determiner`); `jaunais/labais` etc. are `adjective_definite`;
+  `labs/laba/jauns` etc. are `adjective_indefinite`.
 - Use the EXACT color values from this mapping:
   noun=#FFAA00, verb=#4ECDC4, adjective=#FF44FF, adjective_definite=#FF44FF,
   adjective_indefinite=#CC33CC, adverb=#FF6347, pronoun=#9370DB,

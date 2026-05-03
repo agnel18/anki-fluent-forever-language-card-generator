@@ -168,19 +168,64 @@ class ArFallbacks:
         return colors.get(role, '#AAAAAA')
 
     def _generate_fallback_explanation(self, word: str) -> str:
-        """Generate a basic explanation for a word when no specific meaning is available."""
+        """Generate a basic explanation for a word when no specific meaning is available.
+
+        Produces a multi-clause explanation including the word itself and an
+        Arabic-specific morphological/syntactic note for the role, mirroring
+        the de_fallbacks contract so cards never display generic stubs.
+        """
         role = self._guess_role(word)
-        role_descriptions = {
-            'noun': 'a thing, person, or concept',
-            'verb': 'an action or state of being',
-            'adjective': 'a word that describes a noun',
-            'pronoun': 'a word that replaces a noun',
-            'preposition': 'a word that shows relationship or direction',
-            'adverb': 'a word that describes a verb, adjective, or adverb',
-            'conjunction': 'a word that connects clauses or sentences',
-            'interrogative': 'a question word',
-            'numeral': 'a number',
-            'particle': 'a grammatical particle',
-            'other': 'a word in the sentence'
+        clean_word = word.strip('؟!?.,;:\"\'()[]{}')
+        has_al = clean_word.startswith('ال') and len(clean_word) > 3
+
+        templates = {
+            'noun': (
+                f"Noun '{word}' (اسم). "
+                + (
+                    "The definite article ال (al-) is attached, marking the noun as definite/known; "
+                    if has_al
+                    else "Indefinite — without the ال (al-) prefix; "
+                )
+                + "Arabic nouns are inflected for case (nominative/accusative/genitive), gender (masc./fem.), and number (sg./dual/pl.)."
+            ),
+            'verb': (
+                f"Verb '{word}' (فعل). Arabic verbs encode person (1/2/3), number (sg./dual/pl.), gender (m./f.), "
+                f"tense/aspect (past/present/imperative), and mood; the lemma is typically reconstructable from the "
+                f"three-consonant root."
+            ),
+            'adjective': (
+                f"Adjective '{word}' (صفة). Arabic adjectives agree with the noun they modify in case, gender, "
+                f"number, and definiteness — and follow the noun in word order."
+            ),
+            'pronoun': (
+                f"Pronoun '{word}' (ضمير). Arabic pronouns inflect for person (1/2/3), gender (m./f.), and number "
+                f"(sg./dual/pl.); independent pronouns appear before the predicate in nominal sentences."
+            ),
+            'preposition': (
+                f"Preposition '{word}' (حرف جر). Arabic prepositions govern the genitive case — the noun phrase that "
+                f"follows takes the مجرور (genitive) ending."
+            ),
+            'adverb': (
+                f"Adverb '{word}'. Modifies a verb, adjective, or another adverb; Arabic adverbs are often nouns in "
+                f"the accusative case (المفعول المطلق / ظرف)."
+            ),
+            'conjunction': (
+                f"Conjunction '{word}' (حرف عطف). Joins phrases or clauses; the wāw (و) is the most common, "
+                f"prefixed directly to the following word."
+            ),
+            'interrogative': (
+                f"Interrogative '{word}' (أداة استفهام). Introduces a question; typically appears clause-initially."
+            ),
+            'numeral': (
+                f"Numeral '{word}' (عدد). Arabic numerals 3-10 take the opposite gender of the counted noun (a "
+                f"feminine numeral counts a masculine noun and vice versa)."
+            ),
+            'particle': (
+                f"Particle '{word}' (حرف). Grammatical particles in Arabic include negation (لا/لم/لن), conditional, "
+                f"and emphatic markers — each governs specific tense/mood inflection on the following verb."
+            ),
+            'other': (
+                f"Word '{word}' — POS could not be determined by rule-based fallback; AI analysis is recommended."
+            ),
         }
-        return role_descriptions.get(role, f'a {role} in Arabic')
+        return templates.get(role, f"Arabic word '{word}' ({role}); rule-based fallback could not determine specifics.")

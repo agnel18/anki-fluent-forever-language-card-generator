@@ -79,11 +79,18 @@ class TestLvValidator:
         assert isinstance(score, float)
 
     def test_explanation_quality_no_issues(self, validator):
+        # Rich explanations that mention case/person/tense/agreement —
+        # the validator now (correctly) penalizes shallow stubs like
+        # "I" / "speak", so test fixtures must provide real explanations.
         words = [
             {"word": "Es", "role": "personal_pronoun", "color": "#9370DB",
-             "meaning": "I"},
+             "meaning": "Es (personal_pronoun): 1st-person singular subject pronoun, nominative case.",
+             "individual_meaning": "1st-person singular subject pronoun, nominative case.",
+             "case": "nominative", "number": "singular", "person": "1st"},
             {"word": "runāju", "role": "verb", "color": "#4ECDC4",
-             "meaning": "speak"},
+             "meaning": "runāju (verb): 1st-person singular present tense of 'runāt' (to speak); main verb, takes 'es' as subject.",
+             "individual_meaning": "1st-person singular present tense of 'runāt' (to speak); main verb, takes 'es' as subject.",
+             "tense": "present", "person": "1st", "number": "singular"},
         ]
         quality = validator.validate_explanation_quality({"word_explanations": words})
         assert quality["quality_score"] >= 0.9

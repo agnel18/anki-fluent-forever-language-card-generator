@@ -5,8 +5,8 @@
   Language       : Latvian
   Difficulty     : beginner
   Topic          : Food & Cooking
-  Generated at   : 2026-05-02 18:24:42
-  Elapsed        : 0.02s
+  Generated at   : 2026-05-03 07:14:20
+  Elapsed        : 0.01s
 ================================================================================
 
 STAGE RESULTS
@@ -44,12 +44,12 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: ɛs runaːju latviski
   Keywords   : runāt, example, usage
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: I (1st person singular)">Es</span> <span style="color:#4ECDC4" title="verb: speak (1st person singular present)">runāju</span> <span style="color:#…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Es (personal_pronoun): I (1st person singular)">Es</span> <span style="color:#4ECDC4" title="verb: runāju (verb): speak (1st person singular presen…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 verb, 1 adverb
   Word Explanations (3 words):
-    Es            personal_pronoun  #9370DB   I (1st person singular)
-    runāju        verb            #4ECDC4   speak (1st person singular present)
-    latviski      adverb          #FF6347   in Latvian (manner adverb)
+    Es            personal_pronoun  #9370DB   Es (personal_pronoun): I (1st person singular)
+    runāju        verb            #4ECDC4   runāju (verb): speak (1st person singular present)
+    latviski      adverb          #FF6347   latviski (adverb): in Latvian (manner adverb)
 
   --- Sentence 2 ---
   Original   : Mēs runājam skolā.
@@ -57,12 +57,12 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: meːs runaːjam skolaː
   Keywords   : students talking at school
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: we (1st person plural)">Mēs</span> <span style="color:#4ECDC4" title="verb: speak (1st person plural present)">runājam</span> <span style="color:#F…
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Mēs (personal_pronoun): we (1st person plural)">Mēs</span> <span style="color:#4ECDC4" title="verb: runājam (verb): speak (1st person plural presen…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 verb, 1 noun
   Word Explanations (3 words):
-    Mēs           personal_pronoun  #9370DB   we (1st person plural)
-    runājam       verb            #4ECDC4   speak (1st person plural present)
-    skolā         noun            #FFAA00   at school (locative singular)
+    Mēs           personal_pronoun  #9370DB   Mēs (personal_pronoun): we (1st person plural)
+    runājam       verb            #4ECDC4   runājam (verb): speak (1st person plural present)
+    skolā         noun            #FFAA00   skolā (noun): at school (locative singular)
 
   --- Sentence 3 ---
   Original   : Kāpēc tu runā tik ātri?
@@ -70,14 +70,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: kaːpɛts tu runaː tik aːtri
   Keywords   : fast speech, question
 
-  Colored HTML : <span style="color:#FF6347" title="adverb: why (question adverb)">Kāpēc</span> <span style="color:#9370DB" title="personal_pronoun: you (2nd person singular)">tu</span> <span style="color:#4ECDC4" tit…
+  Colored HTML : <span style="color:#FF6347" title="adverb: Kāpēc (adverb): why (question adverb)">Kāpēc</span> <span style="color:#9370DB" title="personal_pronoun: tu (personal_pronoun): you (2nd person singular)">tu…
   Grammar Summ : Sentence contains 2 adverbs, 1 personal pronoun, 1 verb, 1 particle
   Word Explanations (5 words):
-    Kāpēc         adverb          #FF6347   why (question adverb)
-    tu            personal_pronoun  #9370DB   you (2nd person singular)
-    runā          verb            #4ECDC4   speak (2nd/3rd person present context-dependent)
-    tik           particle        #DC143C   so (degree particle)
-    ātri          adverb          #FF6347   quickly (manner adverb)
+    Kāpēc         adverb          #FF6347   Kāpēc (adverb): why (question adverb)
+    tu            personal_pronoun  #9370DB   tu (personal_pronoun): you (2nd person singular)
+    runā          verb            #4ECDC4   runā (verb): speak (2nd/3rd person present context-dependent)
+    tik           particle        #DC143C   tik (particle): so (degree particle)
+    ātri          adverb          #FF6347   ātri (adverb): quickly (manner adverb)
 
   --- Sentence 4 ---
   Original   : Viņi vakar runāja par ēdienu.
@@ -85,14 +85,14 @@ CONTENT GENERATION OUTPUT
   IPA/Reading: vinji vakar runaːja par eːdienu
   Keywords   : group discussion, food topic
 
-  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: they (3rd person plural)">Viņi</span> <span style="color:#FF6347" title="adverb: yesterday (time adverb)">vakar</span> <span style="color:#4ECDC4" …
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Viņi (personal_pronoun): they (3rd person plural)">Viņi</span> <span style="color:#FF6347" title="adverb: vakar (adverb): yesterday (time adverb)">…
   Grammar Summ : Sentence contains 1 personal pronoun, 1 adverb, 1 verb, 1 preposition, 1 noun
   Word Explanations (5 words):
-    Viņi          personal_pronoun  #9370DB   they (3rd person plural)
-    vakar         adverb          #FF6347   yesterday (time adverb)
-    runāja        verb            #4ECDC4   spoke (past tense)
-    par           preposition     #32CD32   about (preposition requiring accusative)
-    ēdienu        noun            #FFAA00   food (accusative singular)
+    Viņi          personal_pronoun  #9370DB   Viņi (personal_pronoun): they (3rd person plural)
+    vakar         adverb          #FF6347   vakar (adverb): yesterday (time adverb)
+    runāja        verb            #4ECDC4   runāja (verb): spoke (past tense)
+    par           preposition     #32CD32   par (preposition): about (preposition requiring accusative)
+    ēdienu        noun            #FFAA00   ēdienu (noun): food (accusative singular)
 
 AUDIO FILES
 --------------------------------------------------------------------------------

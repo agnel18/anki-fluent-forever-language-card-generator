@@ -45,7 +45,8 @@ class EsFallbacks:
                 "sentence_structure": "Basic Spanish sentence structure (fallback analysis)",
                 "key_features": "Analysis generated due to parsing failure"
             },
-            "confidence": 0.3  # Low confidence for fallback
+            "confidence": 0.3,  # Low confidence for fallback
+            "is_fallback": True,  # explicit flag — validator caps confidence on this
         }
 
     def _tokenize_spanish(self, sentence: str) -> List[str]:
@@ -123,6 +124,49 @@ class EsFallbacks:
         return word in common_adjs
 
     def _create_fallback_meaning(self, word: str, role: str, sentence: str) -> str:
-        """Create a basic meaning explanation for fallback"""
-        # Simple fallback format
-        return f"{word} ({role}): {word}; word in the sentence"
+        """Create a basic meaning explanation for fallback.
+
+        Produces a multi-clause explanation with a Spanish-specific morphological
+        note per role, mirroring de_fallbacks so cards never display generic stubs.
+        """
+        role_templates = {
+            'determiner': (
+                f"Determiner/article '{word}'. Spanish determiners agree with the head noun in gender "
+                f"(masculine/feminine) and number (singular/plural) and mark the noun as definite (el/la/los/las) "
+                f"or indefinite (un/una/unos/unas)."
+            ),
+            'preposition': (
+                f"Preposition '{word}'. Introduces a prepositional phrase that complements a verb, noun, or "
+                f"adjective; common Spanish prepositions ('a', 'de', 'en', 'por', 'para') each carry distinct "
+                f"functional meanings."
+            ),
+            'conjunction': (
+                f"Conjunction '{word}'. Connects words, phrases, or clauses; coordinating ('y', 'o', 'pero') vs. "
+                f"subordinating ('que', 'porque', 'aunque') — the latter introduces dependent clauses."
+            ),
+            'pronoun': (
+                f"Pronoun '{word}'. Spanish pronouns inflect for person (1/2/3), number (sg./pl.), and case "
+                f"(subject 'yo/tú/él', direct object 'me/te/lo', indirect object 'me/te/le', reflexive 'se')."
+            ),
+            'verb': (
+                f"Verb '{word}'. Spanish verbs are conjugated for person (1/2/3), number (sg./pl.), tense, mood "
+                f"(indicative/subjunctive/imperative), and aspect; the lemma ends in -ar / -er / -ir."
+            ),
+            'adjective': (
+                f"Adjective '{word}'. Spanish adjectives agree with the noun they modify in gender and number; "
+                f"most appear after the noun, but some (bueno, malo, gran) precede it for stylistic or semantic effect."
+            ),
+            'adverb': (
+                f"Adverb '{word}'. Modifies a verb, adjective, or another adverb. Adverbs ending in -mente are "
+                f"derived from the feminine adjective form (e.g. rápida + -mente = rápidamente)."
+            ),
+            'noun': (
+                f"Noun '{word}'. Spanish nouns carry inherent grammatical gender (masculine/feminine) and inflect "
+                f"for number (singular/plural, typically -s/-es). Gender determines determiner and adjective agreement."
+            ),
+        }
+
+        return f"{word} ({role}): " + role_templates.get(
+            role,
+            f"Spanish word '{word}'; rule-based fallback could not determine morphological detail."
+        )

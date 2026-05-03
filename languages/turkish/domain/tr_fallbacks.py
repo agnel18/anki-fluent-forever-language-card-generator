@@ -158,17 +158,55 @@ class TrFallbacks:
         return any(word.endswith(suffix) for suffix in possessive_suffixes)
 
     def _generate_fallback_explanation(self, word: str) -> str:
-        """Generate a basic explanation for unknown words."""
-        if self._has_case_marker(word):
-            return f"Turkish noun with case marker"
-        elif self._has_possessive_suffix(word):
-            return f"Turkish noun with possessive suffix"
-        elif word.endswith(('mak', 'mek')):
-            return f"Turkish infinitive verb"
-        elif word.endswith('yor'):
-            return f"Turkish present continuous verb"
-        else:
-            return f"Turkish word (meaning not in dictionary)"
+        """Generate a basic explanation for unknown words.
+
+        Produces a multi-clause explanation including the word itself plus a
+        Turkish-specific morphological note (case marker / possessive suffix /
+        verb tense), mirroring de_fallbacks so cards never display generic stubs.
+        """
+        clean_word = word.strip('!?.,;:"\'()[]{}')
+
+        if self._has_case_marker(clean_word):
+            return (
+                f"Noun '{word}' inflected with a case-marking suffix. Turkish nouns take six cases — nominative (∅), "
+                f"accusative (-i/ı/u/ü), dative (-e/a), locative (-de/da), ablative (-den/dan), genitive (-in/ın/un/ün) — "
+                f"following vowel-harmony rules."
+            )
+        if self._has_possessive_suffix(clean_word):
+            return (
+                f"Noun '{word}' inflected with a possessive suffix. Turkish encodes 'my/your/his/our/their' as a suffix "
+                f"on the possessed noun (e.g. ev-im 'my house', ev-imiz 'our house'), following vowel-harmony rules."
+            )
+        if clean_word.endswith(('mak', 'mek')):
+            return (
+                f"Infinitive verb '{word}'. The -mak / -mek suffix forms the dictionary form of a Turkish verb; "
+                f"-mak attaches to back-vowel stems and -mek to front-vowel stems (vowel harmony)."
+            )
+        if clean_word.endswith('yor'):
+            return (
+                f"Verb '{word}' in the present continuous tense. The -(I)yor suffix marks ongoing action; the verb "
+                f"also takes a personal ending agreeing with the subject (-um/-sun/-uz/-sunuz/-lar)."
+            )
+        if clean_word.endswith(('di', 'dı', 'du', 'dü', 'ti', 'tı', 'tu', 'tü')):
+            return (
+                f"Verb '{word}' in the simple past (definite past) tense. The -DI suffix marks a witnessed past action; "
+                f"the consonant alternates t/d under consonant assimilation, and the vowel obeys vowel harmony."
+            )
+        if clean_word.endswith(('miş', 'mış', 'muş', 'müş')):
+            return (
+                f"Verb '{word}' in the inferential past (-mIş) tense. Marks a reported, inferred, or unwitnessed past "
+                f"action; the vowel obeys 4-way vowel harmony."
+            )
+        if clean_word.endswith(('ecek', 'acak')):
+            return (
+                f"Verb '{word}' in the future tense. The -(y)AcAk suffix marks future action; takes a personal ending "
+                f"agreeing with the subject."
+            )
+        return (
+            f"Turkish word '{word}' — POS could not be determined by rule-based fallback. "
+            f"Turkish is agglutinative; suffixes carry case, possession, person, tense, and mood, so unrecognised "
+            f"words may carry information not captured by the fallback heuristics."
+        )
 
     def _get_fallback_color(self, role: str, complexity: str) -> str:
         """Get fallback color based on grammatical role and complexity."""

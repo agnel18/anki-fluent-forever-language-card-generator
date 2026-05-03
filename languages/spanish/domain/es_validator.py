@@ -22,6 +22,14 @@ class EsValidator:
         Validate analysis result and calculate confidence score.
         Spanish-specific validation includes agreement checking, conjugation validation, etc.
         """
+        # Mirror de_validator: rule-based fallback never claims high confidence
+        # regardless of how rich the per-word explanations look. Without this
+        # short-circuit, richer fallback templates inflate the validator score
+        # and break the "fallback => low confidence" invariant.
+        if result.get('is_fallback', False):
+            result['confidence'] = 0.3
+            return result
+
         confidence = 0.8  # Start with high confidence for Spanish (inflectional language)
 
         try:

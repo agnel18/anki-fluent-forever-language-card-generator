@@ -213,17 +213,37 @@ class LvResponseParser:
                 continue
             role = str(item.get("grammatical_role", item.get("role", "other"))).strip().lower()
             color = item.get("color") or self.config.get_color_for_role(role, complexity)
-            meaning = str(item.get("meaning", word)).strip()
+
+            # Prefer the rich `individual_meaning` field; fall back to `meaning` for
+            # legacy responses. Format display string as "{word} ({role}): {explanation}"
+            # mirroring the German parser (de_response_parser.py:278-286) so downstream
+            # rendering produces the same look as German cards.
+            raw_individual = str(item.get("individual_meaning", "")).strip()
+            raw_meaning = str(item.get("meaning", "")).strip()
+            explanation = raw_individual or raw_meaning
+            if explanation:
+                # Strip a leading "{word} ({role}):" prefix if the model already added one
+                # (avoids double-prefixing).
+                stripped_prefix_pattern = f"{word} ({role}):"
+                if explanation.lower().startswith(stripped_prefix_pattern.lower()):
+                    explanation = explanation[len(stripped_prefix_pattern):].strip()
+                meaning = f"{word} ({role}): {explanation}"
+            else:
+                meaning = f"{word} ({role}): {word}"
+
             normalized_words.append({
                 "word": word,
                 "role": role,
                 "color": color,
                 "meaning": meaning,
+                "individual_meaning": raw_individual or raw_meaning,
                 "case": item.get("case", ""),
                 "gender": item.get("gender", ""),
                 "number": item.get("number", ""),
                 "tense": item.get("tense", ""),
+                "person": item.get("person", ""),
                 "definite_form": item.get("definite_form", ""),
+                "lemma": item.get("lemma", ""),
             })
 
         # Overall structure — support both key names used by different analyzers

@@ -166,19 +166,92 @@ class LvValidator:
     def validate_explanation_quality(
         self, result: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Check explanation quality and return a quality report."""
+        """Check explanation quality and return a quality report.
+
+        Mirrors de_validator.validate_explanation_quality — penalises shallow
+        stubs (e.g. "Šis (pronoun): Šis (pronoun)") so confidence drops below
+        the deployment threshold and the analyzer signals "low quality" rather
+        than blessing nonsense output as valid.
+
+        Penalty factors (multiplicative):
+          - Missing meaning / color: -0.1 per issue
+          - Invalid role: -0.05 per issue
+          - "Stub" explanations (< 20 chars OR meaning equals word OR meaning
+            equals "{word} ({role}):") — strong penalty: -0.2 per issue
+          - Missing Latvian-specific features (case/gender/definiteness mention)
+            on inflected words (nouns/adjectives/pronouns): -0.05 per issue
+        """
         word_explanations = result.get("word_explanations", [])
         issues = []
+        stub_count = 0
+        feature_gap_count = 0
+
+        latvian_feature_keywords = [
+            "case", "nominative", "genitive", "dative", "accusative",
+            "instrumental", "locative", "vocative",
+            "gender", "masculine", "feminine",
+            "definite", "indefinite",
+            "singular", "plural",
+            "person", "1st", "2nd", "3rd",
+            "tense", "present", "past", "future",
+            "agree", "agrees", "agreement",
+            "subject", "object", "predicate",
+            "lemma", "conjugation", "declension",
+        ]
+
+        inflected_roles = {
+            "noun", "adjective", "adjective_definite", "adjective_indefinite",
+            "pronoun", "personal_pronoun", "reflexive_pronoun", "demonstrative",
+            "relative_pronoun", "indefinite_pronoun", "verb", "auxiliary",
+            "reflexive_verb", "participle", "debitive", "verbal_noun",
+        }
+
         for item in word_explanations:
             if not isinstance(item, dict):
                 continue
-            if not item.get("meaning"):
-                issues.append(f"Missing meaning for '{item.get('word', '?')}'")
+            word = item.get("word", "?")
+            role = item.get("role", "")
+            meaning = (item.get("meaning") or "").strip()
+            individual = (item.get("individual_meaning") or "").strip()
+
+            if not meaning:
+                issues.append(f"Missing meaning for '{word}'")
+                continue
             if not item.get("color"):
-                issues.append(f"Missing color for '{item.get('word', '?')}'")
-            if item.get("role", "") not in _VALID_ROLES:
-                issues.append(
-                    f"Invalid role '{item.get('role')}' for '{item.get('word', '?')}'"
-                )
-        quality_score = max(0.5, 1.0 - len(issues) * 0.05)
-        return {"issues": issues, "quality_score": quality_score}
+                issues.append(f"Missing color for '{word}'")
+            if role not in _VALID_ROLES:
+                issues.append(f"Invalid role '{role}' for '{word}'")
+
+            # Stub detection — explanation that is just "{word} ({role}):" with
+            # no body, or simply repeats the word, or is fewer than 20 characters.
+            stripped_prefix = f"{word} ({role}):".strip()
+            body = meaning[len(stripped_prefix):].strip() if meaning.startswith(stripped_prefix) else meaning
+            if len(body) < 20 or body.lower() == word.lower():
+                stub_count += 1
+                issues.append(f"Stub explanation for '{word}' (body too short or empty)")
+                continue
+
+            # Inflected-word feature check.
+            if role in inflected_roles:
+                explanation_text = (individual or body).lower()
+                if not any(kw in explanation_text for kw in latvian_feature_keywords):
+                    feature_gap_count += 1
+                    issues.append(
+                        f"Inflected word '{word}' ({role}) — explanation lacks "
+                        f"case/gender/tense/agreement detail"
+                    )
+
+        # Quality score combines all penalty types.
+        score = 1.0
+        score -= 0.1 * sum(1 for i in issues if i.startswith("Missing"))
+        score -= 0.05 * sum(1 for i in issues if i.startswith("Invalid"))
+        score -= 0.2 * stub_count
+        score -= 0.05 * feature_gap_count
+        quality_score = max(0.0, min(score, 1.0))
+
+        return {
+            "issues": issues,
+            "quality_score": quality_score,
+            "stub_count": stub_count,
+            "feature_gap_count": feature_gap_count,
+        }

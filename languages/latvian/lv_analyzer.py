@@ -252,7 +252,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                         contents=prompt,
                         config={"max_output_tokens": 20000, "temperature": 0.1},
                     )
-                    return response.text.strip()
+                    return self._extract_response_text(response)
 
                 except Exception as primary_error:
                     logger.warning(
@@ -265,7 +265,7 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                             contents=prompt,
                             config={"max_output_tokens": 20000, "temperature": 0.1},
                         )
-                        return response.text.strip()
+                        return self._extract_response_text(response)
                     except Exception as fallback_error:
                         logger.warning(
                             f"Fallback model also failed (attempt {attempt+1}): "
@@ -284,6 +284,23 @@ class LvAnalyzer(BaseGrammarAnalyzer):
                     return '{"error": "AI service unavailable", "sentence": "error"}'
 
         return '{"error": "AI service unavailable", "sentence": "error"}'
+
+    @staticmethod
+    def _extract_response_text(response) -> str:
+        """Pull .text from a Gemini response, raising if it's missing.
+
+        Gemini can return a 200 OK with `response.text = None` when the
+        completion is blocked by a safety filter or hits the max-tokens cap.
+        Letting `.strip()` raise AttributeError surfaces that as a confusing
+        crash; raising a clean RuntimeError instead lets the retry/fallback
+        layer above this method swap models.
+        """
+        text = getattr(response, "text", None)
+        if not text or not str(text).strip():
+            raise RuntimeError(
+                "Gemini returned empty .text (likely safety filter or max-tokens hit)"
+            )
+        return str(text).strip()
 
     # ------------------------------------------------------------------
     # HTML output generation

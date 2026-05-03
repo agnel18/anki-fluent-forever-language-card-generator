@@ -151,6 +151,23 @@ Per CLAUDE.md:
 - **5-level fallback parsing** in `parse_grammar_response`: direct JSON → markdown code block → JSON repair → text pattern → rule-based.
 - **External config**: all settings in YAML/JSON in `infrastructure/data/`, not hardcoded.
 
+### Rich-explanation contract (Latvian regression, May 2026)
+
+The Latvian analyzer shipped with shallow per-word explanations like `"Šis (pronoun): Šis (pronoun)"` because its prompt asked for a one-word `meaning` field, its fallback emitted single-line stubs, and a `.strip()`-on-None crash dropped it into that fallback. The German analyzer is the reference for what "rich" means — multi-sentence explanations naming the word's syntactic role + morphology + Latvian/German-specific feature.
+
+Every new analyzer **must** ship the full contract or you will get the same shallow output:
+
+1. **Prompt asks for `individual_meaning`, not `meaning`.** The schema field is `individual_meaning` and the prompt body must include a "CRITICAL: Provide COMPREHENSIVE explanations for EVERY word" instruction with 3-4 worked examples showing what a good multi-sentence explanation looks like for that language. Reference: [languages/german/domain/de_config.py:182-262](languages/german/domain/de_config.py#L182-L262), [languages/latvian/domain/lv_prompt_builder.py](languages/latvian/domain/lv_prompt_builder.py).
+2. **Parser preserves `individual_meaning`** and formats the displayed `meaning` field as `f"{word} ({role}): {individual_meaning}"`. Strip a duplicate `"{word} ({role}):"` prefix if the model already added one. Reference: [languages/german/domain/de_response_parser.py:278-286](languages/german/domain/de_response_parser.py#L278-L286).
+3. **Fallback emits multi-clause strings**, not POS stubs. Each per-word explanation must be ≥30 chars and mention at least one morphological/syntactic feature relevant to that role. Reference: [languages/german/infrastructure/de_fallbacks.py:213-258](languages/german/infrastructure/de_fallbacks.py#L213-L258), [languages/latvian/domain/lv_fallbacks.py](languages/latvian/domain/lv_fallbacks.py).
+4. **`.text` null-guard in `_call_ai`.** Never call `response.text.strip()` bare — Gemini returns 200 OK with `.text = None` on safety filter / max-tokens hit. Use a `_extract_response_text` helper that raises `RuntimeError` on None so the existing retry/fallback layer can swap models. Reference: [languages/latvian/lv_analyzer.py:_extract_response_text](languages/latvian/lv_analyzer.py).
+5. **Validator's `validate_explanation_quality` penalizes stubs.** Score must drop for explanations <20 chars, explanations equal to the word itself, and inflected words (noun/adjective/verb) whose explanation lacks any case/gender/tense/agreement keyword. Reference: [languages/latvian/domain/lv_validator.py:validate_explanation_quality](languages/latvian/domain/lv_validator.py).
+6. **`is_fallback: True` flag in fallback dict + validator short-circuit.** Once your fallback content is rich, the validator can mistakenly bless it as high-confidence. Set `is_fallback: True` in the fallback return and have the validator's `validate_result` cap confidence to 0.3 when the flag is present. Reference: [languages/german/domain/de_validator.py:24](languages/german/domain/de_validator.py#L24), [languages/spanish/domain/es_validator.py](languages/spanish/domain/es_validator.py).
+7. **Adjective heuristics not gated by complexity.** If your fallback splits adjective_definite vs adjective_indefinite vs noun by suffix, the check **must run at all complexity levels**. Gating it behind `complexity != "beginner"` (the original Latvian bug) makes beginner cards mistag every adjective as a noun.
+8. **Possessive determiners are not nouns.** For languages that decline possessives like adjectives (Latvian `mans/tava/savs`, Russian `мой/твой`, etc.), the closed-class lexicon in fallbacks must list them explicitly. Don't rely on suffix heuristics — the `-s` masculine-noun pattern catches them.
+
+These invariants apply to every analyzer regardless of family. The validator-side checks (#5, #6) may need slight adaptation to language-specific feature keywords but the structure is identical.
+
 ## Step 3 — Validation gate (per CLAUDE.md, hard block)
 
 After Phase 7, run all three. Stop and report on first failure.
