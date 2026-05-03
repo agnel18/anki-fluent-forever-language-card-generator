@@ -6,6 +6,27 @@ argument-hint: "Language name and code, e.g. 'Korean (ko)'"
 
 You are a **Language Grammar Analyzer Builder** — a specialist that creates complete, production-ready grammar analyzers for the Language Card Generator app. You build one language at a time, following the proven Japanese analyzer build process.
 
+## Cost-aware session setup (do this FIRST — before any other step)
+
+Real-measured cost data from the Portuguese smoke test (token-dashboard, 2026-05-02):
+
+| Approach | $/analyzer |
+|---|---:|
+| Long Opus 4.7 session, no /clear between analyzers | ~$73 |
+| + `/clear` between analyzers | ~$45 |
+| + Sonnet 4.6 orchestrator | **~$25** |
+
+Cache reads on a long Opus session were $37 of $73 on Portuguese — that's the single biggest line item. `/clear` zeroes cumulative cache reads. The CLAUDE.md, this agent file, the skill, and the per-phase YAML all reload after `/clear`.
+
+**Run these two slash commands at session start:**
+
+```
+/clear
+/model sonnet
+```
+
+Subagent dispatches still use the per-phase tier from `language_grammar_generator/phase_model_tiers.yaml` regardless of orchestrator model. Switch back to Opus 4.7 only if a novel error stumps the Sonnet orchestrator.
+
 ## Context
 
 - **Project:** Language Card Generator v3 — Streamlit app generating Anki flashcard decks for 77 languages
@@ -29,6 +50,14 @@ Quick reference (subject to YAML; YAML wins on conflict):
 | Step 8d (E2E pipeline mocks) | P8 | **sonnet** |
 
 When a workflow step is tier-eligible, dispatch an `Agent` with `model: <tier>` and have it write the artifacts. Subagents don't see this conversation — inline the prerequisite inputs (e.g. P1's research doc into P3's prompt, P3's role vocabulary into P5/P8 prompts). Print `Step {N} → {tier} agent dispatched` before each call so the routing is visible. Validate the agent's output (file existence, AST parse for .py) in this main session before committing.
+
+**Imperative phrasing in every dispatch prompt — non-negotiable.** Sub-agents return a *plan* instead of executing if the prompt sounds advisory. From the Portuguese smoke test, 3 of 4 sonnet agents in a parallel batch returned plans on first try. Every dispatch prompt must:
+
+1. Open with: **"EXECUTE THIS TASK NOW. Do not return a plan — actually use the Edit/Write tool to modify the file(s)."**
+2. Use action verbs in step headings ("**Step 2: Make the changes (USE THE EDIT TOOL)**" not "Step 2: Changes to make").
+3. End with a verification block the agent must run, not a "you may verify" suggestion.
+
+If an agent returns only a plan, re-dispatch with stronger imperative phrasing — don't accept the plan.
 
 ## ⛔ Critical Rules — NEVER Violate
 

@@ -220,7 +220,33 @@ The `/new-analyzer` skill and the `language-analyzer` agent dispatch each phase 
 - **sonnet** — P4 (infrastructure), P6 (testing), P8 (E2E mocks). Correctness-sensitive.
 - **haiku** — P2 (scaffold), P5 (data files), P7 (deployment docs). Mechanical/templated.
 
-Roughly ~70% per-analyzer cost reduction vs all-Opus. Decision: **Claude-only for code** — no Gemini-API backend wiring for any phase, even bulk-data P5.
+Decision: **Claude-only for code** — no Gemini-API backend wiring for any phase, even bulk-data P5.
+
+#### Cost playbook for the analyzer queue
+
+**Real measured data** from the Portuguese smoke test (token-dashboard SQLite, 2026-05-02). The per-phase routing alone is a modest lever — the bigger savings come from session hygiene.
+
+| Approach | $/analyzer | 63 remaining = |
+|---|---:|---:|
+| Long Opus 4.7 session, no `/clear` | ~$73 | ~$4,600 |
+| + `/clear` between analyzers | ~$45 | ~$2,840 |
+| + Sonnet 4.6 orchestrator | **~$25** | **~$1,580** |
+
+**Why `/clear` matters most.** On the Portuguese build, **$37 of $54 main-session cost was cumulative cache reads** (24.9M tokens × $1.50/M Opus cache rate). Cache reads grow linearly with session length. `/clear` zeroes them; nothing important is lost — CLAUDE.md, the skill, the agent file, and `phase_model_tiers.yaml` all reload.
+
+**Why Sonnet orchestrator is safe.** The orchestrator only does file I/O, AST parsing, git commits, and Agent dispatch. The skill is mature post-Portuguese — no novel reasoning required. Subagents still use the per-phase tier from the YAML regardless of orchestrator model. Switch back to Opus 4.7 ad-hoc if you hit a novel error.
+
+**Recommended workflow per analyzer:**
+
+```
+/clear
+/model sonnet
+/new-analyzer <code>
+```
+
+**What does NOT save much:**
+- Trimming phase prompt sizes (the math doesn't work — saving 5K input tokens per dispatch ≈ $0.50 across the whole queue).
+- Building an external auto-orchestrator script (1-2 days of work to save what `/clear` already saves for free).
 
 ### Key Requirements for New Analyzers
 

@@ -20,6 +20,29 @@ description: |
 Follow this workflow exactly. The seven phases come from `language_grammar_generator/`.
 Auto-commit after every phase. Block at the validation gate. Match the gold standards.
 
+## Step -1 — Cost-aware session setup (do this FIRST, before anything else)
+
+Real-measured cost data from the Portuguese smoke test (token-dashboard, 2026-05-02):
+
+| Approach | $/analyzer |
+|---|---:|
+| Long Opus 4.7 session, no /clear between analyzers | **~$73** |
+| Add `/clear` between analyzers (drops cumulative cache reads) | ~$45 |
+| **+ Sonnet 4.6 orchestrator** | **~$25** |
+
+Cache reads on a long Opus session were $37 of $73 on Portuguese — that's the single biggest line item, and `/clear` zeroes it. The skill, the agent file, the per-phase YAML, and CLAUDE.md all reload after `/clear`, so nothing important is lost.
+
+**Run these two slash commands at the start of each new analyzer:**
+
+```
+/clear
+/model sonnet
+```
+
+Then `/new-analyzer <code>`. The orchestrator only does file I/O, AST parsing, git, and agent dispatch — Sonnet handles all of that fine. Subagents still use the per-phase tier from `phase_model_tiers.yaml` (Opus on P1+P3, Sonnet on P4+P6+P8, Haiku on P2+P5+P7) regardless of orchestrator model. Switch back to Opus 4.7 ad-hoc only if you hit a novel error the Sonnet orchestrator can't reason through.
+
+Across the remaining 63 analyzers, applying both commands cuts the queue cost from ~$4,600 → ~$1,580.
+
 ## Step 0 — Inputs and pre-flight
 
 1. **Parse the user's invocation** for: ISO code (required), language name, language family, script type, word order.
@@ -80,6 +103,14 @@ Agent({
 - **haiku** — P2, P5, P7 (mechanical scaffolding, data entry, templated docs)
 
 **Print before each dispatch:** `Phase {N} ({phase_name}) → {tier} agent dispatched`. This makes the tier choice visible to the user during the run.
+
+**Imperative phrasing in the agent prompt — non-negotiable.** Sub-agents will return a *plan* instead of executing if the prompt sounds advisory. From the Portuguese smoke test: 3 of 4 sonnet agents in a parallel batch returned plans the first time around. Every dispatch prompt must:
+
+1. Open with: **"EXECUTE THIS TASK NOW. Do not return a plan — actually use the Edit/Write tool to modify the file(s)."**
+2. Use action verbs in step headings ("**Step 2: Make the changes (USE THE EDIT TOOL)**" not "Step 2: Changes to make").
+3. End the prompt with a verification block the agent must run, not a "you may verify" suggestion.
+
+If an agent returns only a plan, re-dispatch with stronger imperative phrasing — don't accept the plan as the output.
 
 ### D. Validate the agent's output (main session)
 
