@@ -13,7 +13,7 @@ Class name: LvAnalyzer  (auto-discovered by analyzer_registry.py)
 
 import logging
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from streamlit_app.language_analyzers.base_analyzer import (
     BaseGrammarAnalyzer,
@@ -359,3 +359,168 @@ class LvAnalyzer(BaseGrammarAnalyzer):
             "other": "other",
         }
         return mapping.get(role, "other")
+
+    # ------------------------------------------------------------------
+    # Sentence generation prompt
+    # ------------------------------------------------------------------
+
+    def get_sentence_generation_prompt(self, word: str, language: str, num_sentences: int,
+                                     enriched_meaning: str = "", min_length: int = 3,
+                                     max_length: int = 15, difficulty: str = "intermediate",
+                                     topics: Optional[List[str]] = None) -> Optional[str]:
+        """
+        Get Latvian-specific sentence generation prompt to ensure proper response formatting.
+
+        LATVIAN SENTENCE GENERATION:
+        - Enforces character limits (75 chars for meanings, 60 for restrictions)
+        - Includes Latvian-specific grammar requirements
+        - Handles case marking and verb conjugations
+        - Supports reflexive verbs and debitive mood contexts
+        """
+        # Build context instruction based on topics
+        if topics:
+            context_instruction = f"- CRITICAL REQUIREMENT: ALL sentences MUST relate to these specific topics: {', '.join(topics)}. Force the word usage into these contexts even if it requires creative interpretation. Do NOT use generic contexts."
+        else:
+            context_instruction = "- Use diverse real-life contexts: home, travel, food, emotions, work, social life, daily actions, cultural experiences"
+
+        # Build meaning instruction based on enriched data
+        if enriched_meaning and enriched_meaning != 'N/A':
+            if enriched_meaning.startswith('{') and enriched_meaning.endswith('}'):
+                # Parse the enriched context format
+                context_lines = enriched_meaning[1:-1].split('\n')  # Remove {} and split
+                definitions = []
+                source = "Unknown"
+                for line in context_lines:
+                    line = line.strip()
+                    if line.startswith('Source:'):
+                        source = line.replace('Source:', '').strip()
+                    elif line.startswith('Definition'):
+                        # Extract just the definition text
+                        def_text = line.split(':', 1)[1].strip() if ':' in line else line
+                        # Remove part of speech info
+                        def_text = def_text.split(' | ')[0].strip()
+                        definitions.append(def_text)
+
+                if definitions:
+                    meaning_summary = '; '.join(definitions[:4])  # Use first 4 definitions
+                    enriched_meaning_instruction = f'Analyze this linguistic data for "{word}" and generate a brief, clean English meaning that encompasses ALL the meanings. Data: {meaning_summary}. IMPORTANT: Consider all meanings and provide a comprehensive meaning.'
+                else:
+                    enriched_meaning_instruction = f'Analyze this linguistic context for "{word}" and generate a brief, clean English meaning. Context: {enriched_meaning[:200]}. IMPORTANT: Return ONLY the English meaning.'
+            else:
+                # Legacy format
+                enriched_meaning_instruction = f'Use this pre-reviewed meaning for "{word}": "{enriched_meaning}". Generate a clean English meaning based on this.'
+        else:
+            enriched_meaning_instruction = f'Provide a brief English meaning for "{word}".'
+
+        # Latvian-specific prompt with character limits and grammar requirements
+        prompt = f"""You are a native-level expert linguist in Latvian (Latviešu valoda).
+
+Your task: Generate a complete learning package for the Latvian word "{word}" in ONE response.
+
+===========================
+STEP 1: WORD MEANING
+===========================
+{enriched_meaning_instruction}
+Format: Return exactly one line like "house (a building where people live)" or "he (male pronoun, used as subject)"
+IMPORTANT: Keep the entire meaning under 75 characters total.
+
+===========================
+WORD-SPECIFIC RESTRICTIONS
+===========================
+Based on the meaning above, identify any grammatical constraints for "{word}".
+Examples: gender requirements (masculine/feminine), agreement patterns, conjugation groups, preposition requirements
+If no restrictions apply, state "No specific grammatical restrictions."
+IMPORTANT: Keep the entire restrictions summary under 60 characters total.
+
+===========================
+STEP 2: SENTENCES
+===========================
+Generate exactly {num_sentences} highly natural, idiomatic sentences in Latvian for the word "{word}".
+
+QUALITY RULES:
+- Every sentence must sound like native Latvian
+- Grammar, syntax, spelling, and Latvian-specific features must be correct
+- The target word "{word}" MUST be used correctly according to restrictions
+- Each sentence must be between {min_length} and {max_length} words long
+- COUNT words precisely; if outside the range, regenerate internally
+- Difficulty: {difficulty}
+
+LATVIAN-SPECIFIC REQUIREMENTS:
+- Apply correct case marking — Latvian has 7 cases: nominative, genitive, dative, accusative, instrumental, locative, vocative
+- Use proper gender agreement (masculine ends in -s/-š/-is, feminine ends in -a/-e/-s)
+- Distinguish definite vs. indefinite adjective forms (-ais/-ā for definite vs. -s/-a for indefinite)
+- Apply correct verb conjugation by person (1st/2nd/3rd) and number (singular/plural)
+- Use appropriate moods: indicative, conditional (-tu ending), debitive (jā- prefix for "must"), imperative
+- Include reflexive verbs where natural (-ies/-ās ending: mācīties, runāt vs. runāties)
+- Use prepositions with their required cases (ar + instrumental, no + genitive, uz + accusative/locative)
+- Apply proper diacritics: ā, ē, ī, ū (long vowels); č, š, ž (palatals); ķ, ļ, ņ, ģ (palatalized)
+
+VARIETY REQUIREMENTS:
+- Use different verb tenses and moods when applicable
+- Include different pronoun types (personal, possessive, demonstrative)
+- Use various determiners (definite, indefinite, partitive)
+- Include prepositional phrases with different prepositions
+- Use both simple and complex sentence structures
+{context_instruction}
+
+===========================
+STEP 3: ENGLISH TRANSLATIONS
+===========================
+For EACH sentence above, provide a natural, fluent English translation.
+- Translation should be natural English, not literal word-for-word
+
+===========================
+STEP 4: IPA TRANSCRIPTION
+===========================
+For EACH sentence above, provide IPA phonetic transcription.
+- Use standard IPA symbols for French pronunciation
+- Include liaison and elision markers where applicable
+- Show stress and intonation patterns
+
+===========================
+STEP 5: IMAGE KEYWORDS
+===========================
+For EACH sentence above, generate exactly 3 specific keywords for image search.
+- Keywords should be concrete and specific
+- Keywords in English only
+
+===========================
+OUTPUT FORMAT - FOLLOW EXACTLY
+===========================
+Return your response in this exact text format:
+
+MEANING: [brief English meaning]
+
+RESTRICTIONS: [grammatical restrictions]
+
+SENTENCES:
+1. [sentence 1 in Latvian]
+2. [sentence 2 in Latvian]
+3. [sentence 3 in Latvian]
+4. [sentence 4 in Latvian]
+
+TRANSLATIONS:
+1. [natural English translation for sentence 1]
+2. [natural English translation for sentence 2]
+3. [natural English translation for sentence 3]
+4. [natural English translation for sentence 4]
+
+IPA:
+1. [IPA transcription for sentence 1]
+2. [IPA transcription for sentence 2]
+3. [IPA transcription for sentence 3]
+4. [IPA transcription for sentence 4]
+
+KEYWORDS:
+1. [keyword1, keyword2, keyword3]
+2. [keyword1, keyword2, keyword3]
+3. [keyword1, keyword2, keyword3]
+4. [keyword1, keyword2, keyword3]
+
+IMPORTANT:
+- Return ONLY the formatted text, no extra explanation
+- Sentences must be in Latvian only
+- Ensure exactly {num_sentences} sentences, translations, IPA transcriptions, and keywords
+- Respect character limits for meaning and restrictions"""
+
+        return prompt
