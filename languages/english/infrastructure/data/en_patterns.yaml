@@ -1,1 +1,123 @@
-# English patterns — populated in Phase 5
+# en_patterns.yaml
+# English Sentence Patterns Configuration
+# Common structures and word-order templates for English analysis
+
+simple_declarative:
+  template: "S V O"
+  example: "She writes a letter."
+  notes: "Subject-Verb-Object: the canonical word order in English. No inflection on S/O to mark roles; word order is critical."
+
+yes_no_question:
+  template: "Aux S V O ?"
+  example: "Does she write letters?"
+  notes: "Subject-auxiliary inversion for yes/no questions. Auxiliary moves to clause-initial position before subject."
+
+wh_question_object:
+  template: "Wh Aux S V ?"
+  example: "What does she write?"
+  notes: "Wh-word (what, which, where, etc.) + subject-auxiliary inversion. Wh-word moves to initial position; auxiliary inverts."
+
+wh_question_subject:
+  template: "Wh V O ?"
+  example: "Who wrote the letter?"
+  notes: "When wh-word is subject, no inversion occurs. Wh-word satisfies subject position; auxiliary does not invert."
+
+passive:
+  template: "S be V-en (by NP)"
+  example: "The letter was written by her."
+  notes: "Passive voice: object becomes subject, main verb becomes past participle, original subject in 'by' phrase (optional). Only transitive verbs."
+
+perfect:
+  template: "S have V-en O"
+  example: "She has written a letter."
+  notes: "Perfect aspect: 'have' auxiliary + past participle. Signals completed action with present relevance. Can combine with other aspects (has been writing)."
+
+progressive:
+  template: "S be V-ing O"
+  example: "She is writing a letter."
+  notes: "Progressive aspect: 'be' auxiliary + present participle (-ing). Signals ongoing action. Can combine with perfect (has been writing)."
+
+modal:
+  template: "S Modal V O"
+  example: "She must write a letter."
+  notes: "Modal auxiliary (can, will, must, may, should) + main verb. Modal never takes -s or past tense; main verb is bare infinitive."
+
+imperative:
+  template: "(You) V O"
+  example: "Write a letter!"
+  notes: "Command form: deleted subject (understood 'you'), bare verb stem. Negated with 'don't': Don't write that."
+
+relative_clause_object:
+  template: "NP [(that/which/who) S V (NP)]"
+  example: "The letter that she wrote was lost."
+  notes: "Relative clause modifying noun. Relative pronoun (that, which, who, whom, whose) can be deleted in object position (the letter she wrote)."
+
+subordinate_clause:
+  template: "S V O, Sub-conj S V O"
+  example: "After she arrived, we had dinner."
+  notes: "Complex sentence with subordinating conjunction (because, although, if, when, until, etc.) introducing dependent clause. Clause can precede or follow main clause."
+
+phrasal_verb:
+  template: "S V Particle (O) | S V O Particle"
+  example: "She put up the tent. / She put the tent up."
+  notes: "Phrasal verb: verb + adverbial particle. Many are separable (put up/put X up) or inseparable (look after/not look X after). Meaning is non-compositional."
+
+comparative_structure:
+  template: "S V Adj-er than NP | S V more Adj than NP"
+  example: "This book is bigger than that one. / This task is more difficult than I thought."
+  notes: "Comparative: -er suffix for short adjectives, 'more' for long adjectives. Paired with 'than' + comparative standard."
+
+superlative_structure:
+  template: "the S V Adj-est | the S V most Adj"
+  example: "This is the biggest book. / This is the most difficult task."
+  notes: "Superlative: -est suffix or 'most'. Often marked with definite article 'the'. Identifies extreme within a set."
+
+negation:
+  template: "S Aux-n't V O | S don't V O | S V O not"
+  example: "She doesn't write letters. / She didn't write the letter."
+  notes: "Negation with auxiliary: 'do-support' if no auxiliary present. Negation marker 'not' or contracted 'n't' on auxiliary."
+
+cleft_it:
+  template: "It be S that V O"
+  example: "It was she who wrote the letter."
+  notes: "Cleft construction: extracts and emphasizes element (often subject or object). Existential 'it' subject + 'be' + focused element + relative clause."
+
+there_existential:
+  template: "there be NP VP"
+  example: "There are many letters on the table."
+  notes: "Existential 'there': formal subject (semantically empty). Verb agrees with logical subject (many letters → are). Often used to introduce new entities."
+
+double_object:
+  template: "S V NP(indirect) NP(direct)"
+  example: "She gave him a letter. / She gave a letter to him."
+  notes: "Double object construction (give, send, tell, show): two ways to express indirect object — adjacent position or prepositional phrase with 'to/for'."
+
+infinitival_complement:
+  template: "S V NP to V"
+  example: "I want you to write a letter."
+  notes: "Infinitival complement: object + infinitive 'to'. Object (you) is semantic subject of infinitive. Verbs: want, need, ask, expect, promise, etc."
+
+raising_to_object:
+  template: "S V NP to V (object control)"
+  example: "I convinced him to leave."
+  notes: "Control construction: matrix object (him) is semantic subject of infinitive (to leave). Versus raising: 'It seems [he left]' vs. 'He seems [to have left].'"
+
+gerund_complement:
+  template: "S V Ger-NP"
+  example: "She enjoys writing letters."
+  notes: "Gerund as complement: verb + -ing form. Unlike infinitive, gerund can take objects without external subject control. Subject of gerund is unexpressed."
+
+conditional_if:
+  template: "if S V O, S V O"
+  example: "If she arrives early, we can leave soon."
+  notes: "Conditional clauses with 'if'. Real conditional (present/future): 'If she arrives, we leave.' Counterfactual (past): 'If she had arrived, we would have left.'"
+
+pseudo_cleft:
+  template: "what S V is NP"
+  example: "What she likes is chocolate."
+  notes: "Pseudo-cleft: wh-clause + predicate. Fronts semantic predicate rather than object. Also: 'Chocolate is what she likes.'"
+
+ellipsis:
+  template: "S V O, and S V (O implied)"
+  example: "She reads books and he watches movies."
+  notes: "Ellipsis: deletion of recoverable material in coordinate structures. Different subjects allow object ellipsis (she wrote — he wrote implies 'it' too)."

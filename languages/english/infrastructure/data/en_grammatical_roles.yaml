@@ -1,1 +1,261 @@
-# English grammatical roles — populated in Phase 5
+# en_grammatical_roles.yaml
+# English Grammatical Roles Configuration
+# Organized by complexity level with role descriptions and colors
+
+beginner:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Common or proper noun. English nouns inflect minimally — plural -s/-es, possessive 's. No grammatical gender."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Lexical verb. Carries tense (present/past) and minimal agreement (3sg present -s)."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Descriptive word modifying nouns. English adjectives are invariant (no inflection for gender/number/case)."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Word substituting for a noun. English pronouns retain case distinctions: I/me, he/him, who/whom (nominative/accusative)."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Word showing spatial/temporal relationship. Precedes noun phrases; cannot be moved to sentence-final position (unlike some languages)."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Word connecting words, phrases, or clauses. Includes coordinating (and, but) and subordinating (because, if) types."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Modifies verbs, adjectives, or other adverbs. Often formed with -ly suffix; can modify entire clauses."
+  article:
+    display_name: "Article"
+    color: "#FFD700"
+    description: "Definite article 'the' (specific noun) or indefinite 'a/an' (non-specific). English articles are always pre-nominal."
+  auxiliary:
+    display_name: "Auxiliary Verb"
+    color: "#00CED1"
+    description: "Helper verb (be, have, do) marking tense, aspect, or mood. Precedes main verb in declaratives; inverts in interrogatives."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Exclamatory word expressing emotion (oh, wow, yes). Often stands alone; not integrated into clause structure."
+
+intermediate:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Common or proper noun. English nouns inflect minimally — plural -s/-es, possessive 's. No grammatical gender."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Lexical verb. Carries tense (present/past) and minimal agreement (3sg present -s)."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Descriptive word modifying nouns. English adjectives are invariant (no inflection)."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Word substituting for a noun. Retains case distinctions (nominative/accusative)."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Word showing spatial/temporal relationship. Always precedes noun phrases in English."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Word connecting words, phrases, or clauses (and, but, because, if)."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Modifies verbs, adjectives, or other adverbs. Often -ly suffix; can modify entire clauses."
+  article:
+    display_name: "Article"
+    color: "#FFD700"
+    description: "Definite 'the' (specific) or indefinite 'a/an' (non-specific). Always pre-nominal."
+  auxiliary:
+    display_name: "Auxiliary Verb"
+    color: "#00CED1"
+    description: "Helper verb (be, have, do) marking tense/aspect/mood. Precedes main verb; inverts in questions."
+  modal_verb:
+    display_name: "Modal Verb"
+    color: "#9370DB"
+    description: "Auxiliary expressing possibility/obligation/permission (can, will, must, may). Never takes -s or past -ed; always base form main verb."
+  particle:
+    display_name: "Particle"
+    color: "#20B2AA"
+    description: "Invariant word modifying meaning: infinitive 'to', negation 'not', or adverbial particles (up, down, out in phrasal verbs)."
+  infinitive_marker:
+    display_name: "Infinitive Marker"
+    color: "#FF8C00"
+    description: "Particle 'to' marking infinitive verb form. Precedes bare verb stem (to run, to be)."
+  phrasal_verb_particle:
+    display_name: "Phrasal-Verb Particle"
+    color: "#20B2AA"
+    description: "Adverbial particle in phrasal verbs (up, down, out, off, in) modifying verb meaning non-compositionally (put up, give up)."
+  determiner:
+    display_name: "Determiner"
+    color: "#B8860B"
+    description: "Pre-nominal modifier specifying noun (this, that, some, any, each, all). Includes articles, demonstratives, possessives, quantifiers."
+  demonstrative:
+    display_name: "Demonstrative"
+    color: "#B8860B"
+    description: "Points to specific noun (this, that, these, those). Can be determiner (this book) or pronoun (this is mine)."
+  possessive_determiner:
+    display_name: "Possessive Determiner"
+    color: "#B8860B"
+    description: "Shows ownership; always pre-nominal (my, your, his, her, its, our, their). Never stands alone."
+  possessive_pronoun:
+    display_name: "Possessive Pronoun"
+    color: "#9370DB"
+    description: "Shows ownership; stands alone replacing noun (mine, yours, his, hers, ours, theirs). No apostrophe."
+  present_participle:
+    display_name: "Present Participle"
+    color: "#FF7F50"
+    description: "Verb form ending -ing. In progressive: 'is running'. As adjective: 'running water'. As gerund: 'Running is fun.'"
+  past_participle:
+    display_name: "Past Participle"
+    color: "#FF6347"
+    description: "Verb form (regular -ed, irregular forms). In perfect: 'have eaten'. In passive: 'is eaten'. As adjective: 'broken window'."
+  gerund:
+    display_name: "Gerund"
+    color: "#FFA500"
+    description: "Verb form -ing used as noun (subject/object). 'Running is healthy.' 'I enjoy running.' Can take objects: 'eating apples'."
+  infinitive:
+    display_name: "Infinitive"
+    color: "#FFA500"
+    description: "Base verb form, usually with 'to' (to run, to be). Used as noun (To err is human), adjective, or adverb."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Exclamatory word expressing emotion (oh, wow, yes, hello). Often stands alone; not integrated into clause structure."
+
+advanced:
+  noun:
+    display_name: "Noun"
+    color: "#FFAA00"
+    description: "Common or proper noun. English nouns inflect minimally — plural -s/-es, possessive 's. No grammatical gender."
+  verb:
+    display_name: "Verb"
+    color: "#4ECDC4"
+    description: "Lexical verb. Carries tense (present/past) and minimal agreement (3sg present -s)."
+  adjective:
+    display_name: "Adjective"
+    color: "#FF44FF"
+    description: "Descriptive word modifying nouns. English adjectives are invariant."
+  pronoun:
+    display_name: "Pronoun"
+    color: "#9370DB"
+    description: "Word substituting for a noun. Retains case distinctions (nominative/accusative)."
+  preposition:
+    display_name: "Preposition"
+    color: "#4444FF"
+    description: "Word showing spatial/temporal relationship. Always precedes noun phrases in English."
+  conjunction:
+    display_name: "Conjunction"
+    color: "#AAAAAA"
+    description: "Word connecting words, phrases, or clauses."
+  adverb:
+    display_name: "Adverb"
+    color: "#FF6347"
+    description: "Modifies verbs, adjectives, or other adverbs. Often -ly suffix; can modify entire clauses."
+  article:
+    display_name: "Article"
+    color: "#FFD700"
+    description: "Definite 'the' or indefinite 'a/an'. Always pre-nominal."
+  auxiliary:
+    display_name: "Auxiliary Verb"
+    color: "#00CED1"
+    description: "Helper verb (be, have, do) marking tense/aspect/mood. Precedes main verb; inverts in questions."
+  modal_verb:
+    display_name: "Modal Verb"
+    color: "#9370DB"
+    description: "Auxiliary expressing possibility/obligation/permission (can, will, must, may, could, would, should, might)."
+  particle:
+    display_name: "Particle"
+    color: "#20B2AA"
+    description: "Invariant word: infinitive 'to', negation 'not', or adverbial particle (up, down, out)."
+  infinitive_marker:
+    display_name: "Infinitive Marker"
+    color: "#FF8C00"
+    description: "Particle 'to' marking infinitive verb form. Precedes bare verb stem."
+  phrasal_verb_particle:
+    display_name: "Phrasal-Verb Particle"
+    color: "#20B2AA"
+    description: "Adverbial particle in phrasal verbs (up, down, out, off, in, on, away, back, over, through)."
+  determiner:
+    display_name: "Determiner"
+    color: "#B8860B"
+    description: "Pre-nominal modifier specifying noun (this, that, some, any, each, all)."
+  demonstrative:
+    display_name: "Demonstrative"
+    color: "#B8860B"
+    description: "Points to specific noun (this, that, these, those). Determiner or pronoun."
+  possessive_determiner:
+    display_name: "Possessive Determiner"
+    color: "#B8860B"
+    description: "Shows ownership; pre-nominal (my, your, his, her, its, our, their)."
+  possessive_pronoun:
+    display_name: "Possessive Pronoun"
+    color: "#9370DB"
+    description: "Shows ownership; stands alone (mine, yours, his, hers, ours, theirs)."
+  present_participle:
+    display_name: "Present Participle"
+    color: "#FF7F50"
+    description: "Verb form -ing. Progressive: 'is running'. Adjective: 'running water'. Gerund: 'Running is fun.'"
+  past_participle:
+    display_name: "Past Participle"
+    color: "#FF6347"
+    description: "Verb form (regular -ed, irregular). Perfect: 'have eaten'. Passive: 'is eaten'. Adjective: 'broken window'."
+  gerund:
+    display_name: "Gerund"
+    color: "#FFA500"
+    description: "Verb form -ing used as noun (subject/object). Can take objects: 'eating apples'."
+  infinitive:
+    display_name: "Infinitive"
+    color: "#FFA500"
+    description: "Base verb form, usually with 'to'. Used as noun, adjective, or adverb."
+  relative_pronoun:
+    display_name: "Relative Pronoun"
+    color: "#9370DB"
+    description: "Introduces relative clause (who, whom, which, that, whose). 'The man who arrived' vs. 'The man that arrived'."
+  subordinating_conjunction:
+    display_name: "Subordinating Conjunction"
+    color: "#888888"
+    description: "Introduces dependent clause (because, although, if, when, unless, while, as, until). Changes word order in some languages."
+  coordinating_conjunction:
+    display_name: "Coordinating Conjunction"
+    color: "#AAAAAA"
+    description: "Joins equal elements (FANBOYS: for, and, nor, but, or, yet, so). Can start sentences in modern English."
+  interrogative_pronoun:
+    display_name: "Interrogative Pronoun"
+    color: "#9370DB"
+    description: "Asks questions (who, what, which, whose, whom). Moves to sentence-initial position in English questions."
+  reflexive_pronoun:
+    display_name: "Reflexive Pronoun"
+    color: "#DDA0DD"
+    description: "Pronoun reflecting back to subject (myself, yourself, himself, herself, itself, ourselves, themselves). Requires same-subject antecedent."
+  indefinite_pronoun:
+    display_name: "Indefinite Pronoun"
+    color: "#8B7EC8"
+    description: "Non-specific pronoun (someone, anyone, everyone, something, anything, nothing, each, either, neither, all, both, few, many, most, some)."
+  comparative:
+    display_name: "Comparative"
+    color: "#FF44FF"
+    description: "Comparative form of adjective/adverb (-er for short words, more for long: bigger, more beautiful). Paired with 'than'."
+  superlative:
+    display_name: "Superlative"
+    color: "#FF44FF"
+    description: "Superlative form (-est for short, most for long: biggest, most beautiful). Usually with 'the'."
+  phrasal_verb:
+    display_name: "Phrasal Verb"
+    color: "#20B2AA"
+    description: "Verb + particle with non-compositional meaning (put up, give up, turn down). Frequently separable (put the fire out / put out the fire)."
+  interjection:
+    display_name: "Interjection"
+    color: "#FF69B4"
+    description: "Exclamatory word expressing emotion (oh, wow, yes, hello, alas). Often punctuated separately."
