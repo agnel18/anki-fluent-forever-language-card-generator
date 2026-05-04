@@ -153,6 +153,7 @@ GCP has **1,700+ quotas** in the dashboard. Key facts:
 | Latvian | `lv` | `languages/latvian/` | ✅ Implemented (v1.0) — E2E verified at all 3 difficulty levels |
 | Malayalam | `ml` | `languages/malayalam/` | ✅ Implemented (v1.0) — Dravidian family, E2E verified |
 | Portuguese | `pt` | `languages/portuguese/` | ✅ Implemented (v1.0) — Romance, BR/PT split, ser/estar copula, contraction splitting, three-state clitic placement, E2E verified at all 3 difficulty levels. **First analyzer built via the per-phase model-tier dispatch system.** |
+| Russian | `ru` | `languages/russian/` | ✅ Implemented (v1.0) — Slavic family, aspect system (perfective/imperfective), participles, gerunds, E2E verified at all 3 difficulty levels |
 | Spanish | `es` | `languages/spanish/` | ✅ Implemented — E2E verified |
 | Turkish | `tr` | `languages/turkish/` | ✅ Fully implemented — E2E verified |
 

@@ -2230,6 +2230,444 @@ ENGLISH_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# RUSSIAN
+# ---------------------------------------------------------------------------
+RUSSIAN_MOCK_DATA: Dict[str, Any] = {
+    "word": "читать",
+    "language_name": "Russian",
+    "language_code": "ru",
+    "topic": "Education",
+    "num_sentences": 4,
+    "min_length": 3,
+    "max_length": 15,
+    "difficulty": "beginner",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to read (to look at and understand written text)
+
+        RESTRICTIONS: Imperfective verb. Keep sentences simple and beginner-friendly.
+
+        SENTENCES:
+        1. Я читаю книгу.
+        2. Она читает газету каждый день.
+        3. Мы читали интересный роман.
+        4. Дети читают в школе.
+
+        TRANSLATIONS:
+        1. I am reading a book.
+        2. She reads the newspaper every day.
+        3. We read an interesting novel.
+        4. Children read at school.
+
+        IPA:
+        1. ja tʃɪˈtaju ˈknʲiɡʊ
+        2. aˈna tʃɪˈtaɪt ɡaˈzʲetʊ ˈkaʐdɨj dʲenʲ
+        3. mɨ tʃɪˈtalʲɪ ɪnʲtʲɪˈrʲesnɨj rɐˈman
+        4. ˈdʲetʲɪ tʃɪˈtajʊt f ʂkoˈlʲe
+
+        KEYWORDS:
+        1. person reading, book
+        2. daily habit, newspaper
+        3. past action, novel
+        4. children, school"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Я читаю книгу.",
+            "overall_structure": "Subject-Verb-Object",
+            "sentence_structure": "Subject-Verb-Object",
+            "word_explanations": [
+                {"word": "Я", "grammatical_role": "pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 1st-person singular, nominative case. Subject of the verb читаю. In Russian the explicit pronoun is mildly emphatic (pro-drop language).",
+                 "meaning": "Я (pronoun): Personal pronoun, 1st-person singular, nominative case. Subject of the verb читаю.", "case": "nominative", "gender": "", "number": "singular", "tense": "", "lemma": "я"},
+                {"word": "читаю", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, 1st-conjugation, present tense, 1st-person singular, indicative mood. Lemma читать ('to read'); the perfective partner is прочитать. Imperfective aspect marks the action as ongoing or habitual. Governs an accusative direct object (книгу).",
+                 "meaning": "читаю (verb): Imperfective verb, present tense, 1st-person singular.", "case": "", "gender": "", "number": "singular", "tense": "present", "aspect": "imperfective", "lemma": "читать"},
+                {"word": "книгу", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular feminine, 1st declension (lemma книга, 'book'). Direct object of читаю. Inanimate, so accusative is shaped like the nominative ending of 1st declension (-у).",
+                 "meaning": "книгу (noun): Noun, accusative singular feminine. Direct object.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "книга"}
+            ],
+            "grammar_notes": "Basic SVO sentence. Imperfective present читаю marks the action as ongoing.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Она читает газету каждый день.",
+            "overall_structure": "Subject-Verb-Object-Adjective-Noun",
+            "sentence_structure": "Subject-Verb-Object with time adverbial",
+            "word_explanations": [
+                {"word": "Она", "grammatical_role": "pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 3rd-person singular feminine, nominative case. Subject of читает.",
+                 "meaning": "Она (pronoun): 3rd-person singular feminine pronoun, nominative.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "она"},
+                {"word": "читает", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, present tense, 3rd-person singular, indicative mood. Lemma читать. Habitual reading indicated by каждый день.",
+                 "meaning": "читает (verb): Imperfective present, 3rd-person singular.", "case": "", "gender": "", "number": "singular", "tense": "present", "aspect": "imperfective", "lemma": "читать"},
+                {"word": "газету", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular feminine (lemma газета, 'newspaper'). Direct object of читает.",
+                 "meaning": "газету (noun): Accusative singular feminine. Direct object.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "газета"},
+                {"word": "каждый", "grammatical_role": "adjective", "color": "#FF44FF",
+                 "individual_meaning": "Adjective, accusative singular masculine (lemma каждый, 'every/each'). Agrees with день in case, gender, number.",
+                 "meaning": "каждый (adjective): Accusative singular masculine, 'every'.", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "каждый"},
+                {"word": "день", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular masculine (lemma день, 'day'). Together with каждый forms the time adverbial 'every day'.",
+                 "meaning": "день (noun): Accusative singular masculine, 'day'.", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "день"}
+            ],
+            "grammar_notes": "Habitual action expressed by imperfective present + каждый день.",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Мы читали интересный роман.",
+            "overall_structure": "Subject-Verb-Adjective-Object",
+            "sentence_structure": "Past tense clause with modified direct object",
+            "word_explanations": [
+                {"word": "Мы", "grammatical_role": "pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 1st-person plural, nominative case. Subject of читали.",
+                 "meaning": "Мы (pronoun): 1st-person plural, nominative.", "case": "nominative", "gender": "", "number": "plural", "tense": "", "lemma": "мы"},
+                {"word": "читали", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, past tense, plural. Lemma читать. Past tense is marked by -ли (plural ending, gender-neutral). Imperfective past marks ongoing or habitual past reading.",
+                 "meaning": "читали (verb): Imperfective past, plural.", "case": "", "gender": "", "number": "plural", "tense": "past", "aspect": "imperfective", "lemma": "читать"},
+                {"word": "интересный", "grammatical_role": "adjective", "color": "#FF44FF",
+                 "individual_meaning": "Long-form adjective, accusative singular masculine (lemma интересный, 'interesting'). Agrees with роман in case, gender, number. Inanimate masc-acc takes nominative-form endings.",
+                 "meaning": "интересный (adjective): Accusative singular masculine, 'interesting'.", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "интересный"},
+                {"word": "роман", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular masculine, 2nd declension (lemma роман, 'novel'). Direct object of читали. Inanimate — accusative is identical to nominative.",
+                 "meaning": "роман (noun): Accusative singular masculine, 'novel'. Direct object.", "case": "accusative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "роман"}
+            ],
+            "grammar_notes": "Past tense plural -ли. Inanimate masc-acc identical to nominative (роман).",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Дети читают в школе.",
+            "overall_structure": "Subject-Verb-Preposition-Noun",
+            "sentence_structure": "Subject-Verb with prepositional locative phrase",
+            "word_explanations": [
+                {"word": "Дети", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, nominative plural (lemma ребёнок/дети, suppletive plural, 'children'). Subject of читают.",
+                 "meaning": "Дети (noun): Nominative plural, 'children'. Subject.", "case": "nominative", "gender": "", "number": "plural", "tense": "", "lemma": "ребёнок"},
+                {"word": "читают", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, present tense, 3rd-person plural, indicative. Lemma читать. Marks habitual activity.",
+                 "meaning": "читают (verb): Imperfective present, 3rd-person plural.", "case": "", "gender": "", "number": "plural", "tense": "present", "aspect": "imperfective", "lemma": "читать"},
+                {"word": "в", "grammatical_role": "preposition", "color": "#4444FF",
+                 "individual_meaning": "Preposition meaning 'in/at'. Here governs the prepositional case (static location). Contrast: в школу (accusative) = directional 'to school'.",
+                 "meaning": "в (preposition): 'in/at', governs prepositional case (static location).", "case": "", "gender": "", "number": "", "tense": "", "lemma": "в"},
+                {"word": "школе", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, prepositional singular feminine, 1st declension (lemma школа, 'school'). Location argument governed by preposition в expressing static location.",
+                 "meaning": "школе (noun): Prepositional singular feminine, 'school'.", "case": "prepositional", "gender": "feminine", "number": "singular", "tense": "", "lemma": "школа"}
+            ],
+            "grammar_notes": "В + prepositional case marks static location. Contrast with в + accusative for directional motion.",
+            "confidence": 0.92
+        }
+    ], ensure_ascii=False),
+}
+
+
+# ---------------------------------------------------------------------------
+# RUSSIAN — per-difficulty mock data
+# ---------------------------------------------------------------------------
+# Russian exposes distinct grammatical-role vocabularies for each complexity
+# level (ru_config._get_default_roles). To validate analyzer + grammar
+# processor coherence at every level, we run the full pipeline three times.
+#
+# beginner mock = RUSSIAN_MOCK_DATA (defined above).
+# ---------------------------------------------------------------------------
+
+_RUSSIAN_INTERMEDIATE_MOCK: Dict[str, Any] = {
+    "word": "говорить",
+    "language_name": "Russian",
+    "language_code": "ru",
+    "topic": "Education",
+    "num_sentences": 4,
+    "min_length": 4,
+    "max_length": 18,
+    "difficulty": "intermediate",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to speak (to talk, to say words out loud)
+
+        RESTRICTIONS: Imperfective verb. Use intermediate structures: pronouns, reflexive verbs, demonstratives, possessives.
+
+        SENTENCES:
+        1. Он хорошо говорит по-русски.
+        2. Моя сестра говорит по-французски.
+        3. Этот студент говорит слишком быстро.
+        4. Мы договорились встретиться завтра.
+
+        TRANSLATIONS:
+        1. He speaks Russian well.
+        2. My sister speaks French.
+        3. This student speaks too quickly.
+        4. We agreed to meet tomorrow.
+
+        IPA:
+        1. on xɐˈroʂə ɡɐˈvorʲɪt pɐˈruskʲɪ
+        2. mɐˈja sʲɪˈstra ɡɐˈvorʲɪt pɐˈfrantsuskʲɪ
+        3. ɪˈtot studʲɪˈnʲɪnt ɡɐˈvorʲɪt ˈslɪʂkəm ˈbɨstrə
+        4. mɨ dəɡɐvɐˈrʲilʲɪsʲ fstrʲɪˈtʲɪtsə ˈzaftrə
+
+        KEYWORDS:
+        1. language skill, Russian
+        2. family member, French
+        3. speed, student
+        4. agreement, reflexive verb"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Он хорошо говорит по-русски.",
+            "overall_structure": "Subject-Adverb-Verb-Adverb",
+            "sentence_structure": "Subject-Verb with manner adverbials",
+            "word_explanations": [
+                {"word": "Он", "grammatical_role": "personal_pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 3rd-person singular masculine, nominative case. Subject of говорит.",
+                 "meaning": "Он (personal_pronoun): 3rd-person singular masculine nominative.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "он"},
+                {"word": "хорошо", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Manner adverb meaning 'well'. Modifies говорит. Invariable form.",
+                 "meaning": "хорошо (adverb): 'well', manner adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "хорошо"},
+                {"word": "говорит", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, 2nd conjugation, present tense, 3rd-person singular, indicative. Lemma говорить ('to speak'). Imperfective marks ongoing or habitual ability.",
+                 "meaning": "говорит (verb): Imperfective present, 3rd-person singular.", "case": "", "gender": "", "number": "singular", "tense": "present", "aspect": "imperfective", "lemma": "говорить"},
+                {"word": "по-русски", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Manner adverb meaning 'in Russian / the Russian way'. Formed with prefix по- and adjectival suffix -ски from русский. Invariable.",
+                 "meaning": "по-русски (adverb): 'in Russian', language-manner adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "по-русски"}
+            ],
+            "grammar_notes": "По-русски is an adverb of manner derived from the adjective русский.",
+            "confidence": 0.92
+        },
+        {
+            "sentence": "Моя сестра говорит по-французски.",
+            "overall_structure": "Possessive-Subject-Verb-Adverb",
+            "sentence_structure": "Subject noun phrase with possessive determiner + verb + manner adverb",
+            "word_explanations": [
+                {"word": "Моя", "grammatical_role": "possessive_determiner", "color": "#9370DB",
+                 "individual_meaning": "Possessive determiner, 1st-person singular, nominative singular feminine. Agrees with сестра in case, gender, number. Lemma мой.",
+                 "meaning": "Моя (possessive_determiner): 1st-person singular possessive, nominative feminine.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "мой"},
+                {"word": "сестра", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, nominative singular feminine, 1st declension (lemma сестра, 'sister'). Subject of говорит.",
+                 "meaning": "сестра (noun): Nominative singular feminine, 'sister'. Subject.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "сестра"},
+                {"word": "говорит", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, present tense, 3rd-person singular. Lemma говорить. Habitual ability.",
+                 "meaning": "говорит (verb): Imperfective present, 3rd-person singular.", "case": "", "gender": "", "number": "singular", "tense": "present", "aspect": "imperfective", "lemma": "говорить"},
+                {"word": "по-французски", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Manner adverb, 'in French'. Same formation as по-русски.",
+                 "meaning": "по-французски (adverb): 'in French', language-manner adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "по-французски"}
+            ],
+            "grammar_notes": "Possessive determiner моя agrees with feminine noun сестра.",
+            "confidence": 0.91
+        },
+        {
+            "sentence": "Этот студент говорит слишком быстро.",
+            "overall_structure": "Demonstrative-Subject-Verb-Adverb-Adverb",
+            "sentence_structure": "Demonstrative subject phrase + verb + adverbial intensifier",
+            "word_explanations": [
+                {"word": "Этот", "grammatical_role": "demonstrative", "color": "#B8860B",
+                 "individual_meaning": "Demonstrative determiner, nominative singular masculine (lemma этот, 'this'). Modifies студент; agrees in case, gender, number.",
+                 "meaning": "Этот (demonstrative): 'this', nominative singular masculine.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "этот"},
+                {"word": "студент", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, nominative singular masculine, 2nd declension (lemma студент, 'student'). Subject of говорит.",
+                 "meaning": "студент (noun): Nominative singular masculine, 'student'. Subject.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "студент"},
+                {"word": "говорит", "grammatical_role": "verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, present tense, 3rd-person singular. Lemma говорить.",
+                 "meaning": "говорит (verb): Imperfective present, 3rd-person singular.", "case": "", "gender": "", "number": "singular", "tense": "present", "aspect": "imperfective", "lemma": "говорить"},
+                {"word": "слишком", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Degree adverb meaning 'too / excessively'. Modifies быстро.",
+                 "meaning": "слишком (adverb): 'too/excessively', degree adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "слишком"},
+                {"word": "быстро", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Manner adverb meaning 'quickly/fast'. Modifies говорит.",
+                 "meaning": "быстро (adverb): 'quickly', manner adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "быстро"}
+            ],
+            "grammar_notes": "Demonstrative этот agrees with masculine noun студент in nominative.",
+            "confidence": 0.90
+        },
+        {
+            "sentence": "Мы договорились встретиться завтра.",
+            "overall_structure": "Subject-ReflexiveVerb-Infinitive-Adverb",
+            "sentence_structure": "Subject + reflexive verb + infinitive complement + time adverb",
+            "word_explanations": [
+                {"word": "Мы", "grammatical_role": "personal_pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 1st-person plural, nominative. Subject of договорились.",
+                 "meaning": "Мы (personal_pronoun): 1st-person plural, nominative.", "case": "nominative", "gender": "", "number": "plural", "tense": "", "lemma": "мы"},
+                {"word": "договорились", "grammatical_role": "reflexive_verb", "color": "#20B2AA",
+                 "individual_meaning": "Perfective reflexive verb, past tense, plural. Lemma договориться ('to agree, to come to an arrangement'). The -сь clitic is lexicalized — договориться is inherently reflexive (no non-reflexive *договорить in this meaning). Perfective aspect marks the agreement as completed.",
+                 "meaning": "договорились (reflexive_verb): Perfective past plural, 'agreed'.", "case": "", "gender": "", "number": "plural", "tense": "past", "aspect": "perfective", "lemma": "договориться"},
+                {"word": "встретиться", "grammatical_role": "infinitive", "color": "#4ECDC4",
+                 "individual_meaning": "Infinitive of the perfective reflexive verb встретиться ('to meet each other'). Serves as complement of договорились — the content of the agreement.",
+                 "meaning": "встретиться (infinitive): Perfective reflexive infinitive, 'to meet'.", "case": "", "gender": "", "number": "", "tense": "", "aspect": "perfective", "lemma": "встретиться"},
+                {"word": "завтра", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Time adverb meaning 'tomorrow'. Invariable.",
+                 "meaning": "завтра (adverb): 'tomorrow', time adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "завтра"}
+            ],
+            "grammar_notes": "Договориться is lexicalized reflexive (inherently reflexive). Perfective past -лись marks completed action.",
+            "confidence": 0.91
+        }
+    ], ensure_ascii=False),
+}
+
+
+_RUSSIAN_ADVANCED_MOCK: Dict[str, Any] = {
+    "word": "написать",
+    "language_name": "Russian",
+    "language_code": "ru",
+    "topic": "Education",
+    "num_sentences": 4,
+    "min_length": 5,
+    "max_length": 22,
+    "difficulty": "advanced",
+    "mock_content_response": textwrap.dedent("""\
+        MEANING: to write (to produce written text — perfective)
+
+        RESTRICTIONS: Perfective verb. Use advanced structures: participles, gerunds, relative pronouns, subordinating conjunctions.
+
+        SENTENCES:
+        1. Читая книгу, он понял главную идею.
+        2. Статья, написанная учёным, была опубликована вчера.
+        3. Студент, который написал это эссе, получил высокую оценку.
+        4. Она написала письмо, хотя не хотела этого делать.
+
+        TRANSLATIONS:
+        1. Reading the book, he understood the main idea.
+        2. The article written by the scientist was published yesterday.
+        3. The student who wrote this essay received a high grade.
+        4. She wrote the letter, although she didn't want to do it.
+
+        IPA:
+        1. tʃɪˈtaja ˈknʲiɡʊ on pɐˈnjal ˈɡlavnʊjʊ ɪˈdʲejʊ
+        2. ˈstatʲja naˈpʲisanəja utʲˈɵnɨm ˈbɨla əpʊblʲɪˈkovanə fˈtʃʲera
+        3. studʲɪˈnʲɪnt kɐˈtorɨj naˈpʲisal ɪˈto ɪˈsʲe pɐlʊˈtʃɪl vɨˈsokʊjʊ atˈsɛnkʊ
+        4. aˈna naˈpʲisalə pʲɪˈsmо xɐˈtʲa nʲɪ xɐˈtʲela ɪˈtovo ˈdʲelatʲ
+
+        KEYWORDS:
+        1. gerund, comprehension, main idea
+        2. past passive participle, article, scientist
+        3. relative clause, essay, grade
+        4. concessive clause, letter"""),
+    "mock_grammar_batch_response": json.dumps([
+        {
+            "sentence": "Читая книгу, он понял главную идею.",
+            "overall_structure": "Gerund-Object-Comma-Subject-Verb-Adjective-Object",
+            "sentence_structure": "Gerund phrase (adverbial) + main clause",
+            "word_explanations": [
+                {"word": "Читая", "grammatical_role": "gerund", "color": "#FFA500",
+                 "individual_meaning": "Present gerund (деепричастие) of imperfective читать, formed with suffix -я. Uninflected verbal adverb expressing simultaneous action — 'while reading'. The subject of the gerund must co-refer with the main clause subject (он).",
+                 "meaning": "Читая (gerund): Present gerund of читать, 'while reading'.", "case": "", "gender": "", "number": "", "tense": "", "aspect": "imperfective", "lemma": "читать"},
+                {"word": "книгу", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular feminine (lemma книга). Direct object of the gerund Читая.",
+                 "meaning": "книгу (noun): Accusative singular feminine, object of gerund.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "книга"},
+                {"word": "он", "grammatical_role": "personal_pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 3rd-person singular masculine, nominative. Subject of понял and co-referent of the gerund Читая.",
+                 "meaning": "он (personal_pronoun): 3rd-person singular masculine nominative. Subject.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "он"},
+                {"word": "понял", "grammatical_role": "perfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Perfective verb, past tense, masculine singular. Lemma понять ('to understand', perfective of понимать). Perfective aspect signals the comprehension as completed and bounded. Past -л + masculine ∅ ending.",
+                 "meaning": "понял (perfective_verb): Perfective past masculine singular, 'understood'.", "case": "", "gender": "masculine", "number": "singular", "tense": "past", "aspect": "perfective", "lemma": "понять"},
+                {"word": "главную", "grammatical_role": "adjective", "color": "#FF44FF",
+                 "individual_meaning": "Long-form adjective, accusative singular feminine (lemma главный, 'main/principal'). Agrees with идею in case, gender, number.",
+                 "meaning": "главную (adjective): Accusative singular feminine, 'main'.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "главный"},
+                {"word": "идею", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular feminine (lemma идея, 'idea'). Direct object of понял.",
+                 "meaning": "идею (noun): Accusative singular feminine, 'idea'. Direct object.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "идея"}
+            ],
+            "grammar_notes": "Present gerund читая expresses simultaneous action. Subject of gerund must match subject of main clause (он).",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Статья, написанная учёным, была опубликована вчера.",
+            "overall_structure": "Subject-[PastPassiveParticiple-Agent]-Auxiliary-PastPassiveParticiple-Adverb",
+            "sentence_structure": "Subject with participial phrase + passive predicate",
+            "word_explanations": [
+                {"word": "Статья", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, nominative singular feminine (lemma статья, 'article'). Subject of the passive predicate была опубликована.",
+                 "meaning": "Статья (noun): Nominative singular feminine, 'article'. Subject.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "статья"},
+                {"word": "написанная", "grammatical_role": "past_passive_participle", "color": "#FF8C00",
+                 "individual_meaning": "Past passive participle of написать (perfective, -нн- suffix), long form, nominative singular feminine. Declines as a long-form adjective and agrees with статья. Meaning: 'written (by someone)'.",
+                 "meaning": "написанная (past_passive_participle): Past passive participle of написать, nominative singular feminine.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "написать"},
+                {"word": "учёным", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun/substantivized adjective, instrumental singular masculine (lemma учёный, 'scientist/scholar'). Instrumental case marks the agent in a passive construction.",
+                 "meaning": "учёным (noun): Instrumental singular masculine, 'by the scientist'. Agent in passive.", "case": "instrumental", "gender": "masculine", "number": "singular", "tense": "", "lemma": "учёный"},
+                {"word": "была", "grammatical_role": "auxiliary", "color": "#00CED1",
+                 "individual_meaning": "Past tense of быть ('to be'), feminine singular. Auxiliary in the long-form passive construction (была + past passive participle).",
+                 "meaning": "была (auxiliary): Past feminine singular of быть, passive auxiliary.", "case": "", "gender": "feminine", "number": "singular", "tense": "past", "lemma": "быть"},
+                {"word": "опубликована", "grammatical_role": "past_passive_participle", "color": "#FF8C00",
+                 "individual_meaning": "Past passive participle of опубликовать (perfective), short form, feminine singular. Short-form participles are used predicatively (after быть in passive). Agrees with статья in gender and number.",
+                 "meaning": "опубликована (past_passive_participle): Short-form past passive participle, feminine singular, 'was published'.", "case": "", "gender": "feminine", "number": "singular", "tense": "past", "lemma": "опубликовать"},
+                {"word": "вчера", "grammatical_role": "adverb", "color": "#FF6347",
+                 "individual_meaning": "Time adverb meaning 'yesterday'. Invariable.",
+                 "meaning": "вчера (adverb): 'yesterday', time adverb.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "вчера"}
+            ],
+            "grammar_notes": "Long-form participle написанная modifies subject nominally. Short-form опубликована is predicate in passive clause with auxiliary была.",
+            "confidence": 0.94
+        },
+        {
+            "sentence": "Студент, который написал это эссе, получил высокую оценку.",
+            "overall_structure": "Subject-[RelPron-Verb-Demonstrative-Object]-Verb-Adjective-Object",
+            "sentence_structure": "Main clause with restrictive relative clause",
+            "word_explanations": [
+                {"word": "Студент", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, nominative singular masculine (lemma студент, 'student'). Head of the main clause subject; antecedent of relative pronoun который.",
+                 "meaning": "Студент (noun): Nominative singular masculine, 'student'. Subject.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "студент"},
+                {"word": "который", "grammatical_role": "relative_pronoun", "color": "#9370DB",
+                 "individual_meaning": "Relative pronoun, nominative singular masculine. Introduces the restrictive relative clause; refers back to Студент. Agrees with its antecedent in gender and number, but takes the case of its function in the subordinate clause (nominative = subject of написал).",
+                 "meaning": "который (relative_pronoun): Nominative singular masculine relative pronoun, 'who'.", "case": "nominative", "gender": "masculine", "number": "singular", "tense": "", "lemma": "который"},
+                {"word": "написал", "grammatical_role": "perfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Perfective verb, past tense, masculine singular. Lemma написать (perfective of писать). Completed writing action.",
+                 "meaning": "написал (perfective_verb): Perfective past masculine singular, 'wrote'.", "case": "", "gender": "masculine", "number": "singular", "tense": "past", "aspect": "perfective", "lemma": "написать"},
+                {"word": "это", "grammatical_role": "demonstrative", "color": "#B8860B",
+                 "individual_meaning": "Declined demonstrative determiner, accusative singular neuter (lemma этот). Modifies эссе. Reading: demonstrative determiner (not invariant deictic), because it declines — accusative neuter = nominative neuter form этот/это.",
+                 "meaning": "это (demonstrative): Accusative singular neuter demonstrative, 'this'.", "case": "accusative", "gender": "neuter", "number": "singular", "tense": "", "lemma": "этот"},
+                {"word": "эссе", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular neuter (lemma эссе, 'essay'). Indeclinable loanword — all cases are identical in form. Direct object of написал.",
+                 "meaning": "эссе (noun): Accusative singular neuter, 'essay'. Indeclinable loanword.", "case": "accusative", "gender": "neuter", "number": "singular", "tense": "", "lemma": "эссе"},
+                {"word": "получил", "grammatical_role": "perfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Perfective verb, past tense, masculine singular. Lemma получить ('to receive', perfective of получать). Completed receipt of grade.",
+                 "meaning": "получил (perfective_verb): Perfective past masculine singular, 'received'.", "case": "", "gender": "masculine", "number": "singular", "tense": "past", "aspect": "perfective", "lemma": "получить"},
+                {"word": "высокую", "grammatical_role": "adjective", "color": "#FF44FF",
+                 "individual_meaning": "Long-form adjective, accusative singular feminine (lemma высокий, 'high'). Agrees with оценку.",
+                 "meaning": "высокую (adjective): Accusative singular feminine, 'high'.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "высокий"},
+                {"word": "оценку", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular feminine (lemma оценка, 'grade/mark'). Direct object of получил.",
+                 "meaning": "оценку (noun): Accusative singular feminine, 'grade'. Direct object.", "case": "accusative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "оценка"}
+            ],
+            "grammar_notes": "Который is a declined relative pronoun — nominative here because it is subject of the subordinate verb написал.",
+            "confidence": 0.93
+        },
+        {
+            "sentence": "Она написала письмо, хотя не хотела этого делать.",
+            "overall_structure": "Subject-Verb-Object-Comma-SubConj-NegParticle-Verb-Pronoun-Infinitive",
+            "sentence_structure": "Main clause + concessive subordinate clause with negation",
+            "word_explanations": [
+                {"word": "Она", "grammatical_role": "personal_pronoun", "color": "#9370DB",
+                 "individual_meaning": "Personal pronoun, 3rd-person singular feminine, nominative. Subject of написала.",
+                 "meaning": "Она (personal_pronoun): 3rd-person singular feminine nominative. Subject.", "case": "nominative", "gender": "feminine", "number": "singular", "tense": "", "lemma": "она"},
+                {"word": "написала", "grammatical_role": "perfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Perfective verb, past tense, feminine singular. Lemma написать (perfective of писать). The -ла ending marks feminine singular past. Perfective aspect marks the letter as fully written.",
+                 "meaning": "написала (perfective_verb): Perfective past feminine singular, 'wrote'.", "case": "", "gender": "feminine", "number": "singular", "tense": "past", "aspect": "perfective", "lemma": "написать"},
+                {"word": "письмо", "grammatical_role": "noun", "color": "#FFAA00",
+                 "individual_meaning": "Noun, accusative singular neuter (lemma письмо, 'letter'). Direct object of написала. Inanimate neuter — accusative identical to nominative.",
+                 "meaning": "письмо (noun): Accusative singular neuter, 'letter'. Direct object.", "case": "accusative", "gender": "neuter", "number": "singular", "tense": "", "lemma": "письмо"},
+                {"word": "хотя", "grammatical_role": "subordinating_conjunction", "color": "#888888",
+                 "individual_meaning": "Subordinating conjunction meaning 'although/even though'. Introduces a concessive adverbial clause.",
+                 "meaning": "хотя (subordinating_conjunction): 'although', concessive subordinator.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "хотя"},
+                {"word": "не", "grammatical_role": "negation_particle", "color": "#FF6347",
+                 "individual_meaning": "Negation particle. Negates the following predicate хотела. Standard clausal negation — not genitive of negation here (хотеть takes infinitive, not an object that could shift to genitive).",
+                 "meaning": "не (negation_particle): Standard negation particle.", "case": "", "gender": "", "number": "", "tense": "", "lemma": "не"},
+                {"word": "хотела", "grammatical_role": "imperfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective verb, past tense, feminine singular. Lemma хотеть ('to want', imperfective). Imperfective marks the desire as a state/ongoing attitude rather than a bounded event. Feminine -ла ending agrees with subject Она.",
+                 "meaning": "хотела (imperfective_verb): Imperfective past feminine singular, 'wanted'.", "case": "", "gender": "feminine", "number": "singular", "tense": "past", "aspect": "imperfective", "lemma": "хотеть"},
+                {"word": "этого", "grammatical_role": "demonstrative", "color": "#B8860B",
+                 "individual_meaning": "Demonstrative pronoun, genitive singular neuter (lemma это/этот). Object of the infinitive делать. Genitive case here marks this as a pronominal object of the negated verb. Reading: demonstrative pronoun (not invariant deictic) — it is declined.",
+                 "meaning": "этого (demonstrative): Genitive singular neuter demonstrative, 'this/it'.", "case": "genitive", "gender": "neuter", "number": "singular", "tense": "", "lemma": "этот"},
+                {"word": "делать", "grammatical_role": "imperfective_verb", "color": "#4ECDC4",
+                 "individual_meaning": "Imperfective infinitive (lemma делать, 'to do'). Complement of хотела — the content of what she did not want to do.",
+                 "meaning": "делать (imperfective_verb): Imperfective infinitive, 'to do'.", "case": "", "gender": "", "number": "", "tense": "", "aspect": "imperfective", "lemma": "делать"}
+            ],
+            "grammar_notes": "Хотя introduces concessive clause. Не хотела uses imperfective (state/attitude). Этого is genitive of the demonstrative pronoun.",
+            "confidence": 0.92
+        }
+    ], ensure_ascii=False),
+}
+
+
+# beginner reuses RUSSIAN_MOCK_DATA so reports / role coverage stay in sync.
+RUSSIAN_LEVEL_MOCK_DATA: Dict[str, Dict[str, Any]] = {
+    "beginner": RUSSIAN_MOCK_DATA,
+    "intermediate": _RUSSIAN_INTERMEDIATE_MOCK,
+    "advanced": _RUSSIAN_ADVANCED_MOCK,
+}
+
+
 # ============================================================================
 # Mapping: add more languages here to extend coverage
 # ============================================================================
@@ -2249,6 +2687,7 @@ LANGUAGE_MOCK_DATA = {
     "latvian": LATVIAN_MOCK_DATA,
     "portuguese": PORTUGUESE_MOCK_DATA,
     "english": ENGLISH_MOCK_DATA,
+    "russian": RUSSIAN_MOCK_DATA,
 }
 
 
@@ -2711,6 +3150,20 @@ def test_english_all_difficulty_levels(difficulty: str, tmp_path: Path):
     """Run the full pipeline for English at beginner, intermediate, and advanced."""
     data = ENGLISH_LEVEL_MOCK_DATA[difficulty]
     _run_full_pipeline(data, f"english_{difficulty}", tmp_path)
+
+
+# ============================================================================
+# RUSSIAN — full pipeline must pass at all 3 difficulty levels.
+# Tracks the project-wide requirement that every analyzer is validated for
+# beginner, intermediate, and advanced complexity (see CLAUDE.md "E2E Test
+# Sentence Difficulty Coverage").
+# ============================================================================
+
+@pytest.mark.parametrize("difficulty", ["beginner", "intermediate", "advanced"])
+def test_russian_all_difficulty_levels(difficulty: str, tmp_path: Path):
+    """Run the full pipeline for Russian at beginner, intermediate, and advanced."""
+    data = RUSSIAN_LEVEL_MOCK_DATA[difficulty]
+    _run_full_pipeline(data, f"russian_{difficulty}", tmp_path)
 
 
 # ============================================================================

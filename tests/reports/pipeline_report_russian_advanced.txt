@@ -1,0 +1,125 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — RUSSIAN
+================================================================================
+  Word          : написать
+  Language       : Russian
+  Difficulty     : advanced
+  Topic          : Education
+  Generated at   : 2026-05-04 06:39:38
+  Elapsed        : 0.12s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ru': RuAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to write (to produce written text — perfective)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=6, summary=YES
+         Sentence 2: colored=YES, explanations=6, summary=YES
+         Sentence 3: colored=YES, explanations=8, summary=YES
+         Sentence 4: colored=YES, explanations=8, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: advanced, expected: advanced
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to write (to produce written text — perfective)
+
+  --- Sentence 1 ---
+  Original   : Читая книгу, он понял главную идею.
+  Translation: Reading the book, he understood the main idea.
+  IPA/Reading: tʃɪˈtaja ˈknʲiɡʊ on pɐˈnjal ˈɡlavnʊjʊ ɪˈdʲejʊ
+  Keywords   : gerund, comprehension, main idea
+
+  Colored HTML : <span style="color:#FFA500" title="gerund: Читая (gerund): Present gerund (деепричастие) of imperfective читать, formed with suffix -я. Uninflected verbal adverb expressing simultaneous action — 'whil…
+  Grammar Summ : Sentence contains 1 gerund, 2 nouns, 1 personal pronoun, 1 perfective verb, 1 adjective
+  Word Explanations (6 words):
+    Читая         gerund          #FFA500   Читая (gerund): Present gerund (деепричастие) of imperfective читать, formed with suffix -я. Uninflected verbal adverb expressing simultaneous action — 'while reading'. The subject of the gerund must co-refer with the main clause subject (он).
+    книгу         noun            #FFAA00   книгу (noun): Noun, accusative singular feminine (lemma книга). Direct object of the gerund Читая.
+    он            personal_pronoun  #9370DB   он (personal_pronoun): Personal pronoun, 3rd-person singular masculine, nominative. Subject of понял and co-referent of the gerund Читая.
+    понял         perfective_verb  #4ECDC4   понял (perfective_verb): Perfective verb, past tense, masculine singular. Lemma понять ('to understand', perfective of понимать). Perfective aspect signals the comprehension as completed and bounded. Past -л + masculine ∅ ending.
+    главную       adjective       #FF44FF   главную (adjective): Long-form adjective, accusative singular feminine (lemma главный, 'main/principal'). Agrees with идею in case, gender, number.
+    идею          noun            #FFAA00   идею (noun): Noun, accusative singular feminine (lemma идея, 'idea'). Direct object of понял.
+
+  --- Sentence 2 ---
+  Original   : Статья, написанная учёным, была опубликована вчера.
+  Translation: The article written by the scientist was published yesterday.
+  IPA/Reading: ˈstatʲja naˈpʲisanəja utʲˈɵnɨm ˈbɨla əpʊblʲɪˈkovanə fˈtʃʲera
+  Keywords   : past passive participle, article, scientist
+
+  Colored HTML : <span style="color:#FFAA00" title="noun: Статья (noun): Noun, nominative singular feminine (lemma статья, 'article'). Subject of the passive predicate была опубликована.">Статья</span> <span style="co…
+  Grammar Summ : Sentence contains 2 nouns, 2 past passive participles, 1 auxiliary, 1 adverb
+  Word Explanations (6 words):
+    Статья        noun            #FFAA00   Статья (noun): Noun, nominative singular feminine (lemma статья, 'article'). Subject of the passive predicate была опубликована.
+    написанная    past_passive_participle  #FF8C00   написанная (past_passive_participle): Past passive participle of написать (perfective, -нн- suffix), long form, nominative singular feminine. Declines as a long-form adjective and agrees with статья. Meaning: 'written (by someone)'.
+    учёным        noun            #FFAA00   учёным (noun): Noun/substantivized adjective, instrumental singular masculine (lemma учёный, 'scientist/scholar'). Instrumental case marks the agent in a passive construction.
+    была          auxiliary       #00CED1   была (auxiliary): Past tense of быть ('to be'), feminine singular. Auxiliary in the long-form passive construction (была + past passive participle).
+    опубликована  past_passive_participle  #FF8C00   опубликована (past_passive_participle): Past passive participle of опубликовать (perfective), short form, feminine singular. Short-form participles are used predicatively (after быть in passive). Agrees with статья in gender and number.
+    вчера         adverb          #FF6347   вчера (adverb): Time adverb meaning 'yesterday'. Invariable.
+
+  --- Sentence 3 ---
+  Original   : Студент, который написал это эссе, получил высокую оценку.
+  Translation: The student who wrote this essay received a high grade.
+  IPA/Reading: studʲɪˈnʲɪnt kɐˈtorɨj naˈpʲisal ɪˈto ɪˈsʲe pɐlʊˈtʃɪl vɨˈsokʊjʊ atˈsɛnkʊ
+  Keywords   : relative clause, essay, grade
+
+  Colored HTML : <span style="color:#FFAA00" title="noun: Студент (noun): Noun, nominative singular masculine (lemma студент, 'student'). Head of the main clause subject; antecedent of relative pronoun который.">Студе…
+  Grammar Summ : Sentence contains 3 nouns, 1 relative pronoun, 2 perfective verbs, 1 demonstrative, 1 adjective
+  Word Explanations (8 words):
+    Студент       noun            #FFAA00   Студент (noun): Noun, nominative singular masculine (lemma студент, 'student'). Head of the main clause subject; antecedent of relative pronoun который.
+    который       relative_pronoun  #9370DB   который (relative_pronoun): Relative pronoun, nominative singular masculine. Introduces the restrictive relative clause; refers back to Студент. Agrees with its antecedent in gender and number, but takes the case of its function in the subordinate clause (nominative = subject of написал).
+    написал       perfective_verb  #4ECDC4   написал (perfective_verb): Perfective verb, past tense, masculine singular. Lemma написать (perfective of писать). Completed writing action.
+    это           demonstrative   #B8860B   это (demonstrative): Declined demonstrative determiner, accusative singular neuter (lemma этот). Modifies эссе. Reading: demonstrative determiner (not invariant deictic), because it declines — accusative neuter = nominative neuter form этот/это.
+    эссе          noun            #FFAA00   эссе (noun): Noun, accusative singular neuter (lemma эссе, 'essay'). Indeclinable loanword — all cases are identical in form. Direct object of написал.
+    получил       perfective_verb  #4ECDC4   получил (perfective_verb): Perfective verb, past tense, masculine singular. Lemma получить ('to receive', perfective of получать). Completed receipt of grade.
+    высокую       adjective       #FF44FF   высокую (adjective): Long-form adjective, accusative singular feminine (lemma высокий, 'high'). Agrees with оценку.
+    оценку        noun            #FFAA00   оценку (noun): Noun, accusative singular feminine (lemma оценка, 'grade/mark'). Direct object of получил.
+
+  --- Sentence 4 ---
+  Original   : Она написала письмо, хотя не хотела этого делать.
+  Translation: She wrote the letter, although she didn't want to do it.
+  IPA/Reading: aˈna naˈpʲisalə pʲɪˈsmо xɐˈtʲa nʲɪ xɐˈtʲela ɪˈtovo ˈdʲelatʲ
+  Keywords   : concessive clause, letter
+
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Она (personal_pronoun): Personal pronoun, 3rd-person singular feminine, nominative. Subject of написала.">Она</span> <span style="color:#4ECDC4" ti…
+  Grammar Summ : Sentence contains 1 personal pronoun, 1 perfective verb, 1 noun, 1 subordinating conjunction, 1 negation particle, 2 imperfective verbs, 1 demonstrative
+  Word Explanations (8 words):
+    Она           personal_pronoun  #9370DB   Она (personal_pronoun): Personal pronoun, 3rd-person singular feminine, nominative. Subject of написала.
+    написала      perfective_verb  #4ECDC4   написала (perfective_verb): Perfective verb, past tense, feminine singular. Lemma написать (perfective of писать). The -ла ending marks feminine singular past. Perfective aspect marks the letter as fully written.
+    письмо        noun            #FFAA00   письмо (noun): Noun, accusative singular neuter (lemma письмо, 'letter'). Direct object of написала. Inanimate neuter — accusative identical to nominative.
+    хотя          subordinating_conjunction  #888888   хотя (subordinating_conjunction): Subordinating conjunction meaning 'although/even though'. Introduces a concessive adverbial clause.
+    не            negation_particle  #FF6347   не (negation_particle): Negation particle. Negates the following predicate хотела. Standard clausal negation — not genitive of negation here (хотеть takes infinitive, not an object that could shift to genitive).
+    хотела        imperfective_verb  #4ECDC4   хотела (imperfective_verb): Imperfective verb, past tense, feminine singular. Lemma хотеть ('to want', imperfective). Imperfective marks the desire as a state/ongoing attitude rather than a bounded event. Feminine -ла ending agrees with subject Она.
+    этого         demonstrative   #B8860B   этого (demonstrative): Demonstrative pronoun, genitive singular neuter (lemma это/этот). Object of the infinitive делать. Genitive case here marks this as a pronominal object of the negated verb. Reading: demonstrative pronoun (not invariant deictic) — it is declined.
+    делать        imperfective_verb  #4ECDC4   делать (imperfective_verb): Imperfective infinitive (lemma делать, 'to do'). Complement of хотела — the content of what she did not want to do.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

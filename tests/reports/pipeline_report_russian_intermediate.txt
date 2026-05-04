@@ -1,0 +1,114 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — RUSSIAN
+================================================================================
+  Word          : говорить
+  Language       : Russian
+  Difficulty     : intermediate
+  Topic          : Education
+  Generated at   : 2026-05-04 06:39:38
+  Elapsed        : 0.04s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ru': RuAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to speak (to talk, to say words out loud)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=4, summary=YES
+         Sentence 2: colored=YES, explanations=4, summary=YES
+         Sentence 3: colored=YES, explanations=5, summary=YES
+         Sentence 4: colored=YES, explanations=4, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: intermediate, expected: intermediate
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to speak (to talk, to say words out loud)
+
+  --- Sentence 1 ---
+  Original   : Он хорошо говорит по-русски.
+  Translation: He speaks Russian well.
+  IPA/Reading: on xɐˈroʂə ɡɐˈvorʲɪt pɐˈruskʲɪ
+  Keywords   : говорить, example, usage
+
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Он (personal_pronoun): Personal pronoun, 3rd-person singular masculine, nominative case. Subject of говорит.">Он</span> <span style="color:#FF6347"…
+  Grammar Summ : Sentence contains 1 personal pronoun, 2 adverbs, 1 verb
+  Word Explanations (4 words):
+    Он            personal_pronoun  #9370DB   Он (personal_pronoun): Personal pronoun, 3rd-person singular masculine, nominative case. Subject of говорит.
+    хорошо        adverb          #FF6347   хорошо (adverb): Manner adverb meaning 'well'. Modifies говорит. Invariable form.
+    говорит       verb            #4ECDC4   говорит (verb): Imperfective verb, 2nd conjugation, present tense, 3rd-person singular, indicative. Lemma говорить ('to speak'). Imperfective marks ongoing or habitual ability.
+    по-русски     adverb          #FF6347   по-русски (adverb): Manner adverb meaning 'in Russian / the Russian way'. Formed with prefix по- and adjectival suffix -ски from русский. Invariable.
+
+  --- Sentence 2 ---
+  Original   : Моя сестра говорит по-французски.
+  Translation: My sister speaks French.
+  IPA/Reading: mɐˈja sʲɪˈstra ɡɐˈvorʲɪt pɐˈfrantsuskʲɪ
+  Keywords   : family member, French
+
+  Colored HTML : <span style="color:#9370DB" title="possessive_determiner: Моя (possessive_determiner): Possessive determiner, 1st-person singular, nominative singular feminine. Agrees with сестра in case, gender, num…
+  Grammar Summ : Sentence contains 1 possessive determiner, 1 noun, 1 verb, 1 adverb
+  Word Explanations (4 words):
+    Моя           possessive_determiner  #9370DB   Моя (possessive_determiner): Possessive determiner, 1st-person singular, nominative singular feminine. Agrees with сестра in case, gender, number. Lemma мой.
+    сестра        noun            #FFAA00   сестра (noun): Noun, nominative singular feminine, 1st declension (lemma сестра, 'sister'). Subject of говорит.
+    говорит       verb            #4ECDC4   говорит (verb): Imperfective verb, present tense, 3rd-person singular. Lemma говорить. Habitual ability.
+    по-французски  adverb          #FF6347   по-французски (adverb): Manner adverb, 'in French'. Same formation as по-русски.
+
+  --- Sentence 3 ---
+  Original   : Этот студент говорит слишком быстро.
+  Translation: This student speaks too quickly.
+  IPA/Reading: ɪˈtot studʲɪˈnʲɪnt ɡɐˈvorʲɪt ˈslɪʂkəm ˈbɨstrə
+  Keywords   : speed, student
+
+  Colored HTML : <span style="color:#B8860B" title="demonstrative: Этот (demonstrative): Demonstrative determiner, nominative singular masculine (lemma этот, 'this'). Modifies студент; agrees in case, gender, number."…
+  Grammar Summ : Sentence contains 1 demonstrative, 1 noun, 1 verb, 2 adverbs
+  Word Explanations (5 words):
+    Этот          demonstrative   #B8860B   Этот (demonstrative): Demonstrative determiner, nominative singular masculine (lemma этот, 'this'). Modifies студент; agrees in case, gender, number.
+    студент       noun            #FFAA00   студент (noun): Noun, nominative singular masculine, 2nd declension (lemma студент, 'student'). Subject of говорит.
+    говорит       verb            #4ECDC4   говорит (verb): Imperfective verb, present tense, 3rd-person singular. Lemma говорить.
+    слишком       adverb          #FF6347   слишком (adverb): Degree adverb meaning 'too / excessively'. Modifies быстро.
+    быстро        adverb          #FF6347   быстро (adverb): Manner adverb meaning 'quickly/fast'. Modifies говорит.
+
+  --- Sentence 4 ---
+  Original   : Мы договорились встретиться завтра.
+  Translation: We agreed to meet tomorrow.
+  IPA/Reading: mɨ dəɡɐvɐˈrʲilʲɪsʲ fstrʲɪˈtʲɪtsə ˈzaftrə
+  Keywords   : agreement, reflexive verb
+
+  Colored HTML : <span style="color:#9370DB" title="personal_pronoun: Мы (personal_pronoun): Personal pronoun, 1st-person plural, nominative. Subject of договорились.">Мы</span> <span style="color:#20B2AA" title="refl…
+  Grammar Summ : Sentence contains 1 personal pronoun, 1 reflexive verb, 1 infinitive, 1 adverb
+  Word Explanations (4 words):
+    Мы            personal_pronoun  #9370DB   Мы (personal_pronoun): Personal pronoun, 1st-person plural, nominative. Subject of договорились.
+    договорились  reflexive_verb  #20B2AA   договорились (reflexive_verb): Perfective reflexive verb, past tense, plural. Lemma договориться ('to agree, to come to an arrangement'). The -сь clitic is lexicalized — договориться is inherently reflexive (no non-reflexive *договорить in this meaning). Perfective aspect marks the agreement as completed.
+    встретиться   infinitive      #4ECDC4   встретиться (infinitive): Infinitive of the perfective reflexive verb встретиться ('to meet each other'). Serves as complement of договорились — the content of the agreement.
+    завтра        adverb          #FF6347   завтра (adverb): Time adverb meaning 'tomorrow'. Invariable.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================

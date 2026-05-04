@@ -404,3 +404,48 @@ def get_available_languages() -> List[str]:
 def is_language_supported(language_code: str) -> bool:
     """Convenience function to check if language is supported"""
     return get_registry().is_language_supported(language_code)
+
+
+# Mapping from display language names to ISO codes (covers all 77 target languages)
+_LANGUAGE_NAME_TO_CODE = {
+    "Afrikaans": "af", "Albanian": "sq", "Amharic": "am", "Arabic": "ar",
+    "Armenian": "hy", "Azerbaijani": "az", "Basque": "eu", "Belarusian": "be",
+    "Bengali": "bn", "Bosnian": "bs", "Bulgarian": "bg", "Burmese": "my",
+    "Catalan": "ca", "Chinese (Simplified)": "zh", "Chinese (Traditional)": "zh-tw",
+    "Croatian": "hr", "Czech": "cs", "Danish": "da", "Dutch": "nl",
+    "English": "en", "Estonian": "et", "Finnish": "fi", "French": "fr",
+    "Galician": "gl", "Georgian": "ka", "German": "de", "Greek": "el",
+    "Gujarati": "gu", "Hebrew": "he", "Hindi": "hi", "Hungarian": "hu",
+    "Icelandic": "is", "Indonesian": "id", "Irish": "ga", "Italian": "it",
+    "Japanese": "ja", "Javanese": "jv", "Kannada": "kn", "Kazakh": "kk",
+    "Khmer": "km", "Korean": "ko", "Lao": "lo", "Latvian": "lv",
+    "Lithuanian": "lt", "Macedonian": "mk", "Malay": "ms", "Malayalam": "ml",
+    "Maltese": "mt", "Marathi": "mr", "Mongolian": "mn", "Nepali": "ne",
+    "Norwegian": "nb", "Pashto": "ps", "Persian": "fa", "Polish": "pl",
+    "Portuguese": "pt", "Romanian": "ro", "Russian": "ru", "Serbian": "sr",
+    "Sinhala": "si", "Slovak": "sk", "Slovenian": "sl", "Somali": "so",
+    "Spanish": "es", "Sundanese": "su", "Swahili": "sw", "Swedish": "sv",
+    "Tamil": "ta", "Telugu": "te", "Thai": "th", "Turkish": "tr",
+    "Ukrainian": "uk", "Urdu": "ur", "Uzbek": "uz", "Vietnamese": "vi",
+    "Welsh": "cy", "Zulu": "zu",
+}
+
+
+def get_analyzer_for_language(language_name: str) -> Optional[BaseGrammarAnalyzer]:
+    """Get analyzer by display language name (e.g. 'Russian', 'French').
+
+    Looks up the ISO code from the name map, then delegates to get_analyzer().
+    Returns None if the language is not supported.
+    """
+    code = _LANGUAGE_NAME_TO_CODE.get(language_name)
+    if code is None:
+        # Try case-insensitive match
+        lower = language_name.lower()
+        for name, c in _LANGUAGE_NAME_TO_CODE.items():
+            if name.lower() == lower:
+                code = c
+                break
+    if code is None:
+        logger.warning(f"Unknown language name: {language_name!r}")
+        return None
+    return get_analyzer(code)

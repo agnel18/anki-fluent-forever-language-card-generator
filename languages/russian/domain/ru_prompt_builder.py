@@ -155,6 +155,12 @@ class RuPromptBuilder:
         batch: bool,
     ) -> str:
         roles_str = ", ".join(roles)
+        advanced_participle_colors = (
+            ", present_active_participle=#FF8C00, past_active_participle=#FF8C00"
+            ", present_passive_participle=#FF8C00, past_passive_participle=#FF8C00"
+            if complexity == "advanced"
+            else ""
+        )
 
         if batch:
             sentences_block = "\n".join(
@@ -319,8 +325,7 @@ IMPORTANT:
   particle=#20B2AA, aspectual_particle=#FF1493, conditional_particle=#FF1493,
   negation_particle=#FF6347,
   numeral=#3CB371, interjection=#FF69B4,
-  participle=#FF8C00, present_active_participle=#FF8C00, past_active_participle=#FF8C00,
-  present_passive_participle=#FF8C00, past_passive_participle=#FF8C00,
+  participle=#FF8C00{advanced_participle_colors},
   gerund=#FFA500, verbal_noun=#DAA520, other=#808080
 - Confidence should be ≥ 0.85 for a complete, correct analysis.
 - Return ONLY valid JSON — no markdown, no prose before or after.

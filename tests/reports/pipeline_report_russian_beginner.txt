@@ -1,0 +1,113 @@
+================================================================================
+  END-TO-END PIPELINE REPORT — RUSSIAN
+================================================================================
+  Word          : читать
+  Language       : Russian
+  Difficulty     : beginner
+  Topic          : Education
+  Generated at   : 2026-05-04 06:39:37
+  Elapsed        : 0.04s
+================================================================================
+
+STAGE RESULTS
+--------------------------------------------------------------------------------
+  [PASS] 1. Analyzer Discovery
+         Analyzer for 'ru': RuAnalyzer
+  [PASS] 2. Content Generation + Parsing
+         Meaning: to read (to look at and understand written text)
+         Sentences: 4/4, Translations: 4/4, IPA: 4/4, Keywords: 4/4
+  [PASS] 3. Grammar Analysis (Batch)
+         Sentence 1: colored=YES, explanations=3, summary=YES
+         Sentence 2: colored=YES, explanations=5, summary=YES
+         Sentence 3: colored=YES, explanations=4, summary=YES
+         Sentence 4: colored=YES, explanations=4, summary=YES
+  [PASS] 4. Audio Generation (mocked)
+         Generated 4 audio file paths
+  [PASS] 5. Image Generation (mocked)
+         Generated 4 image file paths
+  [PASS] 6. Card Assembly Verification
+         All required fields present for all sentences
+  [PASS] 7. Difficulty Setting Respected
+         Session state difficulty: beginner, expected: beginner
+
+--------------------------------------------------------------------------------
+  OVERALL: ALL STAGES PASSED
+--------------------------------------------------------------------------------
+
+CONTENT GENERATION OUTPUT
+--------------------------------------------------------------------------------
+  Meaning: to read (to look at and understand written text)
+
+  --- Sentence 1 ---
+  Original   : Я читаю книгу.
+  Translation: I am reading a book.
+  IPA/Reading: ja tʃɪˈtaju ˈknʲiɡʊ
+  Keywords   : person reading, book
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: Я (pronoun): Personal pronoun, 1st-person singular, nominative case. Subject of the verb читаю. In Russian the explicit pronoun is mildly emphatic (pro-drop…
+  Grammar Summ : Sentence contains 1 pronoun, 1 verb, 1 noun
+  Word Explanations (3 words):
+    Я             pronoun         #9370DB   Я (pronoun): Personal pronoun, 1st-person singular, nominative case. Subject of the verb читаю. In Russian the explicit pronoun is mildly emphatic (pro-drop language).
+    читаю         verb            #4ECDC4   читаю (verb): Imperfective verb, 1st-conjugation, present tense, 1st-person singular, indicative mood. Lemma читать ('to read'); the perfective partner is прочитать. Imperfective aspect marks the action as ongoing or habitual. Governs an accusative direct object (книгу).
+    книгу         noun            #FFAA00   книгу (noun): Noun, accusative singular feminine, 1st declension (lemma книга, 'book'). Direct object of читаю. Inanimate, so accusative is shaped like the nominative ending of 1st declension (-у).
+
+  --- Sentence 2 ---
+  Original   : Она читает газету каждый день.
+  Translation: She reads the newspaper every day.
+  IPA/Reading: aˈna tʃɪˈtaɪt ɡaˈzʲetʊ ˈkaʐdɨj dʲenʲ
+  Keywords   : daily habit, newspaper
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: Она (pronoun): Personal pronoun, 3rd-person singular feminine, nominative case. Subject of читает.">Она</span> <span style="color:#4ECDC4" title="verb: чита…
+  Grammar Summ : Sentence contains 1 pronoun, 1 verb, 2 nouns, 1 adjective
+  Word Explanations (5 words):
+    Она           pronoun         #9370DB   Она (pronoun): Personal pronoun, 3rd-person singular feminine, nominative case. Subject of читает.
+    читает        verb            #4ECDC4   читает (verb): Imperfective verb, present tense, 3rd-person singular, indicative mood. Lemma читать. Habitual reading indicated by каждый день.
+    газету        noun            #FFAA00   газету (noun): Noun, accusative singular feminine (lemma газета, 'newspaper'). Direct object of читает.
+    каждый        adjective       #FF44FF   каждый (adjective): Adjective, accusative singular masculine (lemma каждый, 'every/each'). Agrees with день in case, gender, number.
+    день          noun            #FFAA00   день (noun): Noun, accusative singular masculine (lemma день, 'day'). Together with каждый forms the time adverbial 'every day'.
+
+  --- Sentence 3 ---
+  Original   : Мы читали интересный роман.
+  Translation: We read an interesting novel.
+  IPA/Reading: mɨ tʃɪˈtalʲɪ ɪnʲtʲɪˈrʲesnɨj rɐˈman
+  Keywords   : past action, novel
+
+  Colored HTML : <span style="color:#9370DB" title="pronoun: Мы (pronoun): Personal pronoun, 1st-person plural, nominative case. Subject of читали.">Мы</span> <span style="color:#4ECDC4" title="verb: читали (verb): Im…
+  Grammar Summ : Sentence contains 1 pronoun, 1 verb, 1 adjective, 1 noun
+  Word Explanations (4 words):
+    Мы            pronoun         #9370DB   Мы (pronoun): Personal pronoun, 1st-person plural, nominative case. Subject of читали.
+    читали        verb            #4ECDC4   читали (verb): Imperfective verb, past tense, plural. Lemma читать. Past tense is marked by -ли (plural ending, gender-neutral). Imperfective past marks ongoing or habitual past reading.
+    интересный    adjective       #FF44FF   интересный (adjective): Long-form adjective, accusative singular masculine (lemma интересный, 'interesting'). Agrees with роман in case, gender, number. Inanimate masc-acc takes nominative-form endings.
+    роман         noun            #FFAA00   роман (noun): Noun, accusative singular masculine, 2nd declension (lemma роман, 'novel'). Direct object of читали. Inanimate — accusative is identical to nominative.
+
+  --- Sentence 4 ---
+  Original   : Дети читают в школе.
+  Translation: Children read at school.
+  IPA/Reading: ˈdʲetʲɪ tʃɪˈtajʊt f ʂkoˈlʲe
+  Keywords   : children, school
+
+  Colored HTML : <span style="color:#FFAA00" title="noun: Дети (noun): Noun, nominative plural (lemma ребёнок/дети, suppletive plural, 'children'). Subject of читают.">Дети</span> <span style="color:#4ECDC4" title="ve…
+  Grammar Summ : Sentence contains 2 nouns, 1 verb, 1 preposition
+  Word Explanations (4 words):
+    Дети          noun            #FFAA00   Дети (noun): Noun, nominative plural (lemma ребёнок/дети, suppletive plural, 'children'). Subject of читают.
+    читают        verb            #4ECDC4   читают (verb): Imperfective verb, present tense, 3rd-person plural, indicative. Lemma читать. Marks habitual activity.
+    в             preposition     #4444FF   в (preposition): Preposition meaning 'in/at'. Here governs the prepositional case (static location). Contrast: в школу (accusative) = directional 'to school'.
+    школе         noun            #FFAA00   школе (noun): Noun, prepositional singular feminine, 1st declension (lemma школа, 'school'). Location argument governed by preposition в expressing static location.
+
+AUDIO FILES
+--------------------------------------------------------------------------------
+  audio_0.mp3
+  audio_1.mp3
+  audio_2.mp3
+  audio_3.mp3
+
+IMAGE FILES
+--------------------------------------------------------------------------------
+  image_0.jpg
+  image_1.jpg
+  image_2.jpg
+  image_3.jpg
+
+================================================================================
+  END OF REPORT
+================================================================================
