@@ -6,7 +6,17 @@ Create complete decks with AI-written sentences, native audio, images, and phone
 
 Based on the **[Fluent Forever method](https://fluent-forever.com/)** by Gabriel Wyner — a proven system using spaced repetition, personalized context, and multi-sensory learning.
 
-**[▶ Try the Live App](https://language-card-generator-anki-fluent-forever-method.streamlit.app/)** · **[📖 Grammar Framework](language_grammar_generator/README.md)**
+**[▶ Try the Live App](https://language-anki-deck-generator.streamlit.app/)** · **[🎥 Watch the Demo](https://youtu.be/JzLuUMfSPAo?si=npZeEOVa8t4mYqEa)** · **[📖 Grammar Framework](language_grammar_generator/README.md)**
+
+---
+
+## 🎥 Demo Video
+
+Watch the complete walkthrough to see how the Language Anki Deck Generator works—from adding your API keys and selecting a language and vocabulary to configuring card settings, generating a deck, and downloading the finished `.apkg` file for Anki.
+
+[![Watch the Language Anki Deck Generator demo](https://img.youtube.com/vi/JzLuUMfSPAo/maxresdefault.jpg)](https://youtu.be/JzLuUMfSPAo?si=npZeEOVa8t4mYqEa)
+
+**[▶ Watch the full demo on YouTube](https://youtu.be/JzLuUMfSPAo?si=npZeEOVa8t4mYqEa)**
 
 ---
 
@@ -227,4 +237,4 @@ This ensures grammar coloring, explanations, and validation logic are exercised 
 streamlit run streamlit_app/app_v3.py
 ```
 
-**[▶ Try the Live App](https://language-card-generator-anki-fluent-forever-method.streamlit.app/)** · **Happy learning!** ✨
+**[▶ Try the Live App](https://language-anki-deck-generator.streamlit.app/)** · **[🎥 Watch the Demo](https://youtu.be/JzLuUMfSPAo?si=npZeEOVa8t4mYqEa)** · **Happy learning!** ✨
