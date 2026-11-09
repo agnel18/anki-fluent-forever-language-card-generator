@@ -289,7 +289,7 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 6. **Never Hardcode Complexity**: Always read from `st.session_state.get("difficulty", "intermediate")`.
 7. **Run E2E Pipeline Test**: After unit tests pass, run `pytest tests/test_end_to_end_pipeline.py -v -s` to verify the full runtime pipeline. See [Testing Guide](testing_guide.md#end-to-end-pipeline-test-runtime-verification).
 ### AI Integration (Gold Standard)
-- **Strict Model Restrictions** - Only `gemini-2.5-flash` and `gemini-3-flash-preview`
+- **Strict Model Restrictions** - Only `gemini-3.8-flash` and `gemini-3-flash-preview`
 - **Intelligent Fallbacks** - Automatic model selection based on complexity
 - **Advanced Prompting** - Chain-of-thought, few-shot learning, context-aware
 - **Quality Validation** - Multi-dimensional response assessment (no artificial boosting)
@@ -321,7 +321,7 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 
 ### Model Restrictions
 > **ðŸš¨ CRITICAL MODEL RESTRICTION**
-> **STRICT REQUIREMENT:** Only use `gemini-2.5-flash` and `gemini-3-flash-preview` models.
+> **STRICT REQUIREMENT:** Only use `gemini-3.8-flash` and `gemini-3-flash-preview` models.
 > **PROHIBITED:** Do not use `gemini-2.0-flash-exp`, `gemini-1.5-flash`, `gemini-pro`, or any other Gemini models.
 > **REASON:** System is configured exclusively for these two approved models only.
 

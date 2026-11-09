@@ -505,9 +505,9 @@ class AIService:
     Implements circuit breaker pattern for reliability.
     """
 
-    ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT
+    ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]  # STRICT
 
-    def call_ai(self, prompt, api_key, model="gemini-2.5-flash"):
+    def call_ai(self, prompt, api_key, model="gemini-3.8-flash"):
         """Call AI with gold standard error handling"""
         if model not in self.ALLOWED_MODELS:
             raise ValueError(f"Model {model} not allowed. Use: {self.ALLOWED_MODELS}")

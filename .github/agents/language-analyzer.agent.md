@@ -308,6 +308,6 @@ git commit -m "feat: add {Language} ({code}) grammar analyzer
 - DO NOT modify existing analyzers (French, Japanese, etc.) unless fixing a shared bug
 - DO NOT add dependencies to `requirements.txt` — use only what's already installed
 - DO NOT skip the E2E pipeline test — unit tests alone missed the Japanese lazy import bug
-- DO NOT use models other than `gemini-2.5-flash` (primary) and `gemini-3-flash-preview` (fallback)
+- DO NOT use models other than `gemini-3.8-flash` (primary) and `gemini-3-flash-preview` (fallback)
 - DO NOT copy the French test suite's extra files (performance, regression, system) — use 7-file Japanese pattern
 - ONLY build one language per invocation

@@ -15,7 +15,7 @@
 - **Natural Validation:** No artificial confidence boosting in production (removed from all implementations)
 - **Facade Pattern:** Deploy only clean component orchestration like gold standards
 - **External Configuration:** Load all settings from files like gold standards
-- **AI Model Restrictions:** Use only gemini-2.5-flash and gemini-3-flash-preview in production
+- **AI Model Restrictions:** Use only gemini-3.8-flash and gemini-3-flash-preview in production
 - **Component Isolation:** Deploy loosely coupled components like gold standards
 
 ### Deployment Strategy - Gold Standard Validation
@@ -175,7 +175,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Non-allowed AI model detected - should use gemini-2.5-flash or gemini-3-flash-preview"
+          summary: "Non-allowed AI model detected - should use gemini-3.8-flash or gemini-3-flash-preview"
 
       - alert: TightCouplingDetected
         expr: component_coupling_violation > 0
@@ -191,7 +191,7 @@ groups:
 ```python
 # Secure key management matching gold standards
 class SecureAPIKeyManager:
-    ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT
+    ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]  # STRICT
 
     def validate_and_use_key(self, api_key, requested_model):
         if requested_model not in self.ALLOWED_MODELS:
@@ -352,7 +352,7 @@ def ab_test_against_gold_standards(new_version, gold_standard_version):
 - [ ] **Natural Validation:** Removed all artificial confidence boosting?
 - [ ] **Facade Pattern:** Implemented component orchestration like gold standards?
 - [ ] **External Config:** Loading all settings from files like gold standards?
-- [ ] **AI Models:** Using only gemini-2.5-flash and gemini-3-flash-preview?
+- [ ] **AI Models:** Using only gemini-3.8-flash and gemini-3-flash-preview?
 - [ ] **Component Isolation:** Verified loose coupling like gold standards?
 
 ### Deployment Verification

@@ -293,7 +293,7 @@ class FrAnalyzer(BaseGrammarAnalyzer):
         Call Google Gemini AI for French grammar analysis.
 
         FRENCH AI INTEGRATION ENHANCED:
-        - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
+        - Uses gemini-3.8-flash model (primary) with gemini-3-flash-preview fallback
         - 20000 max_output_tokens prevents JSON truncation in complex French responses
         - 30-second timeout for online environments
         - Retry logic with exponential backoff for transient failures

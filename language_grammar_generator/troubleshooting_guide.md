@@ -522,7 +522,7 @@ ISSUE TYPE â†’ COMPARE WITH GOLD STANDARDS â†’ SOLUTION STRATEGY
 - [ ] **Natural Validation:** No artificial confidence boosting (removed from all implementations)
 - [ ] **Facade Pattern:** Clean component orchestration like gold standards?
 - [ ] **External Config:** Loading from files like gold standards?
-- [ ] **AI Integration:** Using allowed models (gemini-2.5-flash, gemini-3-flash-preview only)
+- [ ] **AI Integration:** Using allowed models (gemini-3.8-flash, gemini-3-flash-preview only)
 - [ ] **Component Isolation:** Each component has single responsibility like gold standards?
 
 ## ðŸ§ª Analysis Quality Issues - Compare with Gold Standards
@@ -665,23 +665,23 @@ class LanguageConfig:
 def verify_ai_integration():
     """Verify AI setup matches gold standards"""
     checks = {
-        "allowed_models_only": uses_only_allowed_models(),  # gemini-2.5-flash, gemini-3-flash-preview
+        "allowed_models_only": uses_only_allowed_models(),  # gemini-3.8-flash, gemini-3-flash-preview
         "circuit_breaker": has_circuit_breaker(),
         "error_handling": has_comprehensive_error_handling(),
         "response_validation": validates_ai_responses(),
     }
     return checks
 
-ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT
+ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]  # STRICT
 ```
 
 **Solution - Match Gold Standard AI Integration:**
 ```python
 # CORRECT - Like gold standards
 class AIService:
-    ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT
+    ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]  # STRICT
 
-    def call_ai(self, prompt, api_key, model="gemini-2.5-flash"):
+    def call_ai(self, prompt, api_key, model="gemini-3.8-flash"):
         if model not in self.ALLOWED_MODELS:
             raise ValueError(f"Model {model} not allowed. Use: {self.ALLOWED_MODELS}")
         # Circuit breaker, retry logic, etc.
@@ -1081,8 +1081,8 @@ def verify_model_selection():
         print(f"'{sentence}' ({complexity}) â†’ {model}")
 
         # Verify model appropriateness
-        if complexity == "advanced" and "gemini-2.5-flash" not in model:
-            print("ERROR: Advanced complexity should use gemini-2.5-flash")
+        if complexity == "advanced" and "gemini-3.8-flash" not in model:
+            print("ERROR: Advanced complexity should use gemini-3.8-flash")
         elif complexity == "beginner" and "gemini-3-flash-preview" not in model:
             print("WARNING: Beginner complexity could use faster model")
 ```
@@ -2087,7 +2087,7 @@ groups:
 
 | Issue | Quick Diagnosis | Quick Fix |
 |-------|----------------|-----------|
-| Low confidence | Check model selection | Use gemini-2.5-flash for complex analysis |
+| Low confidence | Check model selection | Use gemini-3.8-flash for complex analysis |
 | Slow responses | Profile components | Implement caching and model optimization |
 | Memory leaks | Monitor cache size | Set cache limits and implement cleanup |
 | Circuit breaker | Check failure thresholds | Tune parameters for AI service tolerance |

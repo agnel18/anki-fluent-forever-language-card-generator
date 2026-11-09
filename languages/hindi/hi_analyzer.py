@@ -243,7 +243,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         Call Google Gemini AI for grammar analysis.
 
         GOLD STANDARD AI INTEGRATION:
-        - Uses gemini-2.5-flash model (current production model)
+        - Uses gemini-3.8-flash model (current production model)
         - gemini-3-flash-preview as fallback
         - 20000 max_tokens prevents JSON truncation in batch responses
         - 30-second timeout for online environments
@@ -251,7 +251,7 @@ class HiAnalyzer(IndoEuropeanAnalyzer):
         - Returns error response for fallback processing
 
         MODEL SELECTION:
-        - gemini-2.5-flash: Best balance of quality and speed
+        - gemini-3.8-flash: Best balance of quality and speed
         - gemini-3-flash-preview: Fallback for reliability
         - Future-proof: Update model names as Google releases new versions
 

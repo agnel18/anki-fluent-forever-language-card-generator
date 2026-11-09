@@ -5,13 +5,13 @@
 **Secondary Reference:** [Chinese Simplified](languages/chinese_simplified/zh_analyzer.py)  
 **Critical:** Use French v2.0 Clean Architecture patterns - Jinja2 templates, external config, no artificial confidence boosting  
 **Prerequisites:** Study French v2.0 template system before AI integration  
-**Models:** Strictly limited to `gemini-2.5-flash` and `gemini-3-flash-preview` (like French v2.0)  
+**Models:** Strictly limited to `gemini-3.8-flash` and `gemini-3-flash-preview` (like French v2.0)  
 **Time Estimate:** 2-3 weeks for gold standard compliant optimization
 
 ## ðŸŽ¯ AI Integration Philosophy - French v2.0 Gold Standard Compliance
 
 ### Model Selection Strategy - Match French v2.0
-- **gemini-2.5-flash:** Complex linguistic analysis (like French v2.0 analyzer)
+- **gemini-3.8-flash:** Complex linguistic analysis (like French v2.0 analyzer)
 - **gemini-3-flash-preview:** Simple analysis, high-volume processing
 - **No other models allowed** - strict enforcement like French v2.0
 - **Circuit Breaker:** Implement like French v2.0 for reliability
@@ -93,12 +93,12 @@ class {Language}PromptBuilder:
 class AIService:
     """AI service following gold standard patterns - LIKE FRENCH/CHINESE AI INTEGRATION"""
 
-    ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]  # STRICT like gold standards
+    ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]  # STRICT like gold standards
 
     def __init__(self):
         self.circuit_breaker = CircuitBreaker()  # Like gold standards
 
-    def call_ai(self, prompt: str, api_key: str, model: str = "gemini-2.5-flash") -> str:
+    def call_ai(self, prompt: str, api_key: str, model: str = "gemini-3.8-flash") -> str:
         """Call AI with gold standard error handling"""
         if model not in self.ALLOWED_MODELS:
             raise ValueError(f"Model {model} not allowed. Use: {self.ALLOWED_MODELS}")
@@ -421,7 +421,7 @@ def good_validate_result(self, result, sentence):
 **Solution - Strict Model Enforcement:**
 ```python
 # CORRECT - Like gold standards
-ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]
+ALLOWED_MODELS = ["gemini-3.8-flash", "gemini-3-flash-preview"]
 
 def call_ai(self, prompt, api_key, model):
     if model not in ALLOWED_MODELS:
@@ -514,7 +514,7 @@ class CircuitBreaker:
 ### Pre-Implementation
 - [ ] **Gold Standard Study:** Thoroughly studied French v2.0 and Chinese Simplified AI integration?
 - [ ] **Natural Validation:** Understood natural confidence scoring (no artificial boosting)?
-- [ ] **Model Restrictions:** Committed to using only gemini-2.5-flash and gemini-3-flash-preview?
+- [ ] **Model Restrictions:** Committed to using only gemini-3.8-flash and gemini-3-flash-preview?
 - [ ] **Component Separation:** Ready to separate AI service from domain logic?
 
 ### Implementation
@@ -834,7 +834,7 @@ logger = logging.getLogger(__name__)
 
 class GeminiModel(Enum):
     """Allowed Gemini models only"""
-    GEMINI_2_5_FLASH = "gemini-2.5-flash"
+    GEMINI_3_8_FLASH = "gemini-3.8-flash"
     GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview"
 
 class {Language}ModelRouter:
@@ -1416,7 +1416,7 @@ class {Language}PerformanceMonitor:
             suggestions.append("Consider using faster model (gemini-3-flash-preview) for simple analysis")
 
         if metrics['average_quality_score'] < 0.8:
-            suggestions.append("Consider using more capable model (gemini-2.5-flash) for complex analysis")
+            suggestions.append("Consider using more capable model (gemini-3.8-flash) for complex analysis")
 
         if metrics['error_rate'] > 0.05:
             suggestions.append("Review prompt templates and error handling")
@@ -1542,7 +1542,7 @@ class CircuitBreakerOpenException(Exception):
 ## âœ… Success Criteria
 
 ### AI Integration Quality
-- [ ] **Model Compliance:** Only `gemini-2.5-flash` and `gemini-3-flash-preview` used
+- [ ] **Model Compliance:** Only `gemini-3.8-flash` and `gemini-3-flash-preview` used
 - [ ] **Response Time:** < 3 seconds average for simple analysis, < 5 seconds for complex
 - [ ] **Quality Score:** > 0.8 average confidence score
 - [ ] **Error Rate:** < 5% failure rate with proper fallbacks

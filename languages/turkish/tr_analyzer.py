@@ -268,7 +268,7 @@ class TrAnalyzer(BaseGrammarAnalyzer):
         Call Google Gemini AI for grammar analysis.
 
         TURKISH AI INTEGRATION:
-        - Uses gemini-2.5-flash model (primary) with gemini-3-flash-preview fallback
+        - Uses gemini-3.8-flash model (primary) with gemini-3-flash-preview fallback
         - 20000 max_output_tokens prevents JSON truncation in batch responses
         - 30-second timeout for online environments
         - Comprehensive error handling with meaningful logging
