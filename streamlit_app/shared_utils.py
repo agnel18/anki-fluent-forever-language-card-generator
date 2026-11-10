@@ -39,13 +39,44 @@ GEMINI_MODELS = {
     ]
 }
 
+GEMINI_MODEL_REDIRECTS = {
+    'gemini-2.5-flash': GEMINI_MODELS['current'],
+    'gemini-2.0-flash-exp': GEMINI_MODELS['current'],
+    'gemini-2.0-flash': GEMINI_MODELS['current'],
+    'gemini-2.0-flash-lite': GEMINI_MODELS['current'],
+    'gemini-1.5-flash': GEMINI_MODELS['current'],
+    'gemini-pro': GEMINI_MODELS['current'],
+    'gemini-pro-vision': GEMINI_MODELS['current'],
+    'gemini-3-pro-preview': GEMINI_MODELS['fallback'],
+}
+
+def normalize_gemini_model(model_name: Optional[str]) -> str:
+    """Normalize Gemini model names and redirect deprecated models."""
+    if not model_name:
+        return GEMINI_MODELS['current']
+
+    cleaned_model = model_name.strip()
+    if cleaned_model.startswith("models/"):
+        cleaned_model = cleaned_model[len("models/"):]
+
+    redirected_model = GEMINI_MODEL_REDIRECTS.get(cleaned_model)
+    if redirected_model:
+        logger.warning(
+            "Deprecated Gemini model '%s' requested; using '%s' instead.",
+            cleaned_model,
+            redirected_model
+        )
+        return redirected_model
+
+    return cleaned_model
+
 def get_gemini_model() -> str:
     """Get the current Gemini model name."""
-    return GEMINI_MODELS['current']
+    return normalize_gemini_model(os.getenv("GEMINI_MODEL"))
 
 def get_gemini_fallback_model() -> str:
     """Get the fallback Gemini model name."""
-    return GEMINI_MODELS['fallback']
+    return normalize_gemini_model(os.getenv("GEMINI_FALLBACK_MODEL") or GEMINI_MODELS['fallback'])
 
 def get_available_gemini_models() -> List[str]:
     """Get all available Gemini models including deprecated ones."""
@@ -470,8 +501,9 @@ class GeminiAPI:
     def generate_content(self, model: str, contents: str, **kwargs):
         """Generate content using the appropriate API."""
         if self.api_type == 'new':
+            normalized_model = normalize_gemini_model(model)
             return self.client.models.generate_content(
-                model=model,
+                model=normalized_model,
                 contents=contents,
                 **kwargs
             )

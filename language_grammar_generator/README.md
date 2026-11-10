@@ -389,7 +389,7 @@ python -m pytest languages/{language_code}/tests/test_{language_code}_regression
 - âœ… **Removed Artificial Confidence Boosting**: All analyzers now use natural validation
 - âœ… **Updated Test Templates**: Removed confidence boosting tests, follow gold standard patterns
 - âœ… **Clean Architecture Documentation**: Updated all guides to reflect working patterns
-- âœ… **Strict Model Enforcement**: Only `gemini-2.5-flash` and `gemini-3-flash-preview`
+- âœ… **Strict Model Enforcement**: Only `gemini-3.8-flash` and `gemini-3-flash-preview`
 - âœ… **Enhanced AI Integration**: Advanced prompting and quality validation
 - âœ… **Comprehensive Testing**: Multi-dimensional quality assurance without artificial boosting
 - âœ… **Performance Optimization**: Intelligent caching and batch processing
